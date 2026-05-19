@@ -34,7 +34,7 @@ const resetCurrentBuffer = () => {
 <template>
   <div>
     <div class="flex flex-wrap pb-4">
-      <pv-table density="compact" class="pt-2 pb-12 pl-3 pr-3">
+      <pv-table density="compact" class="pt-2 pr-3 pb-12 pl-3">
         <template #default>
           <thead>
             <tr>
@@ -135,7 +135,7 @@ const resetCurrentBuffer = () => {
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
-      class="w-full pl-3 pr-3"
+      class="w-full pr-3 pl-3"
     >
       <div class="flex flex-wrap pb-4 text-white">
         <div class="m-0 p-0 pb-4" style="font-size: 16px">Multi-tag pose, field-to-camera</div>
@@ -193,11 +193,11 @@ const resetCurrentBuffer = () => {
         </pv-table>
       </div>
       <div class="flex flex-col pb-4 text-white">
-        <div class="m-0 p-0 pb-4 pr-4 text-sm">
+        <div class="m-0 p-0 pr-4 pb-4 text-sm">
           Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </div>
-        <pv-button variant="primary" class="mb-4 mt-1 w-fit" @click="resetCurrentBuffer">Reset Samples</pv-button>
+        <pv-button variant="primary" class="mt-1 mb-4 w-fit" @click="resetCurrentBuffer">Reset Samples</pv-button>
         <pv-table density="compact">
           <template #default>
             <thead>

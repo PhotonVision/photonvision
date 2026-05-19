@@ -87,6 +87,11 @@ interface ObservationDetails {
   numMissing: number;
 }
 
+type TabItem = {
+  label: string;
+  value: string;
+};
+
 const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(() =>
   useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
@@ -111,7 +116,7 @@ const calibrationImageURL = (index: number) =>
 const tab = ref(0);
 const viewingImg = ref(0);
 const expandedObservations = ref<Array<string | number>>([]);
-const tabItems: PvTabItem<string>[] = [
+const tabItems: TabItem[] = [
   { label: "Details", value: "details" },
   { label: "Observations", value: "observations" }
 ];
@@ -136,7 +141,7 @@ const tabItems: PvTabItem<string>[] = [
             @change="importCalibration"
           />
         </div>
-        <div class="flex w-1/2 items-center pt-0 pb-0 pr-0 md:w-1/4">
+        <div class="flex w-1/2 items-center pt-0 pr-0 pb-0 md:w-1/4">
           <pv-button
             variant="passive"
             :icon="IconExport"
@@ -156,7 +161,7 @@ const tabItems: PvTabItem<string>[] = [
       </div>
     </div>
 
-    <div class="flex flex-row pt-0 px-4 pb-4">
+    <div class="flex flex-row px-4 pt-0 pb-4">
       <div class="w-1/3 p-0">
         <pv-tabs v-model="tab" :items="tabItems" class="mt-2" />
         <div class="pt-3">
@@ -291,10 +296,12 @@ const tabItems: PvTabItem<string>[] = [
                 <pv-button
                   size="icon"
                   variant="text"
-                  :class="viewingImg === internalItem.index ? 'text-pv-button-active' : 'text-white/70'"
+                  :class="
+                    viewingImg === (internalItem as { index: number }).index ? 'text-pv-button-active' : 'text-white/70'
+                  "
                   @click="
-                    viewingImg = internalItem.index;
-                    toggleExpand(internalItem);
+                    viewingImg = (internalItem as { index: number }).index;
+                    toggleExpand();
                   "
                 >
                   <IconEye class="size-5" aria-hidden="true" />
@@ -305,7 +312,7 @@ const tabItems: PvTabItem<string>[] = [
         </div>
       </div>
       <div class="w-2/3 p-0 pl-6">
-        <div class="flex h-full justify-center p-0 items-center">
+        <div class="flex h-full items-center justify-center p-0">
           <div v-if="!currentCalibrationCoeffs">
             <pv-alert
               class="pt-3 pb-3"

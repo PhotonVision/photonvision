@@ -27,7 +27,7 @@ const importModelFile = ref<File | null>(null);
 const importLabels = ref<string | null>(null);
 const importHeight = ref<number | null>(null);
 const importWidth = ref<number | null>(null);
-const importVersion = ref<string | null>(null);
+const importVersion = ref<string | number>("");
 
 // TODO gray out the button when model is uploading
 const handleImport = async () => {
@@ -75,7 +75,7 @@ const handleImport = async () => {
   importLabels.value = null;
   importHeight.value = null;
   importWidth.value = null;
-  importVersion.value = null;
+  importVersion.value = "";
 };
 
 const deleteModel = async (model: ObjectDetectionModelProperties) => {
@@ -165,7 +165,7 @@ const handleBulkImport = async () => {
   <pv-card class="mb-3" padding="none">
     <div class="p-5 pb-2 text-lg font-semibold">Object Detection</div>
     <div class="p-5 pt-0">
-      <div class="flex flex-wrap -mx-3">
+      <div class="-mx-3 flex flex-wrap">
         <div class="w-full px-3 sm:w-1/2">
           <pv-button
             variant="primary"
@@ -184,7 +184,7 @@ const handleBulkImport = async () => {
                 importLabels = null;
                 importHeight = null;
                 importWidth = null;
-                importVersion = null;
+                importVersion = '';
               }
             "
           >
@@ -246,7 +246,7 @@ const handleBulkImport = async () => {
                       importLabels === null ||
                       importWidth === null ||
                       importHeight === null ||
-                      importVersion === null
+                      importVersion === ''
                     "
                     @click="handleImport()"
                   >
@@ -373,7 +373,7 @@ const handleBulkImport = async () => {
                     variant="underlined"
                   />
                 </div>
-                <div class="pt-5 pb-0 pr-0 d-flex justify-end">
+                <div class="d-flex justify-end pt-5 pr-0 pb-0">
                   <pv-button variant="danger" @click="showRenameDialog.show = false">Cancel</pv-button>
                   <pv-button variant="primary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
                     >Rename</pv-button

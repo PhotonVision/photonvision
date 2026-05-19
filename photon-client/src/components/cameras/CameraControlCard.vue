@@ -126,12 +126,12 @@ const expanded = ref([]);
           <pv-data-table
             v-model:expanded="expanded"
             :columns="[
-              { header: 'Snapshot Name', accessorKey: 'snapshotShortName', sortable: false },
+              { header: 'Snapshot Name', accessorKey: 'snapshotShortName', enableSorting: false },
               { header: 'Camera Unique Name', accessorKey: 'cameraUniqueName' },
               { header: 'Camera Nickname', accessorKey: 'cameraNickname' },
               { header: 'Stream Type', accessorKey: 'streamType' },
               { header: 'Time Created', accessorKey: 'timeCreated' },
-              { header: 'Actions', accessorKey: 'actions', sortable: false }
+              { header: 'Actions', accessorKey: 'actions', enableSorting: false }
             ]"
             :data="imgData"
             :grouping="['cameraUniqueName']"
@@ -139,26 +139,26 @@ const expanded = ref([]);
             item-value="index"
             show-expand
           >
-            <template #item.data-table-expand="{ internalItem, toggleExpand }">
+            <template #item.data-table-expand="{ toggleExpand }">
               <pv-button
                 size="icon"
                 variant="ghost"
                 :icon="IconEye"
                 class="text-white/70 hover:text-white"
-                @click="toggleExpand(internalItem)"
+                @click="toggleExpand()"
               />
             </template>
 
             <template #expanded-row="{ item, columns }">
               <td :colspan="columns.length">
                 <div style="display: flex; justify-content: center; width: 100%">
-                  <img :src="item.snapshotSrc" alt="snapshot-image" class="snapshot-preview pt-2 pb-2" />
+                  <img :src="(item as Snapshot).snapshotSrc" alt="snapshot-image" class="snapshot-preview pt-2 pb-2" />
                 </div>
               </td>
             </template>
             <template #item.actions="{ item }">
               <div style="display: flex; justify-content: center">
-                <a :download="item.snapshotName" :href="item.snapshotSrc">
+                <a :download="(item as Snapshot).snapshotName" :href="(item as Snapshot).snapshotSrc">
                   <pv-icon size="small" :icon="IconDownload" />
                 </a>
               </div>

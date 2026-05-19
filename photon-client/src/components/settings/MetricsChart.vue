@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
-import { useTheme } from "@/composables/useTheme";
+import { computed, onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
+import { useTheme, type ThemeColors } from "@/composables/useTheme";
 
 // Color  -  original        (adjusted)
 // blue   -   59, 130, 246   (r:  92, g: 154, b: 255)
@@ -26,8 +26,29 @@ const typeLabels = {
 };
 
 const theme = useTheme();
+const fallbackColors: ThemeColors = {
+  background: "#151515",
+  onBackground: "#f0f0f0",
+  surface: "#1c232c",
+  surfaceVariant: "#485b70",
+  onSurface: "#f0f0f0",
+  primary: "#39A4D5",
+  secondary: "#FFD843",
+  accent: "#006492",
+  error: "#ff2e2e",
+  info: "#2196F3",
+  success: "#4CAF50",
+  warning: "#FFC107",
+  buttonActive: "#FFD843",
+  buttonPassive: "#39A4D5",
+  logsBackground: "#151515",
+  sidebar: "#151515"
+};
+
+const themeColors = computed<ThemeColors>(() => theme.colors.value ?? fallbackColors);
 const chartRef = useTemplateRef("chartRef");
-let chart: echarts.ECharts | null = null;
+type EChartsInstance = import("echarts/core").ECharts;
+let chart: EChartsInstance | null = null;
 
 interface TooltipSeriesParam {
   value: [number, number];
@@ -57,9 +78,9 @@ const getOptions = (data: ChartData[] = []) => {
 
         return `${tooltip}</div>`;
       },
-      backgroundColor: theme.colors.value.background,
+      backgroundColor: themeColors.value.background,
       textStyle: {
-        color: theme.colors.value.onBackground
+        color: themeColors.value.onBackground
       },
       axisPointer: {
         animation: false
@@ -153,7 +174,7 @@ const getSeries = (data: ChartData[] = []) => {
           : null,
       lineStyle: {
         width: 1.5,
-        color: theme.isDark.value ? `rgb(${color.r}, ${color.g}, ${color.b})` : theme.colors.value.primary
+        color: theme.isDark.value ? `rgb(${color.r}, ${color.g}, ${color.b})` : themeColors.value.primary
       },
       areaStyle: {
         color: {
@@ -167,13 +188,13 @@ const getSeries = (data: ChartData[] = []) => {
               offset: 0,
               color: theme.isDark.value
                 ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
-                : `${theme.colors.value.primary}40`
+                : `${themeColors.value.primary}40`
             },
             {
               offset: 1,
               color: theme.isDark.value
                 ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
-                : `${theme.colors.value.primary}40`
+                : `${themeColors.value.primary}40`
             }
           ]
         }
@@ -227,12 +248,7 @@ watch(
 );
 
 watch(
-  () => [
-    theme.isDark.value,
-    theme.colors.value.background,
-    theme.colors.value.onBackground,
-    theme.colors.value.primary
-  ],
+  () => [theme.isDark.value, themeColors.value.background, themeColors.value.onBackground, themeColors.value.primary],
   () => {
     chart?.setOption(getOptions(props.data));
   }

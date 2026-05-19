@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import type { ToggleItem } from "@/components/common/form/pv-toggle-group.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import IconSquareOutline from "~icons/mdi/square-outline";

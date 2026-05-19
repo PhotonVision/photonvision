@@ -30,7 +30,7 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)
+        (value: TargetModel) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)
       "
     />
     <pv-slider
@@ -41,7 +41,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       @update:modelValue="
-        (value) =>
+        (value: number) =>
           useCameraSettingsStore().changeCurrentPipelineSetting({ cornerDetectionAccuracyPercentage: value }, false)
       "
     />

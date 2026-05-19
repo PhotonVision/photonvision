@@ -35,16 +35,11 @@ const stringValue = computed({
 
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="flex items-center pl-0 pt-10px pb-10px">
+    <div :class="labelWidthClass" class="pt-10px pb-10px flex items-center pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
-    <div :class="inputWidthClass" class="flex items-center pr-0 pt-10px pb-10px">
-      <RadioGroupRoot
-        v-model="stringValue"
-        :disabled="disabled"
-        orientation="horizontal"
-        class="flex flex-wrap gap-4"
-      >
+    <div :class="inputWidthClass" class="pt-10px pb-10px flex items-center pr-0">
+      <RadioGroupRoot v-model="stringValue" :disabled="disabled" orientation="horizontal" class="flex flex-wrap gap-4">
         <label
           v-for="(radioName, index) in list"
           :key="index"
@@ -54,13 +49,13 @@ const stringValue = computed({
           <RadioGroupItem
             :value="String(index)"
             :disabled="disabled"
-            class="flex size-5 items-center justify-center rounded-full border-2 border-white/30 bg-black/20 shadow-inner outline-none transition hover:border-pv-primary/60 focus-visible:ring-2 focus-visible:ring-pv-primary/50 data-[state=checked]:border-pv-primary disabled:cursor-not-allowed"
+            class="hover:border-pv-primary/60 focus-visible:ring-pv-primary/50 data-[state=checked]:border-pv-primary flex size-5 items-center justify-center rounded-full border-2 border-white/30 bg-black/20 shadow-inner transition outline-none focus-visible:ring-2 disabled:cursor-not-allowed"
           >
             <RadioGroupIndicator
-              class="relative flex items-center justify-center after:block after:size-2.5 after:rounded-full after:bg-pv-primary"
+              class="after:bg-pv-primary relative flex items-center justify-center after:block after:size-2.5 after:rounded-full"
             />
           </RadioGroupItem>
-          <span class="select-none text-sm">{{ radioName }}</span>
+          <span class="text-sm select-none">{{ radioName }}</span>
         </label>
       </RadioGroupRoot>
     </div>

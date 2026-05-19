@@ -42,11 +42,7 @@ const chipStyle = computed(() => {
   <span
     v-bind="attrs"
     :style="chipStyle"
-    :class="[
-      'pv-chip',
-      { 'pv-chip--label': label, 'pv-chip--text': variant === 'text' },
-      attrs.class
-    ]"
+    :class="['pv-chip', { 'pv-chip--label': label, 'pv-chip--text': variant === 'text' }, attrs.class]"
   >
     <slot />
   </span>

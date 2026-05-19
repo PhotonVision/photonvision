@@ -86,7 +86,7 @@ const textClass = computed(() => {
     <button
       v-if="closable"
       type="button"
-      class="-mr-1 -mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-75 transition hover:bg-white/12 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      class="-mt-1 -mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-75 transition hover:bg-white/12 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
       aria-label="Close alert"
       @click="shown = false"
     >

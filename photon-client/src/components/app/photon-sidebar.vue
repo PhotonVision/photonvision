@@ -59,7 +59,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
 
 <template>
   <aside
-    class="flex flex-col text-white transition-[width] duration-200 h-screen sticky top-0"
+    class="sticky top-0 flex h-screen flex-col text-white transition-[width] duration-200"
     :class="renderCompact ? 'w-20' : 'w-64'"
   >
     <div class="flex items-center justify-center px-3 py-4">
@@ -81,10 +81,10 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
               :class="[baseItemClass, renderCompact ? 'justify-center px-2' : '']"
               :active-class="activeItemClass"
             >
-              <component :is="item.icon" class="text-lg text-white/80 transition group-hover:text-white size-6" />
+              <component :is="item.icon" class="size-6 text-lg text-white/80 transition group-hover:text-white" />
               <span
                 class="transition-opacity duration-200"
-                :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
+                :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
               >
                 {{ item.title }}
               </span>
@@ -104,13 +104,13 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
               ]"
             >
               <IconSwapHorizontalBold
-                class="text-lg text-white/80 transition group-hover:text-white size-6"
+                class="size-6 text-lg text-white/80 transition group-hover:text-white"
                 :class="{ 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }"
               />
               <span
                 class="transition-opacity duration-200"
                 :class="[
-                  renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100',
+                  renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100',
                   { 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }
                 ]"
               >
@@ -126,35 +126,35 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
       <button
         v-if="mdAndUp"
         type="button"
-        class="sidebar-item mb-2 flex w-full items-center gap-3 rounded-12 px-3 py-2 text-white/80 justify-between"
+        class="sidebar-item rounded-12 mb-2 flex w-full items-center justify-between gap-3 px-3 py-2 text-white/80"
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => (compact = !compact)"
       >
         <pv-icon :icon="compactIcon" class="text-white/80 transition group-hover:text-white" size="24" />
         <span
           class="transition-opacity duration-200"
-          :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
         >
           Compact
         </span>
       </button>
       <button
         type="button"
-        class="sidebar-item mb-3 flex w-full items-center gap-3 rounded-12 px-3 py-2 text-white/80 justify-between"
+        class="sidebar-item rounded-12 mb-3 flex w-full items-center justify-between gap-3 px-3 py-2 text-white/80"
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => toggleTheme()"
       >
         <pv-icon :icon="themeIcon" class="text-white/80 transition group-hover:text-white" size="24" />
         <span
           class="transition-opacity duration-200"
-          :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
         >
           Theme
         </span>
       </button>
 
       <div
-        class="flex items-center gap-3 rounded-12 px-3 py-2 text-white/70"
+        class="rounded-12 flex items-center gap-3 px-3 py-2 text-white/70"
         :class="renderCompact ? 'justify-center' : 'justify-between'"
       >
         <pv-icon
@@ -168,8 +168,8 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
           class="shrink-0"
         />
         <div
-          class="leading-snug text-end transition-opacity duration-200"
-          :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute absolute' : 'opacity-100'"
+          class="text-end leading-snug transition-opacity duration-200"
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
         >
           <span v-if="useSettingsStore().network.runNTServer">
             NetworkTables server running for
@@ -184,7 +184,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
       </div>
 
       <div
-        class="mt-2 flex items-start gap-3 rounded-12 px-3 py-2 text-white/70"
+        class="rounded-12 mt-2 flex items-start gap-3 px-3 py-2 text-white/70"
         :class="renderCompact ? 'justify-center' : 'justify-between'"
       >
         <pv-icon
@@ -195,7 +195,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
         />
         <div
           class="leading-snug transition-opacity duration-200"
-          :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
         >
           {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend..." }}
         </div>

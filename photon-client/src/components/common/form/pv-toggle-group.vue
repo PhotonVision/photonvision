@@ -12,7 +12,7 @@ export interface ToggleItem<TValue extends string> {
 
 const model = defineModel<string[] | string>({ required: true });
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     items: ToggleItem<string>[];
     multiple?: boolean;
@@ -45,7 +45,7 @@ const normalizedModel = computed({
       :key="item.value"
       :value="item.value"
       :disabled="disabled || item.disabled"
-      class="inline-flex min-h-11 w-full items-center justify-center gap-2 border border-white/12 bg-black/15 px-4 py-2 text-sm font-semibold text-white/88 shadow-sm outline-none transition hover:bg-white/6 focus-visible:ring-2 focus-visible:ring-pv-primary/50 data-on:z-10 data-[state=on]:border-pv-button-active data-on:bg-pv-button-active data-[state=on]:text-slate-950 first:rounded-t-xl last:rounded-b-xl sm:first:rounded-l-xl sm:last:rounded-r-xl sm:first:rounded-tr-none sm:last:rounded-bl-none disabled:cursor-not-allowed disabled:opacity-45"
+      class="focus-visible:ring-pv-primary/50 data-[state=on]:border-pv-button-active data-[state=on]:bg-pv-button-active inline-flex min-h-11 w-full items-center justify-center gap-2 border border-white/12 bg-black/15 px-4 py-2 text-sm font-semibold text-white/88 shadow-sm transition outline-none first:rounded-t-xl last:rounded-b-xl hover:bg-white/6 focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-45 data-[state=on]:z-10 data-[state=on]:text-slate-950 sm:first:rounded-l-xl sm:first:rounded-tr-none sm:last:rounded-r-xl sm:last:rounded-bl-none"
     >
       <component :is="item.icon" v-if="item.icon" class="mode-btn-icon size-5" aria-hidden="true" />
       <span class="mode-btn-label">{{ item.label }}</span>

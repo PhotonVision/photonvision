@@ -7,6 +7,7 @@ import { computed, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
 import { axiosPost } from "@/lib/PhotonUtils";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import type { SelectItem } from "@/components/common/form/pv-select.vue";
 
 const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
   fov: useCameraSettingsStore().currentCameraSettings.fov.value,

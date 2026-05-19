@@ -113,7 +113,7 @@ document.addEventListener("keydown", (e) => {
       <div class="dialog-data">
         <!-- Log view options -->
         <div class="flex flex-wrap justify-between pt-4 md:pt-0">
-          <div class="flex flex-1 items-center gap-4 pr-3 justify-start">
+          <div class="flex flex-1 items-center justify-start gap-4 pr-3">
             <pv-input
               v-model="searchQuery"
               clearable
@@ -127,14 +127,14 @@ document.addEventListener("keydown", (e) => {
               label="Minimum Time"
               type="time"
               step="1"
-              class="text-white pl-3"
+              class="pl-3 text-white"
               :clearable="true"
               :input-cols="7"
             />
           </div>
           <div class="flex gap-1">
-            <div v-for="level in [0, 1, 2, 3]" :key="level" class="flex-1 pr-1 flex items-center justify-center">
-              <div class="pb-0 pt-0 flex items-center basis-[min-content]">
+            <div v-for="level in [0, 1, 2, 3]" :key="level" class="flex flex-1 items-center justify-center pr-1">
+              <div class="flex basis-[min-content] items-center pt-0 pb-0">
                 <pv-switch
                   v-model="selectedLogLevels[level]"
                   class="pl-2"

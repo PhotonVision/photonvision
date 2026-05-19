@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import type { SelectItem } from "@/components/common/form/pv-select.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { computed, ref } from "vue";
 
@@ -268,7 +269,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
         />
       </div>
     </div>
-    <div class="flex flex-wrap pb-0 pt-0">
+    <div class="flex flex-wrap pt-0 pb-0">
       <div class="w-5/6 p-0">
         <pv-select
           v-if="!isPipelineNameEdit"
@@ -282,7 +283,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
             !useCameraSettingsStore().hasConnected
           "
           :items="pipelineNamesWrapper"
-          class="pb-1 pt-0"
+          class="pt-0 pb-1"
           @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
         />
         <pv-input

@@ -1,6 +1,6 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "vite.config.ts", "playwright.config.ts", "src/**/*", "src/**/*.vue", "tests/**/*"],
+  "include": ["env.d.ts", "components.d.ts", "vite.config.ts", "playwright.config.ts", "src/**/*", "src/**/*.vue", "tests/**/*"],
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
@@ -10,6 +10,7 @@
     "sourceMap": true,
     "module": "ESNext",
     "types": ["node", "unplugin-icons/types/vue"],
+    "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

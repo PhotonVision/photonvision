@@ -46,7 +46,7 @@ const performanceRecommendation = computed<string>(() => {
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
         :color="fpsTooLow ? 'error' : 'primary'"
-        class="p-0 m-0 text-lg"
+        class="m-0 p-0 text-lg"
         variant="text"
       >
         <span class="pr-1 tabular-nums"
@@ -62,11 +62,11 @@ const performanceRecommendation = computed<string>(() => {
         label="Driver Mode"
         color="primary"
         hide-details="auto"
-        class="!py-0"
+        class="py-0!"
       />
     </div>
     <hr class="w-full border-t border-white/10" />
-    <div class="stream-viewer-container flex flex-wrap items-center p-2 flex-1 justify-between gap-2">
+    <div class="stream-viewer-container flex flex-1 flex-wrap items-center justify-between gap-2 p-2">
       <div v-if="value?.includes(0)" class="stream-view flex-1">
         <photon-camera-stream
           id="input-camera-stream"

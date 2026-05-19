@@ -7,6 +7,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import IconImport from "~icons/mdi/import";
 import IconExport from "~icons/mdi/export";
+import type { ToggleItem } from "@/components/common/form/pv-toggle-group.vue";
 
 const value = defineModel<number[]>({ required: true });
 
@@ -53,14 +54,14 @@ const streamToggleModel = computed<string[]>({
 <template>
   <section
     id="camera-settings-camera-view-card"
-    class="rounded-xl bg-pv-surface text-white shadow-lg shadow-black/10 min-[960px]:sticky min-[960px]:top-3"
+    class="bg-pv-surface rounded-xl text-white shadow-lg shadow-black/10 min-[960px]:sticky min-[960px]:top-3"
   >
-    <div class="flex flex-wrap items-center gap-3 px-5 py-4 justify-between">
-      <span class="mr-1 whitespace-nowrap text-xl font-semibold">Cameras</span>
+    <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+      <span class="mr-1 text-xl font-semibold whitespace-nowrap">Cameras</span>
       <span
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
-        class="inline-flex rounded-full px-3 py-1 text-sm font-medium gap-1"
-        :class="fpsTooLow ? 'bg-pv-error/12 text-pv-error' : 'bg-transparent text-pv-primary'"
+        class="inline-flex gap-1 rounded-full px-3 py-1 text-sm font-medium"
+        :class="fpsTooLow ? 'bg-pv-error/12 text-pv-error' : 'text-pv-primary bg-transparent'"
       >
         <span class="tabular-nums">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }} FPS</span>
         &middot;
@@ -68,16 +69,16 @@ const streamToggleModel = computed<string[]>({
           {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency</span
         >
       </span>
-      <span v-else class="inline-flex rounded-full px-3 py-1 text-sm font-medium text-pv-error">
+      <span v-else class="text-pv-error inline-flex rounded-full px-3 py-1 text-sm font-medium">
         Camera not connected
       </span>
       <span
         v-if="useCameraSettingsStore().isFocusMode"
-        class="ml-auto inline-flex rounded-full px-3 py-1 text-sm font-medium text-pv-primary"
+        class="text-pv-primary ml-auto inline-flex rounded-full px-3 py-1 text-sm font-medium"
       >
         Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }}
       </span>
-      <div class="  ">
+      <div class=" ">
         <pv-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
@@ -105,7 +106,7 @@ const streamToggleModel = computed<string[]>({
         />
       </div>
     </div>
-    <div class="px-5 pb-5 pt-0">
+    <div class="px-5 pt-0 pb-5">
       <pv-toggle-group
         v-model="streamToggleModel"
         :items="streamToggleItems"

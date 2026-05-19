@@ -66,6 +66,7 @@ const wrapperClass = computed(() => ["flex flex-col gap-1", attrs.class] as stri
 const wrapperStyle = computed(() => attrs.style as string);
 
 const inputAttrs = computed(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { class: _class, style: _style, ...rest } = attrs;
   return rest;
 });
@@ -112,7 +113,7 @@ const fieldClass = computed(() =>
         :min="min"
         :max="max"
         :class="[
-          'min-w-0 flex-1 bg-transparent text-white placeholder:text-white/40 outline-none',
+          'min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-white/40',
           props.variant === 'outline' ? 'py-2' : 'py-1',
           inputClass
         ]"
@@ -128,7 +129,7 @@ const fieldClass = computed(() =>
         <IconClose class="size-4" aria-hidden="true" />
       </button>
     </div>
-    <p v-if="!hideDetails && hasError" class="text-xs text-pv-error">
+    <p v-if="!hideDetails && hasError" class="text-pv-error text-xs">
       {{ validationMessage }}
     </p>
   </div>

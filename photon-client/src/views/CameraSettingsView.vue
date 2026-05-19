@@ -44,7 +44,7 @@ const cameraViewType = computed<number[]>({
         <CameraCalibrationCard />
         <CameraControlCard />
       </div>
-      <div class="w-full pt-3 md:w-5/12 md:pl-3 md:pt-0">
+      <div class="w-full pt-3 md:w-5/12 md:pt-0 md:pl-3">
         <CamerasView v-model="cameraViewType" />
       </div>
     </div>

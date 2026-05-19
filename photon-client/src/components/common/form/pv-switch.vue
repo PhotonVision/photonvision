@@ -4,8 +4,8 @@ import { SwitchRoot, SwitchThumb } from "reka-ui";
 
 const value = defineModel<boolean>();
 const props = withDefaults(
-  defineProps<{ label?: string; tooltip?: string; disabled?: boolean; labelCols?: number; switchCols?: number }>(),
-  { disabled: false, labelCols: 2, switchCols: 8 }
+  defineProps<{ label?: string; tooltip?: string; disabled?: boolean; switchCols?: number }>(),
+  { disabled: false, switchCols: 8 }
 );
 
 const { labelWidth, contentWidth: switchWidth } = useColFlexBasis(() => props.switchCols);
@@ -20,7 +20,7 @@ const { labelWidth, contentWidth: switchWidth } = useColFlexBasis(() => props.sw
       <switch-root
         v-model="value"
         :disabled="disabled"
-        class="peer inline-flex h-7 w-12 items-center rounded-full border border-white/15 bg-black/25 px-0.5 shadow-inner outline-none transition data-[state=checked]:bg-pv-primary disabled:cursor-not-allowed disabled:opacity-50"
+        class="peer data-[state=checked]:bg-pv-primary inline-flex h-7 w-12 items-center rounded-full border border-white/15 bg-black/25 px-0.5 shadow-inner transition outline-none disabled:cursor-not-allowed disabled:opacity-50"
       >
         <switch-thumb
           class="block size-5 rounded-full bg-white shadow-md transition-transform duration-150 data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"

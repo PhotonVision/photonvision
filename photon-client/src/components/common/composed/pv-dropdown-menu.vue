@@ -41,13 +41,13 @@ const emit = defineEmits<{
         :side-offset="7"
         align="start"
         position-strategy="fixed"
-        :class="[popoverSurfaceClass, 'min-w-[160px] p-1']"
+        :class="[popoverSurfaceClass, 'min-w-40 p-1']"
       >
         <DropdownMenuItem
           v-for="(item, index) in items"
           :key="index"
           :disabled="item.disabled"
-          class="relative flex min-h-9 cursor-default items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-35 data-[highlighted]:bg-pv-primary/20"
+          class="data-highlighted:bg-pv-primary/20 relative flex min-h-9 cursor-default items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-35"
           @select="emit('select', index)"
         >
           <pv-icon :color="item.color ?? '#c5c5c5'" :icon="item.icon" />
