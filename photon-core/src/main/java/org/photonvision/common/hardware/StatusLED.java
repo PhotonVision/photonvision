@@ -17,9 +17,12 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.api.NoSuchDeviceException;
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
+import org.photonvision.common.hardware.gpio.PinIdentifier;
 import org.photonvision.common.util.TimedTaskManager;
 
 public class StatusLED implements AutoCloseable {
@@ -31,20 +34,50 @@ public class StatusLED implements AutoCloseable {
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
     public StatusLED(
-            NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
+            NativeDeviceFactoryInterface deviceFactory,
+            List<PinIdentifier> statusLedPins,
+            boolean activeHigh)
+            throws NoSuchDeviceException {
         // fill unassigned pins with -1 to disable
         if (statusLedPins.size() != 3) {
             for (int i = 0; i < 3 - statusLedPins.size(); i++) {
-                statusLedPins.add(-1);
+                statusLedPins.add(PinIdentifier.numbered(-1));
             }
         }
 
         // Outputs are active-low for a common-anode RGB LED
-        redLED = new LED(deviceFactory, statusLedPins.get(0), activeHigh, false);
-        greenLED = new LED(deviceFactory, statusLedPins.get(1), activeHigh, false);
-        blueLED = new LED(deviceFactory, statusLedPins.get(2), activeHigh, false);
+        redLED =
+                new LED(
+                        deviceFactory,
+                        statusLedPins.get(0).info(deviceFactory).getDeviceNumber(),
+                        activeHigh,
+                        false);
+        greenLED =
+                new LED(
+                        deviceFactory,
+                        statusLedPins.get(1).info(deviceFactory).getDeviceNumber(),
+                        activeHigh,
+                        false);
+        blueLED =
+                new LED(
+                        deviceFactory,
+                        statusLedPins.get(2).info(deviceFactory).getDeviceNumber(),
+                        activeHigh,
+                        false);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
+    }
+
+    @Nullable
+    static StatusLED create(
+            NativeDeviceFactoryInterface deviceFactory,
+            List<PinIdentifier> statusLedPins,
+            boolean activeHigh) {
+        try {
+            return new StatusLED(deviceFactory, statusLedPins, activeHigh);
+        } catch (NoSuchDeviceException e) {
+            return null;
+        }
     }
 
     protected void setRGB(boolean r, boolean g, boolean b) {
