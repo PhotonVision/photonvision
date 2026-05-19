@@ -53,14 +53,14 @@ const navItems = [
   { title: "Documentation", to: "/docs", icon: IconBookshelf }
 ];
 
-const baseItemClass = "sidebar-item group flex items-center gap-3 rounded-12 px-3 py-2  text-white/80";
+const baseItemClass = "sidebar-item group flex items-center gap-3 rounded-xl px-3 py-2  text-white/80";
 const activeItemClass = "bg-white/5 text-white font-semibold";
 </script>
 
 <template>
   <aside
-    class="sticky top-0 flex h-screen flex-col text-white transition-[width] duration-200"
-    :class="renderCompact ? 'w-20' : 'w-64'"
+    class="sticky flex h-20 w-screen flex-row rounded-t-2xl text-white transition-[width] duration-200 md:top-0 md:h-screen md:flex-col md:rounded-none"
+    :class="renderCompact ? 'md:w-20' : 'md:w-64'"
   >
     <div class="flex items-center justify-center px-3 py-4">
       <img
@@ -72,8 +72,8 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
       <img v-else class="h-16 w-full object-contain" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
     </div>
 
-    <NavigationMenuRoot class="flex flex-1 flex-col" orientation="vertical">
-      <NavigationMenuList class="flex flex-1 flex-col gap-1 px-3">
+    <NavigationMenuRoot class="flex flex-1 flex-col justify-center md:justify-start" orientation="vertical">
+      <NavigationMenuList class="flex flex-1 items-center gap-1 px-3 md:flex-col md:items-stretch">
         <NavigationMenuItem v-for="item in navItems" :key="item.to">
           <NavigationMenuLink as-child :active="route.path === item.to">
             <RouterLink
@@ -81,7 +81,10 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
               :class="[baseItemClass, renderCompact ? 'justify-center px-2' : '']"
               :active-class="activeItemClass"
             >
-              <component :is="item.icon" class="size-6 text-lg text-white/80 transition group-hover:text-white" />
+              <component
+                :is="item.icon"
+                class="size-5 text-lg text-white/80 transition group-hover:text-white md:size-6"
+              />
               <span
                 class="transition-opacity duration-200"
                 :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
@@ -104,7 +107,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
               ]"
             >
               <IconSwapHorizontalBold
-                class="size-6 text-lg text-white/80 transition group-hover:text-white"
+                class="size-5 text-lg text-white/80 transition group-hover:text-white md:size-6"
                 :class="{ 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }"
               />
               <span
@@ -122,11 +125,11 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
       </NavigationMenuList>
     </NavigationMenuRoot>
 
-    <div class="border-t border-white/10 px-3 py-3">
+    <div class="flex flex-row border-t border-white/10 px-3 py-3 md:flex-col">
       <button
         v-if="mdAndUp"
         type="button"
-        class="sidebar-item rounded-12 mb-2 flex w-full items-center justify-between gap-3 px-3 py-2 text-white/80"
+        class="sidebar-item mb-2 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-white/80"
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => (compact = !compact)"
       >
@@ -140,7 +143,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
       </button>
       <button
         type="button"
-        class="sidebar-item rounded-12 mb-3 flex w-full items-center justify-between gap-3 px-3 py-2 text-white/80"
+        class="sidebar-item flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-white/80 md:mb-3"
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => toggleTheme()"
       >
@@ -154,7 +157,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
       </button>
 
       <div
-        class="rounded-12 flex items-center gap-3 px-3 py-2 text-white/70"
+        class="flex items-center gap-3 rounded-xl px-3 py-2 text-white/70"
         :class="renderCompact ? 'justify-center' : 'justify-between'"
       >
         <pv-icon
@@ -184,7 +187,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
       </div>
 
       <div
-        class="rounded-12 mt-2 flex items-start gap-3 px-3 py-2 text-white/70"
+        class="mt-2 flex items-start gap-3 rounded-xl px-3 py-2 text-white/70"
         :class="renderCompact ? 'justify-center' : 'justify-between'"
       >
         <pv-icon

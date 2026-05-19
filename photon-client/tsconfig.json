@@ -10,8 +10,6 @@
     "sourceMap": true,
     "module": "ESNext",
     "types": ["node", "unplugin-icons/types/vue"],
-    "ignoreDeprecations": "5.0",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

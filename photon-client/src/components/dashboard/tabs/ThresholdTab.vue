@@ -143,6 +143,7 @@ const interactiveCols = computed(() =>
   <div class="threshold-modifiers" :style="{ '--averageHue': averageHue }">
     <pv-range-slider
       id="hue-slider"
+      class="hue-slider"
       v-model="hsvHue"
       :class="useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'inverted-slider' : 'normal-slider'"
       label="Hue"
@@ -159,7 +160,7 @@ const interactiveCols = computed(() =>
     <pv-range-slider
       id="sat-slider"
       v-model="hsvSaturation"
-      class="normal-slider"
+      class="normal-slider sat-slider"
       label="Saturation"
       tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
       :min="0"
@@ -173,7 +174,7 @@ const interactiveCols = computed(() =>
     <pv-range-slider
       id="value-slider"
       v-model="hsvValue"
-      class="normal-slider"
+      class="normal-slider value-slider"
       label="Value"
       tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
       :min="0"
@@ -240,19 +241,19 @@ const interactiveCols = computed(() =>
 .threshold-modifiers {
   --averageHue: 0;
 }
-#hue-slider:deep(.pv-slider-track) {
+.hue-slider:deep(.pv-slider-track) {
   background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#sat-slider:deep(.pv-slider-track) {
+.sat-slider:deep(.pv-slider-track) {
   background: linear-gradient(to right, #fff 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#value-slider:deep(.pv-slider-track) {
+.value-slider:deep(.pv-slider-track) {
   background: linear-gradient(to right, #000 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
   /* prettier-ignore */

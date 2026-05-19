@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { colWidthClass } from "../lib";
-import { computed } from "vue";
+import { computed, useId } from "vue";
 const value = defineModel<number>({
   required: true
 });
@@ -12,6 +12,7 @@ const props = withDefaults(
     labelCols?: number;
     rules?: ((v: string | number | null) => boolean | string)[];
     step?: number;
+    id?: string;
   }>(),
   {
     disabled: false,
@@ -19,6 +20,9 @@ const props = withDefaults(
     step: 1
   }
 );
+
+const id = useId();
+const inputId = computed(() => props.id || id);
 
 const labelWidthClass = computed(() => colWidthClass(props.labelCols));
 
@@ -30,11 +34,12 @@ const localValue = computed({
 
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="pt-10px pb-10px flex items-center pl-0">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" />
+    <div :class="labelWidthClass" class="pt-3 pb-3 flex items-center pl-0">
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
     </div>
-    <div class="pt-10px pb-10px flex-1 pr-0">
+    <div class="pt-3 pb-3 flex-1 pr-0">
       <pv-text-field
+        :id="inputId"
         v-model="localValue"
         density="compact"
         hide-details

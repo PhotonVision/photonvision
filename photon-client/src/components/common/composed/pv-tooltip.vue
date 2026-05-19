@@ -6,8 +6,10 @@ withDefaults(
     text?: string;
     location?: "top" | "bottom" | "left" | "right";
     delay?: number;
+    disabled?: boolean;
   }>(),
   {
+    disabled: false,
     location: "right",
     delay: 300
   }
@@ -15,7 +17,7 @@ withDefaults(
 </script>
 
 <template>
-  <tooltip-provider :delay-duration="delay">
+  <tooltip-provider :delay-duration="delay" :disabled="disabled">
     <tooltip-root>
       <tooltip-trigger as-child>
         <slot />

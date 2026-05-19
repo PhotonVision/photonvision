@@ -58,9 +58,9 @@ onBeforeMount(() => {
 <template>
   <ConfigProvider :scroll-body="false">
     <v-app>
-      <div class="bg-pv-background flex h-full w-full text-white">
+      <div class="bg-pv-background flex h-screen w-full flex-col-reverse text-white md:h-full md:flex-row">
         <photon-sidebar />
-        <main class="flex min-w-0 flex-1 flex-col">
+        <main class="flex min-w-0 flex-1 flex-col overflow-auto">
           <div class="flex-1">
             <router-view />
           </div>

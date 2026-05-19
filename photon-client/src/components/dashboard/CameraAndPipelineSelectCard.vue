@@ -334,7 +334,9 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           "
         >
           <template #trigger>
-            <pv-icon color="#c5c5c5" :icon="IconMenu" @click="cancelPipelineNameEdit" />
+            <pv-button size="icon">
+              <pv-icon color="#c5c5c5" :icon="IconMenu" @click="cancelPipelineNameEdit" />
+            </pv-button>
           </template>
         </pv-dropdown-menu>
         <pv-tooltipped-icon

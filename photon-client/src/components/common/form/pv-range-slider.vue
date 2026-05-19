@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useId } from "vue";
 import { useColFlexBasis, sliderNumberInputClass, sliderThumbClass } from "../lib";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from "reka-ui";
@@ -17,6 +17,7 @@ const props = withDefaults(
     sliderCols?: number;
     disabled?: boolean;
     inverted?: boolean;
+    id?: string;
   }>(),
   {
     step: 1,
@@ -25,6 +26,9 @@ const props = withDefaults(
     sliderCols: 10
   }
 );
+
+const id = useId();
+const inputId = computed(() => props.id || id);
 const { labelWidth } = useColFlexBasis(() => props.sliderCols);
 
 const localValue = computed<[number, number]>({
@@ -62,10 +66,11 @@ const sliderModel = computed<number[]>({
 <template>
   <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
     </div>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
       <input
+        :id="inputId"
         :value="localValue[0]"
         :max="max"
         :min="min"
@@ -73,6 +78,7 @@ const sliderModel = computed<number[]>({
         :step="step"
         :class="sliderNumberInputClass"
         type="number"
+        :aria-label="`Minimum ${label}`"
         @input="(event) => changeFromSlot((event.target as HTMLInputElement).value, 0)"
       />
       <slider-root
@@ -93,8 +99,8 @@ const sliderModel = computed<number[]>({
             :class="inverted ? 'bg-white/12' : 'bg-pv-primary'"
           />
         </slider-track>
-        <slider-thumb :class="sliderThumbClass" />
-        <slider-thumb :class="sliderThumbClass" />
+        <slider-thumb :class="sliderThumbClass" :aria-label="`Minimum ${label}`" />
+        <slider-thumb :class="sliderThumbClass" :aria-label="`Maximum ${label}`" />
       </slider-root>
       <input
         :value="localValue[1]"
@@ -104,6 +110,7 @@ const sliderModel = computed<number[]>({
         :step="step"
         :class="sliderNumberInputClass"
         type="number"
+        :aria-label="`Maximum ${label}`"
         @input="(event) => changeFromSlot((event.target as HTMLInputElement).value, 1)"
       />
     </div>
