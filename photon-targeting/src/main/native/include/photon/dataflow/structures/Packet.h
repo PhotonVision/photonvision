@@ -176,7 +176,7 @@ class Packet {
     using T = vector_inner_t<Vec>;
     Pack<uint8_t>(value.size());
     for (const auto& thing : value) {
-      Pack<T>(thing);
+      Pack<T, I...>(thing);
     }
   }
 
