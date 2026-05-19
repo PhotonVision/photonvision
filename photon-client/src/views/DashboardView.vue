@@ -91,13 +91,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <template>
   <div class="w-full p-3">
-    <pv-alert
-      v-if="arducamWarningShown"
-      class="mb-3"
-      color="error"
-      density="compact"
-      :icon="IconAlertCircleOutline"
-    >
+    <pv-alert v-if="arducamWarningShown" class="mb-3" color="error" density="compact" :icon="IconAlertCircleOutline">
       <span>
         Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
       </span>
@@ -113,25 +107,13 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>
     </pv-alert>
-    <pv-alert
-      v-if="fpsLimitWarningShown"
-      class="mb-3"
-      color="error"
-      density="compact"
-      :icon="IconAlertCircleOutline"
-    >
+    <pv-alert v-if="fpsLimitWarningShown" class="mb-3" color="error" density="compact" :icon="IconAlertCircleOutline">
       <span
         >{{ fpsLimitedCameras }} have an FPS limit set! This may cause performance issues. Check your logs for more
         information.
       </span>
     </pv-alert>
-    <pv-alert
-      v-if="conflictingCameraShown"
-      class="mb-3"
-      color="error"
-      density="compact"
-      :icon="IconAlertCircleOutline"
-    >
+    <pv-alert v-if="conflictingCameraShown" class="mb-3" color="error" density="compact" :icon="IconAlertCircleOutline">
       <span
         >Conflicting camera name(s) detected! Please change the name(s) of
         {{ useSettingsStore().general.conflictingCameras }}!
@@ -163,7 +145,11 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
     <!-- TODO - not sure this belongs here -->
     <!-- Need v-model to allow the dialog to be dismissed and v-if to only display when cameras need configuration -->
-    <pv-dialog v-if="useCameraSettingsStore().needsCameraConfiguration" v-model="showCameraSetupDialog" :max-width="800">
+    <pv-dialog
+      v-if="useCameraSettingsStore().needsCameraConfiguration"
+      v-model="showCameraSetupDialog"
+      :max-width="800"
+    >
       <pv-card class="flex flex-col gap-2">
         <div class="text-lg font-semibold">Set up some cameras to get started!</div>
         <div class="pt-0">

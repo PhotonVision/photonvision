@@ -5,9 +5,7 @@ import { ToastProvider, ToastRoot, ToastTitle, ToastDescription, ToastViewport }
 import { computed } from "vue";
 
 const toThemeVar = (color: string) => {
-  const normalized = color.includes("-")
-    ? color
-    : color.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
+  const normalized = color.includes("-") ? color : color.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
   return `--color-pv-${normalized}`;
 };
 

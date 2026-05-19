@@ -24,8 +24,6 @@ import IconFlagOffOutline from "~icons/mdi/flag-off-outline";
 import IconCancel from "~icons/mdi/cancel";
 import IconHelpCircleOutline from "~icons/mdi/help-circle-outline";
 
-
-
 const jspdf = import("jspdf");
 
 const MM_PER_INCH = 25.4;
@@ -299,12 +297,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
       <div class="p-5 pt-0">
         <div v-if="!isCalibrating" class="pb-0">
           <div class="pb-3">
-              <pv-tooltipped-label
-                label="Curent Calibrations"
-                :icon="IconInformation"
-                location="top"
-                tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
-              />
+            <pv-tooltipped-label
+              label="Curent Calibrations"
+              :icon="IconInformation"
+              location="top"
+              tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
+            />
           </div>
           <pv-table fixed-header height="100%" density="compact">
             <thead>
@@ -657,7 +655,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
   </div>
 </template>
 
-<style scoped >
+<style scoped>
 th {
   text-align: center !important;
   padding: 0 8px !important;

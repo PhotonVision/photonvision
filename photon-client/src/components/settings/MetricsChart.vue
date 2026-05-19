@@ -227,7 +227,12 @@ watch(
 );
 
 watch(
-  () => [theme.isDark.value, theme.colors.value.background, theme.colors.value.onBackground, theme.colors.value.primary],
+  () => [
+    theme.isDark.value,
+    theme.colors.value.background,
+    theme.colors.value.onBackground,
+    theme.colors.value.primary
+  ],
   () => {
     chart?.setOption(getOptions(props.data));
   }

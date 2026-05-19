@@ -72,12 +72,7 @@ const widthClass = computed(() => (props.block ? "w-full" : ""));
     :class="[baseClass, variantClass, sizeClass, widthClass, attrs.class]"
   >
     <IconLoading v-if="loading" class="size-5 animate-spin" aria-hidden="true" />
-    <component
-      v-else-if="icon && !iconTrailing"
-      :is="icon"
-      class="size-5 shrink-0"
-      aria-hidden="true"
-    />
+    <component v-else-if="icon && !iconTrailing" :is="icon" class="size-5 shrink-0" aria-hidden="true" />
     <slot />
     <component v-if="icon && iconTrailing" :is="icon" class="size-5 shrink-0" aria-hidden="true" />
   </button>

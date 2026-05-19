@@ -265,10 +265,7 @@ const makeToggleExpand = (row: Row<unknown>) => (_item?: unknown) => {
               </td>
               <td v-for="cell in row.getVisibleCells()" :key="cell.id">
                 <div v-if="cell.getIsGrouped()" class="flex items-center gap-2">
-                  <pv-button
-                    @click="row.toggleExpanded()"
-                    size="icon"
-                  >
+                  <pv-button @click="row.toggleExpanded()" size="icon">
                     {{ row.getIsExpanded() ? "-" : "+" }}
                   </pv-button>
                   <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
@@ -292,7 +289,7 @@ const makeToggleExpand = (row: Row<unknown>) => (_item?: unknown) => {
                 </slot>
               </td>
             </tr>
-            <tr v-if="$slots['expanded-row'] && row.getIsExpanded() && !row.getIsGrouped() ">
+            <tr v-if="$slots['expanded-row'] && row.getIsExpanded() && !row.getIsGrouped()">
               <slot
                 name="expanded-row"
                 :item="row.original"

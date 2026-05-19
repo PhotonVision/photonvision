@@ -123,15 +123,22 @@ const expanded = ref([]);
             :icon="IconInformationOutline"
             variant="tonal"
           />
-          <pv-data-table v-model:expanded="expanded" :columns="[
-            { header: 'Snapshot Name', accessorKey: 'snapshotShortName', sortable: false },
-            { header: 'Camera Unique Name', accessorKey: 'cameraUniqueName' },
-            { header: 'Camera Nickname', accessorKey: 'cameraNickname' },
-            { header: 'Stream Type', accessorKey: 'streamType' },
-            { header: 'Time Created', accessorKey: 'timeCreated' },
-            { header: 'Actions', accessorKey: 'actions', sortable: false }
-          ]" :data="imgData" :grouping="['cameraUniqueName']" class="elevation-0" item-value="index"
-            show-expand>
+          <pv-data-table
+            v-model:expanded="expanded"
+            :columns="[
+              { header: 'Snapshot Name', accessorKey: 'snapshotShortName', sortable: false },
+              { header: 'Camera Unique Name', accessorKey: 'cameraUniqueName' },
+              { header: 'Camera Nickname', accessorKey: 'cameraNickname' },
+              { header: 'Stream Type', accessorKey: 'streamType' },
+              { header: 'Time Created', accessorKey: 'timeCreated' },
+              { header: 'Actions', accessorKey: 'actions', sortable: false }
+            ]"
+            :data="imgData"
+            :grouping="['cameraUniqueName']"
+            class="elevation-0"
+            item-value="index"
+            show-expand
+          >
             <template #item.data-table-expand="{ internalItem, toggleExpand }">
               <pv-button
                 size="icon"
@@ -163,7 +170,7 @@ const expanded = ref([]);
   </pv-card>
 </template>
 
-<style scoped >
+<style scoped>
 .v-divider {
   border-color: white !important;
 }
