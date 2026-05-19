@@ -11,7 +11,6 @@ PhotonVision's NetworkTables API is not designed for robot consumption, only int
 
 
 ## API
-:::
 
 The tables below contain the the name of the key for each entry that PhotonVision sends over the network and a short description of the key. The entries should be extracted from a subtable with your camera's nickname (visible in the PhotonVision UI) under the main `photonvision` table.
 
