@@ -236,8 +236,8 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
           :items="wrappedCameras"
-          @update:modelValue="pipelineType = useCameraSettingsStore().currentWebsocketPipelineType"
           class="pt-0 pb-1"
+          @update:modelValue="pipelineType = useCameraSettingsStore().currentWebsocketPipelineType"
         />
         <pv-input
           v-else
@@ -282,8 +282,8 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
             !useCameraSettingsStore().hasConnected
           "
           :items="pipelineNamesWrapper"
-          @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
           class="pb-1 pt-0"
+          @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
         />
         <pv-input
           v-else
@@ -359,8 +359,8 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
             !useCameraSettingsStore().hasConnected
           "
           :items="pipelineTypesWrapper"
-          @update:modelValue="showPipelineTypeChangeDialog = true"
           class="pt-0 pb-1"
+          @update:modelValue="showPipelineTypeChangeDialog = true"
         />
       </div>
     </div>
