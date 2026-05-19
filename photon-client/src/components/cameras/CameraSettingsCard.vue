@@ -178,12 +178,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
       >
         Save Changes
       </pv-button>
-      <pv-button
-        variant="danger"
-        :icon="IconTrashCanOutline"
-        block
-        @click="() => (showDeleteCamera = true)"
-      >
+      <pv-button variant="danger" :icon="IconTrashCanOutline" block @click="() => (showDeleteCamera = true)">
         Delete Camera
       </pv-button>
     </div>

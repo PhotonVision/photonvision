@@ -292,7 +292,10 @@ const tabItems: PvTabItem<string>[] = [
                   size="icon"
                   variant="text"
                   :class="viewingImg === internalItem.index ? 'text-pv-button-active' : 'text-white/70'"
-                  @click="viewingImg = internalItem.index; toggleExpand(internalItem)"
+                  @click="
+                    viewingImg = internalItem.index;
+                    toggleExpand(internalItem);
+                  "
                 >
                   <IconEye class="size-5" aria-hidden="true" />
                 </pv-button>

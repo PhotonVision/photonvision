@@ -423,7 +423,7 @@ const handleBulkImport = async () => {
   </pv-card>
 </template>
 
-<style scoped >
+<style scoped>
 .v-col-12 > .v-btn {
   width: 100%;
 }
