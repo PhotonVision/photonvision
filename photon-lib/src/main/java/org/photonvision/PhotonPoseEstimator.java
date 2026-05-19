@@ -328,7 +328,7 @@ public class PhotonPoseEstimator {
                 new EstimatedRobotPose(
                         new Pose3d(robotPose),
                         cameraResult.getTimestampSeconds(),
-                        cameraResult.getTargets(),
+                        List.of(bestTarget),
                         PoseStrategy.PNP_DISTANCE_TRIG_SOLVE));
     }
 
@@ -511,7 +511,7 @@ public class PhotonPoseEstimator {
                                 .transformBy(lowestAmbiguityTarget.getBestCameraToTarget().inverse())
                                 .transformBy(robotToCamera.inverse()),
                         cameraResult.getTimestampSeconds(),
-                        cameraResult.getTargets(),
+                        List.of(lowestAmbiguityTarget),
                         PoseStrategy.LOWEST_AMBIGUITY));
     }
 
@@ -529,7 +529,8 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
         double smallestHeightDifference = 10e9;
-        EstimatedRobotPose closestHeightTarget = null;
+        Pose3d bestPose = null;
+        PhotonTrackedTarget bestTarget = null;
 
         for (PhotonTrackedTarget target : cameraResult.targets) {
             int targetFiducialId = target.getFiducialId();
@@ -563,33 +564,33 @@ public class PhotonPoseEstimator {
 
             if (alternateTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = alternateTransformDelta;
-                closestHeightTarget =
-                        new EstimatedRobotPose(
-                                targetPosition
-                                        .get()
-                                        .transformBy(target.getAlternateCameraToTarget().inverse())
-                                        .transformBy(robotToCamera.inverse()),
-                                cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
-                                PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+                bestPose =
+                        targetPosition
+                                .get()
+                                .transformBy(target.getAlternateCameraToTarget().inverse())
+                                .transformBy(robotToCamera.inverse());
+                bestTarget = target;
             }
 
             if (bestTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = bestTransformDelta;
-                closestHeightTarget =
-                        new EstimatedRobotPose(
-                                targetPosition
-                                        .get()
-                                        .transformBy(target.getBestCameraToTarget().inverse())
-                                        .transformBy(robotToCamera.inverse()),
-                                cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
-                                PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+                bestPose =
+                        targetPosition
+                                .get()
+                                .transformBy(target.getBestCameraToTarget().inverse())
+                                .transformBy(robotToCamera.inverse());
+                bestTarget = target;
             }
         }
 
         // Need to null check here in case none of the provided targets are fiducial.
-        return Optional.ofNullable(closestHeightTarget);
+        if (bestTarget == null) return Optional.empty();
+        return Optional.of(
+                new EstimatedRobotPose(
+                        bestPose,
+                        cameraResult.getTimestampSeconds(),
+                        List.of(bestTarget),
+                        PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT));
     }
 
     /**
@@ -614,7 +615,8 @@ public class PhotonPoseEstimator {
         }
 
         double smallestPoseDelta = 10e9;
-        EstimatedRobotPose lowestDeltaPose = null;
+        Pose3d lowestDeltaPose = null;
+        PhotonTrackedTarget lowestDeltaTarget = null;
 
         for (PhotonTrackedTarget target : cameraResult.targets) {
             int targetFiducialId = target.getFiducialId();
@@ -647,24 +649,22 @@ public class PhotonPoseEstimator {
 
             if (altDifference < smallestPoseDelta) {
                 smallestPoseDelta = altDifference;
-                lowestDeltaPose =
-                        new EstimatedRobotPose(
-                                altTransformPosition,
-                                cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
-                                PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+                lowestDeltaPose = altTransformPosition;
+                lowestDeltaTarget = target;
             }
             if (bestDifference < smallestPoseDelta) {
                 smallestPoseDelta = bestDifference;
-                lowestDeltaPose =
-                        new EstimatedRobotPose(
-                                bestTransformPosition,
-                                cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
-                                PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+                lowestDeltaPose = bestTransformPosition;
+                lowestDeltaTarget = target;
             }
         }
-        return Optional.ofNullable(lowestDeltaPose);
+        if (lowestDeltaTarget == null) return Optional.empty();
+        return Optional.of(
+                new EstimatedRobotPose(
+                        lowestDeltaPose,
+                        cameraResult.getTimestampSeconds(),
+                        List.of(lowestDeltaTarget),
+                        PoseStrategy.CLOSEST_TO_REFERENCE_POSE));
     }
 
     /**
@@ -708,7 +708,7 @@ public class PhotonPoseEstimator {
                                         .transformBy(target.getBestCameraToTarget().inverse())
                                         .transformBy(robotToCamera.inverse()),
                                 cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
+                                List.of(target),
                                 PoseStrategy.AVERAGE_BEST_TARGETS));
             }
 
@@ -730,6 +730,7 @@ public class PhotonPoseEstimator {
 
         if (estimatedRobotPoses.isEmpty()) return Optional.empty();
 
+        List<PhotonTrackedTarget> usedTargets = new ArrayList<>(estimatedRobotPoses.size());
         for (Pair<PhotonTrackedTarget, Pose3d> pair : estimatedRobotPoses) {
             // Total ambiguity is non-zero confirmed because if it was zero, that pose was
             // returned.
@@ -737,13 +738,14 @@ public class PhotonPoseEstimator {
             Pose3d estimatedPose = pair.getSecond();
             transform = transform.plus(estimatedPose.getTranslation().times(weight));
             rotation = rotation.rotateBy(estimatedPose.getRotation().times(weight));
+            usedTargets.add(pair.getFirst());
         }
 
         return Optional.of(
                 new EstimatedRobotPose(
                         new Pose3d(transform, rotation),
                         cameraResult.getTimestampSeconds(),
-                        cameraResult.getTargets(),
+                        usedTargets,
                         PoseStrategy.AVERAGE_BEST_TARGETS));
     }
 
