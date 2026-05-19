@@ -8,16 +8,9 @@ import {
   type VideoFormat
 } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
-import PvSlider from "@/components/common/pv-slider.vue";
+import CharucoImage from "@/assets/images/ChArUco_Marker8x8.png";
+
 import { useStateStore } from "@/stores/StateStore";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvNumberInput from "@/components/common/pv-number-input.vue";
-import PvButton from "@/components/common/pv-button.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvIcon from "@/components/common/pv-icon.vue";
-import PvAlert from "@/components/common/pv-alert.vue";
-import PvTable from "@/components/common/pv-table.vue";
 
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import {
@@ -29,23 +22,37 @@ import {
 } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvChip from "@/components/common/pv-chip.vue";
-import PvTooltip from "@/components/common/pv-tooltip.vue";
-import PvProgress from "@/components/common/pv-progress.vue";
+import IconInformation from "~icons/mdi/information";
+import IconAlertBox from "~icons/mdi/alert-box";
+import IconCheck from "~icons/mdi/check";
+import IconClose from "~icons/mdi/close";
+import IconDownload from "~icons/mdi/download";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
+import IconCamera from "~icons/mdi/camera";
+import IconFlagOutline from "~icons/mdi/flag-outline";
+import IconFlagCheckered from "~icons/mdi/flag-checkered";
+import IconFlagOffOutline from "~icons/mdi/flag-off-outline";
+import IconCancel from "~icons/mdi/cancel";
+import IconHelpCircleOutline from "~icons/mdi/help-circle-outline";
 
 
-const PromptRegular = import("@/assets/fonts/PromptRegular");
-const jspdf = import("jspdf").then(async (jspdf) => {
-  await import("svg2pdf.js");
-  return jspdf;
-});
-const arucoMarker = import("aruco-marker");
+
+const jspdf = import("jspdf");
 
 const MM_PER_INCH = 25.4;
 
-const settingsValid = ref(true);
+const settingsValid = computed(() => {
+  if (!Number.isFinite(squareSize.value) || squareSize.value <= 0) return false;
+  if (
+    boardType.value === CalibrationBoardTypes.Charuco &&
+    (!Number.isFinite(markerSize.value) || markerSize.value <= 0)
+  )
+    return false;
+  if (!Number.isFinite(patternWidth.value) || patternWidth.value < 4) return false;
+  if (!Number.isFinite(patternHeight.value) || patternHeight.value < 4) return false;
+
+  return true;
+});
 
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
@@ -168,25 +175,8 @@ const tooManyPoints = computed(
 
 const downloadCalibBoard = async () => {
   const { jsPDF } = await jspdf;
-  const { font } = await PromptRegular;
-
-  const paperDimensions =
-    paperType.value === CalibrationPaperTypes.Adaptive
-      ? adaptivePaperDimensions()
-      : paperDimensionsFor(paperType.value);
-
-  const doc = new jsPDF({
-    unit: "in",
-    ...(paperType.value === CalibrationPaperTypes.Adaptive
-      ? {
-          format: paperDimensions.map((dim) => dim.in.value),
-          orientation: paperDimensions[0].value < paperDimensions[1].value ? "p" : "l"
-        }
-      : {
-          format: CalibrationPaperTypes[paperType.value],
-          orientation: paperOrientation.value
-        })
-  });
+  const { font } = await import("@/assets/fonts/PromptRegular");
+  const doc = new jsPDF({ unit: "in", format: "letter" });
 
   doc.addFileToVFS("Prompt-Regular.tff", font);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
@@ -355,12 +345,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
       <div class="p-5 pt-0">
         <div v-if="!isCalibrating" class="pb-0">
           <div class="pb-3">
-            <tooltipped-label
-              label="Curent Calibrations"
-              icon="mdi-information"
-              location="top"
-              tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
-            />
+              <pv-tooltipped-label
+                label="Curent Calibrations"
+                :icon="IconInformation"
+                location="top"
+                tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
+              />
           </div>
           <pv-table fixed-header height="100%" density="compact">
             <thead>
@@ -400,7 +390,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <div v-if="!isCalibrating" class="pl-0 pb-3 pt-4 opacity-100 text-base font-semibold">
               Configure New Calibration
             </div>
-            <v-form v-model="settingsValid">
+            <div>
               <pv-select
                 v-model="uniqueVideoResolutionIndex"
                 label="Resolution"
@@ -427,7 +417,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 density="compact"
                 variant="tonal"
                 color="warning"
-                icon="mdi-alert-box"
+                :icon="IconAlertBox"
                 text="The usage of chessboards can result in bad calibration results if multiple
               similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
               />
@@ -472,7 +462,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 :label="`Pattern Spacing (${dimensionUnit})`"
                 :tooltip="`Spacing between pattern features in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}`"
                 :disabled="isCalibrating"
-                :rules="[(v) => (typeof v === 'number') && v > 0 || 'Size must be positive']"
+                :rules="[(v) => (typeof v === 'number' && v > 0) || 'Size must be positive']"
                 :label-cols="4"
                 :step="dimensionStep"
               />
@@ -482,7 +472,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 :label="`Marker Size (${dimensionUnit})`"
                 :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
                 :disabled="isCalibrating"
-                :rules="[(v) => (typeof v === 'number') && v > 0 || 'Size must be positive']"
+                :rules="[(v) => (typeof v === 'number' && v > 0) || 'Size must be positive']"
                 :label-cols="4"
                 :step="dimensionStep"
               />
@@ -491,7 +481,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 label="Board Width (squares)"
                 tooltip="Width of the board in dots or chessboard squares"
                 :disabled="isCalibrating"
-                :rules="[(v) => (typeof v === 'number') && v >= 4 || 'Width must be at least 4']"
+                :rules="[(v) => (typeof v === 'number' && v >= 4) || 'Width must be at least 4']"
                 :label-cols="4"
               />
               <pv-number-input
@@ -499,7 +489,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 label="Board Height (squares)"
                 tooltip="Height of the board in dots or chessboard squares"
                 :disabled="isCalibrating"
-                :rules="[(v) => (typeof v === 'number') && v >= 4 || 'Height must be at least 4']"
+                :rules="[(v) => (typeof v === 'number' && v >= 4) || 'Height must be at least 4']"
                 :label-cols="4"
               />
               <pv-switch
@@ -510,7 +500,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
                 :label-cols="4"
               />
-            </v-form>
+            </div>
           </div>
           <div v-if="isCalibrating">
             <pv-switch
@@ -596,7 +586,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             density="compact"
             class="mb-5"
             :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
-            :icon="useSettingsStore().general.mrCalWorking ? 'mdi-check' : 'mdi-close'"
+            :icon="useSettingsStore().general.mrCalWorking ? IconCheck : IconClose"
             :text="
               useSettingsStore().general.mrCalWorking
                 ? 'Mrcal was successfully loaded and will be used!'
@@ -613,7 +603,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <pv-button
               size="sm"
               variant="passive"
-              icon="mdi-download"
+              :icon="IconDownload"
               block
               :disabled="!settingsValid"
               @click="downloadCalibBoard"
@@ -627,14 +617,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             color="error"
             density="compact"
             text="Too many corners. Finish calibration now!"
-            icon="mdi-alert-circle-outline"
+            :icon="IconAlertCircleOutline"
           />
           <div class="flex pt-5">
             <div class="w-1/2 p-0 pr-2">
               <pv-button
                 size="sm"
                 variant="primary"
-                :icon="isCalibrating ? 'mdi-camera' : 'mdi-flag-outline'"
+                :icon="isCalibrating ? IconCamera : IconFlagOutline"
                 block
                 :disabled="!settingsValid || tooManyPoints"
                 @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
@@ -646,7 +636,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <pv-button
                 size="sm"
                 :variant="useStateStore().calibrationData.hasEnoughImages ? 'primary' : 'danger'"
-                :icon="useStateStore().calibrationData.hasEnoughImages ? 'mdi-flag-checkered' : 'mdi-flag-off-outline'"
+                :icon="useStateStore().calibrationData.hasEnoughImages ? IconFlagCheckered : IconFlagOffOutline"
                 block
                 :disabled="!isCalibrating || !settingsValid"
                 @click="endCalibration"
@@ -665,7 +655,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         <div class="pb-2 text-lg font-semibold">Camera Calibration</div>
         <div style="text-align: center">
           <template v-if="calibCanceled">
-            <pv-icon color="primary" size="70"> mdi-cancel </pv-icon>
+            <pv-icon color="primary" size="70" :icon="IconCancel" />
             <div>
               Camera calibration has been canceled. The backend is attempting to cleanly cancel the calibration process.
             </div>
@@ -677,7 +667,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </template>
           <!-- Got positive result -->
           <template v-else-if="calibSuccess">
-            <pv-icon color="#00ff00" size="70"> mdi-check </pv-icon>
+            <pv-icon color="#00ff00" size="70" :icon="IconCheck" />
             <div>
               Camera has been successfully calibrated for
               {{
@@ -688,14 +678,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             </div>
           </template>
           <template v-else-if="calibEndpointFail">
-            <pv-icon color="gray" size="70"> mdi-help-circle-outline </pv-icon>
+            <pv-icon color="gray" size="70" :icon="IconHelpCircleOutline" />
             <div>
               Unable to determine if calibration was successful. Refresh this page and manually check if calibration was
               successful.
             </div>
           </template>
           <template v-else>
-            <pv-icon color="red" size="70"> mdi-close </pv-icon>
+            <pv-icon color="red" size="70" :icon="IconClose" />
             <div>
               Camera calibration failed! Make sure that the photos are taken such that the rainbow grid circles align
               with the corners of the chessboard, and try again. More information is available in the program logs.
@@ -713,7 +703,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped >
 th {
   text-align: center !important;
   padding: 0 8px !important;
@@ -744,7 +734,7 @@ th {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--v-theme-accent));
+    background-color: var(--color-pv-accent);
     border-radius: 10px;
   }
 }

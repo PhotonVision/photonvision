@@ -5,9 +5,6 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvChip from "@/components/common/pv-chip.vue";
 
 const value = defineModel<number[]>();
 
@@ -43,8 +40,8 @@ const performanceRecommendation = computed<string>(() => {
 
 <template>
   <pv-card class="flex h-full flex-col">
-    <div class="flex items-center justify-between gap-3  pb-2">
-      <span class="text-lg">Cameras</span>
+    <div class="flex items-center justify-between gap-3 pb-2">
+      <span class="text-lg font-semibold">Cameras</span>
       <pv-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
@@ -52,7 +49,8 @@ const performanceRecommendation = computed<string>(() => {
         class="p-0 m-0 text-lg"
         variant="text"
       >
-        <span class="pr-1 tabular-nums">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &middot;</span
+        <span class="pr-1 tabular-nums"
+          >{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &middot;</span
         ><span class="tabular-nums">{{ performanceRecommendation }}</span>
       </pv-chip>
       <pv-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">

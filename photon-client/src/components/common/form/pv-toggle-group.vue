@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import type { Component } from "vue";
 import { ToggleGroupItem, ToggleGroupRoot } from "reka-ui";
 
 export interface ToggleItem<TValue extends string> {
   label: string;
   value: TValue;
-  icon?: string;
+  icon?: Component;
   disabled?: boolean;
 }
 
@@ -46,7 +47,7 @@ const normalizedModel = computed({
       :disabled="disabled || item.disabled"
       class="inline-flex min-h-11 w-full items-center justify-center gap-2 border border-white/12 bg-black/15 px-4 py-2 text-sm font-semibold text-white/88 shadow-sm outline-none transition hover:bg-white/6 focus-visible:ring-2 focus-visible:ring-pv-primary/50 data-on:z-10 data-[state=on]:border-pv-button-active data-on:bg-pv-button-active data-[state=on]:text-slate-950   first:rounded-t-xl last:rounded-b-xl sm:first:rounded-l-xl sm:last:rounded-r-xl sm:first:rounded-tr-none sm:last:rounded-bl-none disabled:cursor-not-allowed disabled:opacity-45"
     >
-      <span v-if="item.icon" :class="['mdi mode-btn-icon text-lg leading-none', item.icon]" aria-hidden="true"></span>
+      <component v-if="item.icon" :is="item.icon" class="mode-btn-icon size-5" aria-hidden="true" />
       <span class="mode-btn-label">{{ item.label }}</span>
     </toggle-group-item>
   </toggle-group-root>

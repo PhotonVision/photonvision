@@ -1,6 +1,8 @@
 <script setup lang="ts" generic="T extends string | number">
 import { computed } from "vue";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import IconChevronDown from "~icons/mdi/chevron-down";
+import IconCheck from "~icons/mdi/check";
+import { useColFlexBasis, popoverSurfaceClass } from "../lib";
 import {
   SelectContent,
   SelectIcon,
@@ -43,8 +45,7 @@ const props = withDefaults(
 );
 
 const areSelectItems = (items: SelectItems): items is SelectItem<T>[] => typeof items[0] === "object";
-const labelWidth = computed(() => `${((12 - props.selectCols) / 12) * 100}%`);
-const selectWidth = computed(() => `${(props.selectCols / 12) * 100}%`);
+const { labelWidth, contentWidth: selectWidth } = useColFlexBasis(() => props.selectCols);
 
 // Computed in case items changes
 const items = computed<SelectItem<T>[]>(() => {
@@ -66,7 +67,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
 <template>
   <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <tooltipped-label :tooltip="tooltip" :label="label" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
     <div class="min-w-0 sm:flex-1" :style="{ flexBasis: selectWidth }">
       <select-root v-model="value" :disabled="disabled">
@@ -81,7 +82,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
           </select-value>
 
           <select-icon class="shrink-0 text-white/70">
-            <span class="mdi mdi-chevron-down text-lg leading-none" aria-hidden="true"></span>
+            <IconChevronDown class="size-5" aria-hidden="true" />
           </select-icon>
         </select-trigger>
         <select-portal defer>
@@ -92,7 +93,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
             align="start"
             :side-offset="8"
             :collision-padding="12"
-            class="z-[2500] overflow-hidden rounded-xl border border-white/12 bg-pv-surface text-white shadow-2xl shadow-black/45 ring-1 ring-white/8"
+            :class="popoverSurfaceClass"
             :style="{ width: 'var(--reka-select-trigger-width)' }"
           >
             <select-viewport class="max-h-72 p-1">
@@ -106,7 +107,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
               >
                 <select-item-text>{{ item.name }}</select-item-text>
                 <select-item-indicator class="absolute right-3 inline-flex items-center justify-center">
-                  <span class="mdi mdi-check text-sm leading-none" aria-hidden="true"></span>
+                  <IconCheck class="size-4" aria-hidden="true" />
                 </select-item-indicator>
               </select-item-primitive>
             </select-viewport>

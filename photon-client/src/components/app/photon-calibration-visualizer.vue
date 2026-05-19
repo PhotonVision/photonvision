@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
-import PvButton from "@/components/common/pv-button.vue";
-import { useTheme } from "vuetify";
+
+import { useTheme } from "@/composables/useTheme";
 import type {
   Scene as SceneType,
   PerspectiveCamera as PerspectiveCameraType,
@@ -215,8 +215,8 @@ onMounted(async () => {
   const ambientLight = new AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  if (theme.global.current.value.dark) scene.background = new Color(0x151515);
-  else scene.background = new Color(0x232C37);
+  if (theme.isDark.value) scene.background = new Color(0x151515);
+  else scene.background = new Color(0x232c37);
 
   // Initialize a stable aspect ratio so subsequent resize events derive
   // height from width, avoiding layout feedback during continuous resizing
@@ -333,6 +333,14 @@ watchEffect(() => {
 });
 
 watch(
+  () => theme.isDark.value,
+  () => {
+    if (!scene) return;
+    scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
+  }
+);
+
+watch(
   () => [
     props.cameraUniqueName,
     props.resolution.width,
@@ -355,12 +363,12 @@ watch(
         </div>
       </div>
       <div class="flex gap-2">
-      <div class="flex items-center pt-0 pl-6  md:pt-3 md:pl-3">
-        <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
-      </div>
-      <div class="flex items-center pt-0 pr-0 md:pt-3">
-        <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
-      </div>
+        <div class="flex items-center pt-0 pl-6 md:pt-3 md:pl-3">
+          <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
+        </div>
+        <div class="flex items-center pt-0 pr-0 md:pt-3">
+          <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
+        </div>
       </div>
     </div>
     <div id="container" style="flex: 1 1 auto">

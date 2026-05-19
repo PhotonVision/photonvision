@@ -6,9 +6,7 @@ import {
   ContourSortMode,
   ContourTargetOrientation
 } from "@/types/PipelineTypes";
-import PvSlider from "@/components/common/pv-slider.vue";
-import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
+
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";

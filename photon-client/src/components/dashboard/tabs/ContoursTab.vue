@@ -9,9 +9,7 @@ import {
   ContourIntersection,
   ContourShape
 } from "@/types/PipelineTypes";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvSlider from "@/components/common/pv-slider.vue";
+
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";

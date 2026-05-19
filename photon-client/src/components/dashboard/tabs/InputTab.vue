@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import PvSlider from "@/components/common/pv-slider.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
-import { computed, watch } from "vue";
-import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
-import { FrameEdgeCropBound, type ConfigurablePipelineSettings } from "@/types/PipelineTypes";
+
+import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";

@@ -54,11 +54,11 @@ const tableClasses = computed(() => [
 .pv-table {
   --pv-table-header-height: 56px;
   --pv-table-row-height: 52px;
-  --pv-table-border-color: rgba(var(--v-border-color), var(--v-border-opacity, 0.12));
-  --pv-table-hover-color: rgba(var(--v-border-color), var(--v-hover-opacity, 0.08));
-  --pv-table-stripe-color: rgba(var(--v-border-color), var(--v-hover-opacity, 0.06));
-  --pv-table-background: rgb(var(--v-theme-surface));
-  --pv-table-text: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity, 0.87));
+  --pv-table-border-color: rgba(var(--pv-border-color), var(--pv-border-opacity, 0.12));
+  --pv-table-hover-color: rgba(var(--pv-border-color), var(--pv-hover-opacity, 0.08));
+  --pv-table-stripe-color: rgba(var(--pv-border-color), var(--pv-stripe-opacity, 0.06));
+  --pv-table-background: var(--color-pv-surface);
+  --pv-table-text: var(--pv-on-surface-strong);
 
   width: 100%;
   max-width: 100%;
@@ -157,7 +157,7 @@ const tableClasses = computed(() => [
 .pv-table caption {
   text-align: left;
   padding: 0.6rem 16px;
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity, 0.6));
+  color: var(--pv-on-surface-muted);
   font-size: 0.85rem;
 }
 </style>

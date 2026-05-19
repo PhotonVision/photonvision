@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import mdiIcons from "@iconify-json/mdi/icons.json";
-import { addCollection, Icon } from "@iconify/vue";
-import { computed, useSlots } from "vue";
-import { useTheme } from "vuetify";
+import { computed } from "vue";
+import type { Component } from "vue";
+import { useTheme } from "@/composables/useTheme";
+import { isRawCssColor } from "../lib";
 
 defineOptions({
   inheritAttrs: false
@@ -10,7 +10,7 @@ defineOptions({
 
 const props = withDefaults(
   defineProps<{
-    icon?: string;
+    icon?: Component;
     color?: string;
     size?: string | number;
     disabled?: boolean;
@@ -32,29 +32,18 @@ const emit = defineEmits<{
   (e: "click", event: MouseEvent): void;
 }>();
 
-addCollection(mdiIcons);
-
-const slots = useSlots();
 const theme = useTheme();
-
-const slotIcon = computed(() => {
-  const children = slots.default?.()[0]?.children;
-  return typeof children === "string" ? children.trim() : undefined;
-});
-
-const iconName = computed(() => {
-  const name = props.icon ?? slotIcon.value ?? "";
-  return name.startsWith("mdi-") ? name.replace("mdi-", "mdi:") : name;
-});
+const IconComponent = computed(() => props.icon ?? null);
 
 const resolvedColor = computed(() => {
   if (!props.color) return undefined;
-  return theme.current.value.colors[props.color] ?? props.color;
+  const themeColors = theme.colors.value as Record<string, string>;
+  return themeColors[props.color] ?? props.color;
 });
 
 const colorClass = computed(() => {
   if (!props.color || resolvedColor.value !== props.color) return undefined;
-  if (props.color.startsWith("#") || props.color.startsWith("rgb") || props.color.startsWith("var(")) return undefined;
+  if (isRawCssColor(props.color)) return undefined;
   if (!props.color.includes("-")) return undefined;
   return `text-${props.color}`;
 });
@@ -113,7 +102,8 @@ const handleClick = (event: MouseEvent) => {
     :aria-hidden="$attrs['aria-label'] === undefined"
     @click="handleClick"
   >
-    <Icon :icon="iconName" :width="iconSize" :height="iconSize" />
+    <component v-if="IconComponent" :is="IconComponent" :width="iconSize" :height="iconSize" />
+    <slot v-else />
   </span>
 </template>
 
@@ -133,7 +123,7 @@ const handleClick = (event: MouseEvent) => {
 }
 
 .pv-icon--disabled {
-  opacity: var(--v-disabled-opacity);
+  opacity: var(--pv-disabled-opacity);
   pointer-events: none;
 }
 

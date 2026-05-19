@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import PvButton from "@/components/common/pv-button.vue";
-import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
   type ActivePipelineSettings,
@@ -9,8 +7,7 @@ import {
   ContourTargetOrientation,
   ContourTargetOffsetPointEdge
 } from "@/types/PipelineTypes";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvSlider from "@/components/common/pv-slider.vue";
+
 import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -259,6 +256,6 @@ const interactiveCols = computed(() =>
 .metric-item-title {
   font-size: 18px;
   text-decoration: underline;
-  text-decoration-color: rgb(var(--v-theme-primary));
+  text-decoration-color: var(--color-pv-primary);
 }
 </style>

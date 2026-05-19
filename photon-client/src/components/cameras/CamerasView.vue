@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvToggleGroup, { type ToggleItem } from "@/components/common/pv-toggle-group.vue";
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import IconImport from "~icons/mdi/import";
+import IconExport from "~icons/mdi/export";
 
 const value = defineModel<number[]>({ required: true });
 
@@ -38,8 +37,8 @@ const streamToggleDisabled = computed(
 );
 
 const streamToggleItems: ToggleItem<string>[] = [
-  { value: "0", label: "Raw", icon: "mdi-import" },
-  { value: "1", label: "Processed", icon: "mdi-export" }
+  { value: "0", label: "Raw", icon: IconImport },
+  { value: "1", label: "Processed", icon: IconExport }
 ];
 
 const streamToggleModel = computed<string[]>({
@@ -65,7 +64,9 @@ const streamToggleModel = computed<string[]>({
       >
         <span class="tabular-nums">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }} FPS</span>
         &middot;
-        <span class="tabular-nums"> {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency</span> 
+        <span class="tabular-nums">
+          {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency</span
+        >
       </span>
       <span v-else class="inline-flex rounded-full px-3 py-1 text-sm font-medium text-pv-error">
         Camera not connected
@@ -105,7 +106,12 @@ const streamToggleModel = computed<string[]>({
       </div>
     </div>
     <div class="px-5 pb-5 pt-0">
-      <pv-toggle-group v-model="streamToggleModel" :items="streamToggleItems" multiple :disabled="streamToggleDisabled" />
+      <pv-toggle-group
+        v-model="streamToggleModel"
+        :items="streamToggleItems"
+        multiple
+        :disabled="streamToggleDisabled"
+      />
     </div>
   </section>
 </template>

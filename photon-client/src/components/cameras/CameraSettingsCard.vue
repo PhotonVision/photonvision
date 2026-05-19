@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import PvButton from "@/components/common/pv-button.vue";
-import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
-import PvNumberInput from "@/components/common/pv-number-input.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvCard from "@/components/common/pv-card.vue";
+import IconContentSave from "~icons/mdi/content-save";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
@@ -135,8 +131,8 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
 
 <template>
   <pv-card class="mb-2">
-    <div class=" pb-2 text-xl font-semibold">Camera Settings</div>
-    <div class=" pt-1 pb-4">
+    <div class="pb-2 text-xl font-semibold">Camera Settings</div>
+    <div class="pt-1 pb-4">
       <pv-select
         v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
@@ -172,10 +168,10 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
         label="Focus Mode"
       />
     </div>
-    <div class="grid gap-3  sm:grid-cols-2">
+    <div class="grid gap-3 sm:grid-cols-2">
       <pv-button
         variant="primary"
-        icon="mdi-content-save"
+        :icon="IconContentSave"
         block
         :disabled="!settingsHaveChanged()"
         @click="saveCameraSettings"
@@ -184,7 +180,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
       </pv-button>
       <pv-button
         variant="danger"
-        icon="mdi-trash-can-outline"
+        :icon="IconTrashCanOutline"
         block
         @click="() => (showDeleteCamera = true)"
       >

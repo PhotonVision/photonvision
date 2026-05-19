@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import PvTooltip from "@/components/common/pv-tooltip.vue";
+import type { Component } from "vue";
 
 defineProps<{
   label?: string;
   tooltip?: string;
-  icon?: string;
+  icon?: Component;
   location?: "top" | "bottom" | "left" | "right";
 }>();
 </script>
@@ -13,7 +13,7 @@ defineProps<{
   <div class="inline-flex max-w-full items-center">
     <span v-if="!tooltip" class="inline-flex max-w-full items-center gap-2 text-sm font-medium text-white">
       <span class="truncate">{{ label }}</span>
-      <span v-if="icon" :class="['mdi text-pv-primary text-sm leading-none', icon]" aria-hidden="true"></span>
+      <component v-if="icon" :is="icon" class="size-4 text-pv-primary" aria-hidden="true" />
     </span>
 
     <pv-tooltip v-else :text="tooltip" :location="location">
@@ -22,7 +22,7 @@ defineProps<{
         class="inline-flex max-w-full items-center gap-2 text-left text-sm font-medium text-white outline-none"
       >
         <span class="truncate">{{ label }}</span>
-        <span v-if="icon" :class="['mdi text-pv-primary text-sm leading-none', icon]" aria-hidden="true"></span>
+        <component v-if="icon" :is="icon" class="size-4 text-pv-primary" aria-hidden="true" />
       </button>
     </pv-tooltip>
   </div>

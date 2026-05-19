@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import PvToggleGroup, { type ToggleItem } from "@/components/common/pv-toggle-group.vue";
-import PvCard from "@/components/common/pv-card.vue";
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { PipelineType } from "@/types/PipelineTypes";
+import IconSquareOutline from "~icons/mdi/square-outline";
+import IconCubeOutline from "~icons/mdi/cube-outline";
+import IconImport from "~icons/mdi/import";
+import IconExport from "~icons/mdi/export";
 
 const value = defineModel<number[]>();
 
@@ -18,11 +20,11 @@ const processingMode = computed<number>({
 });
 
 const processingModeItems = computed<ToggleItem<string>[]>(() => [
-  { value: "0", label: "2D", icon: "mdi-square-outline", disabled: !useCameraSettingsStore().hasConnected },
+  { value: "0", label: "2D", icon: IconSquareOutline, disabled: !useCameraSettingsStore().hasConnected },
   {
     value: "1",
     label: "3D",
-    icon: "mdi-cube-outline",
+    icon: IconCubeOutline,
     disabled:
       !useCameraSettingsStore().hasConnected ||
       !useCameraSettingsStore().isCurrentVideoFormatCalibrated ||
@@ -40,8 +42,8 @@ const processingModeModel = computed<string>({
 });
 
 const streamDisplayItems: ToggleItem<string>[] = [
-  { value: "0", label: "Raw", icon: "mdi-import" },
-  { value: "1", label: "Processed", icon: "mdi-export" }
+  { value: "0", label: "Raw", icon: IconImport },
+  { value: "1", label: "Processed", icon: IconExport }
 ];
 
 const streamDisplayModel = computed<string[]>({
@@ -57,15 +59,13 @@ const streamDisplayModel = computed<string[]>({
   <pv-card
     :class="[
       'mt-3 flex flex-col',
-      useCameraSettingsStore().isDriverMode ||
-      useCameraSettingsStore().isFocusMode ||
-      useStateStore().colorPickingMode
+      useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isFocusMode || useStateStore().colorPickingMode
         ? 'pointer-events-none opacity-60'
         : ''
     ]"
   >
     <div class="flex flex-wrap items-center text-sm">
-      <div class="w-full ">
+      <div class="w-full">
         <p class="pb-1 text-white">Processing Mode</p>
         <pv-toggle-group v-model="processingModeModel" :items="processingModeItems" />
       </div>

@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import PvButton from "@/components/common/pv-button.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { computed, ref } from "vue";
-import PvTooltippedIcon from "@/components/common/pv-tooltipped-icon.vue";
-import PvIcon from "@/components/common/pv-icon.vue";
-import PvInput from "@/components/common/pv-input.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvDropdownMenu from "@/components/common/pv-dropdown-menu.vue";
+
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
+import IconContentSave from "~icons/mdi/content-save";
+import IconCancel from "~icons/mdi/cancel";
+import IconPencil from "~icons/mdi/pencil";
+import IconContentCopy from "~icons/mdi/content-copy";
+import IconPlus from "~icons/mdi/plus";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
+import IconMenu from "~icons/mdi/menu";
 
 // Common RegEx used for naming both pipelines and cameras
 const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
@@ -230,7 +229,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
 
 <template>
   <pv-card>
-    <div class="flex flex-wrap   pb-0">
+    <div class="flex flex-wrap pb-0">
       <div class="w-5/6 p-0">
         <pv-select
           v-if="!isCameraNameEdit"
@@ -244,7 +243,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           v-else
           v-model="currentCameraName"
           :input-cols="12 - 3"
-          :rules="[(v) => (typeof v === 'string' && checkCameraName(v))]"
+          :rules="[(v) => typeof v === 'string' && checkCameraName(v)]"
           label="Camera"
           @onEnter="saveCameraNameEdit"
           @onEscape="cancelCameraNameEdit"
@@ -253,17 +252,17 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
       <div class="flex w-1/6 items-center justify-center">
         <div v-if="isCameraNameEdit" style="display: flex; gap: 14px">
           <pv-tooltipped-icon
-            icon-name="mdi-content-save"
+            :icon="IconContentSave"
             color="#c5c5c5"
             :disabled="checkCameraName(currentCameraName) !== true"
             @click="() => saveCameraNameEdit(currentCameraName)"
           />
-          <pv-tooltipped-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelCameraNameEdit" />
+          <pv-tooltipped-icon :icon="IconCancel" color="red-darken-2" @click="cancelCameraNameEdit" />
         </div>
         <pv-tooltipped-icon
           v-else
           color="#c5c5c5"
-          icon-name="mdi-pencil"
+          :icon="IconPencil"
           tooltip="Edit Camera Name"
           @click="startCameraNameEdit"
         />
@@ -290,7 +289,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           v-else
           v-model="currentPipelineName"
           :input-cols="12 - 3"
-          :rules="[(v) => (typeof v === 'string' && checkPipelineName(v))]"
+          :rules="[(v) => typeof v === 'string' && checkPipelineName(v)]"
           label="Pipeline"
           @onEnter="(v) => savePipelineNameEdit(v)"
           @onEscape="cancelPipelineNameEdit"
@@ -299,20 +298,20 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
       <div class="flex w-1/6 items-center justify-center p-0">
         <div v-if="isPipelineNameEdit" style="display: flex; gap: 14px">
           <pv-tooltipped-icon
-            icon-name="mdi-content-save"
+            :icon="IconContentSave"
             color="#c5c5c5"
             :disabled="checkPipelineName(currentPipelineName) !== true"
             @click="() => savePipelineNameEdit(currentPipelineName)"
           />
-          <pv-tooltipped-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelPipelineNameEdit" />
+          <pv-tooltipped-icon :icon="IconCancel" color="red-darken-2" @click="cancelPipelineNameEdit" />
         </div>
         <pv-dropdown-menu
           v-else-if="!useCameraSettingsStore().isDriverMode"
           :items="[
-            { icon: 'mdi-pencil', label: 'Rename', color: '#c5c5c5' },
-            { icon: 'mdi-content-copy', label: 'Duplicate', color: '#c5c5c5' },
-            { icon: 'mdi-plus', label: 'New Pipeline', color: 'green' },
-            { icon: 'mdi-trash-can-outline', label: 'Delete', color: 'red-darken-2' }
+            { icon: IconPencil, label: 'Rename', color: '#c5c5c5' },
+            { icon: IconContentCopy, label: 'Duplicate', color: '#c5c5c5' },
+            { icon: IconPlus, label: 'New Pipeline', color: 'green' },
+            { icon: IconTrashCanOutline, label: 'Delete', color: 'red-darken-2' }
           ]"
           @select="
             (i) => {
@@ -334,20 +333,20 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           "
         >
           <template #trigger>
-            <pv-icon color="#c5c5c5" @click="cancelPipelineNameEdit"> mdi-menu </pv-icon>
+            <pv-icon color="#c5c5c5" :icon="IconMenu" @click="cancelPipelineNameEdit" />
           </template>
         </pv-dropdown-menu>
         <pv-tooltipped-icon
           v-else-if="useCameraSettingsStore().isDriverMode && useCameraSettingsStore().pipelineNames.length === 0"
           color="#c5c5c5"
           :right="true"
-          icon-name="mdi-plus"
+          :icon="IconPlus"
           tooltip="Add new pipeline"
           @click="showCreatePipelineDialog"
         />
       </div>
     </div>
-    <div class="flex flex-wrap  pt-0">
+    <div class="flex flex-wrap pt-0">
       <div class="w-5/6 p-0">
         <pv-select
           v-model="currentPipelineType"
@@ -375,7 +374,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
             :label-cols="4"
             :input-cols="12 - 4"
             label="Pipeline Name"
-            :rules="[(v) => (typeof v === 'string' && checkPipelineName(v))]"
+            :rules="[(v) => typeof v === 'string' && checkPipelineName(v)]"
           />
           <pv-select
             v-model="newPipelineType"

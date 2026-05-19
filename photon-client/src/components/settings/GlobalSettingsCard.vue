@@ -1,17 +1,11 @@
 <script setup lang="ts">
+import IconPaletteOutline from "~icons/mdi/palette-outline";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
+import IconInformationOutline from "~icons/mdi/information-outline";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { computed, reactive, ref, watchEffect } from "vue";
-import PvButton from "@/components/common/pv-button.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvInput from "@/components/common/pv-input.vue";
-import PvRadio from "@/components/common/pv-radio.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvAlert from "@/components/common/pv-alert.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
 import { getThemeColor, setThemeColor, resetTheme } from "@/lib/ThemeManager";
 import { statusCheck } from "@/lib/PhotonUtils";
 import type { Color } from "reka-ui";
@@ -29,15 +23,27 @@ import {
   normalizeColor
 } from "reka-ui";
 
-const theme = useTheme();
-
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
 const resetTempSettingsStruct = () => {
   tempSettingsStruct.value = Object.assign({}, useSettingsStore().network);
 };
 
-const settingsValid = ref(true);
+const settingsValid = computed(() => {
+  const network = useSettingsStore().network;
+
+  const ntServerValid = network.runNTServer || isValidNetworkTablesIP(network.ntServerAddress);
+  const staticIpValid =
+    network.networkingDisabled ||
+    network.connectionType !== NetworkConnectionType.Static ||
+    !network.shouldManage ||
+    !network.canManage ||
+    isValidIPv4(network.staticIp);
+  const hostnameValid =
+    network.networkingDisabled || !network.shouldManage || !network.canManage || isValidHostname(network.hostname);
+
+  return ntServerValid && staticIpValid && hostnameValid;
+});
 
 const showThemeConfig = ref(false);
 
@@ -52,18 +58,18 @@ const colorObjects = reactive<Record<string, Color>>({});
 
 const loadCurrentColors = () => {
   for (const { key } of themeColors) {
-    colorObjects[key] = normalizeColor(getThemeColor(theme, key));
+    colorObjects[key] = normalizeColor(getThemeColor(key));
   }
 };
 
 function handleColorUpdate(key: string, newColor: Color) {
   colorObjects[key] = newColor;
-  setThemeColor(theme, key, colorToString(newColor, "hex"));
+  setThemeColor(key as "background" | "surface" | "primary" | "secondary", colorToString(newColor, "hex"));
 }
 
 function handleHexUpdate(key: string, hex: string) {
   colorObjects[key] = normalizeColor(hex);
-  setThemeColor(theme, key, hex);
+  setThemeColor(key as "background" | "surface" | "primary" | "secondary", hex);
 }
 
 function getHexColor(key: string): string {
@@ -207,7 +213,7 @@ watchEffect(() => {
       <pv-button
         variant="text"
         size="sm"
-        icon="mdi-palette-outline"
+        :icon="IconPaletteOutline"
         @click="
           () => {
             loadCurrentColors();
@@ -220,7 +226,7 @@ watchEffect(() => {
     </div>
     <div class="p-5 pt-0">
       <div class="pb-10px text-base font-semibold">Networking</div>
-      <v-form v-model="settingsValid">
+      <div>
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
           label="Team Number/NetworkTables Server Address"
@@ -239,7 +245,7 @@ watchEffect(() => {
           color="error"
           density="compact"
           text="The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect."
-          icon="mdi-alert-circle-outline"
+          :icon="IconAlertCircleOutline"
         />
         <pv-radio
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -312,7 +318,7 @@ watchEffect(() => {
           color="error"
           density="compact"
           text="Cannot detect any wired connections! Send program logs to the developers for help."
-          icon="mdi-alert-circle-outline"
+          :icon="IconAlertCircleOutline"
         />
         <pv-switch
           v-model="tempSettingsStruct.runNTServer"
@@ -325,7 +331,7 @@ watchEffect(() => {
           color="buttonActive"
           density="compact"
           text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
-          icon="mdi-information-outline"
+          :icon="IconInformationOutline"
         />
         <div class="pt-3 pb-10px text-base font-semibold">Miscellaneous</div>
         <pv-switch
@@ -339,9 +345,9 @@ watchEffect(() => {
           color="buttonActive"
           density="compact"
           text="This mode is intended for debugging and may reduce performance; it should be off for field use."
-          icon="mdi-information-outline"
+          :icon="IconInformationOutline"
         />
-      </v-form>
+      </div>
       <pv-button
         variant="primary"
         class="mt-3"
@@ -357,7 +363,7 @@ watchEffect(() => {
         <div class="text-center text-lg font-semibold pb-3">Theme Configuration</div>
         <div class="pt-0 pb-10px">
           <div class="flex flex-wrap gap-4 justify-center">
-            <div v-for="{ label, key } in themeColors" :key="key" class="flex flex-col items-center gap-2 w-[180px]">
+            <div v-for="{ label, key } in themeColors" :key="key" class="flex flex-col items-center gap-2 w-45">
               <div class="flex items-center gap-2">
                 <ColorSwatch
                   :color="getHexColor(key)"
@@ -378,7 +384,7 @@ watchEffect(() => {
                 @update:color="(c: Color) => handleColorUpdate(key, c)"
               >
                 <ColorAreaArea
-                  class="relative w-full h-[120px] rounded-md overflow-hidden"
+                  class="relative w-full h-30 rounded-md overflow-hidden"
                   :style="style"
                 >
                   <ColorAreaThumb class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer" />
@@ -419,7 +425,7 @@ watchEffect(() => {
             variant="primary"
             @click="
               () => {
-                resetTheme(theme);
+                resetTheme();
                 loadCurrentColors();
               }
             "

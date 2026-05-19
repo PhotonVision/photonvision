@@ -9,7 +9,7 @@
     "removeComments": true,
     "sourceMap": true,
     "module": "ESNext",
-    "types": ["node"],
+    "types": ["node", "unplugin-icons/types/vue"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

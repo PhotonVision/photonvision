@@ -2,16 +2,18 @@
 import { inject, computed, ref, watch, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import PvButton from "@/components/common/pv-button.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvTable from "@/components/common/pv-table.vue";
-import PvFileInput from "@/components/common/pv-file-input.vue";
 import MetricsChart from "./MetricsChart.vue";
 import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import IconEye from "~icons/mdi/eye";
+import IconDownload from "~icons/mdi/download";
+import IconImport from "~icons/mdi/import";
+import IconExport from "~icons/mdi/export";
+import IconRestart from "~icons/mdi/restart";
+import IconUpload from "~icons/mdi/upload";
+import IconRestartAlert from "~icons/mdi/restart-alert";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
+import IconInformation from "~icons/mdi/information";
+
 import { metricsHistorySnapshot } from "@/stores/settings/GeneralSettingsStore";
 
 const restartProgram = async () => {
@@ -311,12 +313,12 @@ watch(metricsHistorySnapshot, () => {
         <div class="px-4 pb-4 pt-0 flex-0-0">
           <div class="flex flex-wrap -mx-3">
             <div class="flex-1 px-3">
-              <pv-button variant="passive" icon="mdi-eye" block @click="useStateStore().showLogModal = true">
+              <pv-button variant="passive" :icon="IconEye" block @click="useStateStore().showLogModal = true">
                 <span class="open-label">View Logs</span>
               </pv-button>
             </div>
             <div class="flex-1 px-3">
-              <pv-button variant="passive" icon="mdi-download" block @click="openExportLogsPrompt">
+              <pv-button variant="passive" :icon="IconDownload" block @click="openExportLogsPrompt">
                 <span class="open-label">Download Logs</span>
 
                 <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -334,12 +336,12 @@ watch(metricsHistorySnapshot, () => {
         <div class="px-4 pb-4 pt-0 flex-0-0">
           <div class="flex flex-wrap -mx-3">
             <div class="flex-1 px-3">
-              <pv-button variant="passive" icon="mdi-import" block @click="() => (showImportDialog = true)">
+              <pv-button variant="passive" :icon="IconImport" block @click="() => (showImportDialog = true)">
                 <span class="open-label">Import Settings</span>
               </pv-button>
             </div>
             <div class="flex-1 px-3">
-              <pv-button variant="passive" icon="mdi-export" block @click="openExportSettingsPrompt">
+              <pv-button variant="passive" :icon="IconExport" block @click="openExportSettingsPrompt">
                 <span class="open-label">Export Settings</span>
               </pv-button>
             </div>
@@ -348,12 +350,12 @@ watch(metricsHistorySnapshot, () => {
         <div class="px-4 pb-4 pt-0 flex-0-0">
           <div class="flex flex-wrap -mx-3">
             <div class="w-full px-3 sm:w-1/2">
-              <pv-button variant="primary" icon="mdi-restart" block @click="restartProgram">
+              <pv-button variant="primary" :icon="IconRestart" block @click="restartProgram">
                 <span class="open-label">Restart Software</span>
               </pv-button>
             </div>
             <div class="w-full px-3 sm:w-1/2">
-              <pv-button variant="passive" icon="mdi-upload" block @click="openOfflineUpdatePrompt">
+              <pv-button variant="passive" :icon="IconUpload" block @click="openOfflineUpdatePrompt">
                 <span class="open-label">Offline Update</span>
               </pv-button>
               <input
@@ -369,12 +371,17 @@ watch(metricsHistorySnapshot, () => {
         <div class="px-4 pb-4 pt-0 flex-0-0">
           <div class="flex flex-wrap -mx-3">
             <div class="w-full px-3 sm:w-1/2">
-              <pv-button variant="primary" icon="mdi-restart-alert" block @click="restartDevice">
+              <pv-button variant="primary" :icon="IconRestartAlert" block @click="restartDevice">
                 <span class="open-label">Reboot Device</span>
               </pv-button>
             </div>
             <div class="w-full px-3 sm:w-1/2">
-              <pv-button variant="danger" icon="mdi-trash-can-outline" block @click="() => (showFactoryReset = true)">
+              <pv-button
+                variant="danger"
+                :icon="IconTrashCanOutline"
+                block
+                @click="() => (showFactoryReset = true)"
+              >
                 <span class="open-icon"> Factory Reset </span>
               </pv-button>
             </div>
@@ -424,9 +431,9 @@ watch(metricsHistorySnapshot, () => {
         </div>
         <div class="px-4 pb-4 pt-0 flex-0-0">
           <div class="flex justify-between pb-3 pt-3">
-            <tooltipped-label
+            <pv-tooltipped-label
               label="Network Usage"
-              icon="mdi-information"
+              :icon="IconInformation"
               location="top"
               tooltip="Measured rate for this coprocessor ONLY. This FMS limit is for ALL robot communication. If you are experiencing bandwidth issues while under this limit, check other sources."
             />
@@ -498,7 +505,7 @@ watch(metricsHistorySnapshot, () => {
           />
           <pv-button
             variant="primary"
-            icon="mdi-import"
+            :icon="IconImport"
             block
             :disabled="importFile === null"
             @click="handleSettingsImport"
@@ -521,7 +528,7 @@ watch(metricsHistorySnapshot, () => {
           <div class="w-full">
             <pv-button
               variant="primary"
-              icon="mdi-upload"
+              :icon="IconUpload"
               block
               @click="
                 offlineUpdateDialog.show = false;
@@ -547,7 +554,7 @@ watch(metricsHistorySnapshot, () => {
   />
 </template>
 
-<style scoped lang="scss">
+<style scoped >
 .fill-height {
   height: calc(100% - 12px) !important;
 }

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
+import type { Component } from "vue";
+import IconLoading from "~icons/mdi/loading";
 
 defineOptions({
   inheritAttrs: false
@@ -9,7 +11,7 @@ const props = withDefaults(
   defineProps<{
     variant?: "primary" | "passive" | "danger" | "ghost" | "text";
     size?: "sm" | "md" | "icon";
-    icon?: string;
+    icon?: Component;
     iconTrailing?: boolean;
     block?: boolean;
     disabled?: boolean;
@@ -69,21 +71,14 @@ const widthClass = computed(() => (props.block ? "w-full" : ""));
     :aria-busy="loading || undefined"
     :class="[baseClass, variantClass, sizeClass, widthClass, attrs.class]"
   >
-    <span
-      v-if="loading"
-      class="mdi mdi-loading animate-spin text-lg leading-none"
-      aria-hidden="true"
-    ></span>
-    <span
+    <IconLoading v-if="loading" class="size-5 animate-spin" aria-hidden="true" />
+    <component
       v-else-if="icon && !iconTrailing"
-      :class="['mdi text-lg leading-none', icon]"
+      :is="icon"
+      class="size-5 shrink-0"
       aria-hidden="true"
-    ></span>
+    />
     <slot />
-    <span
-      v-if="icon && iconTrailing"
-      :class="['mdi text-lg leading-none', icon]"
-      aria-hidden="true"
-    ></span>
+    <component v-if="icon && iconTrailing" :is="icon" class="size-5 shrink-0" aria-hidden="true" />
   </button>
 </template>

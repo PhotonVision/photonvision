@@ -1,26 +1,31 @@
-@layer theme, base, vuetify-core, vuetify-components, vuetify-overrides,vuetify-utilities, utilities, components, vuetify-final;
-/*@import 'vuetify/styles' layer(vuetify);*/
-@import "@fontsource/public-sans/600.css";
-@import "@fontsource/public-sans/700.css";
-@import "@fontsource/public-sans/800.css";
 
-
+@import "@fontsource/public-sans/latin-400.css";
+@import "@fontsource/public-sans/latin-500.css";
+@import "@fontsource/public-sans/latin-600.css";
+@import "@fontsource/public-sans/latin-700.css";
 
 @import "tailwindcss";
+
+
 @theme {
   --font-sans: "DM Sans", sans-serif;
-  --color-pv-background: rgb(var(--v-theme-background));
-  --color-pv-surface: rgb(var(--v-theme-surface));
-  --color-pv-surface-variant: rgb(var(--v-theme-surface-variant));
-  --color-pv-primary: rgb(var(--v-theme-primary));
-  --color-pv-secondary: rgb(var(--v-theme-secondary));
-  --color-pv-accent: rgb(var(--v-theme-accent));
-  --color-pv-error: rgb(var(--v-theme-error));
-  --color-pv-info: rgb(var(--v-theme-info));
-  --color-pv-success: rgb(var(--v-theme-success));
-  --color-pv-warning: rgb(var(--v-theme-warning));
-  --color-pv-button-active: rgb(var(--v-theme-buttonActive));
-  --color-pv-button-passive: rgb(var(--v-theme-buttonPassive));
+  --color-pv-background: var(--pv-background);
+  --color-pv-on-background: var(--pv-on-background);
+  --color-pv-surface: var(--pv-surface);
+  --color-pv-surface-variant: var(--pv-surface-variant);
+  --color-pv-on-surface: var(--pv-on-surface);
+  --color-pv-primary: var(--pv-primary);
+  --color-pv-secondary: var(--pv-secondary);
+  --color-pv-accent: var(--pv-accent);
+  --color-pv-error: var(--pv-error);
+  --color-pv-info: var(--pv-info);
+  --color-pv-success: var(--pv-success);
+  --color-pv-warning: var(--pv-warning);
+  --color-pv-button-active: var(--pv-button-active);
+  --color-pv-button-passive: var(--pv-button-passive);
+  --color-pv-logs-background: var(--pv-logs-background);
+  --color-pv-sidebar: var(--pv-sidebar);
+  --color-pv-surface-text: contrast-color(var(--pv-surface));
 
   @keyframes progress {
     from { background-position: 0 0; }
@@ -37,16 +42,16 @@
 @layer base {
   html {
     font-family: var(--font-sans);
-    background-color: rgb(var(--v-theme-background));
-    color: white;
+    background-color: var(--color-pv-background);
+    color: var(--color-pv-on-background);
     overscroll-behavior: none;
     scrollbar-gutter: stable;
   }
 
   body {
     min-height: 100vh;
-    background-color: rgb(var(--v-theme-background));
-    color: white;
+    background-color: var(--color-pv-background);
+    color: var(--color-pv-on-background);
     
   }
 

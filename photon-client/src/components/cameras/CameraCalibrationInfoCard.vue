@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
-import PvButton from "@/components/common/pv-button.vue";
-import PvTabs, { type PvTabItem } from "@/components/common/pv-tabs.vue";
-import PvAlert from "@/components/common/pv-alert.vue";
+
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref, useTemplateRef } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvTable from "@/components/common/pv-table.vue";
+import IconImport from "~icons/mdi/import";
+import IconExport from "~icons/mdi/export";
+import IconEye from "~icons/mdi/eye";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -111,6 +110,7 @@ const calibrationImageURL = (index: number) =>
 
 const tab = ref(0);
 const viewingImg = ref(0);
+const expandedObservations = ref<Array<string | number>>([]);
 const tabItems: PvTabItem<string>[] = [
   { label: "Details", value: "details" },
   { label: "Observations", value: "observations" }
@@ -125,7 +125,7 @@ const tabItems: PvTabItem<string>[] = [
           <div class="text-base font-semibold">Calibration Details</div>
         </div>
         <div class="flex w-1/2 items-center pt-0 pb-0 pl-0 md:w-1/4">
-          <pv-button variant="passive" icon="mdi-import" block @click="openUploadPhotonCalibJsonPrompt"
+          <pv-button variant="passive" :icon="IconImport" block @click="openUploadPhotonCalibJsonPrompt"
             >Import</pv-button
           >
           <input
@@ -139,7 +139,7 @@ const tabItems: PvTabItem<string>[] = [
         <div class="flex w-1/2 items-center pt-0 pb-0 pr-0 md:w-1/4">
           <pv-button
             variant="passive"
-            icon="mdi-export"
+            :icon="IconExport"
             block
             :disabled="!currentCalibrationCoeffs"
             @click="openExportCalibrationPrompt"
@@ -274,30 +274,30 @@ const tabItems: PvTabItem<string>[] = [
             </pv-table>
           </div>
           <div v-else-if="tab === 1">
-            <v-data-table
+            <pv-data-table
               id="observations-table"
-              items-per-page-text="Page size:"
+              v-model:expanded="expandedObservations"
               density="compact"
               style="width: 100%"
-              :headers="[
-                { title: 'Id', key: 'index' },
-                { title: 'Mean Reprojection Error', key: 'mean' }
+              :columns="[
+                { header: 'Id', accessorKey: 'index' },
+                { header: 'Mean Reprojection Error', accessorKey: 'mean' }
               ]"
-              :items="getObservationDetails()"
+              :data="getObservationDetails() ?? []"
               item-value="index"
               show-expand
             >
-              <template #item.data-table-expand="{ internalItem }">
+              <template #item.data-table-expand="{ internalItem, toggleExpand }">
                 <pv-button
                   size="icon"
                   variant="text"
                   :class="viewingImg === internalItem.index ? 'text-pv-button-active' : 'text-white/70'"
-                  @click="viewingImg = internalItem.index"
+                  @click="viewingImg = internalItem.index; toggleExpand(internalItem)"
                 >
-                  <span class="mdi mdi-eye text-lg leading-none" aria-hidden="true"></span>
+                  <IconEye class="size-5" aria-hidden="true" />
                 </pv-button>
               </template>
-            </v-data-table>
+            </pv-data-table>
           </div>
         </div>
       </div>
@@ -308,7 +308,7 @@ const tabItems: PvTabItem<string>[] = [
               class="pt-3 pb-3"
               color="primary"
               text="The selected video format has not been calibrated."
-              icon="mdi-alert-circle-outline"
+              :icon="IconAlertCircleOutline"
             />
           </div>
           <Suspense v-else-if="tab === 0">

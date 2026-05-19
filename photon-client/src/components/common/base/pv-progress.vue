@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { ProgressIndicator, ProgressRoot } from "reka-ui";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
+import { useThemeColor } from "../lib";
 
 const props = withDefaults(defineProps<{
   color?: string;
   showPercentage?: boolean;
 }>(),
-  { showPercentage: true }
+  { color: "primary", showPercentage: true }
 );
 const progressValue = defineModel<number>({
   default: 0
 });
-const themeColor = computed(() => (props.color ? `rgb(var(--v-theme-${props.color}))` : "rgb(var(--v-theme-primary))"));
+const { solid: themeColor } = useThemeColor(() => props.color);
 </script>
 
 <template>

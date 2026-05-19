@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import PvSlider from "@/components/common/pv-slider.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import PvCard from "@/components/common/pv-card.vue";
 </script>
 
 <template>
