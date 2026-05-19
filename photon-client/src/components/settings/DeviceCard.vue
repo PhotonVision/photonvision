@@ -292,11 +292,11 @@ watch(metricsHistorySnapshot, () => {
   <div class="flex flex-wrap">
     <!-- Device control card -->
     <div class="flex-1 pr-3">
-      <pv-card padding="none" class="mb-3 fill-height flex flex-col justify-between">
+      <pv-card padding="none" class="fill-height mb-3 flex flex-col justify-between">
         <div class="flex justify-between p-4 pb-2 text-lg font-semibold">
           <span>Device Control</span>
         </div>
-        <div class="px-4 pb-4 flex-0-0">
+        <div class="flex-0-0 px-4 pb-4">
           <pv-table>
             <tbody>
               <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)" :key="itemIndex">
@@ -310,8 +310,8 @@ watch(metricsHistorySnapshot, () => {
             </tbody>
           </pv-table>
         </div>
-        <div class="px-4 pb-4 pt-0 flex-0-0">
-          <div class="flex flex-wrap -mx-3">
+        <div class="flex-0-0 px-4 pt-0 pb-4">
+          <div class="-mx-3 flex flex-wrap">
             <div class="flex-1 px-3">
               <pv-button variant="passive" :icon="IconEye" block @click="useStateStore().showLogModal = true">
                 <span class="open-label">View Logs</span>
@@ -333,8 +333,8 @@ watch(metricsHistorySnapshot, () => {
             </div>
           </div>
         </div>
-        <div class="px-4 pb-4 pt-0 flex-0-0">
-          <div class="flex flex-wrap -mx-3">
+        <div class="flex-0-0 px-4 pt-0 pb-4">
+          <div class="-mx-3 flex flex-wrap">
             <div class="flex-1 px-3">
               <pv-button variant="passive" :icon="IconImport" block @click="() => (showImportDialog = true)">
                 <span class="open-label">Import Settings</span>
@@ -347,8 +347,8 @@ watch(metricsHistorySnapshot, () => {
             </div>
           </div>
         </div>
-        <div class="px-4 pb-4 pt-0 flex-0-0">
-          <div class="flex flex-wrap -mx-3">
+        <div class="flex-0-0 px-4 pt-0 pb-4">
+          <div class="-mx-3 flex flex-wrap">
             <div class="w-full px-3 sm:w-1/2">
               <pv-button variant="primary" :icon="IconRestart" block @click="restartProgram">
                 <span class="open-label">Restart Software</span>
@@ -368,8 +368,8 @@ watch(metricsHistorySnapshot, () => {
             </div>
           </div>
         </div>
-        <div class="px-4 pb-4 pt-0 flex-0-0">
-          <div class="flex flex-wrap -mx-3">
+        <div class="flex-0-0 px-4 pt-0 pb-4">
+          <div class="-mx-3 flex flex-wrap">
             <div class="w-full px-3 sm:w-1/2">
               <pv-button variant="primary" :icon="IconRestartAlert" block @click="restartDevice">
                 <span class="open-label">Reboot Device</span>
@@ -387,11 +387,11 @@ watch(metricsHistorySnapshot, () => {
 
     <!-- Device metrics card -->
     <div class="flex-1">
-      <pv-card padding="none" class="mb-3 fill-height flex flex-col justify-between">
+      <pv-card padding="none" class="fill-height mb-3 flex flex-col justify-between">
         <div class="flex justify-between p-4 pb-2 text-lg font-semibold">
           <span>Device Metrics</span>
         </div>
-        <div class="px-4 pb-4 pt-0 flex-0-0">
+        <div class="flex-0-0 px-4 pt-0 pb-4">
           <div class="flex justify-between pb-3">
             <span>CPU Usage</span>
             <span>{{ Math.round(cpuUsageData.at(-1)?.value ?? 0) }}%</span>
@@ -402,8 +402,8 @@ watch(metricsHistorySnapshot, () => {
             <template #fallback> Loading... </template>
           </Suspense>
         </div>
-        <div class="px-4 pb-4 pt-0 flex-0-0">
-          <div class="flex justify-between pb-3 pt-3">
+        <div class="flex-0-0 px-4 pt-0 pb-4">
+          <div class="flex justify-between pt-3 pb-3">
             <span>CPU Memory Usage</span>
             <span>{{ Math.round(cpuMemoryUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
@@ -413,8 +413,8 @@ watch(metricsHistorySnapshot, () => {
             <template #fallback> Loading... </template>
           </Suspense>
         </div>
-        <div class="px-4 pb-4 pt-0 flex-0-0">
-          <div class="flex justify-between pb-3 pt-3">
+        <div class="flex-0-0 px-4 pt-0 pb-4">
+          <div class="flex justify-between pt-3 pb-3">
             <span>CPU Temperature</span>
             <span>{{ cpuTempData.at(-1)?.value === -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
@@ -424,8 +424,8 @@ watch(metricsHistorySnapshot, () => {
             <template #fallback> Loading... </template>
           </Suspense>
         </div>
-        <div class="px-4 pb-4 pt-0 flex-0-0">
-          <div class="flex justify-between pb-3 pt-3">
+        <div class="flex-0-0 px-4 pt-0 pb-4">
+          <div class="flex justify-between pt-3 pb-3">
             <pv-tooltipped-label
               label="Network Usage"
               :icon="IconInformation"
@@ -515,7 +515,7 @@ watch(metricsHistorySnapshot, () => {
   <pv-dialog v-model="offlineUpdateDialog.show" :width="700">
     <pv-card padding="none" class="p-5">
       <div class="text-center text-lg font-semibold">Offline Update</div>
-      <div class="pt-0 pb-10px">
+      <div class="pb-10px pt-0">
         <span> {{ offlineUpdateDialog.confirmString }} </span>
       </div>
       <div class="pt-10px">

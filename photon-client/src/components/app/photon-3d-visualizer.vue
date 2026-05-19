@@ -4,7 +4,7 @@ import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
 import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
 import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
-import { onMounted, ref, watch, watchEffect } from "vue";
+import { onMounted, useTemplateRef, watch, watchEffect } from "vue";
 import { useTheme } from "@/composables/useTheme";
 const {
   ArrowHelper,
@@ -106,8 +106,8 @@ const drawTargets = async (targets: PhotonTarget[]) => {
     scene.add(...previousTargets);
   }
 };
-const containerRef = ref<HTMLDivElement>();
-const canvasRef = ref<HTMLCanvasElement>();
+const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
+const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
 
 const onResize = () => {
   const container = containerRef.value;
@@ -235,12 +235,12 @@ watch(
 </script>
 
 <template>
-  <div ref="containerRef" class="flex items-center flex-col w-full">
-    <div class="flex flex-wrap pt-0 pb-2 items-center w-full">
+  <div ref="containerRef" class="flex w-full flex-col items-center">
+    <div class="flex w-full flex-wrap items-center pt-0 pb-2">
       <div class="w-full pl-0 md:w-1/2">
         <div class="p-0 text-base font-semibold">Target Visualization</div>
       </div>
-      <div class="flex gap-2 flex-1">
+      <div class="flex flex-1 gap-2">
         <div class="flex w-full items-center pt-0 pl-6 md:pt-3 md:pl-3">
           <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
         </div>

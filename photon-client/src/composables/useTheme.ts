@@ -1,6 +1,6 @@
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, type Ref } from "vue";
 
-type ThemeColors = {
+export type ThemeColors = {
   background: string;
   onBackground: string;
   surface: string;
@@ -19,9 +19,9 @@ type ThemeColors = {
   sidebar: string;
 };
 
-type ThemeState = {
-  isDark: ReturnType<typeof ref<boolean>>;
-  colors: ReturnType<typeof ref<ThemeColors>>;
+export type ThemeState = {
+  isDark: Ref<boolean>;
+  colors: Ref<ThemeColors>;
   refreshTheme: () => void;
 };
 

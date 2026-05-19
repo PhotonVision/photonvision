@@ -6,7 +6,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "DM Sans", sans-serif;
+  --font-sans: "Public Sans", sans-serif;
   --color-pv-background: var(--pv-background);
   --color-pv-on-background: var(--pv-on-background);
   --color-pv-surface: var(--pv-surface);
@@ -24,20 +24,17 @@
   --color-pv-logs-background: var(--pv-logs-background);
   --color-pv-sidebar: var(--pv-sidebar);
   --color-pv-surface-text: contrast-color(var(--pv-surface));
-
-  @keyframes progress {
-    from {
-      background-position: 0 0;
-    }
-    to {
-      background-position: 30px 30px;
-    }
-  }
-
-  /* Link them to an animation name */
   --animate-progress: progress 1s infinite linear;
 }
-@custom-variant data-on (&[data-state~="on"]);
+
+@keyframes progress {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 30px 30px;
+  }
+}
 
 @layer base {
   html {

@@ -4,7 +4,6 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import { inject, onBeforeMount } from "vue";
-import { breakpointsVuetifyV3 } from "@vueuse/core";
 import { restoreThemeConfig } from "@/lib/ThemeManager";
 import { ConfigProvider } from "reka-ui";
 const is_demo = import.meta.env.MODE === "demo";
@@ -54,14 +53,12 @@ if (!is_demo) {
 onBeforeMount(() => {
   restoreThemeConfig();
 });
-
-const mdAndDown = `calc(${breakpointsVuetifyV3.md} - 0.02px)`;
 </script>
 
 <template>
   <ConfigProvider :scroll-body="false">
     <v-app>
-      <div class="flex h-full w-full bg-pv-background text-white">
+      <div class="bg-pv-background flex h-full w-full text-white">
         <photon-sidebar />
         <main class="flex min-w-0 flex-1 flex-col">
           <div class="flex-1">
@@ -75,9 +72,14 @@ const mdAndDown = `calc(${breakpointsVuetifyV3.md} - 0.02px)`;
   </ConfigProvider>
 </template>
 <style>
-@reference "./assets/styles/main.css";
 html {
-  @apply text-sm md:text-base;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 1rem;
+  }
 }
 </style>
 

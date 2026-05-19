@@ -79,14 +79,14 @@ const updateFromInput = (rawValue: string) => {
       <pv-button size="icon" variant="passive" :icon="IconMenuLeft" :disabled="disabled" @click="stepValue(-1)" />
       <slider-root
         v-model="sliderModel"
-        class="relative flex h-10 w-full touch-none select-none items-center"
+        class="relative flex h-10 w-full touch-none items-center select-none"
         :min="min"
         :max="max"
         :step="step"
         :disabled="disabled"
       >
-        <slider-track class="relative h-2 w-full rounded-full bg-white/12 data-disabled:opacity-50 pv-slider-track">
-          <slider-range class="absolute h-full rounded-full bg-pv-primary pv-slider-range" />
+        <slider-track class="pv-slider-track relative h-2 w-full rounded-full bg-white/12 data-disabled:opacity-50">
+          <slider-range class="bg-pv-primary pv-slider-range absolute h-full rounded-full" />
         </slider-track>
         <slider-thumb :class="sliderThumbClass" />
       </slider-root>

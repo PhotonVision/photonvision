@@ -285,7 +285,7 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <div class="pt-3 pb-10px text-base font-semibold">Advanced Networking</div>
+        <div class="pb-10px pt-3 text-base font-semibold">Advanced Networking</div>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -333,7 +333,7 @@ watchEffect(() => {
           text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
           :icon="IconInformationOutline"
         />
-        <div class="pt-3 pb-10px text-base font-semibold">Miscellaneous</div>
+        <div class="pb-10px pt-3 text-base font-semibold">Miscellaneous</div>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
@@ -360,14 +360,14 @@ watchEffect(() => {
     </div>
     <pv-dialog v-model="showThemeConfig" width="800">
       <pv-card padding="none" class="p-5">
-        <div class="text-center text-lg font-semibold pb-3">Theme Configuration</div>
-        <div class="pt-0 pb-10px">
-          <div class="flex flex-wrap gap-4 justify-center">
-            <div v-for="{ label, key } in themeColors" :key="key" class="flex flex-col items-center gap-2 w-45">
+        <div class="pb-3 text-center text-lg font-semibold">Theme Configuration</div>
+        <div class="pb-10px pt-0">
+          <div class="flex flex-wrap justify-center gap-4">
+            <div v-for="{ label, key } in themeColors" :key="key" class="flex w-45 flex-col items-center gap-2">
               <div class="flex items-center gap-2">
                 <ColorSwatch
                   :color="getHexColor(key)"
-                  class="w-5 h-5 rounded-sm border border-white/10"
+                  class="h-5 w-5 rounded-sm border border-white/10"
                   :style="{ backgroundColor: 'var(--reka-color-swatch-color)' }"
                 />
                 <span class="text-sm font-medium">{{ label }}</span>
@@ -383,9 +383,9 @@ watchEffect(() => {
                 class="relative w-full"
                 @update:color="(c: Color) => handleColorUpdate(key, c)"
               >
-                <ColorAreaArea class="relative w-full h-30 rounded-md overflow-hidden" :style="style">
+                <ColorAreaArea class="relative h-30 w-full overflow-hidden rounded-md" :style="style">
                   <ColorAreaThumb
-                    class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer"
+                    class="block h-4 w-4 cursor-pointer rounded-full border-2 border-white bg-white shadow-md"
                   />
                 </ColorAreaArea>
               </ColorAreaRoot>
@@ -395,14 +395,14 @@ watchEffect(() => {
                 :model-value="colorObjects[key]"
                 channel="hue"
                 color-space="hsl"
-                class="relative flex items-center w-full h-4"
+                class="relative flex h-4 w-full items-center"
                 @update:color="(c: Color) => handleColorUpdate(key, c)"
               >
-                <ColorSliderTrack class="relative flex-1 rounded-full h-2">
-                  <div class="absolute inset-0 rounded-full hue-gradient" />
+                <ColorSliderTrack class="relative h-2 flex-1 rounded-full">
+                  <div class="hue-gradient absolute inset-0 rounded-full" />
                 </ColorSliderTrack>
                 <ColorSliderThumb
-                  class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer"
+                  class="block h-4 w-4 cursor-pointer rounded-full border-2 border-white bg-white shadow-md"
                 />
               </ColorSliderRoot>
 
@@ -413,7 +413,7 @@ watchEffect(() => {
                 @update:model-value="(hex: string) => handleHexUpdate(key, hex)"
               >
                 <ColorFieldInput
-                  class="w-full px-2 py-1 text-sm border border-gray-600 bg-transparent rounded-md text-center font-mono"
+                  class="w-full rounded-md border border-gray-600 bg-transparent px-2 py-1 text-center font-mono text-sm"
                   placeholder="#000000"
                 />
               </ColorFieldRoot>

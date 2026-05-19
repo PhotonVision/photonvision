@@ -72,10 +72,10 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
     <div class="min-w-0 sm:flex-1" :style="{ flexBasis: selectWidth }">
       <select-root v-model="value" :disabled="disabled">
         <select-trigger
-          class="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-white/12 bg-black/15 px-3 text-left text-sm text-white shadow-sm outline-none transition data-[placeholder]:text-white/45 disabled:cursor-not-allowed disabled:opacity-50"
+          class="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-white/12 bg-black/15 px-3 text-left text-sm text-white shadow-sm transition outline-none disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-white/45"
         >
           <!-- This allows us to work around Reka #2160-->
-          <select-value :data-slot="value != null ? 'value' : 'placeholder'">
+          <select-value :data-slot="value !== null ? 'value' : 'placeholder'">
             <slot :model-value="modelValue">
               {{ displayValue ?? placeholder ?? "&nbsp;" }}
             </slot>
@@ -103,7 +103,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
                 :value="item.value"
                 :disabled="item.disabled"
                 :text-value="String(item.name)"
-                class="relative flex min-h-9 cursor-default items-center rounded-lg py-2 pr-8 pl-3 text-sm outline-none transition data-[disabled]:pointer-events-none data-[disabled]:opacity-35 data-[highlighted]:bg-pv-primary/20 data-[highlighted]:text-pv-primary data-[state=checked]:text-pv-primary"
+                class="data-highlighted:bg-pv-primary/20 data-highlighted:text-pv-primary data-[state=checked]:text-pv-primary relative flex min-h-9 cursor-default items-center rounded-lg py-2 pr-8 pl-3 text-sm transition outline-none data-disabled:pointer-events-none data-disabled:opacity-35"
               >
                 <select-item-text>{{ item.name }}</select-item-text>
                 <select-item-indicator class="absolute right-3 inline-flex items-center justify-center">

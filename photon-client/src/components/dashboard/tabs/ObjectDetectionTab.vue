@@ -6,12 +6,14 @@ import {
   ContourSortMode,
   ContourTargetOrientation
 } from "@/types/PipelineTypes";
+import type { SelectItem } from "@/components/common/form/pv-select.vue";
 
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
 import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -35,6 +37,9 @@ const mdAndDown = breakpoints.smallerOrEqual("md");
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
 );
+
+const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
+  Array.isArray(value) ? value : [value.first, value.second];
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
@@ -86,7 +91,7 @@ const selectedModel = computed<string>({
       :max="1"
       :step="0.01"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)
       "
     />
     <pv-slider
@@ -98,7 +103,9 @@ const selectedModel = computed<string>({
       :min="0"
       :max="1"
       :step="0.01"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ nms: value }, false)"
+      @update:modelValue="
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ nms: value }, false)
+      "
     />
     <pv-range-slider
       v-model="contourArea"
@@ -108,7 +115,8 @@ const selectedModel = computed<string>({
       :slider-cols="interactiveCols"
       :step="0.01"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: normalizeNumberPair(value) }, false)
       "
     />
     <pv-range-slider
@@ -120,7 +128,8 @@ const selectedModel = computed<string>({
       :slider-cols="interactiveCols"
       :step="0.01"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: normalizeNumberPair(value) }, false)
       "
     />
     <pv-select
@@ -133,7 +142,8 @@ const selectedModel = computed<string>({
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+        (value: ContourTargetOrientation) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
     <pv-select
@@ -151,7 +161,8 @@ const selectedModel = computed<string>({
         { value: ContourSortMode.Centermost, name: 'Centermost' }
       ]"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
+        (value: ContourSortMode) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
       "
     />
   </div>
