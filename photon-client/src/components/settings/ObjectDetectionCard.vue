@@ -428,7 +428,7 @@ const handleBulkImport = async () => {
   width: 100%;
 }
 
-.pt-10px {
+.pt-3 {
   padding-top: 10px !important;
 }
 

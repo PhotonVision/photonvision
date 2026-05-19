@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { colWidthClass } from "../lib";
-import { computed } from "vue";
+import { computed, useId } from "vue";
 
 const value = defineModel<string>({ required: true });
 
@@ -16,6 +16,7 @@ const props = withDefaults(
     inputCols?: number;
     rules?: ((v: string | number | null) => boolean | string)[];
     clearable?: boolean;
+    id?: string;
   }>(),
   {
     disabled: false,
@@ -24,6 +25,9 @@ const props = withDefaults(
     type: "text"
   }
 );
+
+const id = useId();
+const inputId = computed(() => props.id || id);
 
 const labelWidthClass = computed(() => colWidthClass(props.labelCols || 12 - props.inputCols));
 const inputWidthClass = computed(() => colWidthClass(props.inputCols));
@@ -51,12 +55,13 @@ const handleKeydown = ({ key }: KeyboardEvent) => {
 </script>
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="pt-10px pb-10px flex items-center pl-0">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" />
+    <div :class="labelWidthClass" class="pt-3 pb-3 flex items-center pl-0">
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
     </div>
 
-    <div :class="inputWidthClass" class="pt-10px pb-10px flex items-center pr-0">
+    <div :class="inputWidthClass" class="pt-3 pb-3 flex items-center pr-0">
       <pv-text-field
+        :id="inputId"
         v-model="value"
         density="compact"
         :placeholder="placeholder"

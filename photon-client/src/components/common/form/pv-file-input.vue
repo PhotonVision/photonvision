@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { colWidthClass, fieldWrapperClasses } from "../lib";
 import { computed, useTemplateRef } from "vue";
+import { Label } from "reka-ui";
 import IconClose from "~icons/mdi/close";
 
 const value = defineModel<File | File[] | null>({ required: true });
@@ -76,14 +77,14 @@ const displayValue = computed(() => {
 
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="pt-10px pb-10px flex items-center pl-0">
+    <div :class="labelWidthClass" class="pt-3 pb-3 flex items-center pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
 
-    <div :class="inputWidthClass" class="pt-10px pb-10px flex items-center pr-0">
+    <div :class="inputWidthClass" class="pt-3 pb-3 flex items-center pr-0">
       <div class="flex w-full flex-col gap-1">
         <div :class="fieldClass">
-          <label
+          <Label
             class="flex min-w-0 flex-1 cursor-pointer items-center"
             :class="[{ 'text-white': value, 'text-white/40': !value }, props.variant === 'outline' ? 'py-2' : 'py-1']"
           >
@@ -97,7 +98,7 @@ const displayValue = computed(() => {
               @change="handleChange"
             />
             <span class="truncate">{{ displayValue }}</span>
-          </label>
+          </Label>
           <button
             v-if="clearable && value"
             type="button"
