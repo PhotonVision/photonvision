@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends string | number">
-import { computed } from "vue";
+import { computed, useId } from "vue";
 import IconChevronDown from "~icons/mdi/chevron-down";
 import IconCheck from "~icons/mdi/check";
 import { useColFlexBasis, popoverSurfaceClass } from "../lib";
@@ -37,12 +37,16 @@ const props = withDefaults(
     selectCols?: number;
     disabled?: boolean;
     items: SelectItems;
+    id?: string;
   }>(),
   {
     selectCols: 9,
     disabled: false
   }
 );
+
+const id = useId();
+const selectId = computed(() => props.id || id);
 
 const areSelectItems = (items: SelectItems): items is SelectItem<T>[] => typeof items[0] === "object";
 const { labelWidth, contentWidth: selectWidth } = useColFlexBasis(() => props.selectCols);
@@ -67,15 +71,17 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
 <template>
   <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="selectId" />
     </div>
     <div class="min-w-0 sm:flex-1" :style="{ flexBasis: selectWidth }">
       <select-root v-model="value" :disabled="disabled">
         <select-trigger
-          class="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-white/12 bg-black/15 px-3 text-left text-sm text-white shadow-sm transition outline-none disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-white/45"
+          :id="selectId"
+          class="focus-within:ring-pv-primary flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-white/12 bg-black/15 px-3 text-left text-sm text-white shadow-sm transition outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-black/20 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-white/45"
+          :aria-label="label"
         >
           <!-- This allows us to work around Reka #2160-->
-          <select-value :data-slot="value !== null ? 'value' : 'placeholder'">
+          <select-value :data-slot="value !== null ? 'value' : 'placeholder'" class="truncate">
             <slot :model-value="modelValue">
               {{ displayValue ?? placeholder ?? "&nbsp;" }}
             </slot>

@@ -225,7 +225,7 @@ watchEffect(() => {
       </pv-button>
     </div>
     <div class="p-5 pt-0">
-      <div class="pb-10px text-base font-semibold">Networking</div>
+      <div class="pb-3 text-base font-semibold">Networking</div>
       <div>
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -285,7 +285,7 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <div class="pb-10px pt-3 text-base font-semibold">Advanced Networking</div>
+        <div class="pb-3 pt-3 text-base font-semibold">Advanced Networking</div>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -333,7 +333,7 @@ watchEffect(() => {
           text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
           :icon="IconInformationOutline"
         />
-        <div class="pb-10px pt-3 text-base font-semibold">Miscellaneous</div>
+        <div class="pb-3 pt-3 text-base font-semibold">Miscellaneous</div>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
@@ -361,7 +361,7 @@ watchEffect(() => {
     <pv-dialog v-model="showThemeConfig" width="800">
       <pv-card padding="none" class="p-5">
         <div class="pb-3 text-center text-lg font-semibold">Theme Configuration</div>
-        <div class="pb-10px pt-0">
+        <div class="pb-3 pt-0">
           <div class="flex flex-wrap justify-center gap-4">
             <div v-for="{ label, key } in themeColors" :key="key" class="flex w-45 flex-col items-center gap-2">
               <div class="flex items-center gap-2">
@@ -440,7 +440,7 @@ watchEffect(() => {
 </template>
 
 <style scoped>
-.mt-10px {
+.mt-3 {
   margin-top: 10px !important;
 }
 

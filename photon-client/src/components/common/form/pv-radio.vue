@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { colWidthClass } from "../lib";
 import { computed } from "vue";
-import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot } from "reka-ui";
+import { Label, RadioGroupIndicator, RadioGroupItem, RadioGroupRoot } from "reka-ui";
 
 const value = defineModel<number>({
   required: true
@@ -35,12 +35,12 @@ const stringValue = computed({
 
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="pt-10px pb-10px flex items-center pl-0">
+    <div :class="labelWidthClass" class="pt-3 pb-3 flex items-center pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
-    <div :class="inputWidthClass" class="pt-10px pb-10px flex items-center pr-0">
+    <div :class="inputWidthClass" class="pt-3 pb-3 flex items-center pr-0">
       <RadioGroupRoot v-model="stringValue" :disabled="disabled" orientation="horizontal" class="flex flex-wrap gap-4">
-        <label
+        <Label
           v-for="(radioName, index) in list"
           :key="index"
           class="flex cursor-pointer items-center gap-2"
@@ -56,7 +56,7 @@ const stringValue = computed({
             />
           </RadioGroupItem>
           <span class="text-sm select-none">{{ radioName }}</span>
-        </label>
+        </Label>
       </RadioGroupRoot>
     </div>
   </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useAttrs } from "vue";
+import { computed, useAttrs, useId } from "vue";
 import type { Component } from "vue";
 import IconClose from "~icons/mdi/close";
 import { fieldWrapperClasses } from "../lib";
@@ -33,6 +33,7 @@ const props = withDefaults(
     inputStyle?: string | Record<string, string>;
     rawValue?: boolean;
     variant?: "underlined" | "outline";
+    id?: string;
   }>(),
   {
     type: "text",
@@ -45,6 +46,8 @@ const props = withDefaults(
   }
 );
 
+const id = useId();
+const inputId = computed(() => props.id || id);
 const attrs = useAttrs();
 
 const validationMessage = computed(() => {
@@ -98,12 +101,13 @@ const fieldClass = computed(() =>
 
 <template>
   <div :class="wrapperClass" :style="wrapperStyle">
-    <div v-if="label" class="text-xs font-medium text-white/70">
+    <Label v-if="label" :for="inputId" class="text-xs font-medium text-white/70">
       {{ label }}
-    </div>
+    </Label>
     <div :class="fieldClass">
       <component :is="prependIcon" v-if="prependIcon" class="size-4 text-white/70" aria-hidden="true" />
       <input
+        :id="inputId"
         v-model="inputValue"
         v-bind="inputAttrs"
         :type="type"

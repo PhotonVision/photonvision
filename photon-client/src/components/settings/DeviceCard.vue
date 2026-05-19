@@ -515,10 +515,10 @@ watch(metricsHistorySnapshot, () => {
   <pv-dialog v-model="offlineUpdateDialog.show" :width="700">
     <pv-card padding="none" class="p-5">
       <div class="text-center text-lg font-semibold">Offline Update</div>
-      <div class="pb-10px pt-0">
+      <div class="pb-3 pt-0">
         <span> {{ offlineUpdateDialog.confirmString }} </span>
       </div>
-      <div class="pt-10px">
+      <div class="pt-3">
         <div class="flex flex-wrap items-center text-white">
           <div class="w-full">
             <pv-button

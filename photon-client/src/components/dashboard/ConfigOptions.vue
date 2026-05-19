@@ -40,15 +40,14 @@ const allTabs = Object.freeze({
 
 const selectedTabs = ref([0, 0, 0, 0]);
 const breakpoints = useCustomBreakpoints();
-const smAndDown = breakpoints.smallerOrEqual("sm");
-const mdAndDown = breakpoints.smallerOrEqual("md");
-const lgAndDown = breakpoints.smallerOrEqual("lg");
-const xl = breakpoints.greaterOrEqual("xl");
+const lgAndDown = breakpoints.smaller("xl");
+const xlAndDown = breakpoints.smaller("2xl");
+const xxlAndUp = breakpoints.greaterOrEqual("2xl");
 
 const getTabGroups = (): ConfigOption[][] => {
-  if (smAndDown.value || useCameraSettingsStore().isDriverMode) {
+  if (lgAndDown.value || useCameraSettingsStore().isDriverMode) {
     return [Object.values(allTabs)];
-  } else if (mdAndDown.value || !useStateStore().sidebarFolded) {
+  } else if (xlAndDown.value || !useStateStore().sidebarFolded) {
     return [
       [
         allTabs.inputTab,
@@ -61,24 +60,10 @@ const getTabGroups = (): ConfigOption[][] => {
       ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
-  } else if (lgAndDown.value) {
+  } else if (xxlAndUp.value) {
     return [
       [allTabs.inputTab],
-      [
-        allTabs.thresholdTab,
-        allTabs.contoursTab,
-        allTabs.apriltagTab,
-        allTabs.arucoTab,
-        allTabs.objectDetectionTab,
-        allTabs.outputTab
-      ],
-      [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
-    ];
-  } else if (xl.value) {
-    return [
-      [allTabs.inputTab],
-      [allTabs.thresholdTab],
-      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.objectDetectionTab, allTabs.outputTab],
+      [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   }
@@ -127,14 +112,25 @@ const onBeforeTabUpdate = () => {
   if (useCameraSettingsStore().isDriverMode) {
     selectedTabs.value[0] = 0;
   }
+  const tabGroupsValue = tabGroups.value;
+  selectedTabs.value = selectedTabs.value.map((selectedTabIndex, tabGroupIndex) => {
+    const tabGroup = tabGroupsValue[tabGroupIndex];
+    if (!tabGroup) return 0;
+    if (selectedTabIndex >= tabGroup.length) {
+      return 0;
+    }
+    return selectedTabIndex;
+  });
 };
 
 const getSelectedComponent = (tabGroupData: ConfigOption[], selectedTabName: number): Component => {
-  return tabGroupData[selectedTabName].component;
+  return tabGroupData[selectedTabName]?.component;
 };
 
 const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
   tabGroupData.map((tabConfig) => ({ label: tabConfig.tabName, value: tabConfig.tabName }));
+
+
 </script>
 
 <template>
@@ -153,13 +149,13 @@ const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
         :key="tabGroupIndex"
         :class="[
           tabGroupIndex === 1 && shouldUseWideSecondTabGroup ? 'w-7/12' : 'flex-1',
-          tabGroupIndex !== tabGroups.length - 1 && 'pr-3'
+          tabGroupIndex !== tabGroups.length - 1 && 'pb-3 lg:pr-3 lg:pb-0'
         ]"
         @vue:before-update="onBeforeTabUpdate"
       >
         <pv-card padding="none" class="h-full pr-5 pl-5">
           <pv-tabs v-model="selectedTabs[tabGroupIndex]" :items="getTabItems(tabGroupData)" class="mt-2" />
-          <div class="pt-10px pb-10px">
+          <div class="py-3">
             <KeepAlive>
               <Component :is="getSelectedComponent(tabGroupData, selectedTabs[tabGroupIndex])" />
             </KeepAlive>
