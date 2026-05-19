@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { PipelineType, type AprilTagPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvSlider from "@/components/common/pv-slider.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
+
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";

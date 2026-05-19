@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { Component } from "vue";
 import { computed, ref, watchEffect } from "vue";
-import PvTabs, { type PvTabItem } from "@/components/common/pv-tabs.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvAlert from "@/components/common/pv-alert.vue";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
+
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import InputTab from "@/components/dashboard/tabs/InputTab.vue";
@@ -144,7 +143,7 @@ const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
         color="error"
         density="compact"
         text="Camera is not connected. Please check your connection and try again."
-        icon="mdi-alert-circle-outline"
+        :icon="IconAlertCircleOutline"
       />
     </template>
     <template v-else>

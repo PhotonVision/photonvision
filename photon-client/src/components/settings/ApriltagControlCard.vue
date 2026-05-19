@@ -2,8 +2,6 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
 import { toDeg } from "@/lib/MathUtils";
-import PvCard from "@/components/common/pv-card.vue";
-import PvTable from "@/components/common/pv-table.vue";
 
 const { Euler, Quaternion: ThreeQuat } = await import("three");
 
@@ -51,8 +49,8 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   </pv-card>
 </template>
 
-<style scoped lang="scss">
-.v-table {
+<style scoped>
+.pv-table {
   width: 100%;
   height: 100%;
   text-align: center;
@@ -79,7 +77,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--v-theme-accent));
+    background-color: var(--color-pv-accent);
     border-radius: 10px;
   }
 }

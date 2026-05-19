@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PvCard from "@/components/common/pv-card.vue";
-import PvIcon from "@/components/common/pv-icon.vue";
+import IconWebOff from "~icons/mdi/web-off";
+
 const devMode = process.env.NODE_ENV === "development";
 const docsSrc = import.meta.env.MODE === "demo" ? "https://docs.photonvision.org" : "docs/index.html";
 </script>
@@ -15,7 +15,7 @@ const docsSrc = import.meta.env.MODE === "demo" ? "https://docs.photonvision.org
         class="flex h-full flex-col items-center justify-center gap-4 px-6 text-center"
       >
         <div class="flex flex-col">
-          <pv-icon size="64" color="primary">mdi-web-off</pv-icon>
+          <pv-icon size="64" color="primary" :icon="IconWebOff" />
         </div>
         <div class="text-base">
           PhotonClient is in development mode so the documentation page will not load. Please recompile in production

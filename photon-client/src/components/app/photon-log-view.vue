@@ -3,11 +3,11 @@ import { computed, inject, ref, useTemplateRef, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import LogEntry from "@/components/app/photon-log-entry.vue";
-import PvButton from "@/components/common/pv-button.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvInput from "@/components/common/pv-input.vue";
+import IconDownload from "~icons/mdi/download";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
+import IconClose from "~icons/mdi/close";
+import IconMagnify from "~icons/mdi/magnify";
+
 import VirtualList from "vue3-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
@@ -31,7 +31,8 @@ const logs = computed<LogMessage[]>(() =>
       (message) =>
         selectedLogLevels.value[message.level] &&
         message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "") &&
-        (timeInput.value === undefined || !timeInput.value ||
+        (timeInput.value === undefined ||
+          !timeInput.value ||
           message.timestamp.getTime() >=
             new Date().setHours(
               parseInt(timeInput.value.substring(0, 2)),
@@ -86,7 +87,7 @@ document.addEventListener("keydown", (e) => {
           <div class="text-lg font-semibold">Program Logs</div>
         </div>
         <div class="flex-1 self-center pl-3 text-right">
-          <pv-button variant="text" size="sm" icon="mdi-download" @click="handleLogExport">
+          <pv-button variant="text" size="sm" :icon="IconDownload" @click="handleLogExport">
             <span class="menu-label">Download</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -98,10 +99,15 @@ document.addEventListener("keydown", (e) => {
               target="_blank"
             />
           </pv-button>
-          <pv-button variant="text" size="sm" icon="mdi-trash-can-outline" @click="handleLogClear">
+          <pv-button variant="text" size="sm" :icon="IconTrashCanOutline" @click="handleLogClear">
             <span class="menu-label">Clear Client Logs</span>
           </pv-button>
-          <pv-button variant="text" size="sm" icon="mdi-close" @click="() => (useStateStore().showLogModal = false)">
+          <pv-button
+            variant="text"
+            size="sm"
+            :icon="IconClose"
+            @click="() => (useStateStore().showLogModal = false)"
+          >
             <span class="menu-label">Close</span>
           </pv-button>
         </div>
@@ -117,7 +123,7 @@ document.addEventListener("keydown", (e) => {
               v-model="searchQuery"
               clearable
               hide-details
-              prepend-icon="mdi-magnify"
+              :prepend-icon="IconMagnify"
               label="Search"
               :input-cols="9"
             />
@@ -171,7 +177,7 @@ document.addEventListener("keydown", (e) => {
   </pv-dialog>
 </template>
 
-<style scoped lang="scss">
+<style scoped >
 .dialog-container {
   height: 90vh;
   min-height: 300px !important;
@@ -186,7 +192,7 @@ document.addEventListener("keydown", (e) => {
   /* Dialog data size - options */
   height: calc(100% - 56px);
   padding: 10px;
-  background-color: rgb(var(--v-theme-logsBackground)) !important;
+  background-color: var(--color-pv-logs-background) !important;
   border-radius: 5px;
 }
 

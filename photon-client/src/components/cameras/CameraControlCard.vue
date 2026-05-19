@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import PvButton from "@/components/common/pv-button.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvIcon from "@/components/common/pv-icon.vue";
-import PvAlert from "@/components/common/pv-alert.vue";
 import { ref } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
+import IconFolder from "~icons/mdi/folder";
+import IconInformationOutline from "~icons/mdi/information-outline";
+import IconEye from "~icons/mdi/eye";
+import IconDownload from "~icons/mdi/download";
 
 interface SnapshotMetadata {
   snapshotName: string;
@@ -99,11 +98,11 @@ const expanded = ref([]);
   <pv-card>
     <div class="pb-2 text-base font-semibold">Camera Control</div>
     <div class="pt-1">
-      <pv-button variant="passive" icon="mdi-folder" block @click="fetchSnapshots">
+      <pv-button variant="passive" :icon="IconFolder" block @click="fetchSnapshots">
         <span class="open-label">Show Saved Snapshots</span>
       </pv-button>
     </div>
-    <pv-dialog v-model="showSnapshotViewerDialog">
+    <pv-dialog v-model="showSnapshotViewerDialog" :width="1500">
       <pv-card padding="none" class="p-5">
         <div class="pb-2 text-lg font-semibold">Saved Frame Snapshots</div>
         <div v-if="imgData.length === 0" class="pt-0">
@@ -111,7 +110,7 @@ const expanded = ref([]);
             color="buttonPassive"
             density="compact"
             text="There are currently no saved snapshots."
-            icon="mdi-information-outline"
+            :icon="IconInformationOutline"
             variant="tonal"
           />
         </div>
@@ -121,30 +120,23 @@ const expanded = ref([]);
             color="buttonPassive"
             density="compact"
             text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
-            icon="mdi-information-outline"
+            :icon="IconInformationOutline"
             variant="tonal"
           />
-          <v-data-table
-            v-model:expanded="expanded"
-            :headers="[
-              { title: 'Snapshot Name', key: 'snapshotShortName', sortable: false },
-              { title: 'Camera Unique Name', key: 'cameraUniqueName' },
-              { title: 'Camera Nickname', key: 'cameraNickname' },
-              { title: 'Stream Type', key: 'streamType' },
-              { title: 'Time Created', key: 'timeCreated' },
-              { title: 'Actions', key: 'actions', sortable: false }
-            ]"
-            :items="imgData"
-            :group-by="[{ key: 'cameraUniqueName' }]"
-            class="elevation-0"
-            item-value="index"
-            show-expand
-          >
+          <pv-data-table v-model:expanded="expanded" :columns="[
+            { header: 'Snapshot Name', accessorKey: 'snapshotShortName', sortable: false },
+            { header: 'Camera Unique Name', accessorKey: 'cameraUniqueName' },
+            { header: 'Camera Nickname', accessorKey: 'cameraNickname' },
+            { header: 'Stream Type', accessorKey: 'streamType' },
+            { header: 'Time Created', accessorKey: 'timeCreated' },
+            { header: 'Actions', accessorKey: 'actions', sortable: false }
+          ]" :data="imgData" :grouping="['cameraUniqueName']" class="elevation-0" item-value="index"
+            show-expand>
             <template #item.data-table-expand="{ internalItem, toggleExpand }">
               <pv-button
                 size="icon"
                 variant="ghost"
-                icon="mdi-eye"
+                :icon="IconEye"
                 class="text-white/70 hover:text-white"
                 @click="toggleExpand(internalItem)"
               />
@@ -157,25 +149,25 @@ const expanded = ref([]);
                 </div>
               </td>
             </template>
-            <!-- eslint-disable-next-line vue/valid-v-slot-->
             <template #item.actions="{ item }">
               <div style="display: flex; justify-content: center">
                 <a :download="item.snapshotName" :href="item.snapshotSrc">
-                  <pv-icon size="small"> mdi-download </pv-icon>
+                  <pv-icon size="small" :icon="IconDownload" />
                 </a>
               </div>
             </template>
-          </v-data-table>
+          </pv-data-table>
         </div>
       </pv-card>
     </pv-dialog>
   </pv-card>
 </template>
 
-<style scoped lang="scss">
+<style scoped >
 .v-divider {
   border-color: white !important;
 }
+
 .v-table {
   text-align: center;
 
@@ -196,7 +188,7 @@ const expanded = ref([]);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--v-theme-accent));
+    background-color: var(--color-pv-accent);
     border-radius: 10px;
   }
 }
@@ -210,10 +202,12 @@ const expanded = ref([]);
     max-width: 100%;
   }
 }
+
 @media only screen and (max-width: 351px) {
   .open-icon {
     margin: 0 !important;
   }
+
   .open-label {
     display: none;
   }

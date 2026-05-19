@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
+import type { Component } from "vue";
+import IconClose from "~icons/mdi/close";
+import { fieldWrapperClasses } from "../lib";
 
 defineOptions({
   inheritAttrs: false
@@ -21,7 +24,7 @@ const props = withDefaults(
     rules?: RuleFn[];
     hideDetails?: boolean;
     clearable?: boolean;
-    prependIcon?: string;
+    prependIcon?: Component;
     density?: Density;
     step?: number;
     min?: number;
@@ -59,17 +62,6 @@ const validationMessage = computed(() => {
 const hasError = computed(() => Boolean(validationMessage.value));
 const hasValue = computed(() => value.value !== null && value.value !== undefined && String(value.value).length > 0);
 
-const densityClass = computed(() => {
-  switch (props.density) {
-    case "comfortable":
-      return "min-h-10 text-sm";
-    case "default":
-      return "min-h-11 text-base";
-    default:
-      return "min-h-9 text-sm";
-  }
-});
-
 const wrapperClass = computed(() => ["flex flex-col gap-1", attrs.class] as string[]);
 const wrapperStyle = computed(() => attrs.style as string);
 
@@ -93,29 +85,14 @@ const clearValue = () => {
   value.value = props.type === "number" && !props.rawValue ? null : "";
 };
 
-const fieldClass = computed(() => {
-  const base = [
-    "flex w-full items-center gap-2",
-    densityClass.value,
-    "transition",
-    props.disabled ? "cursor-not-allowed opacity-50" : "",
-    props.variant === "underlined"
-      ? "border-b border-white/20 bg-transparent"
-      : "rounded-xl border border-white/12 bg-black/15 px-3"
-  ];
-
-  if (props.variant === "underlined") {
-    base.push("px-0");
-  }
-
-  if (hasError.value) {
-    base.push("border-pv-error/70");
-  } else {
-    base.push("focus-within:border-pv-primary");
-  }
-
-  return base;
-});
+const fieldClass = computed(() =>
+  fieldWrapperClasses({
+    density: props.density,
+    disabled: props.disabled,
+    variant: props.variant,
+    hasError: hasError.value
+  })
+);
 </script>
 
 <template>
@@ -124,7 +101,7 @@ const fieldClass = computed(() => {
       {{ label }}
     </div>
     <div :class="fieldClass">
-      <span v-if="prependIcon" :class="['mdi text-base leading-none text-white/70', prependIcon]" aria-hidden="true" />
+      <component v-if="prependIcon" :is="prependIcon" class="size-4 text-white/70" aria-hidden="true" />
       <input
         v-model="inputValue"
         v-bind="inputAttrs"
@@ -148,7 +125,7 @@ const fieldClass = computed(() => {
         aria-label="Clear"
         @click="clearValue"
       >
-        <span class="mdi mdi-close text-base leading-none" aria-hidden="true" />
+        <IconClose class="size-4" aria-hidden="true" />
       </button>
     </div>
     <p v-if="!hideDetails && hasError" class="text-xs text-pv-error">

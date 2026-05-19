@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PvTable from "@/components/common/pv-table.vue";
 
 import { PVCameraInfo } from "@/types/SettingTypes";
 import { cameraInfoFor } from "@/lib/PhotonUtils";
@@ -9,7 +8,7 @@ const { camera } = defineProps<{ camera: PVCameraInfo }>();
 
 <template>
   <div>
-    <pv-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <pv-table density="compact" :style="{ backgroundColor: 'var(--color-pv-primary)' }">
       <tbody>
         <tr v-if="'dev' in camera && camera.dev !== null">
           <td>Device Number:</td>

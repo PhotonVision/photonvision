@@ -1,66 +1,161 @@
-import { type ThemeInstance } from "vuetify";
-import { LightTheme, DarkTheme } from "@/plugins/vuetify";
+type ThemeName = "LightTheme" | "DarkTheme";
 
-export const resetTheme = (theme: ThemeInstance) => {
-  const themeType = theme.global.current.value.dark ? "dark" : "light";
-  localStorage.removeItem(`${themeType}-background`);
-  localStorage.removeItem(`${themeType}-primary`);
-  localStorage.removeItem(`${themeType}-secondary`);
-  localStorage.removeItem(`${themeType}-surface`);
-
-  restoreThemeConfig(theme);
+type ThemeColors = {
+  background: string;
+  onBackground: string;
+  surface: string;
+  surfaceVariant: string;
+  onSurface: string;
+  primary: string;
+  secondary: string;
+  accent: string;
+  error: string;
+  info: string;
+  success: string;
+  warning: string;
+  buttonActive: string;
+  buttonPassive: string;
+  logsBackground: string;
+  sidebar: string;
 };
 
-export const getThemeColor = (theme: ThemeInstance, color: string): string => {
-  const themeType = theme.global.current.value.dark ? "dark" : "light";
-  const defaultTheme = theme.global.current.value.dark ? DarkTheme : LightTheme;
-  return localStorage.getItem(`${themeType}-${color}`) ?? defaultTheme.colors![color]!;
+const LightThemeDefaults: ThemeColors = {
+  background: "#232C37",
+  onBackground: "#ffffff",
+  surface: "#006492",
+  surfaceVariant: "#8f8f8f",
+  onSurface: "#f0f0f0",
+  primary: "#FFD843",
+  secondary: "#39A4D5",
+  accent: "#FFD843",
+  error: "#b80000",
+  info: "#2196F3",
+  success: "#4CAF50",
+  warning: "#FFC107",
+  buttonActive: "#FFD843",
+  buttonPassive: "#39A4D5",
+  logsBackground: "#232C37",
+  sidebar: "#006492"
 };
 
-export const setThemeColor = (theme: ThemeInstance, color: string, value: string | null) => {
-  const themeType = theme.global.current.value.dark ? "dark" : "light";
+const DarkThemeDefaults: ThemeColors = {
+  background: "#151515",
+  onBackground: "#f0f0f0",
+  surface: "#1c232c",
+  surfaceVariant: "#485b70",
+  onSurface: "#f0f0f0",
+  primary: "#39A4D5",
+  secondary: "#FFD843",
+  accent: "#006492",
+  error: "#ff2e2e",
+  info: "#2196F3",
+  success: "#4CAF50",
+  warning: "#FFC107",
+  buttonActive: "#FFD843",
+  buttonPassive: "#39A4D5",
+  logsBackground: "#151515",
+  sidebar: "#151515"
+};
+
+const themeDefaults: Record<ThemeName, ThemeColors> = {
+  LightTheme: LightThemeDefaults,
+  DarkTheme: DarkThemeDefaults
+};
+
+const cssVarMap: Record<keyof ThemeColors, string> = {
+  background: "--pv-background",
+  onBackground: "--pv-on-background",
+  surface: "--pv-surface",
+  surfaceVariant: "--pv-surface-variant",
+  onSurface: "--pv-on-surface",
+  primary: "--pv-primary",
+  secondary: "--pv-secondary",
+  accent: "--pv-accent",
+  error: "--pv-error",
+  info: "--pv-info",
+  success: "--pv-success",
+  warning: "--pv-warning",
+  buttonActive: "--pv-button-active",
+  buttonPassive: "--pv-button-passive",
+  logsBackground: "--pv-logs-background",
+  sidebar: "--pv-sidebar"
+};
+
+const colorVarMap: Record<keyof ThemeColors, string> = {
+  background: "--color-pv-background",
+  onBackground: "--color-pv-on-background",
+  surface: "--color-pv-surface",
+  surfaceVariant: "--color-pv-surface-variant",
+  onSurface: "--color-pv-on-surface",
+  primary: "--color-pv-primary",
+  secondary: "--color-pv-secondary",
+  accent: "--color-pv-accent",
+  error: "--color-pv-error",
+  info: "--color-pv-info",
+  success: "--color-pv-success",
+  warning: "--color-pv-warning",
+  buttonActive: "--color-pv-button-active",
+  buttonPassive: "--color-pv-button-passive",
+  logsBackground: "--color-pv-logs-background",
+  sidebar: "--color-pv-sidebar"
+};
+
+const getStoredThemeName = (): ThemeName => {
+  const stored = localStorage.getItem("theme");
+  return stored === "DarkTheme" ? "DarkTheme" : "LightTheme";
+};
+
+const getThemeType = (themeName: ThemeName) => (themeName === "DarkTheme" ? "dark" : "light");
+
+const getThemeColorValue = (themeName: ThemeName, key: keyof ThemeColors): string => {
+  const themeType = getThemeType(themeName);
+  return localStorage.getItem(`${themeType}-${key}`) ?? themeDefaults[themeName][key];
+};
+
+const applyTheme = (themeName: ThemeName) => {
+  if (typeof document === "undefined") return;
+
+  const root = document.documentElement;
+  root.dataset.theme = themeName === "DarkTheme" ? "dark" : "light";
+
+  (Object.keys(cssVarMap) as Array<keyof ThemeColors>).forEach((key) => {
+    const value = getThemeColorValue(themeName, key);
+    root.style.setProperty(cssVarMap[key], value);
+    root.style.setProperty(colorVarMap[key], value);
+  });
+};
+
+export const resetTheme = () => {
+  const themeName = getStoredThemeName();
+  const themeType = getThemeType(themeName);
+
+  (Object.keys(themeDefaults[themeName]) as Array<keyof ThemeColors>).forEach((key) => {
+    localStorage.removeItem(`${themeType}-${key}`);
+  });
+
+  applyTheme(themeName);
+};
+
+export const getThemeColor = (color: keyof ThemeColors): string => {
+  return getThemeColorValue(getStoredThemeName(), color);
+};
+
+export const setThemeColor = (color: keyof ThemeColors, value: string | null) => {
+  const themeName = getStoredThemeName();
+  const themeType = getThemeType(themeName);
+
   if (value) localStorage.setItem(`${themeType}-${color}`, value);
   else localStorage.removeItem(`${themeType}-${color}`);
 
-  restoreThemeConfig(theme);
+  applyTheme(themeName);
 };
 
-export const toggleTheme = (theme: ThemeInstance) => {
-  const currentTheme = localStorage.getItem("theme");
-  localStorage.setItem("theme", currentTheme === "LightTheme" ? "DarkTheme" : "LightTheme");
-
-  restoreThemeConfig(theme);
+export const toggleTheme = () => {
+  const nextTheme = getStoredThemeName() === "LightTheme" ? "DarkTheme" : "LightTheme";
+  localStorage.setItem("theme", nextTheme);
+  applyTheme(nextTheme);
 };
 
-export const restoreThemeConfig = (theme: ThemeInstance) => {
-  // Restore theme preference
-  const storedTheme = localStorage.getItem("theme");
-  if (storedTheme) theme.global.name.value = storedTheme;
-
-  // Restore custom theme colors
-  const themeType = theme.global.current.value.dark ? "dark" : "light";
-  const defaultTheme = theme.global.name.value === "LightTheme" ? LightTheme : DarkTheme;
-
-  const customBackground = localStorage.getItem(`${themeType}-background`);
-  const customPrimary = localStorage.getItem(`${themeType}-primary`);
-  const customSecondary = localStorage.getItem(`${themeType}-secondary`);
-  const customSurface = localStorage.getItem(`${themeType}-surface`);
-
-  theme.themes.value[theme.global.name.value].colors.background = customBackground ?? defaultTheme.colors!.background!;
-  theme.themes.value[theme.global.name.value].colors.sidebar = theme.global.current.value.dark
-    ? (customBackground ?? defaultTheme.colors!.sidebar!)
-    : (customSurface ?? defaultTheme.colors!.sidebar!);
-
-  theme.themes.value[theme.global.name.value].colors.primary = customPrimary ?? defaultTheme.colors!.primary!;
-  theme.themes.value[theme.global.name.value].colors.buttonActive =
-    (themeType === "light" ? customPrimary : customSecondary) ?? defaultTheme.colors!.buttonActive!;
-
-  theme.themes.value[theme.global.name.value].colors.secondary = customSecondary ?? defaultTheme.colors!.secondary!;
-  theme.themes.value[theme.global.name.value].colors.buttonPassive =
-    (themeType === "light" ? customSecondary : customPrimary) ?? defaultTheme.colors!.buttonPassive!;
-
-  theme.themes.value[theme.global.name.value].colors.accent = customSecondary ?? defaultTheme.colors!.accent!;
-  theme.themes.value[theme.global.name.value].colors.toggle = customSecondary ?? defaultTheme.colors!.toggle!;
-
-  theme.themes.value[theme.global.name.value].colors.surface = customSurface ?? defaultTheme.colors!.surface!;
+export const restoreThemeConfig = () => {
+  applyTheme(getStoredThemeName());
 };

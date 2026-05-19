@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import PvButton from "@/components/common/pv-button.vue";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import { useColFlexBasis, sliderNumberInputClass, sliderThumbClass } from "../lib";
 import { computed } from "vue";
 import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from "reka-ui";
+import IconMenuLeft from "~icons/mdi/menu-left";
+import IconMenuRight from "~icons/mdi/menu-right";
 
 const props = withDefaults(
   defineProps<{
@@ -18,7 +19,7 @@ const props = withDefaults(
   { step: 1, disabled: false, sliderCols: 8 }
 );
 const emit = defineEmits<{ (e: "update:modelValue", value: number): void }>();
-const labelWidth = computed(() => `${((12 - props.sliderCols) / 12) * 100}%`);
+const { labelWidth } = useColFlexBasis(() => props.sliderCols);
 
 // Debounce function
 function debounce(func: (...args: number[]) => void, wait: number) {
@@ -72,13 +73,13 @@ const updateFromInput = (rawValue: string) => {
 <template>
   <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <tooltipped-label :tooltip="tooltip" :label="label" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
       <pv-button
         size="icon"
         variant="passive"
-        icon="mdi-menu-left"
+        :icon="IconMenuLeft"
         :disabled="disabled"
         @click="stepValue(-1)"
       />
@@ -94,13 +95,13 @@ const updateFromInput = (rawValue: string) => {
           <slider-range class="absolute h-full rounded-full bg-pv-primary pv-slider-range" />
         </slider-track>
         <slider-thumb
-          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none data-disabled:opacity-50 pv-slider-thumb"
+          :class="sliderThumbClass"
         />
       </slider-root>
       <pv-button
         size="icon"
         variant="passive"
-        icon="mdi-menu-right"
+        :icon="IconMenuRight"
         :disabled="disabled"
         @click="stepValue(1)"
       />
@@ -109,7 +110,7 @@ const updateFromInput = (rawValue: string) => {
         :max="max"
         :min="min"
         :disabled="disabled"
-        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45 text-left"
+        :class="sliderNumberInputClass"
         type="number"
         :step="step"
         @keyup.enter="updateFromInput(($event.target as HTMLInputElement).value)"
