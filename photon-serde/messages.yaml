@@ -13,7 +13,9 @@
 - name: Transform3d
   shimmed: True
   java_decode_shim: PacketUtils.unpackTransform3d
+  java_decode_shim_ref: PacketUtils::unpackTransform3d
   java_encode_shim: PacketUtils.packTransform3d
+  java_encode_shim_ref: PacketUtils::packTransform3d
   cpp_type: wpi::math::Transform3d
   cpp_include: "<wpi/math/geometry/Transform3d.hpp>"
   python_decode_shim: decodeTransform

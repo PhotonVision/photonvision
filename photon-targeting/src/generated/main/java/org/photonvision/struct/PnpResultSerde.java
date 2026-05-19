@@ -58,15 +58,6 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
-    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
-    private static BiConsumer<Packet, Transform3d> best_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
-    private static Function<Packet, Transform3d> best_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
-
-    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
-    private static BiConsumer<Packet, Transform3d> alt_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
-    private static Function<Packet, Transform3d> alt_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
-
     @Override
     public void pack(Packet packet, PnpResult value) {
         // best is of shimmed type Transform3d
@@ -76,13 +67,13 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
         PacketUtils.packTransform3d(packet, value.alt);
 
         // field bestReprojErr is of intrinsic type float64
-        packet.encodeDouble(value.bestReprojErr);
+        packet.encode(value.bestReprojErr);
 
         // field altReprojErr is of intrinsic type float64
-        packet.encodeDouble(value.altReprojErr);
+        packet.encode(value.altReprojErr);
 
         // field ambiguity is of intrinsic type float64
-        packet.encodeDouble(value.ambiguity);
+        packet.encode(value.ambiguity);
     }
 
     @Override

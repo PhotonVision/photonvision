@@ -62,7 +62,7 @@ class Int16TestMessageSerde:
         # test is of intrinsic type int16
         ret.test = packet.decode16()
 
-        # vlaTest is a custom VLA!
+        # vlaTest is an intrinsic VLA!
         ret.vlaTest = packet.decodeListShimmed(packet.decode16)
 
         # optTest is optional! it better not be a VLA too

@@ -60,7 +60,7 @@ class MultiTargetPNPResultSerde:
         # estimatedPose is of non-intrinsic type PnpResult
         ret.estimatedPose = PnpResult.photonStruct.unpack(packet)
 
-        # fiducialIDsUsed is a custom VLA!
+        # fiducialIDsUsed is an intrinsic VLA!
         ret.fiducialIDsUsed = packet.decodeListShimmed(packet.decode16)
 
         return ret

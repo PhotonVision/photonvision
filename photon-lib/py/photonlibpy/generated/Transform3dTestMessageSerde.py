@@ -61,7 +61,7 @@ class Transform3dTestMessageSerde:
 
         ret.test = packet.decodeTransform()
 
-        # vlaTest is a custom VLA!
+        # vlaTest is a shimmed VLA!
         ret.vlaTest = packet.decodeListShimmed(packet.decodeTransform)
 
         # optTest is optional! it better not be a VLA too

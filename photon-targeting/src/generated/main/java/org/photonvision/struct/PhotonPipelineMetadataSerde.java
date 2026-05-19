@@ -58,20 +58,19 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, PhotonPipelineMetadata value) {
         // field sequenceID is of intrinsic type int64
-        packet.encodeLong(value.sequenceID);
+        packet.encode(value.sequenceID);
 
         // field captureTimestampMicros is of intrinsic type int64
-        packet.encodeLong(value.captureTimestampMicros);
+        packet.encode(value.captureTimestampMicros);
 
         // field publishTimestampMicros is of intrinsic type int64
-        packet.encodeLong(value.publishTimestampMicros);
+        packet.encode(value.publishTimestampMicros);
 
         // field timeSinceLastPong is of intrinsic type int64
-        packet.encodeLong(value.timeSinceLastPong);
+        packet.encode(value.timeSinceLastPong);
     }
 
     @Override

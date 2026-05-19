@@ -62,7 +62,7 @@ class Int8TestMessageSerde:
         # test is of intrinsic type int8
         ret.test = packet.decode8()
 
-        # vlaTest is a custom VLA!
+        # vlaTest is an intrinsic VLA!
         ret.vlaTest = packet.decodeListShimmed(packet.decode8)
 
         # optTest is optional! it better not be a VLA too

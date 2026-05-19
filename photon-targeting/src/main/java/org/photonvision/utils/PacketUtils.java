@@ -17,11 +17,6 @@
 
 package org.photonvision.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.wpilib.math.geometry.*;
 
@@ -37,8 +32,65 @@ public class PacketUtils {
     public static final int POSE2D_BYTE_SIZE = TRANSLATION2D_BYTE_SIZE + ROTATION2D_BYTE_SIZE;
     public static final int POSE3D_BYTE_SIZE = TRANSLATION3D_BYTE_SIZE + ROTATION3D_BYTE_SIZE;
 
+    // Kinda scuffed, this is so that datatype functions have the same signature as other shims
+    public static void packByte(Packet packet, byte data) {
+        packet.encode(data);
+    }
+
+    public static byte unpackByte(Packet packet) {
+        return packet.decodeByte();
+    }
+
+    public static void packShort(Packet packet, short data) {
+        packet.encode(data);
+    }
+
+    public static short unpackShort(Packet packet) {
+        return packet.decodeShort();
+    }
+
+    public static void packInt(Packet packet, int data) {
+        packet.encode(data);
+    }
+
+    public static int unpackInt(Packet packet) {
+        return packet.decodeInt();
+    }
+
+    public static void packLong(Packet packet, long data) {
+        packet.encode(data);
+    }
+
+    public static long unpackLong(Packet packet) {
+        return packet.decodeLong();
+    }
+
+    public static void packFloat(Packet packet, float data) {
+        packet.encode(data);
+    }
+
+    public static float unpackFloat(Packet packet) {
+        return packet.decodeFloat();
+    }
+
+    public static void packDouble(Packet packet, double data) {
+        packet.encode(data);
+    }
+
+    public static double unpackDouble(Packet packet) {
+        return packet.decodeDouble();
+    }
+
+    public static void packBoolean(Packet packet, boolean data) {
+        packet.encode(data);
+    }
+
+    public static boolean unpackBoolean(Packet packet) {
+        return packet.decodeBoolean();
+    }
+
     public static void packRotation2d(Packet packet, Rotation2d rotation) {
-        packet.encodeDouble(rotation.getRadians());
+        packet.encode(rotation.getRadians());
     }
 
     public static Rotation2d unpackRotation2d(Packet packet) {
@@ -46,10 +98,10 @@ public class PacketUtils {
     }
 
     public static void packQuaternion(Packet packet, Quaternion quaternion) {
-        packet.encodeDouble(quaternion.getW());
-        packet.encodeDouble(quaternion.getX());
-        packet.encodeDouble(quaternion.getY());
-        packet.encodeDouble(quaternion.getZ());
+        packet.encode(quaternion.getW());
+        packet.encode(quaternion.getX());
+        packet.encode(quaternion.getY());
+        packet.encode(quaternion.getZ());
     }
 
     public static Quaternion unpackQuaternion(Packet packet) {
@@ -66,8 +118,8 @@ public class PacketUtils {
     }
 
     public static void packTranslation2d(Packet packet, Translation2d translation) {
-        packet.encodeDouble(translation.getX());
-        packet.encodeDouble(translation.getY());
+        packet.encode(translation.getX());
+        packet.encode(translation.getY());
     }
 
     public static Translation2d unpackTranslation2d(Packet packet) {
@@ -75,9 +127,9 @@ public class PacketUtils {
     }
 
     public static void packTranslation3d(Packet packet, Translation3d translation) {
-        packet.encodeDouble(translation.getX());
-        packet.encodeDouble(translation.getY());
-        packet.encodeDouble(translation.getZ());
+        packet.encode(translation.getX());
+        packet.encode(translation.getY());
+        packet.encode(translation.getZ());
     }
 
     public static Translation3d unpackTranslation3d(Packet packet) {
@@ -118,51 +170,5 @@ public class PacketUtils {
 
     public static Pose3d unpackPose3d(Packet packet) {
         return new Pose3d(unpackTranslation3d(packet), unpackRotation3d(packet));
-    }
-
-    public static <T> void packList(Packet packet, List<T> data, BiConsumer<Packet, T> packer) {
-        byte size = (byte) data.size();
-        if (data.size() > Byte.MAX_VALUE) {
-            throw new RuntimeException("Array too long! Got " + size);
-        }
-
-        // length byte
-        packet.encodeByte(size);
-
-        for (var f : data) {
-            packer.accept(packet, f);
-        }
-    }
-
-    public static <T> List<T> unpackList(Packet packet, Function<Packet, T> unpacker) {
-        byte length = packet.decodeByte();
-
-        var ret = new ArrayList<T>();
-        ret.ensureCapacity(length);
-
-        for (int i = 0; i < length; i++) {
-            ret.add(unpacker.apply(packet));
-        }
-
-        return ret;
-    }
-
-    public static <T> void packOptional(
-            Packet packet, Optional<T> optional, BiConsumer<Packet, T> packer) {
-        if (optional.isPresent()) {
-            packet.encodeBoolean(true);
-            packer.accept(packet, optional.get());
-        } else {
-            packet.encodeBoolean(false);
-        }
-    }
-
-    public static <T> Optional<T> unpackOptional(Packet packet, Function<Packet, T> unpacker) {
-        boolean isPresent = packet.decodeBoolean();
-        if (isPresent) {
-            return Optional.of(unpacker.apply(packet));
-        } else {
-            return Optional.empty();
-        }
     }
 }

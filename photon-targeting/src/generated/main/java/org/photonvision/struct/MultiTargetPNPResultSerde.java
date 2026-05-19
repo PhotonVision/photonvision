@@ -58,14 +58,13 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, MultiTargetPNPResult value) {
         // field estimatedPose is of non-intrinsic type PnpResult
         PnpResult.photonStruct.pack(packet, value.estimatedPose);
 
-        // fiducialIDsUsed is a custom VLA!
-        packet.encodeShortList(value.fiducialIDsUsed);
+        // fiducialIDsUsed is an intrinsic VLA!
+        packet.encodeListImpl(value.fiducialIDsUsed,PacketUtils::packShort);
     }
 
     @Override
@@ -75,8 +74,8 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
         // estimatedPose is of non-intrinsic type PnpResult
         ret.estimatedPose = PnpResult.photonStruct.unpack(packet);
 
-        // fiducialIDsUsed is a custom VLA!
-        ret.fiducialIDsUsed = packet.decodeShortList();
+        // fiducialIDsUsed is an intrinsic VLA!
+        ret.fiducialIDsUsed = packet.decodeListImpl(PacketUtils::unpackShort);
 
         return ret;
     }

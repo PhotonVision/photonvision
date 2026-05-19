@@ -62,7 +62,7 @@ class Int64TestMessageSerde:
         # test is of intrinsic type int64
         ret.test = packet.decodeLong()
 
-        # vlaTest is a custom VLA!
+        # vlaTest is an intrinsic VLA!
         ret.vlaTest = packet.decodeListShimmed(packet.decodeLong)
 
         # optTest is optional! it better not be a VLA too

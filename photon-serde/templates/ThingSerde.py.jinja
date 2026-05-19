@@ -102,7 +102,7 @@ class {{ name }}Serde:
         # {{ field.name }} is optional! it better not be a VLA too
         ret.{{ field.name }} = packet.decodeOptionalShimmed(packet.{{ get_message_by_name(field.type).python_decode_shim }})
         {%- elif field.vla == True %}
-        # {{ field.name }} is a custom VLA!
+        # {{ field.name }} is a shimmed VLA!
         ret.{{ field.name }} = packet.decodeListShimmed(packet.{{ get_message_by_name(field.type).python_decode_shim }})
         {%- else %}
         ret.{{ field.name }} = packet.{{ get_message_by_name(field.type).python_decode_shim }}()
@@ -112,7 +112,7 @@ class {{ name }}Serde:
         # {{ field.name }} is optional! it better not be a VLA too
         ret.{{ field.name }} = packet.decodeOptionalShimmed(packet.{{ type_map[field.type].python_decode_shim }})
         {%- elif field.vla == True %}
-        # {{ field.name }} is a custom VLA!
+        # {{ field.name }} is an intrinsic VLA!
         ret.{{ field.name }} = packet.decodeListShimmed(packet.{{ type_map[field.type].python_decode_shim }})
         {%- else %}
         # {{ field.name }} is of intrinsic type {{ field.type }}

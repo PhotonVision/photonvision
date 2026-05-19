@@ -58,17 +58,16 @@ public class Int32TestMessageSerde implements PacketSerde<Int32TestMessage> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, Int32TestMessage value) {
         // field test is of intrinsic type int32
-        packet.encodeInt(value.test);
+        packet.encode(value.test);
 
-        // vlaTest is a custom VLA!
-        packet.encodeIntList(value.vlaTest);
+        // vlaTest is an intrinsic VLA!
+        packet.encodeListImpl(value.vlaTest,PacketUtils::packInt);
 
         // optTest is optional! it better not be a VLA too
-        packet.encodeIntOptional(value.optTest);
+        packet.encodeOptionalImpl(value.optTest,PacketUtils::packInt);
     }
 
     @Override
@@ -78,11 +77,11 @@ public class Int32TestMessageSerde implements PacketSerde<Int32TestMessage> {
         // test is of intrinsic type int32
         ret.test = packet.decodeInt();
 
-        // vlaTest is a custom VLA!
-        ret.vlaTest = packet.decodeIntList();
+        // vlaTest is an intrinsic VLA!
+        ret.vlaTest = packet.decodeListImpl(PacketUtils::unpackInt);
 
         // optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeIntOptional();
+        ret.optTest = packet.decodeOptionalImpl(PacketUtils::unpackInt);
 
         return ret;
     }

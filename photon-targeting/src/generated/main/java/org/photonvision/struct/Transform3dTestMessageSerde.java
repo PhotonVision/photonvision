@@ -58,29 +58,16 @@ public class Transform3dTestMessageSerde implements PacketSerde<Transform3dTestM
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
-    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
-    private static BiConsumer<Packet, Transform3d> test_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
-    private static Function<Packet, Transform3d> test_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
-
-    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
-    private static BiConsumer<Packet, Transform3d> vlaTest_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
-    private static Function<Packet, Transform3d> vlaTest_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
-
-    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
-    private static BiConsumer<Packet, Transform3d> optTest_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
-    private static Function<Packet, Transform3d> optTest_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
-
     @Override
     public void pack(Packet packet, Transform3dTestMessage value) {
         // test is of shimmed type Transform3d
         PacketUtils.packTransform3d(packet, value.test);
 
-        // vlaTest is a custom VLA!
-        PacketUtils.packList(packet, value.vlaTest, vlaTest_PSINTERNALencode_shim_callable);
+        // vlaTest is a shimmed VLA!
+        packet.encodeListImpl(value.vlaTest, PacketUtils::packTransform3d);
 
         // optTest is optional! it better not be a VLA too
-        PacketUtils.packOptional(packet, value.optTest, optTest_PSINTERNALencode_shim_callable);
+        packet.encodeOptionalImpl(value.optTest, PacketUtils::packTransform3d);
     }
 
     @Override
@@ -90,11 +77,11 @@ public class Transform3dTestMessageSerde implements PacketSerde<Transform3dTestM
         // test is of shimmed type Transform3d
         ret.test = PacketUtils.unpackTransform3d(packet);
 
-        // vlaTest is a custom VLA!
-        ret.vlaTest = PacketUtils.unpackList(packet, vlaTest_PSINTERNALdecode_shim_callable);
+        // vlaTest is a shimmed VLA!
+        ret.vlaTest = packet.decodeListImpl(PacketUtils::unpackTransform3d);
 
         // optTest is optional! it better not be a VLA too
-        ret.optTest = PacketUtils.unpackOptional(packet, optTest_PSINTERNALdecode_shim_callable);
+        ret.optTest = packet.decodeOptionalImpl(PacketUtils::unpackTransform3d);
 
         return ret;
     }

@@ -58,17 +58,16 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, PhotonPipelineResult value) {
         // field metadata is of non-intrinsic type PhotonPipelineMetadata
         PhotonPipelineMetadata.photonStruct.pack(packet, value.metadata);
 
         // targets is a custom VLA!
-        packet.encodeList(value.targets);
+        packet.encodeListImpl(value.targets,PhotonTrackedTarget.photonStruct::pack);
 
         // multitagResult is optional! it better not be a VLA too
-        packet.encodeOptional(value.multitagResult);
+        packet.encodeOptionalImpl(value.multitagResult,MultiTargetPNPResult.photonStruct::pack);
     }
 
     @Override
@@ -79,10 +78,10 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         ret.metadata = PhotonPipelineMetadata.photonStruct.unpack(packet);
 
         // targets is a custom VLA!
-        ret.targets = packet.decodeList(PhotonTrackedTarget.photonStruct);
+        ret.targets = packet.decodeListImpl(PhotonTrackedTarget.photonStruct::unpack);
 
         // multitagResult is optional! it better not be a VLA too
-        ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct);
+        ret.multitagResult = packet.decodeOptionalImpl(MultiTargetPNPResult.photonStruct::unpack);
 
         return ret;
     }

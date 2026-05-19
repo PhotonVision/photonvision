@@ -58,17 +58,16 @@ public class BoolTestMessageSerde implements PacketSerde<BoolTestMessage> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, BoolTestMessage value) {
         // field test is of intrinsic type bool
-        packet.encodeBoolean(value.test);
+        packet.encode(value.test);
 
-        // vlaTest is a custom VLA!
-        packet.encodeBooleanList(value.vlaTest);
+        // vlaTest is an intrinsic VLA!
+        packet.encodeListImpl(value.vlaTest,PacketUtils::packBoolean);
 
         // optTest is optional! it better not be a VLA too
-        packet.encodeBooleanOptional(value.optTest);
+        packet.encodeOptionalImpl(value.optTest,PacketUtils::packBoolean);
     }
 
     @Override
@@ -78,11 +77,11 @@ public class BoolTestMessageSerde implements PacketSerde<BoolTestMessage> {
         // test is of intrinsic type bool
         ret.test = packet.decodeBoolean();
 
-        // vlaTest is a custom VLA!
-        ret.vlaTest = packet.decodeBooleanList();
+        // vlaTest is an intrinsic VLA!
+        ret.vlaTest = packet.decodeListImpl(PacketUtils::unpackBoolean);
 
         // optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeBooleanOptional();
+        ret.optTest = packet.decodeOptionalImpl(PacketUtils::unpackBoolean);
 
         return ret;
     }

@@ -61,23 +61,16 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-{% for field in fields -%}
-{%- if field.type | is_shimmed %}
-    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
-    private static BiConsumer<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALencode_shim_callable = (packet, value) -> {{ get_message_by_name(field.type).java_encode_shim }}(packet, value);
-    private static Function<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALdecode_shim_callable = (packet) -> {{ get_message_by_name(field.type).java_decode_shim }}(packet);
-{% endif -%}
-{% endfor%}
     @Override
     public void pack(Packet packet, {{ name }} value) {
 {%- for field in fields -%}
 {%- if field.type | is_shimmed %}
         {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        PacketUtils.packOptional(packet, value.{{ field.name }}, {{ field.name }}_PSINTERNALencode_shim_callable);
+        packet.encodeOptionalImpl(value.{{ field.name }}, {{ get_message_by_name(field.type).java_encode_shim_ref }});
         {%- elif field.vla == True %}
-        // {{ field.name }} is a custom VLA!
-        PacketUtils.packList(packet, value.{{ field.name }}, {{ field.name }}_PSINTERNALencode_shim_callable);
+        // {{ field.name }} is a shimmed VLA!
+        packet.encodeListImpl(value.{{ field.name }}, {{ get_message_by_name(field.type).java_encode_shim_ref }});
         {%- else %}
         // {{ field.name }} is of shimmed type {{ field.type }}
         {{ get_message_by_name(field.type).java_encode_shim }}(packet, value.{{ field.name }});
@@ -85,21 +78,21 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {%- elif field.type | is_intrinsic %}
         {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        packet.{{ type_map[field.type].java_optional_encode_method }}(value.{{ field.name }});
+        packet.encodeOptionalImpl(value.{{ field.name }},{{ type_map[field.type].java_encode_shim_ref }});
         {%- elif field.vla == True %}
-        // {{ field.name }} is a custom VLA!
-        packet.{{ type_map[field.type].java_list_encode_method }}(value.{{ field.name }});
+        // {{ field.name }} is an intrinsic VLA!
+        packet.encodeListImpl(value.{{ field.name }},{{ type_map[field.type].java_encode_shim_ref }});
         {%- else %}
         // field {{ field.name }} is of intrinsic type {{ field.type }}
-        packet.{{ type_map[field.type].java_encode_method }}(value.{{ field.name }});
+        packet.encode(value.{{ field.name }});
         {%- endif %}
 {%- else %}
         {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        packet.encodeOptional(value.{{ field.name }});
+        packet.encodeOptionalImpl(value.{{ field.name }},{{ field.type }}.photonStruct::pack);
         {%- elif field.vla == True %}
         // {{ field.name }} is a custom VLA!
-        packet.encodeList(value.{{ field.name }});
+        packet.encodeListImpl(value.{{ field.name }},{{ field.type }}.photonStruct::pack);
         {%- else %}
         // field {{ field.name }} is of non-intrinsic type {{ field.type }}
         {{ field.type }}.photonStruct.pack(packet, value.{{ field.name }});
@@ -117,10 +110,10 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {%- if field.type | is_shimmed %}
         {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        ret.{{ field.name }} = PacketUtils.unpackOptional(packet, {{ field.name }}_PSINTERNALdecode_shim_callable);
+        ret.{{ field.name }} = packet.decodeOptionalImpl({{ get_message_by_name(field.type).java_decode_shim_ref }});
         {%- elif field.vla == True %}
-        // {{ field.name }} is a custom VLA!
-        ret.{{ field.name }} = PacketUtils.unpackList(packet, {{ field.name }}_PSINTERNALdecode_shim_callable);
+        // {{ field.name }} is a shimmed VLA!
+        ret.{{ field.name }} = packet.decodeListImpl({{ get_message_by_name(field.type).java_decode_shim_ref }});
         {%- else %}
         // {{ field.name }} is of shimmed type {{ field.type }}
         ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
@@ -128,10 +121,10 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {%- elif field.type | is_intrinsic %}
         {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        ret.{{ field.name }} = packet.{{ type_map[field.type].java_optional_decode_method }}();
+        ret.{{ field.name }} = packet.decodeOptionalImpl({{ type_map[field.type].java_decode_shim_ref }});
         {%- elif field.vla == True %}
-        // {{ field.name }} is a custom VLA!
-        ret.{{ field.name }} = packet.{{ type_map[field.type].java_list_decode_method }}();
+        // {{ field.name }} is an intrinsic VLA!
+        ret.{{ field.name }} = packet.decodeListImpl({{ type_map[field.type].java_decode_shim_ref }});
         {%- else %}
         // {{ field.name }} is of intrinsic type {{ field.type }}
         ret.{{field.name}} = packet.{{ type_map[field.type].java_decode_method }}();
@@ -139,10 +132,10 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {%- else %}
         {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        ret.{{ field.name }} = packet.decodeOptional({{ field.type }}.photonStruct);
+        ret.{{ field.name }} = packet.decodeOptionalImpl({{ field.type }}.photonStruct::unpack);
         {%- elif field.vla == True %}
         // {{ field.name }} is a custom VLA!
-        ret.{{ field.name }} = packet.decodeList({{ field.type }}.photonStruct);
+        ret.{{ field.name }} = packet.decodeListImpl({{ field.type }}.photonStruct::unpack);
         {%- else %}
         // {{ field.name }} is of non-intrinsic type {{ field.type }}
         ret.{{field.name}} = {{ field.type }}.photonStruct.unpack(packet);

@@ -62,7 +62,7 @@ class BoolTestMessageSerde:
         # test is of intrinsic type bool
         ret.test = packet.decodeBoolean()
 
-        # vlaTest is a custom VLA!
+        # vlaTest is an intrinsic VLA!
         ret.vlaTest = packet.decodeListShimmed(packet.decodeBoolean)
 
         # optTest is optional! it better not be a VLA too

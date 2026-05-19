@@ -58,14 +58,13 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, TargetCorner value) {
         // field x is of intrinsic type float64
-        packet.encodeDouble(value.x);
+        packet.encode(value.x);
 
         // field y is of intrinsic type float64
-        packet.encodeDouble(value.y);
+        packet.encode(value.y);
     }
 
     @Override
