@@ -55,6 +55,7 @@ public class UICameraConfiguration {
     public boolean mismatch;
 
     public int fpsLimit;
+    public boolean isEnabled;
 
     // Status for if the underlying device is present and such
     public boolean isConnected;

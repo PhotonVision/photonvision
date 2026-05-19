@@ -20,6 +20,7 @@ const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
 
 const theme = useTheme();
+const MM_PER_INCH = 25.4;
 
 const settingsValid = ref(true);
 
@@ -38,6 +39,11 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
 
     if (!skip) {
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
+
+      // minPixelCount is the multiplied area of a 640x480 (the minimum for proper calibration) resolution
+      const minPixelCount = 640 * 480;
+      const resArea = format.resolution.width * format.resolution.height;
+
       if (calib !== undefined) {
         // Mean overall reprojection error
         // Calculated as average of each observation's mean error
@@ -60,7 +66,10 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
           ) *
           (180 / Math.PI);
       }
-      uniqueResolutions.push(format);
+
+      if (resArea >= minPixelCount) {
+        uniqueResolutions.push(format);
+      }
     }
   });
   uniqueResolutions.sort(
@@ -81,18 +90,26 @@ const calibrationDivisors = computed(() =>
   })
 );
 
-const uniqueVideoResolutionString = ref("");
+const uniqueVideoResolutionIndex = ref(getUniqueVideoResolutionStrings()?.[0]?.value);
 
 // Use a watchEffect so the value is populated/reacts when the stores become available or update.
 // This avoids trying to index into an array that may be empty during page reload.
 watchEffect(() => {
-  const currentIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
-  useStateStore().calibrationData.videoFormatIndex = currentIndex;
   const names = useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
     getResolutionString(f.resolution)
   );
-  uniqueVideoResolutionString.value = names[currentIndex] ?? names[0] ?? "";
+  const currentFormatIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
+  // Checks if the current resolution is present in the list of valid formats, if not defaults to the last index (which is usually the highest resolution)
+  const currentIndex =
+    getUniqueVideoResolutionStrings()
+      .map((x) => x.name)
+      .find((n) => n === names[currentFormatIndex]) !== undefined
+      ? currentFormatIndex
+      : names.length - 1;
+  useStateStore().calibrationData.videoFormatIndex = currentIndex;
+  uniqueVideoResolutionIndex.value = currentIndex;
 });
+const dimensionUnit = ref<"in" | "mm">("in");
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
@@ -101,6 +118,28 @@ const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
+
+const convertInchesToDisplay = (valueInInches: number) =>
+  dimensionUnit.value === "mm" ? valueInInches * MM_PER_INCH : valueInInches;
+
+const convertDisplayToInches = (displayValue: number) =>
+  dimensionUnit.value === "mm" ? displayValue / MM_PER_INCH : displayValue;
+
+const squareSize = computed({
+  get: () => convertInchesToDisplay(squareSizeIn.value),
+  set(value) {
+    squareSizeIn.value = convertDisplayToInches(value);
+  }
+});
+
+const markerSize = computed({
+  get: () => convertInchesToDisplay(markerSizeIn.value),
+  set(value) {
+    markerSizeIn.value = convertDisplayToInches(value);
+  }
+});
+
+const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
 
 // Emperical testing - with stack size limit of 1MB, we can handle at -least- 700k points
 const tooManyPoints = computed(
@@ -176,7 +215,7 @@ const downloadCalibBoard = async () => {
 };
 
 const isCalibrating = computed(
-  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
 );
 
 const startCalibration = () => {
@@ -295,23 +334,23 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           >
           <v-form v-model="settingsValid">
             <pv-select
-              v-model="uniqueVideoResolutionString"
+              v-model="uniqueVideoResolutionIndex"
               label="Resolution"
               :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
               :items="getUniqueVideoResolutionStrings()"
-              @update:model-value="
-                useStateStore().calibrationData.videoFormatIndex =
-                  getUniqueVideoResolutionStrings().find((v) => v.value === $event)?.value || 0
-              "
+              @update:model-value="(value) => (useStateStore().calibrationData.videoFormatIndex = value)"
             />
             <pv-select
               v-model="boardType"
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="8"
-              :items="['Chessboard', 'ChArUco']"
+              :items="[
+                { value: CalibrationBoardTypes.Charuco, name: 'ChArUco' },
+                { value: CalibrationBoardTypes.Chessboard, name: 'Chessboard' }
+              ]"
               :disabled="isCalibrating"
             />
             <v-alert
@@ -341,25 +380,43 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Tag Family"
               tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
-              :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
+              :items="[
+                { value: CalibrationTagFamilies.Dict_4X4_1000, name: 'Dict_4X4_1000' },
+                { value: CalibrationTagFamilies.Dict_5X5_1000, name: 'Dict_5X5_1000' },
+                { value: CalibrationTagFamilies.Dict_6X6_1000, name: 'Dict_6X6_1000' },
+                { value: CalibrationTagFamilies.Dict_7X7_1000, name: 'Dict_7X7_1000' }
+              ]"
+              :disabled="isCalibrating"
+            />
+            <pv-select
+              v-model="dimensionUnit"
+              label="Dimension Unit"
+              tooltip="Units used for pattern spacing and marker size inputs"
+              :select-cols="8"
+              :items="[
+                { value: 'in', name: 'Inches' },
+                { value: 'mm', name: 'Millimeters' }
+              ]"
               :disabled="isCalibrating"
             />
             <pv-number-input
-              v-model="squareSizeIn"
-              label="Pattern Spacing (in)"
-              tooltip="Spacing between pattern features in inches"
+              v-model="squareSize"
+              :label="`Pattern Spacing (${dimensionUnit})`"
+              :tooltip="`Spacing between pattern features in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}`"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
               :label-cols="4"
+              :step="dimensionStep"
             />
             <pv-number-input
               v-if="boardType === CalibrationBoardTypes.Charuco"
-              v-model="markerSizeIn"
-              label="Marker Size (in)"
-              tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
+              v-model="markerSize"
+              :label="`Marker Size (${dimensionUnit})`"
+              :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
               :label-cols="4"
+              :step="dimensionStep"
             />
             <pv-number-input
               v-model="patternWidth"

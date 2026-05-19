@@ -187,7 +187,7 @@ class PhotonPoseEstimator:
         )
 
         return EstimatedRobotPose(
-            Pose3d(robotPose), result.getTimestampSeconds(), result.getTargets()
+            Pose3d(robotPose), result.getTimestampSeconds(), [bestTarget]
         )
 
     def estimateCoprocMultiTagPose(
@@ -259,7 +259,7 @@ class PhotonPoseEstimator:
                 lowestAmbiguityTarget.getBestCameraToTarget().inverse()
             ).transformBy(self.robotToCamera.inverse()),
             result.getTimestampSeconds(),
-            result.targets,
+            [lowestAmbiguityTarget],
         )
 
     def _reportFiducialPoseError(self, fiducialId: int) -> None:

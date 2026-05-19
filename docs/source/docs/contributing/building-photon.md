@@ -8,11 +8,11 @@ This section contains the build instructions from the source code available at [
 
 **Java Development Kit:**
 
- This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2026+. **Windows Users must use the JDK that ships with WPILib.** For other platforms, you can follow the instructions to install JDK 17 for your platform [here](https://bell-sw.com/pages/downloads/#jdk-17-lts).
+ This project requires Java Development Kit (JDK) 25 to be compiled. This is the same Java version that comes with WPILib for 2027. **Windows Users must use the JDK that ships with WPILib.** For other platforms, you can follow the instructions to install JDK 25 for your platform [here](https://bell-sw.com/pages/downloads/#jdk-25-lts).
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 22 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+ The UI is written in Node JS. To compile the UI, Node 24 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
 
 **pnpm:**
 
@@ -46,6 +46,30 @@ In the photon-client directory:
 ```bash
 pnpm install
 ```
+
+### Building the UI
+
+In order to properly build UI changes before running the project, run the following `gradlew` command in the project's root directory:
+
+```{eval-rst}
+.. tab-set::
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      ``./gradlew buildAndCopyUI``
+
+   .. tab-item:: macOS
+      :sync: macos
+
+      ``./gradlew buildAndCopyUI``
+
+   .. tab-item:: Windows (cmd)
+      :sync: windows
+
+      ``gradlew buildAndCopyUI``
+```
+
 
 ### Using hot reload on the UI
 

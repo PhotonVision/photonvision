@@ -43,6 +43,7 @@ shadowJar {
 
 node {
     nodeProjectDir = file("${projectDir}/../photon-client")
+    pnpmVersion = "11.0.9"
 }
 
 tasks.register('copyClientUIToResources', Copy) {

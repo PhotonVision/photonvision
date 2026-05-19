@@ -35,9 +35,19 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         cameraPropertiesCached = true;
     }
 
-    public abstract boolean isConnected();
+    /** Internal provider for if the camera is currently connected. */
+    protected abstract boolean checkCameraConnected();
 
-    public abstract boolean checkCameraConnected();
+    /** Checks if the camera is currently connected. Also handles connection events. */
+    public boolean isConnected() {
+        boolean connected = this.checkCameraConnected();
+
+        if (!cameraPropertiesCached && connected) {
+            onCameraConnected();
+        }
+
+        return connected;
+    }
 
     /**
      * Returns if the camera has connected at some point. This is not if it is currently connected.

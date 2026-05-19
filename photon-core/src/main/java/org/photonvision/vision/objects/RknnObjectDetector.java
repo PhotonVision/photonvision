@@ -33,8 +33,7 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 public class RknnObjectDetector implements ObjectDetector {
     private static final Logger logger = new Logger(RknnObjectDetector.class, LogGroup.General);
 
-    /** Cleaner instance to release the detector when it goes out of scope */
-    private final Cleaner cleaner = Cleaner.create();
+    private static final Cleaner cleaner = Cleaner.create();
 
     private final Cleanable cleanable;
 
