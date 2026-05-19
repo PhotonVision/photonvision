@@ -39,9 +39,10 @@ class PhotonPipelineResult:
 
     def getTimestampSeconds(self) -> float:
         """
-        Returns the estimated time the frame was taken, in the Time Sync Server's time base
-        (wpi::nt::Now). Reads metadata.captureTimestampMicros directly — latency compensation
-        is already baked in by the coprocessor.
+        Returns the estimated time the frame was captured, in the same time base as
+        ``wpilib.Timer.getFPGATimestamp()``.
+
+        :returns: The timestamp in seconds.
         """
         return self.metadata.captureTimestampMicros / 1e6
 

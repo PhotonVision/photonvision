@@ -72,10 +72,9 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
   }
 
   /**
-   * Returns the estimated time the frame was taken, in the Time Sync Server's
-   * time base (nt::Now). The robot shall run a server, so this is FPGA-relative
-   * on a real robot. Reads metadata.captureTimestampMicros directly — latency
-   * compensation is already baked in by the coprocessor.
+   * Returns the estimated time the frame was captured, in the same time base as
+   * <code>wpi::Timer::GetMonotonicTimestamp</code>
+   *
    * @return The timestamp in seconds.
    */
   wpi::units::second_t GetTimestamp() const {

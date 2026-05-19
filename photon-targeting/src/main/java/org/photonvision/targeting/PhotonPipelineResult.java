@@ -168,11 +168,10 @@ public class PhotonPipelineResult
     }
 
     /**
-     * Returns the estimated time the frame was taken, in the Time Sync Server's time base
-     * (wpi::nt::Now). This is calculated using the estimated offset between Time Sync Server time and
-     * local time. The robot shall run a server, so the offset shall be 0.
+     * Returns the estimated time the frame was captured, in the same time base as {@link
+     * edu.wpi.first.wpilibj.Timer#getFPGATimestamp()}.
      *
-     * @return The timestamp in seconds
+     * @return The timestamp in seconds.
      */
     public double getTimestampSeconds() {
         return metadata.captureTimestampMicros / 1e6;
