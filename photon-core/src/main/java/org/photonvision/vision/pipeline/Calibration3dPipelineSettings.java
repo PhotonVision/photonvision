@@ -33,7 +33,6 @@ public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public boolean useMrCal = true;
     public boolean useOldPattern = false;
     public boolean drawAllSnapshots;
-    public boolean bypass;
 
     public Calibration3dPipelineSettings() {
         super();
@@ -42,6 +41,5 @@ public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
         this.outputShouldShow = true;
         this.streamingFrameDivisor = FrameDivisor.HALF;
         this.drawAllSnapshots = true;
-        this.bypass = false;
     }
 }

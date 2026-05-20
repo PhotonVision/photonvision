@@ -154,11 +154,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         }
 
                         parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
-
-                        if (propName.equals("bypass")) {
-                            // Rebroadcast calibration data when bypass changes
-                            parentModule.pipelineManager.calibration3dPipeline.broadcastState();
-                        }
                     }
                 }
             }
