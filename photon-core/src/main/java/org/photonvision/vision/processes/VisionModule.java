@@ -580,6 +580,7 @@ public class VisionModule {
         ret.maxWhiteBalanceTemp = visionSource.getSettables().getMaxWhiteBalanceTemp();
 
         ret.deactivated = config.deactivated;
+        ret.isEnabled = getEnabled();
 
         ret.mismatch = this.mismatch;
 

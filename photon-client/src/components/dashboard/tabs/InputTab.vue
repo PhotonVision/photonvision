@@ -61,10 +61,9 @@ const currentStreamResolutionIndex = computed<number>({
     return stored - skipped;
   },
   set: (index) => {
-    useCameraSettingsStore().changeCurrentPipelineSetting(
-      { streamingFrameDivisor: index + getNumberOfSkippedDivisors() },
-      false
-    );
+    useCameraSettingsStore().changeCurrentPipelineSetting({
+      streamingFrameDivisor: index + getNumberOfSkippedDivisors()
+    });
   }
 });
 const { mdAndDown } = useDisplay();
