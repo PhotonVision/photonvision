@@ -30,8 +30,6 @@ import io.javalin.websocket.WsContext;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -157,9 +155,9 @@ public class DataSocketHandler {
                             // HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
                             // var type = (PipelineType) data.get("pipelineType");
                             // var name = (String) data.get("pipelineName");
-                            var arr = (ArrayList<Object>) entryValue;
+                            var arr = (List<Object>) entryValue;
                             var name = (String) arr.get(0);
-                            var type = PipelineType.values()[(Integer) arr.get(1) + 3];
+                            var type = PipelineType.values()[((Long) arr.get(1)).intValue() + 3];
 
                             dcService.publishEvent(
                                     new IncomingWebSocketEvent<>(
@@ -173,7 +171,7 @@ public class DataSocketHandler {
                                 HardwareManager.getInstance()
                                         .setBrightnessPercent(Integer.parseInt(entryValue.toString()));
                         case SMT_DUPLICATEPIPELINE -> {
-                            var pipeIndex = (Integer) entryValue;
+                            var pipeIndex = ((Long) entryValue).intValue();
 
                             logger.info("Duplicating pipe@index" + pipeIndex + " for camera " + cameraUniqueName);
 
@@ -198,19 +196,21 @@ public class DataSocketHandler {
                                         new IncomingWebSocketEvent<>(
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "robotOffsetPoint",
-                                                (Integer) entryValue,
+                                                ((Long) entryValue).intValue(),
                                                 cameraUniqueName,
                                                 null));
                         case SMT_CURRENTCAMERA ->
                                 dcService.publishEvent(
                                         new IncomingWebSocketEvent<>(
-                                                DataChangeDestination.DCD_OTHER, "changeUICamera", (Integer) entryValue));
+                                                DataChangeDestination.DCD_OTHER,
+                                                "changeUICamera",
+                                                ((Long) entryValue).intValue()));
                         case SMT_CURRENTPIPELINE ->
                                 dcService.publishEvent(
                                         new IncomingWebSocketEvent<>(
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "changePipeline",
-                                                (Integer) entryValue,
+                                                ((Long) entryValue).intValue(),
                                                 cameraUniqueName,
                                                 context));
                         case SMT_STARTPNPCALIBRATION ->
@@ -246,7 +246,7 @@ public class DataSocketHandler {
                                                 cameraUniqueName,
                                                 context));
                         case SMT_PIPELINESETTINGCHANGE -> {
-                            HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
+                            Map<String, Object> data = (Map) entryValue;
 
                             if (data.size() >= 2) {
                                 var cameraIndex2 = (String) data.get("cameraUniqueName");
@@ -271,7 +271,7 @@ public class DataSocketHandler {
                                         new IncomingWebSocketEvent<>(
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "changePipelineType",
-                                                (Integer) entryValue,
+                                                ((Long) entryValue).intValue(),
                                                 cameraUniqueName,
                                                 context));
                     }
