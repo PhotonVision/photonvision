@@ -72,7 +72,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   }
 
   td {
-    font-family: monospace !important;
+    font-variant-numeric: tabular-nums;
   }
 
   ::-webkit-scrollbar {

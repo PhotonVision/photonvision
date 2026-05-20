@@ -8,10 +8,7 @@ const docsSrc = import.meta.env.MODE === "demo" ? "https://docs.photonvision.org
   <div style="overflow: hidden; height: 100vh; width: 100%">
     <div v-if="devMode" style="width: 60%; height: 100%; margin: auto">
       <pv-card
-        variant="transparent"
-        :bordered="false"
-        :elevated="false"
-        class="flex h-full flex-col items-center justify-center gap-4 text-center"
+        class="flex h-full flex-col items-center justify-center gap-4 text-center bg-transparent border-0"
       >
         <div class="flex flex-col">
           <pv-icon size="64" color="primary" :icon="IconWebOff" />

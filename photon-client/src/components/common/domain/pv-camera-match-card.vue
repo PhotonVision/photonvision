@@ -21,7 +21,7 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
 
 <template>
   <div>
-    <pv-table :style="{ backgroundColor: 'var(--color-pv-primary)' }">
+    <pv-table>
       <tbody>
         <tr>
           <th></th>
