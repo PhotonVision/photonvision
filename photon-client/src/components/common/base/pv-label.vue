@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <Label :for="for" class="text-xs font-medium text-pv-on-surface/70">
+  <Label :for="for" class="text-pv-on-surface/70 text-xs font-medium">
     <slot />
   </Label>
 </template>

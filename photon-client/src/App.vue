@@ -57,18 +57,16 @@ onBeforeMount(() => {
 
 <template>
   <ConfigProvider :scroll-body="false">
-    <v-app>
-      <div class="bg-pv-background flex h-full w-full flex-row text-pv-on-surface">
-        <photon-sidebar />
-        <main class="flex min-w-0 flex-1 flex-col overflow-auto">
-          <div class="flex-1">
-            <router-view />
-          </div>
-        </main>
-        <photon-log-view />
-        <photon-error-snackbar />
-      </div>
-    </v-app>
+    <div class="bg-pv-background text-pv-on-surface flex h-full w-full flex-row">
+      <photon-sidebar />
+      <main class="flex min-w-0 flex-1 flex-col overflow-auto">
+        <div class="flex-1">
+          <router-view />
+        </div>
+      </main>
+      <photon-log-view />
+      <photon-error-snackbar />
+    </div>
   </ConfigProvider>
 </template>
 <style>
@@ -105,5 +103,4 @@ html {
 .main-container {
   padding: 0 !important;
 }
-
 </style>

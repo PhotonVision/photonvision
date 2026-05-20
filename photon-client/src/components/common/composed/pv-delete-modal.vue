@@ -41,7 +41,7 @@ const confirmationText = ref("");
         />
       </div>
       <div class="pt-2.5">
-        <div class="-mx-3 flex flex-wrap items-center text-pv-on-surface">
+        <div class="text-pv-on-surface -mx-3 flex flex-wrap items-center">
           <div v-if="onBackup" class="w-full px-3 sm:w-1/2">
             <pv-button variant="primary" :icon="IconExport" block @click="onBackup">
               <span class="open-label">Backup Data</span>

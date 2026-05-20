@@ -26,7 +26,7 @@ withDefaults(
         <tooltip-content
           :side="location"
           :side-offset="8"
-          class="bg-pv-background z-[2500] max-w-xs rounded-lg px-3 py-2 text-xs leading-relaxed text-pv-on-surface shadow-xl ring-1 shadow-black/35 ring-white/8"
+          class="bg-pv-background text-pv-on-surface z-[2500] max-w-xs rounded-lg px-3 py-2 text-xs leading-relaxed shadow-xl ring-1 shadow-black/35 ring-white/8"
         >
           <slot name="content">{{ text }}</slot>
           <tooltip-arrow class="fill-pv-background stroke-white/8 stroke-2" :width="10" :height="5" />

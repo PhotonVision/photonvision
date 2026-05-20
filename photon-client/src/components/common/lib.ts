@@ -51,20 +51,14 @@ export const sliderThumbClass =
  * Build the wrapper class list for a text-field / file-input field area.
  */
 export function fieldWrapperClasses(opts: {
-  density?: string;
   disabled: boolean;
   variant: "underlined" | "outline";
   hasError: boolean;
 }): string[] {
-  const densityMap: Record<string, string> = {
-    comfortable: "min-h-10 text-sm",
-    default: "min-h-11 text-base",
-    compact: "min-h-9 text-sm"
-  };
 
   const base = [
     "flex w-full items-center gap-2",
-    densityMap[opts.density ?? "compact"] ?? "min-h-9 text-sm",
+    "min-h-9 text-sm",
     "transition",
     opts.disabled ? "cursor-not-allowed opacity-50" : "",
     opts.variant === "underlined"
@@ -100,7 +94,6 @@ const themeTokens = new Set([
   "background",
   "onBackground",
   "surface",
-  "surfaceVariant",
   "onSurface",
   "primary",
   "secondary",

@@ -11,7 +11,6 @@ defineOptions({
 const props = withDefaults(
   defineProps<{
     color?: string;
-    density?: "default" | "compact" | "comfortable";
     icon?: Component;
     text?: string;
     variant?: "tonal" | "elevated" | "flat" | "outlined";
@@ -19,7 +18,6 @@ const props = withDefaults(
   }>(),
   {
     color: "info",
-    density: "default",
     variant: "tonal",
     closable: false
   }
@@ -49,16 +47,6 @@ const alertStyle = computed(() => {
   };
 });
 
-const paddingClass = computed(() => {
-  switch (props.density) {
-    case "compact":
-      return "px-3 py-2";
-    case "comfortable":
-      return "px-4 py-3";
-    default:
-      return "px-4 py-3.5";
-  }
-});
 
 const textClass = computed(() => {
   if (props.variant === "tonal" || props.variant === "outlined") return "text-pv-on-surface";
@@ -73,8 +61,7 @@ const textClass = computed(() => {
     role="alert"
     :style="alertStyle"
     :class="[
-      'flex w-full items-center gap-2 rounded-lg border text-sm leading-5 shadow-sm',
-      paddingClass,
+      'flex w-full items-center gap-2 rounded-lg border text-sm leading-5 shadow-sm px-3 py-2',
       textClass,
       attrs.class
     ]"

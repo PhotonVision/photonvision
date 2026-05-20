@@ -15,23 +15,28 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
 
 <template>
   <pv-card>
-    <div class="pb-2 text-base font-semibold">AprilTag Field Layout</div>
-    <div class="pt-1">
-      <p>Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
-      <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
-
+    <div class="flex items-center justify-between gap-2 pb-4">
+      <div class="flex-1 text-lg font-semibold">AprilTag Field Layout</div>
+      <p class="text-sm font-light text-gray-200">
+        Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters
+      </p>
+      <p class="text-sm font-light text-gray-200">
+        Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters
+      </p>
+    </div>
+    <div>
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <pv-table fixed-header height="100%" density="compact">
+      <pv-table fixed-header height="100%" >
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
-              <th class="text-center">ID</th>
-              <th class="text-center">X meters</th>
-              <th class="text-center">Y meters</th>
-              <th class="text-center">Z meters</th>
-              <th class="text-center">θ<sub>x</sub>&deg;</th>
-              <th class="text-center">θ<sub>y</sub>&deg;</th>
-              <th class="text-center">θ<sub>z</sub>&deg;</th>
+              <th class="">ID</th>
+              <th class="">X meters</th>
+              <th class="">Y meters</th>
+              <th class="">Z meters</th>
+              <th class="">θ<sub>x</sub>&deg;</th>
+              <th class="">θ<sub>y</sub>&deg;</th>
+              <th class="">θ<sub>z</sub>&deg;</th>
             </tr>
           </thead>
           <tbody>
@@ -58,6 +63,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   th,
   td {
     font-size: 1rem !important;
+    text-align: center;
   }
 
   td {

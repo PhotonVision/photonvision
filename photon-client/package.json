@@ -18,7 +18,9 @@
     "test": "playwright test",
     "test-ui": "playwright test --ui",
     "test-setup": "playwright install --with-deps",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@fontsource/public-sans": "^5.2.7",

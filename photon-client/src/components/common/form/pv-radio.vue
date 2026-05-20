@@ -35,10 +35,10 @@ const stringValue = computed({
 
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="pt-3 pb-3 flex items-center pl-0">
+    <div :class="labelWidthClass" class="flex items-center pt-3 pb-3 pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
-    <div :class="inputWidthClass" class="pt-3 pb-3 flex items-center pr-0">
+    <div :class="inputWidthClass" class="flex items-center pt-3 pr-0 pb-3">
       <RadioGroupRoot v-model="stringValue" :disabled="disabled" orientation="horizontal" class="flex flex-wrap gap-4">
         <Label
           v-for="(radioName, index) in list"

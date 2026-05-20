@@ -53,13 +53,14 @@ const navItems = [
   { title: "Documentation", to: "/docs", icon: IconBookshelf }
 ];
 
-const baseItemClass = "sidebar-item group flex items-center gap-3 rounded-xl px-3 py-2  text-pv-on-background/80 transition-width duration-200";
+const baseItemClass =
+  "sidebar-item group flex items-center gap-3 rounded-xl px-3 py-2  text-pv-on-background/80 transition-width duration-200";
 const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
 </script>
 
 <template>
   <aside
-    class="sticky flex  text-pv-on-background transition-width duration-200 top-0 h-screen flex-col rounded-none"
+    class="text-pv-on-background transition-width sticky top-0 flex h-screen flex-col rounded-none duration-200"
     :class="renderCompact ? 'w-20' : 'w-64'"
   >
     <div class="flex items-center justify-center px-3 py-4">
@@ -73,7 +74,7 @@ const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
     </div>
 
     <NavigationMenuRoot class="flex flex-1 flex-col" orientation="vertical">
-      <NavigationMenuList class="flex flex-1 gap-1 px-3 flex-col">
+      <NavigationMenuList class="flex flex-1 flex-col gap-1 px-3">
         <NavigationMenuItem v-for="item in navItems" :key="item.to">
           <NavigationMenuLink as-child :active="route.path === item.to">
             <RouterLink
@@ -81,10 +82,7 @@ const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
               :class="[baseItemClass, renderCompact ? 'justify-center px-2' : '']"
               :active-class="activeItemClass"
             >
-              <component
-                :is="item.icon"
-                class="size-6 text-lg text-pv-on-background/80 transition "
-              />
+              <component :is="item.icon" class="text-pv-on-background/80 size-6 text-lg transition" />
               <span
                 class="transition-[opacity,width,height] duration-200"
                 :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
@@ -107,7 +105,7 @@ const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
               ]"
             >
               <IconSwapHorizontalBold
-                class="size-6 text-lg text-pv-on-background/80 transition group-hover:text-pv-on-background "
+                class="text-pv-on-background/80 group-hover:text-pv-on-background size-6 text-lg transition"
                 :class="{ 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }"
               />
               <span
@@ -125,29 +123,37 @@ const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
       </NavigationMenuList>
     </NavigationMenuRoot>
 
-    <div class="flex border-t border-white/10 px-3 py-3 flex-col">
+    <div class="flex flex-col border-t border-white/10 px-3 py-3">
       <button
         v-if="mdAndUp"
         type="button"
-        class="sidebar-item mb-2 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-pv-on-background/80"
+        class="sidebar-item text-pv-on-background/80 mb-2 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2"
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => (compact = !compact)"
       >
-        <pv-icon :icon="compactIcon" class="text-pv-on-background/80 transition group-hover:text-pv-on-background" size="24" />
+        <pv-icon
+          :icon="compactIcon"
+          class="text-pv-on-background/80 group-hover:text-pv-on-background transition"
+          size="24"
+        />
         <span
           class="transition-[width,opacity] duration-200"
-          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'">
-        
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
+        >
           Compact
         </span>
       </button>
       <button
         type="button"
-        class="sidebar-item flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-pv-on-background/80 mb-3"
+        class="sidebar-item text-pv-on-background/80 mb-3 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2"
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => toggleTheme()"
       >
-        <pv-icon :icon="themeIcon" class="text-pv-on-background/80 transition group-hover:text-pv-on-background" size="24" />
+        <pv-icon
+          :icon="themeIcon"
+          class="text-pv-on-background/80 group-hover:text-pv-on-background transition"
+          size="24"
+        />
         <span
           class="transition-opacity duration-200"
           :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
@@ -157,15 +163,13 @@ const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
       </button>
 
       <div
-        class="flex items-center gap-3 rounded-xl px-3 py-2 text-pv-on-background/70"
+        class="text-pv-on-background/70 flex items-center gap-3 rounded-xl px-3 py-2"
         :class="renderCompact ? 'justify-center' : 'justify-between'"
       >
         <pv-icon
           :icon="ntStatusIcon"
-          :class="
-            useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected
-              ? 'text-green-400'
-              : 'text-red-400'
+          :color="
+            useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected ? 'success' : 'error'
           "
           size="24"
           class="shrink-0"
@@ -187,12 +191,12 @@ const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
       </div>
 
       <div
-        class="mt-2 flex items-start gap-3 rounded-xl px-3 py-2 text-pv-on-background/70"
+        class="text-pv-on-background/70 mt-2 flex items-start gap-3 rounded-xl px-3 py-2"
         :class="renderCompact ? 'justify-center' : 'justify-between'"
       >
         <pv-icon
           :icon="backendStatusIcon"
-          :class="useStateStore().backendConnected ? 'text-green-400' : 'text-red-400'"
+          :color="useStateStore().backendConnected ? 'success' : 'error'"
           size="24"
           class="shrink-0"
         />

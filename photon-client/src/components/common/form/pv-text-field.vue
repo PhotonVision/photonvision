@@ -25,7 +25,6 @@ const props = withDefaults(
     hideDetails?: boolean;
     clearable?: boolean;
     prependIcon?: Component;
-    density?: Density;
     step?: number;
     min?: number;
     max?: number;
@@ -40,7 +39,6 @@ const props = withDefaults(
     disabled: false,
     hideDetails: false,
     clearable: false,
-    density: "compact",
     rawValue: false,
     variant: "underlined"
   }
@@ -91,7 +89,6 @@ const clearValue = () => {
 
 const fieldClass = computed(() =>
   fieldWrapperClasses({
-    density: props.density,
     disabled: props.disabled,
     variant: props.variant,
     hasError: hasError.value
@@ -101,11 +98,11 @@ const fieldClass = computed(() =>
 
 <template>
   <div :class="wrapperClass" :style="wrapperStyle">
-    <Label v-if="label" :for="inputId" class="text-xs font-medium text-pv-on-surface/70">
+    <Label v-if="label" :for="inputId" class="text-pv-on-surface/70 text-xs font-medium">
       {{ label }}
     </Label>
     <div :class="fieldClass">
-      <component :is="prependIcon" v-if="prependIcon" class="size-4 text-pv-on-surface/70" aria-hidden="true" />
+      <component :is="prependIcon" v-if="prependIcon" class="text-pv-on-surface/70 size-4" aria-hidden="true" />
       <input
         :id="inputId"
         v-model="inputValue"
@@ -117,7 +114,7 @@ const fieldClass = computed(() =>
         :min="min"
         :max="max"
         :class="[
-          'min-w-0 flex-1 bg-transparent text-pv-on-surface outline-none placeholder:text-pv-on-surface/40',
+          'text-pv-on-surface placeholder:text-pv-on-surface/40 min-w-0 flex-1 bg-transparent outline-none',
           props.variant === 'outline' ? 'py-2' : 'py-1',
           inputClass
         ]"
@@ -126,7 +123,7 @@ const fieldClass = computed(() =>
       <button
         v-if="clearable && hasValue"
         type="button"
-        class="inline-flex items-center justify-center text-pv-on-surface/60 transition hover:text-pv-on-surface"
+        class="text-pv-on-surface/60 hover:text-pv-on-surface inline-flex items-center justify-center transition"
         aria-label="Clear"
         @click="clearValue"
       >

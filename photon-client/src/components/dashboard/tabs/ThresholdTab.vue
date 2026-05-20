@@ -196,7 +196,7 @@ const interactiveCols = computed(() =>
       "
     />
     <div>
-      <div class="pt-3 text-pv-on-surface">Color Picker</div>
+      <div class="text-pv-on-surface pt-3">Color Picker</div>
       <div class="flex pt-3">
         <template v-if="!useStateStore().colorPickingMode">
           <div class="w-1/3 pr-2 pl-0">

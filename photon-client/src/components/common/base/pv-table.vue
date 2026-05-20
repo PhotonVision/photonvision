@@ -7,7 +7,6 @@ defineOptions({
 
 const props = withDefaults(
   defineProps<{
-    density?: "default" | "comfortable" | "compact";
     hover?: boolean;
     striped?: "odd" | "even";
     fixedHeader?: boolean;
@@ -17,7 +16,6 @@ const props = withDefaults(
     hasBottom?: boolean;
   }>(),
   {
-    density: "default",
     hover: true,
     fixedHeader: false,
     fixedFooter: false,
@@ -31,7 +29,6 @@ const attrs = useAttrs();
 
 const tableClasses = computed(() => [
   "pv-table",
-  props.density ? `pv-table--density-${props.density}` : "",
   props.striped ? `pv-table--striped-${props.striped}` : "",
   props.hover ? "pv-table--hover" : "",
   props.fixedHeader ? "pv-table--fixed-header" : "",
@@ -52,12 +49,12 @@ const tableClasses = computed(() => [
 
 <style>
 .pv-table {
-  --pv-table-header-height: 56px;
-  --pv-table-row-height: 52px;
-  --pv-table-border-color: rgba(var(--pv-border-color), var(--pv-border-opacity, 0.12));
-  --pv-table-hover-color: rgba(var(--pv-border-color), var(--pv-hover-opacity, 0.08));
+  --pv-table-header-height: 52px;
+  --pv-table-row-height: 50px;
+  --pv-table-border-color: rgba(var(--pv-background), 0.12);
+  --pv-table-background: #00000022;
+  --pv-table-hover-color: color-mix(in srgb, var(--pv-table-background), transparent 40%);
   --pv-table-stripe-color: rgba(var(--pv-border-color), var(--pv-stripe-opacity, 0.06));
-  --pv-table-background: var(--color-pv-surface);
   --pv-table-text: var(--pv-on-surface-strong);
 
   width: 100%;
@@ -68,16 +65,8 @@ const tableClasses = computed(() => [
   transition-duration: 0.28s;
   transition-property: box-shadow, opacity, background, height;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.pv-table--density-comfortable {
-  --pv-table-header-height: calc(56px - 2px);
-  --pv-table-row-height: calc(52px - 2px);
-}
-
-.pv-table--density-compact {
-  --pv-table-header-height: calc(56px - 4px);
-  --pv-table-row-height: calc(52px - 4px);
+  background: var(--pv-table-background);
+  border-radius: var(--radius-lg);
 }
 
 .pv-table table {
@@ -89,7 +78,7 @@ const tableClasses = computed(() => [
 }
 
 .pv-table thead th {
-  text-align: left;
+  text-align: center;
   font-weight: 500;
   font-size: 0.85rem;
   background: var(--pv-table-background);

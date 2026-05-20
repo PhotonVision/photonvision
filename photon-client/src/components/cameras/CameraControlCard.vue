@@ -103,12 +103,11 @@ const expanded = ref([]);
       </pv-button>
     </div>
     <pv-dialog v-model="showSnapshotViewerDialog" :width="1500">
-      <pv-card padding="none" class="p-5">
+      <pv-card>
         <div class="pb-2 text-lg font-semibold">Saved Frame Snapshots</div>
         <div v-if="imgData.length === 0" class="pt-0">
           <pv-alert
             color="buttonPassive"
-            density="compact"
             text="There are currently no saved snapshots."
             :icon="IconInformationOutline"
             variant="tonal"
@@ -118,7 +117,6 @@ const expanded = ref([]);
           <pv-alert
             closable
             color="buttonPassive"
-            density="compact"
             text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
             :icon="IconInformationOutline"
             variant="tonal"
@@ -171,8 +169,6 @@ const expanded = ref([]);
 </template>
 
 <style scoped>
-
-
 .pv-table {
   text-align: center;
 

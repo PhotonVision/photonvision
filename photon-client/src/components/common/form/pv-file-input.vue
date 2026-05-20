@@ -59,7 +59,6 @@ const hasError = computed(() => Boolean(props.errorMessage));
 
 const fieldClass = computed(() =>
   fieldWrapperClasses({
-    density: "compact",
     disabled: props.disabled,
     variant: props.variant,
     hasError: hasError.value
@@ -77,16 +76,19 @@ const displayValue = computed(() => {
 
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="pt-3 pb-3 flex items-center pl-0">
+    <div :class="labelWidthClass" class="flex items-center pt-3 pb-3 pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
 
-    <div :class="inputWidthClass" class="pt-3 pb-3 flex items-center pr-0">
+    <div :class="inputWidthClass" class="flex items-center pt-3 pr-0 pb-3">
       <div class="flex w-full flex-col gap-1">
         <div :class="fieldClass">
           <Label
             class="flex min-w-0 flex-1 cursor-pointer items-center"
-            :class="[{ 'text-pv-on-surface': value, 'text-pv-on-surface/40': !value }, props.variant === 'outline' ? 'py-2' : 'py-1']"
+            :class="[
+              { 'text-pv-on-surface': value, 'text-pv-on-surface/40': !value },
+              props.variant === 'outline' ? 'py-2' : 'py-1'
+            ]"
           >
             <input
               ref="fileInput"
@@ -102,7 +104,7 @@ const displayValue = computed(() => {
           <button
             v-if="clearable && value"
             type="button"
-            class="inline-flex items-center justify-center px-2 text-pv-on-surface/60 transition hover:text-pv-on-surface"
+            class="text-pv-on-surface/60 hover:text-pv-on-surface inline-flex items-center justify-center px-2 transition"
             aria-label="Clear"
             @click.prevent="clearValue"
           >
