@@ -30,8 +30,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
@@ -60,6 +62,11 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String ATFL_CONFIG_FILE = "apriltagFieldLayout";
         static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
+
+    private static final JsonType<List<Object>> objListJsonb =
+            Jsonb.instance().type(Types.listOf(Object.class));
+    private static final JsonType<Map<String, Object>> objMapJsonb =
+            Jsonb.instance().type(Types.mapOf(Object.class));
 
     private static final String dbName = "photon.sqlite";
     // private final File rootFolder;
@@ -624,27 +631,57 @@ public class SqlConfigProvider extends ConfigProvider {
 
                     uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
 
-                    var configStr = result.getString(Columns.CAM_CONFIG_JSON);
-                    CameraConfiguration config =
-                            Jsonb.instance().type(CameraConfiguration.class).fromJson(configStr);
+                    var configJson = result.getString(Columns.CAM_CONFIG_JSON);
 
+                    // MIGRATION: 2026
+                    var cameraInfoMatcher =
+                            Pattern.compile("\"(PV\\w*CameraInfo)\"\\s*:").matcher(configJson);
+                    if (cameraInfoMatcher.find()) {
+                        logger.info("Legacy type-wrapper PVCameraInfo being migrated");
+                        String cameraType = cameraInfoMatcher.group(1);
+                        Map<String, Object> cameraMigration = objMapJsonb.fromJson(configJson);
+
+                        @SuppressWarnings("unchecked")
+                        var cameraMigrationIn = (Map<String, Object>) cameraMigration.get("matchedCameraInfo");
+
+                        @SuppressWarnings("unchecked")
+                        var cameraData = (Map<String, Object>) cameraMigrationIn.get(cameraType);
+
+                        Map<String, Object> cameraMigrationOut = new HashMap<>();
+                        cameraMigrationOut.putAll(cameraData);
+                        cameraMigrationOut.put("type", "PVCameraInfo." + cameraType);
+
+                        cameraMigration.put("matchedCameraInfo", cameraMigrationOut);
+                        configJson = objMapJsonb.toJson(cameraMigration);
+                    }
+
+                    CameraConfiguration config =
+                            Jsonb.instance().type(CameraConfiguration.class).fromJson(configJson);
+
+                    // MIGRATION: 2026
+                    var driverModeJson = result.getString(Columns.CAM_DRIVERMODE_JSON);
+                    if (driverModeJson.startsWith("[")) {
+                        driverModeJson = remapPipelineSettings(driverModeJson);
+                    }
 
                     var driverMode =
-                            Jsonb.instance()
-                                    .type(DriverModePipelineSettings.class)
-                                    .fromJson(result.getString(Columns.CAM_DRIVERMODE_JSON));
-                    List<?> pipelineSettings =
+                            Jsonb.instance().type(DriverModePipelineSettings.class).fromJson(driverModeJson);
+                    List<String> pipelineSettings =
                             strListJsonb.fromJson(result.getString(Columns.CAM_PIPELINE_JSONS));
 
                     List<CVPipelineSettings> loadedSettings = new ArrayList<>();
-                    for (var setting : pipelineSettings) {
-                        if (setting instanceof String str) {
-                            try {
-                                loadedSettings.add(Jsonb.instance().type(CVPipelineSettings.class).fromJson(str));
-                            } catch (JsonDataException e) {
-                                logger.error(
-                                        "Could not deserialize pipeline setting for camera " + config.nickname, e);
-                            }
+                    for (var pipelineJson : pipelineSettings) {
+                        // MIGRATION: 2026
+                        if (pipelineJson.startsWith("[")) {
+                            pipelineJson = remapPipelineSettings(pipelineJson);
+                        }
+
+                        try {
+                            loadedSettings.add(
+                                    Jsonb.instance().type(CVPipelineSettings.class).fromJson(pipelineJson));
+                        } catch (JsonDataException e) {
+                            logger.error(
+                                    "Could not deserialize pipeline setting for camera " + config.nickname, e);
                         }
                     }
 
@@ -666,6 +703,22 @@ public class SqlConfigProvider extends ConfigProvider {
             }
         }
         return loadedConfigurations;
+    }
+
+    // MIGRATION: 2026
+    private String remapPipelineSettings(String pipelineJson) {
+        logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
+        
+        List<Object> pipelineMigrationIn = objListJsonb.fromJson(pipelineJson);
+
+        @SuppressWarnings("unchecked")
+        var pipelineData = (Map<String, Object>) pipelineMigrationIn.get(1);
+
+        Map<String, Object> pipelineMigrationOut = new HashMap<>();
+        pipelineMigrationOut.putAll(pipelineData);
+        pipelineMigrationOut.put("type", pipelineMigrationIn.get(0));
+
+        return objMapJsonb.toJson(pipelineMigrationOut);
     }
 
     public void setConfig(PhotonConfiguration config) {
