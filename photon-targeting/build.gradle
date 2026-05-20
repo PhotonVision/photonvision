@@ -13,8 +13,6 @@ ext.licenseFile = file("$rootDir/LICENSE")
 apply from: "${rootDir}/shared/config.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
 
-apply from: "${rootDir}/versioningHelper.gradle"
-
 nativeUtils {
     exportsConfigs {
         "${nativeName}" {}
