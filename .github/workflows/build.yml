@@ -62,7 +62,7 @@ jobs:
             name: maven-${{ matrix.artifact-name }}
         - uses: actions/download-artifact@v7
           with:
-            name: maven-Athena
+            name: maven-SystemCore
         - name: Move to maven local
           run: |
             mkdir -p ~/.m2/repository/
