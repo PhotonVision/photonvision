@@ -35,7 +35,8 @@ public interface StatusLED extends AutoCloseable {
             boolean activeHigh) {
         return switch (type) {
             case RGB -> new RGBStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh);
-            case GreenYellow -> new GreenYellowStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh);
+            case GreenYellow ->
+                new GreenYellowStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh);
         };
     }
 }
