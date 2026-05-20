@@ -43,16 +43,16 @@ public class NetworkConfigTest {
     @Test
     public void testDeserializeTeamNumberOrNtServerAddress() {
         {
-            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-old-team-number");
+            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-team-number");
             var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
             configMgr.load();
             assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
         {
-            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-new-team-number");
+            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-ip-addr");
             var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
             configMgr.load();
-            assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
+            assertEquals("127.0.0.1", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
     }
 }
