@@ -32,6 +32,7 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.PipelineManager;
+import org.wpilib.vision.camera.UsbCameraInfo;
 
 @Json
 public class CameraConfiguration {
@@ -112,6 +113,33 @@ public class CameraConfiguration {
      */
     public CameraConfiguration(PVCameraInfo camInfo) {
         this(UUID.randomUUID().toString(), camInfo);
+    }
+
+    public static class LegacyCameraConfigStruct {
+        PVCameraInfo matchedCameraInfo;
+
+        /** Legacy constructor for compat with 2024.3.1 */
+        @Json.Creator
+        public LegacyCameraConfigStruct(
+                String baseName,
+                String path,
+                String[] otherPaths,
+                CameraType cameraType,
+                int usbVID,
+                int usbPID) {
+            if (cameraType == CameraType.UsbCamera) {
+                this.matchedCameraInfo =
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(-1, path, baseName, otherPaths, usbVID, usbPID));
+            } else if (cameraType == CameraType.ZeroCopyPicam) {
+                this.matchedCameraInfo = PVCameraInfo.fromCSICameraInfo(path, baseName);
+            } else {
+                // wtf
+                logger.error("Camera type is invalid");
+                this.matchedCameraInfo = null;
+                return;
+            }
+        }
     }
 
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
