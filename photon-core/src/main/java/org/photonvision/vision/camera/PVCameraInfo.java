@@ -80,7 +80,6 @@ public sealed interface PVCameraInfo {
         return this.equals((Object) other);
     }
 
-    @Json
     public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraInfo {
         public PVUsbCameraInfo(
                 int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
@@ -160,7 +159,6 @@ public sealed interface PVCameraInfo {
         }
     }
 
-    @Json
     public static final class PVCSICameraInfo implements PVCameraInfo {
         public final String path;
         public final String baseName;
@@ -223,7 +221,6 @@ public sealed interface PVCameraInfo {
         }
     }
 
-    @Json
     public static final class PVFileCameraInfo implements PVCameraInfo {
         public final String path;
         public final String name;
