@@ -109,21 +109,3 @@ export const axiosPost = async (
     return false;
   }
 };
-
-type CameraInfoDetails = Partial<
-  {
-    type: PVCameraInfo["type"];
-    dev: number;
-    name: string;
-    baseName: string;
-    otherPaths: string[];
-    path: string;
-    uniquePath: string;
-    vendorId: number;
-    productId: number;
-  }
->;
-
-export const cameraInfoFor = (camera: PVCameraInfo | null): CameraInfoDetails => {
-  return camera ?? {};
-};
