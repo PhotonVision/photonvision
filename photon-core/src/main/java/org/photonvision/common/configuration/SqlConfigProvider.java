@@ -708,7 +708,7 @@ public class SqlConfigProvider extends ConfigProvider {
     // MIGRATION: 2026
     private String remapPipelineSettings(String pipelineJson) {
         logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
-        
+
         List<Object> pipelineMigrationIn = objListJsonb.fromJson(pipelineJson);
 
         @SuppressWarnings("unchecked")

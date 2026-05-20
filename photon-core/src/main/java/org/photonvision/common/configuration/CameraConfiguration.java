@@ -32,7 +32,6 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.PipelineManager;
-import org.wpilib.vision.camera.UsbCameraInfo;
 
 @Json
 public class CameraConfiguration {
