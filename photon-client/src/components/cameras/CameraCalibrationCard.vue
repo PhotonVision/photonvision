@@ -270,7 +270,7 @@ const endCalibration = () => {
 };
 
 const drawAllSnapshots = ref(true);
-// We really gotta fix our typing system
+// TODO: Fix typing for this when we clean up the pipeline settings types
 const bypassVal = computed<boolean>({
   get: () => !!(useCameraSettingsStore().currentPipelineSettings as Calibration3dPipelineSettings | undefined)?.bypass,
   set: (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ bypass: value }, true)
