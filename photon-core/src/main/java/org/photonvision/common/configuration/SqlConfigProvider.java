@@ -171,32 +171,6 @@ public class SqlConfigProvider extends ConfigProvider {
 
         if (userVersion < expectedVersion) {
             // older database, run migrations
-
-            // first, check to see if this is one of the ones from 2024 beta that need
-            // special handling
-            if (userVersion == 0 && getSchemaVersion() > 0) {
-                String sql =
-                        "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('cameras') WHERE name='otherpaths_json';";
-                try (Connection conn = createConn(true);
-                        Statement stmt = conn.createStatement();
-                        ResultSet rs = stmt.executeQuery(sql); ) {
-                    if (rs.getInt("CNTREC") == 0) {
-                        // need to add otherpaths_json
-                        userVersion = 1;
-                    } else {
-                        // already there, no need to add the column
-                        userVersion = 2;
-                    }
-                    setUserVersion(conn, userVersion);
-                } catch (SQLException e) {
-                    logger.error(
-                            "Could not determine the version of the database. Try deleting "
-                                    + dbName
-                                    + "and restart photonvision.",
-                            e);
-                }
-            }
-
             logger.debug("Older database version. Migrating ... ");
             try {
                 for (int index = userVersion; index < expectedVersion; index++) {
