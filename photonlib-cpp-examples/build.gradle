@@ -1,5 +1,6 @@
 plugins {
     id "com.diffplug.spotless" version "8.4.0"
+    id "org.wpilib.WPILibRepositoriesPlugin" version "2027.0.0"
 }
 
 allprojects {
@@ -8,6 +9,7 @@ allprojects {
         mavenCentral()
         mavenLocal()
         maven { url = "https://maven.photonvision.org/releases" }
+	wpilibRepositories.use2027Repos()
     }
 }
 
