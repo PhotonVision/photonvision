@@ -243,7 +243,7 @@ const makeToggleExpand = (row: Row<unknown>) => () => {
         </thead>
         <tbody>
           <tr v-if="table.getRowModel().rows.length === 0">
-            <td :colspan="expandedColspan" class="py-6 text-center text-sm text-white/60">
+            <td :colspan="expandedColspan" class="py-6 text-center text-sm text-pv-on-surface/60">
               {{ emptyText }}
             </td>
           </tr>
@@ -259,7 +259,7 @@ const makeToggleExpand = (row: Row<unknown>) => () => {
                   <pv-button
                     size="icon"
                     variant="ghost"
-                    class="text-white/70 hover:text-white"
+                    class="text-pv-on-surface/70 hover:text-pv-on-surface"
                     @click="row.toggleExpanded()"
                   >
                     {{ row.getIsExpanded() ? "-" : "+" }}
@@ -272,7 +272,7 @@ const makeToggleExpand = (row: Row<unknown>) => () => {
                     {{ row.getIsExpanded() ? "-" : "+" }}
                   </pv-button>
                   <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                  <span class="text-xs text-white/60">({{ row.subRows.length }})</span>
+                  <span class="text-xs text-pv-on-surface/60">({{ row.subRows.length }})</span>
                 </div>
                 <FlexRender
                   v-else-if="cell.getIsAggregated()"
@@ -305,7 +305,7 @@ const makeToggleExpand = (row: Row<unknown>) => () => {
         </tbody>
       </template>
     </pv-table>
-    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm text-white/70">
+    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm text-pv-on-surface/70">
       <div>Rows {{ pageStart }}-{{ pageEnd }} of {{ totalRows }}</div>
       <div class="flex flex-wrap items-center gap-3">
         <pv-select
@@ -315,7 +315,7 @@ const makeToggleExpand = (row: Row<unknown>) => () => {
           label="Rows per page"
           @update:modelValue="onPageSizeChange"
         />
-        <span class="text-xs text-white/60">Page {{ pagination.pageIndex + 1 }} of {{ pageCount }}</span>
+        <span class="text-xs text-pv-on-surface/60">Page {{ pagination.pageIndex + 1 }} of {{ pageCount }}</span>
         <div class="flex items-center gap-2">
           <pv-button size="sm" variant="ghost" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
             Prev

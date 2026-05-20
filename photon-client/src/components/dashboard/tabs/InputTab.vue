@@ -59,9 +59,9 @@ const currentStreamResolutionIndex = computed<number>({
     return stored - skipped;
   },
   set: (index) => {
-    useCameraSettingsStore().changeCurrentPipelineSetting({
-      streamingFrameDivisor: index + getNumberOfSkippedDivisors()
-    });
+    useCameraSettingsStore().changeCurrentPipelineSetting(
+      { streamingFrameDivisor: index + getNumberOfSkippedDivisors() }
+    );
   }
 });
 const breakpoints = useCustomBreakpoints();

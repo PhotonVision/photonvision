@@ -26,26 +26,8 @@ const typeLabels = {
 };
 
 const theme = useTheme();
-const fallbackColors: ThemeColors = {
-  background: "#151515",
-  onBackground: "#f0f0f0",
-  surface: "#1c232c",
-  surfaceVariant: "#485b70",
-  onSurface: "#f0f0f0",
-  primary: "#39A4D5",
-  secondary: "#FFD843",
-  accent: "#006492",
-  error: "#ff2e2e",
-  info: "#2196F3",
-  success: "#4CAF50",
-  warning: "#FFC107",
-  buttonActive: "#FFD843",
-  buttonPassive: "#39A4D5",
-  logsBackground: "#151515",
-  sidebar: "#151515"
-};
 
-const themeColors = computed<ThemeColors>(() => theme.colors.value ?? fallbackColors);
+const themeColors = computed<ThemeColors>(() => theme.colors.value);
 const chartRef = useTemplateRef("chartRef");
 type EChartsInstance = import("echarts/core").ECharts;
 let chart: EChartsInstance | null = null;
