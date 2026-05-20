@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
-@Json(typeProperty = "type")
+@Json
 @Json.SubType(type = PVCameraInfo.PVUsbCameraInfo.class)
 @Json.SubType(type = PVCameraInfo.PVCSICameraInfo.class)
 @Json.SubType(type = PVCameraInfo.PVFileCameraInfo.class)

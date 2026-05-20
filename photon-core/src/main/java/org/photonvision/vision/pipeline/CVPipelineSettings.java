@@ -22,7 +22,7 @@ import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.ImageRotationMode;
 
-@Json(typeProperty = "type")
+@Json
 @Json.SubTypes({
     @Json.SubType(type = ColoredShapePipelineSettings.class),
     @Json.SubType(type = ReflectivePipelineSettings.class),
