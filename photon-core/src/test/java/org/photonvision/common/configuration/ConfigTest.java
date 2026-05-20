@@ -155,6 +155,8 @@ public class ConfigTest {
     public void testJsonbHandlesOldTargetEnum() throws IOException {
         var json = "[ \"AprilTagPipelineSettings\", {\n  \"targetModel\" : \"k6in_16h5\"\n} ]\n";
 
+        json = CVPipelineSettings.remapSettingsJson(json);
+
         AprilTagPipelineSettings settings =
                 (AprilTagPipelineSettings) Jsonb.instance().type(CVPipelineSettings.class).fromJson(json);
         assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);

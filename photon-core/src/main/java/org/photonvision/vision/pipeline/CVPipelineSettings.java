@@ -18,6 +18,12 @@
 package org.photonvision.vision.pipeline;
 
 import io.avaje.jsonb.Json;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.ImageRotationMode;
@@ -148,5 +154,23 @@ public class CVPipelineSettings implements Cloneable {
                 + ", outputShouldShow="
                 + outputShouldShow
                 + '}';
+    }
+
+    // MIGRATION: 2026
+    public static String remapSettingsJson(String pipelineJson) {
+        final JsonType<List<Object>> objListJsonb = Jsonb.instance().type(Types.listOf(Object.class));
+        final JsonType<Map<String, Object>> objMapJsonb =
+                Jsonb.instance().type(Types.mapOf(Object.class));
+
+        List<Object> pipelineMigrationIn = objListJsonb.fromJson(pipelineJson);
+
+        @SuppressWarnings("unchecked")
+        var pipelineData = (Map<String, Object>) pipelineMigrationIn.get(1);
+
+        Map<String, Object> pipelineMigrationOut = new HashMap<>();
+        pipelineMigrationOut.putAll(pipelineData);
+        pipelineMigrationOut.put("type", pipelineMigrationIn.get(0));
+
+        return objMapJsonb.toJson(pipelineMigrationOut);
     }
 }

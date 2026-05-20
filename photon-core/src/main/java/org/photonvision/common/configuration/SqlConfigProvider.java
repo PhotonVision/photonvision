@@ -30,7 +30,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -39,6 +38,7 @@ import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
@@ -62,11 +62,6 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String ATFL_CONFIG_FILE = "apriltagFieldLayout";
         static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
-
-    private static final JsonType<List<Object>> objListJsonb =
-            Jsonb.instance().type(Types.listOf(Object.class));
-    private static final JsonType<Map<String, Object>> objMapJsonb =
-            Jsonb.instance().type(Types.mapOf(Object.class));
 
     private static final String dbName = "photon.sqlite";
     // private final File rootFolder;
@@ -638,21 +633,7 @@ public class SqlConfigProvider extends ConfigProvider {
                             Pattern.compile("\"(PV\\w*CameraInfo)\"\\s*:").matcher(configJson);
                     if (cameraInfoMatcher.find()) {
                         logger.info("Legacy type-wrapper PVCameraInfo being migrated");
-                        String cameraType = cameraInfoMatcher.group(1);
-                        Map<String, Object> cameraMigration = objMapJsonb.fromJson(configJson);
-
-                        @SuppressWarnings("unchecked")
-                        var cameraMigrationIn = (Map<String, Object>) cameraMigration.get("matchedCameraInfo");
-
-                        @SuppressWarnings("unchecked")
-                        var cameraData = (Map<String, Object>) cameraMigrationIn.get(cameraType);
-
-                        Map<String, Object> cameraMigrationOut = new HashMap<>();
-                        cameraMigrationOut.putAll(cameraData);
-                        cameraMigrationOut.put("type", "PVCameraInfo." + cameraType);
-
-                        cameraMigration.put("matchedCameraInfo", cameraMigrationOut);
-                        configJson = objMapJsonb.toJson(cameraMigration);
+                        configJson = PVCameraInfo.remapConfigJson(configJson, cameraInfoMatcher.group(1));
                     }
 
                     CameraConfiguration config =
@@ -661,7 +642,8 @@ public class SqlConfigProvider extends ConfigProvider {
                     // MIGRATION: 2026
                     var driverModeJson = result.getString(Columns.CAM_DRIVERMODE_JSON);
                     if (driverModeJson.startsWith("[")) {
-                        driverModeJson = remapPipelineSettings(driverModeJson);
+                        logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
+                        driverModeJson = CVPipelineSettings.remapSettingsJson(driverModeJson);
                     }
 
                     var driverMode =
@@ -673,7 +655,8 @@ public class SqlConfigProvider extends ConfigProvider {
                     for (var pipelineJson : pipelineSettings) {
                         // MIGRATION: 2026
                         if (pipelineJson.startsWith("[")) {
-                            pipelineJson = remapPipelineSettings(pipelineJson);
+                            logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
+                            pipelineJson = CVPipelineSettings.remapSettingsJson(pipelineJson);
                         }
 
                         try {
@@ -703,22 +686,6 @@ public class SqlConfigProvider extends ConfigProvider {
             }
         }
         return loadedConfigurations;
-    }
-
-    // MIGRATION: 2026
-    private String remapPipelineSettings(String pipelineJson) {
-        logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
-
-        List<Object> pipelineMigrationIn = objListJsonb.fromJson(pipelineJson);
-
-        @SuppressWarnings("unchecked")
-        var pipelineData = (Map<String, Object>) pipelineMigrationIn.get(1);
-
-        Map<String, Object> pipelineMigrationOut = new HashMap<>();
-        pipelineMigrationOut.putAll(pipelineData);
-        pipelineMigrationOut.put("type", pipelineMigrationIn.get(0));
-
-        return objMapJsonb.toJson(pipelineMigrationOut);
     }
 
     public void setConfig(PhotonConfiguration config) {
