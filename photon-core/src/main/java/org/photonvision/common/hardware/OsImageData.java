@@ -40,7 +40,7 @@ public class OsImageData {
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 
-    @Json
+    @Json(naming = Json.Naming.LowerUnderscore)
     public static record ImageMetadata(
             String buildDate, String commitSha, String commitTag, String imageName, String imageSource) {}
 
