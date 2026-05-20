@@ -59,7 +59,8 @@ class Drivetrain:
         wpilib.SmartDashboard.putData("Drivetrain Debug", self.debugField)
 
         self.gyro = wpilib.AnalogGyro(0)
-        self.simGyro = wpilib.simulation.AnalogGyroSim(self.gyro)
+        self.simGyro = wpilib.simulation.OnboardIMUSim(self.gyro)
+        self._yaw = 0.0
 
         self.kinematics = wpimath.SwerveDrive4Kinematics(
             self.frontLeftLocation,
@@ -215,5 +216,7 @@ class Drivetrain:
         self.frontRight.simulationPeriodic()
         self.backLeft.simulationPeriodic()
         self.backRight.simulationPeriodic()
-        self.simGyro.setRate(-1.0 * self.getChassisVelocities().omega_dps)
-        self.simGyro.setAngle(self.simGyro.getAngle() + self.simGyro.getRate() * 0.02)
+        rate = -1.0 * self.getChassisVelocities().omega_dps
+        self.simGyro.setRate(rate)
+        self._yaw += rate * 0.02
+        self.simGyro.setYaw(self._yaw)
