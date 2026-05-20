@@ -31,7 +31,6 @@ import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TargetOrientation;
 
-@Json
 public class AdvancedPipelineSettings extends CVPipelineSettings {
     public AdvancedPipelineSettings() {
         ledMode = true;

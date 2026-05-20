@@ -17,9 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import io.avaje.jsonb.Json;
-
-@Json
 public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
     public double contourFilterRangeX = 2;
     public double contourFilterRangeY = 2;

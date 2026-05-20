@@ -17,12 +17,10 @@
 
 package org.photonvision.vision.pipeline;
 
-import io.avaje.jsonb.Json;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
-@Json
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
 

@@ -17,10 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
-import io.avaje.jsonb.Json;
 import org.photonvision.vision.processes.PipelineManager;
 
-@Json
 public class FocusPipelineSettings extends CVPipelineSettings {
     public FocusPipelineSettings() {
         super();
