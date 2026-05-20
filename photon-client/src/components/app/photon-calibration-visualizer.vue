@@ -222,7 +222,13 @@ onMounted(async () => {
   // height from width, avoiding layout feedback during continuous resizing
   try {
     const initWidth = Math.max(1, Math.floor(document.getElementById("container")?.clientWidth || 1));
-    const initHeight = Math.max(1, Math.floor(document.getElementById("container")?.clientHeight || 1));
+    const initHeight = Math.max(
+      1,
+      Math.floor(
+        (document.getElementById("container")?.clientHeight ||
+          1) - (document.querySelector(".buttons")?.clientHeight || 0)
+      )
+    );
     baseAspect = initWidth / Math.max(1, initHeight);
   } catch {
     baseAspect = undefined;
@@ -356,23 +362,21 @@ watch(
 
 <template>
   <div style="width: 100%; height: 100%" class="flex flex-col">
-    <div class="flex flex-wrap items-center pt-0 pb-2">
-      <div class="w-full pl-0 md:w-1/2">
-        <div class="p-0 text-base font-semibold">
-          {{ props.title }}
-        </div>
-      </div>
-      <div class="flex gap-2">
-        <div class="flex items-center pt-0 pl-6 md:pt-3 md:pl-3">
-          <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
-        </div>
-        <div class="flex items-center pt-0 pr-0 md:pt-3">
-          <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
-        </div>
+    <div class="flex flex-wrap items-center py-2">
+      <div class="flex-1 pl-0 text-base font-semibold">
+        {{ props.title }}
       </div>
     </div>
     <div id="container" style="flex: 1 1 auto">
-      <canvas id="view" class="h-auto max-w-full" />
+      <canvas id="view" class="h-auto max-w-full rounded-xl border border-white/10" />
+      <div class="buttons flex gap-2 pt-2">
+        <div class="flex items-center">
+          <pv-button variant="primary" @click="resetCamFirstPerson"> First Person </pv-button>
+        </div>
+        <div class="flex items-center">
+          <pv-button variant="primary" @click="resetCamThirdPerson"> Third Person </pv-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

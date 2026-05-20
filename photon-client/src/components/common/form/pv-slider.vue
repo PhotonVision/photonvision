@@ -80,7 +80,15 @@ const updateFromInput = (rawValue: string) => {
       <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
     </div>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
-      <pv-button size="icon" variant="passive" :icon="IconMenuLeft" :disabled="disabled" @click="stepValue(-1)" :aria-label="`Decrease ${label} value`" :aria-controls="id"/>
+      <pv-button
+        size="icon"
+        variant="passive"
+        :icon="IconMenuLeft"
+        :disabled="disabled"
+        @click="stepValue(-1)"
+        :aria-label="`Decrease ${label} value`"
+        :aria-controls="id"
+      />
       <slider-root
         v-model="sliderModel"
         class="relative flex h-10 w-full touch-none items-center select-none"
@@ -95,7 +103,15 @@ const updateFromInput = (rawValue: string) => {
         </slider-track>
         <slider-thumb :class="sliderThumbClass" :aria-label="label" />
       </slider-root>
-      <pv-button size="icon" variant="passive" :icon="IconMenuRight" :disabled="disabled" @click="stepValue(1)" :aria-label="`Increase ${label} value`" :aria-controls="id"/>
+      <pv-button
+        size="icon"
+        variant="passive"
+        :icon="IconMenuRight"
+        :disabled="disabled"
+        @click="stepValue(1)"
+        :aria-label="`Increase ${label} value`"
+        :aria-controls="id"
+      />
       <input
         :id="inputId"
         :value="localValue"

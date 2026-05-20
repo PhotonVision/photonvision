@@ -292,11 +292,11 @@ watch(metricsHistorySnapshot, () => {
   <div class="flex flex-wrap">
     <!-- Device control card -->
     <div class="flex-1 pr-3">
-      <pv-card padding="none" class="fill-height mb-3 flex flex-col justify-between">
-        <div class="flex justify-between p-4 pb-2 text-lg font-semibold">
+      <pv-card  class="fill-height mb-3 flex flex-col justify-between">
+        <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Control</span>
         </div>
-        <div class="flex-0-0 px-4 pb-4">
+        <div class="flex-0-0  pb-4">
           <pv-table>
             <tbody>
               <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)" :key="itemIndex">
@@ -310,14 +310,14 @@ watch(metricsHistorySnapshot, () => {
             </tbody>
           </pv-table>
         </div>
-        <div class="flex-0-0 px-4 pt-0 pb-4">
-          <div class="-mx-3 flex flex-wrap">
-            <div class="flex-1 px-3">
+        <div class="flex-0-0 pt-0 pb-4">
+          <div class=" flex flex-wrap">
+            <div class="flex-1 pr-3">
               <pv-button variant="passive" :icon="IconEye" block @click="useStateStore().showLogModal = true">
                 <span class="open-label">View Logs</span>
               </pv-button>
             </div>
-            <div class="flex-1 px-3">
+            <div class="flex-1 pl-3">
               <pv-button variant="passive" :icon="IconDownload" block @click="openExportLogsPrompt">
                 <span class="open-label">Download Logs</span>
 
@@ -333,28 +333,28 @@ watch(metricsHistorySnapshot, () => {
             </div>
           </div>
         </div>
-        <div class="flex-0-0 px-4 pt-0 pb-4">
-          <div class="-mx-3 flex flex-wrap">
-            <div class="flex-1 px-3">
+        <div class="flex-0-0 pt-0 pb-4">
+          <div class=" flex flex-wrap">
+            <div class="flex-1 pr-3">
               <pv-button variant="passive" :icon="IconImport" block @click="() => (showImportDialog = true)">
                 <span class="open-label">Import Settings</span>
               </pv-button>
             </div>
-            <div class="flex-1 px-3">
+            <div class="flex-1 pl-3">
               <pv-button variant="passive" :icon="IconExport" block @click="openExportSettingsPrompt">
                 <span class="open-label">Export Settings</span>
               </pv-button>
             </div>
           </div>
         </div>
-        <div class="flex-0-0 px-4 pt-0 pb-4">
-          <div class="-mx-3 flex flex-wrap">
-            <div class="w-full px-3 sm:w-1/2">
+        <div class="flex-0-0 pt-0 pb-4">
+          <div class=" flex flex-wrap">
+            <div class="w-full pr-3 sm:w-1/2">
               <pv-button variant="primary" :icon="IconRestart" block @click="restartProgram">
                 <span class="open-label">Restart Software</span>
               </pv-button>
             </div>
-            <div class="w-full px-3 sm:w-1/2">
+            <div class="w-full pl-3 sm:w-1/2">
               <pv-button variant="passive" :icon="IconUpload" block @click="openOfflineUpdatePrompt">
                 <span class="open-label">Offline Update</span>
               </pv-button>
@@ -368,14 +368,14 @@ watch(metricsHistorySnapshot, () => {
             </div>
           </div>
         </div>
-        <div class="flex-0-0 px-4 pt-0 pb-4">
-          <div class="-mx-3 flex flex-wrap">
-            <div class="w-full px-3 sm:w-1/2">
+        <div class="flex-0-0 pt-0 pb-4">
+          <div class=" flex flex-wrap">
+            <div class="w-full pr-3 sm:w-1/2">
               <pv-button variant="primary" :icon="IconRestartAlert" block @click="restartDevice">
                 <span class="open-label">Reboot Device</span>
               </pv-button>
             </div>
-            <div class="w-full px-3 sm:w-1/2">
+            <div class="w-full pl-3 sm:w-1/2">
               <pv-button variant="danger" :icon="IconTrashCanOutline" block @click="() => (showFactoryReset = true)">
                 <span class="open-icon"> Factory Reset </span>
               </pv-button>
@@ -387,11 +387,11 @@ watch(metricsHistorySnapshot, () => {
 
     <!-- Device metrics card -->
     <div class="flex-1">
-      <pv-card padding="none" class="fill-height mb-3 flex flex-col justify-between">
-        <div class="flex justify-between p-4 pb-2 text-lg font-semibold">
+      <pv-card class="fill-height mb-3 flex flex-col justify-between">
+        <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Metrics</span>
         </div>
-        <div class="flex-0-0 px-4 pt-0 pb-4">
+        <div class="flex-0-0 pb-4">
           <div class="flex justify-between pb-3">
             <span>CPU Usage</span>
             <span>{{ Math.round(cpuUsageData.at(-1)?.value ?? 0) }}%</span>
@@ -402,7 +402,7 @@ watch(metricsHistorySnapshot, () => {
             <template #fallback> Loading... </template>
           </Suspense>
         </div>
-        <div class="flex-0-0 px-4 pt-0 pb-4">
+        <div class="flex-0-0 pb-4">
           <div class="flex justify-between pt-3 pb-3">
             <span>CPU Memory Usage</span>
             <span>{{ Math.round(cpuMemoryUsageData.at(-1)?.value ?? 0) }}%</span>
@@ -413,7 +413,7 @@ watch(metricsHistorySnapshot, () => {
             <template #fallback> Loading... </template>
           </Suspense>
         </div>
-        <div class="flex-0-0 px-4 pt-0 pb-4">
+        <div class="flex-0-0 pb-4">
           <div class="flex justify-between pt-3 pb-3">
             <span>CPU Temperature</span>
             <span>{{ cpuTempData.at(-1)?.value === -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
@@ -424,7 +424,7 @@ watch(metricsHistorySnapshot, () => {
             <template #fallback> Loading... </template>
           </Suspense>
         </div>
-        <div class="flex-0-0 px-4 pt-0 pb-4">
+        <div class="flex-0-0 pb-4">
           <div class="flex justify-between pt-3 pb-3">
             <pv-tooltipped-label
               label="Network Usage"
@@ -471,11 +471,11 @@ watch(metricsHistorySnapshot, () => {
       }
     "
   >
-    <pv-card padding="none" class="p-5">
+    <pv-card>
       <div class="pb-0 text-lg font-semibold">Import Settings</div>
       <div>
         Upload and apply previously saved or exported PhotonVision settings to this device
-        <div class="p-5 pb-0">
+        <div class="pt-4">
           <pv-select
             v-model="importType"
             label="Type"
@@ -513,13 +513,13 @@ watch(metricsHistorySnapshot, () => {
   </pv-dialog>
 
   <pv-dialog v-model="offlineUpdateDialog.show" :width="700">
-    <pv-card padding="none" class="p-5">
+    <pv-card>
       <div class="text-center text-lg font-semibold">Offline Update</div>
-      <div class="pb-3 pt-0">
+      <div class="pt-0 pb-3">
         <span> {{ offlineUpdateDialog.confirmString }} </span>
       </div>
       <div class="pt-3">
-        <div class="flex flex-wrap items-center text-pv-on-surface">
+        <div class="text-pv-on-surface flex flex-wrap items-center">
           <div class="w-full">
             <pv-button
               variant="primary"

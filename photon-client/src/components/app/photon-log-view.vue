@@ -127,7 +127,7 @@ document.addEventListener("keydown", (e) => {
               label="Minimum Time"
               type="time"
               step="1"
-              class="pl-3 text-pv-on-surface"
+              class="text-pv-on-surface pl-3"
               :clearable="true"
               :input-cols="7"
             />

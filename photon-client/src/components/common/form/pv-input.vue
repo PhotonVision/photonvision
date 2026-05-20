@@ -55,15 +55,15 @@ const handleKeydown = ({ key }: KeyboardEvent) => {
 </script>
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="pt-3 pb-3 flex items-center pl-0">
+    <div :class="labelWidthClass" class="flex items-center pt-3 pb-3 pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
     </div>
 
-    <div :class="inputWidthClass" class="pt-3 pb-3 flex items-center pr-0">
+    <div :class="inputWidthClass" class="flex items-center pt-3 pr-0 pb-3">
       <pv-text-field
         :id="inputId"
         v-model="value"
-        density="compact"
+        
         :placeholder="placeholder"
         :type="type"
         :disabled="disabled"

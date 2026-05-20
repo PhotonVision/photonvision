@@ -12,22 +12,15 @@ export default defineConfig({
     allowedHosts: ["drawn-signing-literacy-finished.trycloudflare.com"]
   },
   base: "./",
-  plugins: [
-    tailwindcss(),
-    Components({
-      dts: true, // enabled by default if `typescript` is installed
-      resolvers: [
-        IconsResolver({
-          prefix: "icon"
-        })
-      ]
-    }),
-    Icons({
-      compiler: "vue3"
-    }),
-    vue()
-  ],
-
+  plugins: [tailwindcss(), Components({
+    dts: true,
+    // enabled by default if `typescript` is installed
+    resolvers: [IconsResolver({
+      prefix: "icon"
+    })]
+  }), Icons({
+    compiler: "vue3"
+  }), vue()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url))

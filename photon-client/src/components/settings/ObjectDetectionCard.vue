@@ -162,9 +162,9 @@ const handleBulkImport = async () => {
 </script>
 
 <template>
-  <pv-card class="mb-3" padding="none">
-    <div class="p-5 pb-2 text-lg font-semibold">Object Detection</div>
-    <div class="p-5 pt-0">
+  <pv-card class="mb-3">
+    <div class="pb-2 text-lg font-semibold">Object Detection</div>
+    <div class="pt-0">
       <div class="-mx-3 flex flex-wrap">
         <div class="w-full px-3 sm:w-1/2">
           <pv-button
@@ -188,7 +188,7 @@ const handleBulkImport = async () => {
               }
             "
           >
-            <pv-card padding="none" class="p-5">
+            <pv-card>
               <div class="pb-2 text-lg font-semibold">Import New Object Detection Model</div>
               <div>
                 <span v-if="useSettingsStore().general.supportedBackends?.includes('RKNN')"
@@ -205,7 +205,7 @@ const handleBulkImport = async () => {
                   If you're seeing this, something broke; please file a ticket and tell us the details of your
                   situation.</span
                 >
-                <div class="p-5 pb-0">
+                <div class="pt-4">
                   <pv-file-input
                     v-model="importModelFile"
                     label="Model File"
@@ -267,12 +267,12 @@ const handleBulkImport = async () => {
             <span class="open-label">Bulk Import</span>
           </pv-button>
           <pv-dialog v-model="showBulkImportDialog" width="600">
-            <pv-card padding="none" class="p-5">
+            <pv-card>
               <div class="pb-2 text-lg font-semibold">Import Multiple Object Detection Models</div>
               <div>
                 Upload a zip file containing multiple object detection models to this device. Note this zip file should
                 only come from a previous export of object detection models.
-                <div class="p-5 pb-0">
+                <div class="pt-4">
                   <pv-file-input v-model="importFile" label="Zip File" accept=".zip" />
                   <pv-button
                     variant="primary"
@@ -308,7 +308,7 @@ const handleBulkImport = async () => {
       </div>
       <div class="flex flex-wrap">
         <div class="flex-1">
-          <pv-table fixed-header height="100%" density="compact" dark>
+          <pv-table fixed-header height="100%" dark>
             <thead style="font-size: 1.25rem">
               <tr>
                 <th>Model Nicknames</th>
@@ -361,11 +361,11 @@ const handleBulkImport = async () => {
           />
 
           <pv-dialog v-model="showRenameDialog.show" :width="600">
-            <pv-card padding="none" class="p-5">
+            <pv-card>
               <div class="pb-2 text-lg font-semibold">Rename Object Detection Model</div>
               <div class="pt-0">
                 Enter a new name for the model "{{ showRenameDialog.model.nickname }}":
-                <div class="p-5 pb-0">
+                <div class="pt-4">
                   <pv-text-field
                     v-model="showRenameDialog.newName"
                     hide-details
@@ -383,7 +383,7 @@ const handleBulkImport = async () => {
             </pv-card>
           </pv-dialog>
           <pv-dialog v-model="showInfo.show" width="600">
-            <pv-card padding="none" class="p-5">
+            <pv-card>
               <div class="pb-2 text-lg font-semibold">Object Detection Model Info</div>
               <div class="pt-0">
                 <pv-button variant="passive" :icon="IconExport" block @click="openExportIndividualModelPrompt">

@@ -11,8 +11,7 @@ const docsSrc = import.meta.env.MODE === "demo" ? "https://docs.photonvision.org
         variant="transparent"
         :bordered="false"
         :elevated="false"
-        padding="none"
-        class="flex h-full flex-col items-center justify-center gap-4 px-6 text-center"
+        class="flex h-full flex-col items-center justify-center gap-4 text-center"
       >
         <div class="flex flex-col">
           <pv-icon size="64" color="primary" :icon="IconWebOff" />

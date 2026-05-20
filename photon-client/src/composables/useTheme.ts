@@ -28,14 +28,14 @@ const defaultDark: ThemeColors = {
   background: "#151515",
   surface: "#1c232c",
   primary: "#39A4D5",
-  secondary: "#FFD843",
+  secondary: "#FFD843"
 };
 
 const defaultLight: ThemeColors = {
   background: "#232C37",
   surface: "#006492",
   primary: "#FFD843",
-  secondary: "#39A4D5",
+  secondary: "#39A4D5"
 };
 
 const themeState: ThemeState = {
@@ -49,7 +49,7 @@ let observer: MutationObserver | null = null;
 let mediaQuery: MediaQueryList | null = null;
 let subscriberCount = 0;
 
-const readCssVar = <T extends (string | undefined),>(name: string, fallback: T): string | T => {
+const readCssVar = <T extends string | undefined>(name: string, fallback: T): string | T => {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return value || fallback;

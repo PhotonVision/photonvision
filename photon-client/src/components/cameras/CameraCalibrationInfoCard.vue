@@ -123,13 +123,13 @@ const tabItems: TabItem[] = [
 </script>
 
 <template>
-  <pv-card padding="none">
-    <div class="p-4 pb-2">
-      <div class="flex flex-wrap">
-        <div class="w-full p-0 md:w-1/2">
+  <pv-card>
+    <div>
+      <div class="flex flex-wrap justify-between">
+        <div class="w-full flex-1 p-0">
           <div class="text-base font-semibold">Calibration Details</div>
         </div>
-        <div class="flex w-1/2 items-center pt-0 pb-0 pl-0 md:w-1/4">
+        <div class="mr-2 flex items-center">
           <pv-button variant="passive" :icon="IconImport" block @click="openUploadPhotonCalibJsonPrompt"
             >Import</pv-button
           >
@@ -141,7 +141,7 @@ const tabItems: TabItem[] = [
             @change="importCalibration"
           />
         </div>
-        <div class="flex w-1/2 items-center pt-0 pr-0 pb-0 md:w-1/4">
+        <div class="flex items-center">
           <pv-button
             variant="passive"
             :icon="IconExport"
@@ -161,12 +161,12 @@ const tabItems: TabItem[] = [
       </div>
     </div>
 
-    <div class="flex flex-row px-4 pt-0 pb-4">
+    <div class="flex flex-row pt-0 pb-4">
       <div class="w-1/3 p-0">
         <pv-tabs v-model="tab" :items="tabItems" class="mt-2" />
         <div class="pt-3">
           <div v-if="tab === 0">
-            <pv-table style="width: 100%" density="compact">
+            <pv-table style="width: 100%" >
               <template #default>
                 <tbody>
                   <tr>
@@ -282,7 +282,7 @@ const tabItems: TabItem[] = [
             <pv-data-table
               id="observations-table"
               v-model:expanded="expandedObservations"
-              density="compact"
+              
               style="width: 100%"
               :columns="[
                 { header: 'Id', accessorKey: 'index' },
@@ -297,7 +297,9 @@ const tabItems: TabItem[] = [
                   size="icon"
                   variant="text"
                   :class="
-                    viewingImg === (internalItem as { index: number }).index ? 'text-pv-button-active' : 'text-pv-on-surface/70'
+                    viewingImg === (internalItem as { index: number }).index
+                      ? 'text-pv-button-active'
+                      : 'text-pv-on-surface/70'
                   "
                   @click="
                     viewingImg = (internalItem as { index: number }).index;

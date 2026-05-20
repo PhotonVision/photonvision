@@ -63,7 +63,14 @@ const getTabGroups = (): ConfigOption[][] => {
   } else if (xxlAndUp.value) {
     return [
       [allTabs.inputTab],
-      [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.objectDetectionTab, allTabs.outputTab],
+      [
+        allTabs.thresholdTab,
+        allTabs.contoursTab,
+        allTabs.apriltagTab,
+        allTabs.arucoTab,
+        allTabs.objectDetectionTab,
+        allTabs.outputTab
+      ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   }
@@ -129,8 +136,6 @@ const getSelectedComponent = (tabGroupData: ConfigOption[], selectedTabName: num
 
 const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
   tabGroupData.map((tabConfig) => ({ label: tabConfig.tabName, value: tabConfig.tabName }));
-
-
 </script>
 
 <template>
@@ -138,7 +143,7 @@ const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
     <template v-if="!useCameraSettingsStore().hasConnected">
       <pv-alert
         color="error"
-        density="compact"
+        
         text="Camera is not connected. Please check your connection and try again."
         :icon="IconAlertCircleOutline"
       />
@@ -153,8 +158,8 @@ const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
         ]"
         @vue:before-update="onBeforeTabUpdate"
       >
-        <pv-card padding="none" class="h-full pr-5 pl-5">
-          <pv-tabs v-model="selectedTabs[tabGroupIndex]" :items="getTabItems(tabGroupData)" class="mt-2" />
+        <pv-card class="h-full">
+          <pv-tabs v-model="selectedTabs[tabGroupIndex]" :items="getTabItems(tabGroupData)" />
           <div class="py-3">
             <KeepAlive>
               <Component :is="getSelectedComponent(tabGroupData, selectedTabs[tabGroupIndex])" />
