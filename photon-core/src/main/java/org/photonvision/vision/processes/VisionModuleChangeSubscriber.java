@@ -67,7 +67,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             try {
                 getSettingChanges()
                         .add(
-                                new VisionModuleChange(
+                                new VisionModuleChange<Object>(
                                         wsEvent.propertyName,
                                         wsEvent.data,
                                         parentModule.pipelineManager.getCurrentPipeline().getSettings(),
@@ -91,6 +91,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 var newPropValue = change.getNewPropValue();
                 var currentSettings = change.getCurrentSettings();
                 var originContext = change.getOriginContext();
+                if (newPropValue instanceof Long) {
+                    newPropValue = ((Long) newPropValue).intValue();
+                }
+
                 switch (propName) {
                     case "pipelineName" -> newPipelineNickname((String) newPropValue);
                     case "newPipelineInfo" -> newPipelineInfo((Pair<String, PipelineType>) newPropValue);
