@@ -120,6 +120,7 @@ publishing {
 test {
     useJUnitPlatform()
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+    systemProperty 'jsonb.disableAdapterSpi', 'true'
     testLogging {
         events "failed"
         exceptionFormat = "full"

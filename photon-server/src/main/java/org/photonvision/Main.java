@@ -235,6 +235,8 @@ public class Main {
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
 
+        System.setProperty("jsonb.disableAdapterSpi", "true");
+
         logger.info(
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString
