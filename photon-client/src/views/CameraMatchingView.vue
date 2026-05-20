@@ -146,8 +146,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                     useStateStore().backendResults[module.uniqueName]
                   "
                 >
-                  <td style="width: 50%">Frames Processed</td>
-                  <td>
+                  <td class="pr-0">Frames Processed</td>
+                  <td class="tabular-nums">
                     {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
                       useStateStore().backendResults[module.uniqueName].fps
                     }}
@@ -224,7 +224,6 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               </div>
               <div class="w-1/2 px-2 md:w-1/4">
                 <pv-button
-                  size="icon"
                   variant="danger"
                   block
                   :loading="module.uniqueName === deletingCamera"
@@ -313,7 +312,6 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               </div>
               <div class="w-1/2 px-2 md:w-1/4">
                 <pv-button
-                  size="icon"
                   variant="danger"
                   block
                   :loading="module.uniqueName === deletingCamera"
@@ -370,7 +368,6 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
         <pv-card
           variant="transparent"
           :bordered="false"
-          :elevated="false"
           class="flex h-full flex-col justify-center"
         >
           <div class="flex flex-col items-center justify-center">
@@ -423,12 +420,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 </template>
 
 <style scoped>
-td {
-  padding: 0 !important;
-}
-
 .active-status {
-  color: rgb(14, 240, 14);
+  color: var(--color-green-300);
   background-color: transparent;
   text-decoration: none;
 }
