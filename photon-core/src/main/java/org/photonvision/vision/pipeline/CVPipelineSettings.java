@@ -17,23 +17,19 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.avaje.jsonb.Json;
 import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.ImageRotationMode;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.WRAPPER_ARRAY,
-        property = "type")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = ColoredShapePipelineSettings.class),
-    @JsonSubTypes.Type(value = ReflectivePipelineSettings.class),
-    @JsonSubTypes.Type(value = DriverModePipelineSettings.class),
-    @JsonSubTypes.Type(value = AprilTagPipelineSettings.class),
-    @JsonSubTypes.Type(value = ArucoPipelineSettings.class),
-    @JsonSubTypes.Type(value = ObjectDetectionPipelineSettings.class)
+@Json(typeProperty = "type")
+@Json.SubTypes({
+    @Json.SubType(type = ColoredShapePipelineSettings.class),
+    @Json.SubType(type = ReflectivePipelineSettings.class),
+    @Json.SubType(type = DriverModePipelineSettings.class),
+    @Json.SubType(type = AprilTagPipelineSettings.class),
+    @Json.SubType(type = ArucoPipelineSettings.class),
+    @Json.SubType(type = ObjectDetectionPipelineSettings.class)
 })
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;

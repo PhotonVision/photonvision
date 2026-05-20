@@ -17,11 +17,7 @@
 
 package org.photonvision.vision.calibration;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Mat;
@@ -30,31 +26,23 @@ import org.opencv.core.Size;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Json
 public class CameraCalibrationCoefficients implements Releasable {
-    @JsonProperty("resolution")
+    @Json.Property("resolution")
     public final Size unrotatedImageSize;
 
-    @JsonProperty("cameraIntrinsics")
     public final JsonMatOfDouble cameraIntrinsics;
 
-    @JsonProperty("distCoeffs")
-    @JsonAlias({"distCoeffs", "distCoeffs"})
     public final JsonMatOfDouble distCoeffs;
 
-    @JsonProperty("observations")
     public final List<BoardObservation> observations;
 
-    @JsonProperty("calobjectWarp")
     public final double[] calobjectWarp;
 
-    @JsonProperty("calobjectSize")
     public final Size calobjectSize;
 
-    @JsonProperty("calobjectSpacing")
     public final double calobjectSpacing;
 
-    @JsonProperty("lensmodel")
     public final CameraLensModel lensmodel;
 
     /**
@@ -75,16 +63,15 @@ public class CameraCalibrationCoefficients implements Releasable {
      *     width/height
      * @param calobjectSpacing Spacing between adjacent squares, in meters
      */
-    @JsonCreator
     public CameraCalibrationCoefficients(
-            @JsonProperty("resolution") Size resolution,
-            @JsonProperty("cameraIntrinsics") JsonMatOfDouble cameraIntrinsics,
-            @JsonProperty("distCoeffs") JsonMatOfDouble distCoeffs,
-            @JsonProperty("calobjectWarp") double[] calobjectWarp,
-            @JsonProperty("observations") List<BoardObservation> observations,
-            @JsonProperty("calobjectSize") Size calobjectSize,
-            @JsonProperty("calobjectSpacing") double calobjectSpacing,
-            @JsonProperty("lensmodel") CameraLensModel lensmodel) {
+            Size resolution,
+            JsonMatOfDouble cameraIntrinsics,
+            JsonMatOfDouble distCoeffs,
+            double[] calobjectWarp,
+            List<BoardObservation> observations,
+            Size calobjectSize,
+            double calobjectSpacing,
+            CameraLensModel lensmodel) {
         this.unrotatedImageSize = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
@@ -196,27 +183,22 @@ public class CameraCalibrationCoefficients implements Releasable {
                 lensmodel);
     }
 
-    @JsonIgnore
     public Mat getCameraIntrinsicsMat() {
         return cameraIntrinsics.getAsMatOfDouble();
     }
 
-    @JsonIgnore
     public MatOfDouble getDistCoeffsMat() {
         return distCoeffs.getAsMatOfDouble();
     }
 
-    @JsonIgnore
     public double[] getIntrinsicsArr() {
         return cameraIntrinsics.data;
     }
 
-    @JsonIgnore
     public double[] getDistCoeffsArr() {
         return distCoeffs.data;
     }
 
-    @JsonIgnore
     public List<BoardObservation> getObservations() {
         return observations;
     }

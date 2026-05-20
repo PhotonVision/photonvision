@@ -17,8 +17,8 @@
 
 package org.photonvision.common.networktables;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.json.JsonDataException;
+import io.avaje.jsonb.Jsonb;
 import java.util.HashSet;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -34,12 +34,11 @@ public class PacketPublisher<T> implements AutoCloseable {
         this.publisher = publisher;
         this.photonStruct = photonStruct;
 
-        var mapper = new ObjectMapper();
         try {
             this.publisher
                     .getTopic()
-                    .setProperty("message_uuid", mapper.writeValueAsString(photonStruct.getInterfaceUUID()));
-        } catch (JsonProcessingException e) {
+                    .setProperty("message_uuid", Jsonb.instance().toJson(photonStruct.getInterfaceUUID()));
+        } catch (JsonDataException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             throw new RuntimeException(e);

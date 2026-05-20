@@ -17,9 +17,7 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +34,7 @@ import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.PipelineManager;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
+@Json
 public class CameraConfiguration {
     private static final Logger logger = new Logger(CameraConfiguration.class, LogGroup.Camera);
 
@@ -64,9 +63,9 @@ public class CameraConfiguration {
 
     // Ignore the pipes, as we serialize them to their own column to hack around
     // polymorphic lists
-    @JsonIgnore public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
+    @Json.Ignore public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
 
-    @JsonIgnore
+    @Json.Ignore
     public DriverModePipelineSettings driveModeSettings = new DriverModePipelineSettings();
 
     public CameraConfiguration(PVCameraInfo cameraInfo, String uniqueName, String nickname) {
@@ -79,16 +78,16 @@ public class CameraConfiguration {
     }
 
     // Shiny new constructor
-    @JsonCreator
+    @Json.Creator
     public CameraConfiguration(
-            @JsonProperty("uniqueName") String uniqueName,
-            @JsonProperty("matchedCameraInfo") PVCameraInfo matchedCameraInfo,
-            @JsonProperty("nickname") String nickname,
-            @JsonProperty("deactivated") boolean deactivated,
-            @JsonProperty("cameraQuirks") QuirkyCamera cameraQuirks,
-            @JsonProperty("FOV") double FOV,
-            @JsonProperty("calibrations") List<CameraCalibrationCoefficients> calibrations,
-            @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
+            String uniqueName,
+            PVCameraInfo matchedCameraInfo,
+            String nickname,
+            boolean deactivated,
+            QuirkyCamera cameraQuirks,
+            double FOV,
+            List<CameraCalibrationCoefficients> calibrations,
+            int currentPipelineIndex) {
         this.uniqueName = uniqueName;
         this.matchedCameraInfo = matchedCameraInfo;
         this.nickname = nickname;
@@ -120,14 +119,14 @@ public class CameraConfiguration {
         PVCameraInfo matchedCameraInfo;
 
         /** Legacy constructor for compat with 2024.3.1 */
-        @JsonCreator
+        @Json.Creator
         public LegacyCameraConfigStruct(
-                @JsonProperty("baseName") String baseName,
-                @JsonProperty("path") String path,
-                @JsonProperty("otherPaths") String[] otherPaths,
-                @JsonProperty("cameraType") CameraType cameraType,
-                @JsonProperty("usbVID") int usbVID,
-                @JsonProperty("usbPID") int usbPID) {
+                String baseName,
+                String path,
+                String[] otherPaths,
+                CameraType cameraType,
+                int usbVID,
+                int usbPID) {
             if (cameraType == CameraType.UsbCamera) {
                 this.matchedCameraInfo =
                         PVCameraInfo.fromUsbCameraInfo(
@@ -215,7 +214,6 @@ public class CameraConfiguration {
      *
      * <p>This represents our best guess at an immutable path to detect a camera at.
      */
-    @JsonIgnore
     public String getDevicePath() {
         return matchedCameraInfo.uniquePath();
     }

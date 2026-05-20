@@ -20,7 +20,7 @@ package org.photonvision.common.configuration;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.avaje.json.JsonDataException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -134,7 +134,7 @@ public class SQLConfigTest {
     }
 
     @Test
-    public void testLoadNewNNMM() throws JsonProcessingException, IOException {
+    public void testLoadNewNNMM() throws JsonDataException, IOException {
         var folder = tmpDir.resolve("2025.3.1-old-nnmm");
         FileUtils.copyDirectory(
                 TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),

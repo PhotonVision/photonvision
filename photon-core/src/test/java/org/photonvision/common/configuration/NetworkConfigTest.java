@@ -20,8 +20,11 @@ package org.photonvision.common.configuration;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -30,10 +33,10 @@ import org.photonvision.common.util.TestUtils;
 public class NetworkConfigTest {
     @Test
     public void testSerialization() throws IOException {
-        var mapper = new ObjectMapper();
         var path = Path.of("netTest.json");
-        mapper.writeValue(path.toFile(), new NetworkConfig());
-        assertDoesNotThrow(() -> mapper.readValue(path.toFile(), NetworkConfig.class));
+        JsonType<NetworkConfig> jsonb = Jsonb.instance().type(NetworkConfig.class);
+        jsonb.toJson(new NetworkConfig(), new FileWriter(path.toFile()));
+        assertDoesNotThrow(() -> jsonb.fromJson(new FileReader(path.toFile())));
         new File("netTest.json").delete();
     }
 

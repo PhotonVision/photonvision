@@ -17,14 +17,16 @@
 
 package org.photonvision.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.json.JsonDataException;
+import io.avaje.json.JsonIoException;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
+import io.avaje.jsonb.jackson.JacksonAdapter;
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -47,7 +49,8 @@ import org.wpilib.math.util.Pair;
 public class DataSocketHandler {
     private final Logger logger = new Logger(DataSocketHandler.class, LogGroup.WebServer);
     private final List<WsContext> users = new CopyOnWriteArrayList<>();
-    private final ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
+    private final JacksonAdapter adapter = new JacksonAdapter(new MessagePackFactory());
+    private final Jsonb msgpackJsonb = Jsonb.builder().adapter(adapter).build();
     private final DataChangeService dcService = DataChangeService.getInstance();
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -94,8 +97,8 @@ public class DataSocketHandler {
     @SuppressWarnings({"unchecked"})
     public void onBinaryMessage(WsBinaryMessageContext context) {
         try {
-            Map<String, Object> deserializedData =
-                    objectMapper.readValue(context.data(), new TypeReference<>() {});
+            JsonType<Map<String, Object>> objJsonb = msgpackJsonb.type(Types.mapOf(Object.class));
+            Map<String, Object> deserializedData = objJsonb.fromJson(context.data());
 
             // Special case the current camera index
             String cameraUniqueName = "";
@@ -275,20 +278,19 @@ public class DataSocketHandler {
                     logger.error("Failed to parse message!", e);
                 }
             }
-        } catch (IOException e) {
+        } catch (JsonIoException e) {
             logger.error("Failed to deserialize message!", e);
         }
     }
 
-    private void sendMessage(ByteBuffer b, WsContext user) throws JsonProcessingException {
+    private void sendMessage(ByteBuffer b, WsContext user) {
         if (user.session.isOpen()) {
             user.send(b);
         }
     }
 
-    public void broadcastMessage(Object message, WsContext userToSkip)
-            throws JsonProcessingException {
-        ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
+    public void broadcastMessage(Object message, WsContext userToSkip) throws JsonDataException {
+        ByteBuffer b = ByteBuffer.wrap(msgpackJsonb.toJsonBytes(message));
 
         if (userToSkip == null) {
             for (WsContext user : users) {

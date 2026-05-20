@@ -77,7 +77,7 @@ export type ConfigurableNetworkSettings = Omit<
 
 export interface PVCameraInfoBase {
   /*
-  Huge hack. In Jackson, this is set based on the underlying type -- this
+  Huge hack. In Jsonb, this is set based on the underlying type -- this
   then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
   */
   cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";

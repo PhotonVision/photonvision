@@ -17,7 +17,9 @@
 
 package org.photonvision.common.configuration;
 
+import io.avaje.jsonb.Jsonb;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +36,6 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -233,8 +234,9 @@ public class ConfigManager {
                 Path.of(getModelsDirectory().toString(), "photonvision-object-detection-models.json")
                         .toFile();
         try {
-            JacksonUtils.serialize(
-                    tempProperties.toPath(), this.getConfig().neuralNetworkPropertyManager());
+            Jsonb.instance()
+                    .type(NeuralNetworkModelsSettings.class)
+                    .toJson(this.getConfig().neuralNetworkPropertyManager(), new FileWriter(tempProperties));
             ZipUtil.pack(getModelsDirectory(), out);
             // Now delete the tempProperties
             if (tempProperties.exists()) {

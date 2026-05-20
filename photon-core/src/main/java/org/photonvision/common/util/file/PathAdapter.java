@@ -15,23 +15,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.common.util.file;
 
-import io.avaje.jsonb.Json;
-import org.photonvision.common.util.numbers.DoubleCouple;
-import org.photonvision.vision.processes.PipelineManager;
+import io.avaje.json.JsonAdapter;
+import io.avaje.json.JsonReader;
+import io.avaje.json.JsonWriter;
+import io.avaje.jsonb.CustomAdapter;
+import io.avaje.jsonb.Jsonb;
+import java.nio.file.Path;
 
-@Json
-public class DriverModePipelineSettings extends CVPipelineSettings {
-    public DoubleCouple offsetPoint = new DoubleCouple();
-    public boolean crosshair = true;
+@CustomAdapter
+public class PathAdapter implements JsonAdapter<Path> {
+    public PathAdapter(Jsonb jsonb) {}
 
-    public DriverModePipelineSettings() {
-        super();
-        pipelineNickname = "Driver Mode";
-        pipelineIndex = PipelineManager.DRIVERMODE_INDEX;
-        pipelineType = PipelineType.DriverMode;
-        inputShouldShow = true;
-        cameraAutoExposure = true;
+    @Override
+    public Path fromJson(JsonReader reader) {
+        return Path.of(reader.readString());
+    }
+
+    @Override
+    public void toJson(JsonWriter writer, Path value) {
+        writer.value(value.toString());
     }
 }

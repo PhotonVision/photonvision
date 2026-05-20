@@ -17,19 +17,22 @@
 
 package org.photonvision.common.configuration;
 
+import io.avaje.jsonb.Json;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.photonvision.vision.processes.VisionSource;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
+@Json
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
     private AprilTagFieldLayout atfl;
     private NeuralNetworkModelsSettings neuralNetworkProperties;
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
+    private Map<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
@@ -46,13 +49,14 @@ public class PhotonConfiguration {
                 new HashMap<>());
     }
 
+    @Json.Creator
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
             NeuralNetworkModelsSettings neuralNetworkProperties,
-            HashMap<String, CameraConfiguration> cameraConfigurations) {
+            Map<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
@@ -82,10 +86,12 @@ public class PhotonConfiguration {
         return hardwareSettings;
     }
 
+    @Json.Property("atfl")
     public AprilTagFieldLayout getApriltagFieldLayout() {
         return atfl;
     }
 
+    @Json.Property("neuralNetworkProperties")
     public NeuralNetworkModelsSettings neuralNetworkPropertyManager() {
         return neuralNetworkProperties;
     }
@@ -102,7 +108,7 @@ public class PhotonConfiguration {
         this.neuralNetworkProperties = neuralNetworkProperties;
     }
 
-    public HashMap<String, CameraConfiguration> getCameraConfigurations() {
+    public Map<String, CameraConfiguration> getCameraConfigurations() {
         return cameraConfigurations;
     }
 

@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.processes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.jsonb.Jsonb;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +30,6 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -199,7 +198,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
     public void startCalibration(Map<String, Object> data) {
         try {
-            var deserialized = JacksonUtils.deserialize(data, UICalibrationData.class);
+            var deserialized = Jsonb.instance().type(UICalibrationData.class).fromObject(data);
             parentModule.startCalibration(deserialized);
             parentModule.saveAndBroadcastAll();
         } catch (Exception e) {
@@ -295,8 +294,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             }
         } else if (propField.getType() == ModelProperties.class
                 && newPropValue instanceof LinkedHashMap) {
-            ObjectMapper mapper = new ObjectMapper();
-            ModelProperties modelProps = mapper.convertValue(newPropValue, ModelProperties.class);
+            ModelProperties modelProps =
+                    Jsonb.instance().type(ModelProperties.class).fromObject(newPropValue);
             propField.set(currentSettings, modelProps);
         } else {
             propField.set(currentSettings, newPropValue);

@@ -17,8 +17,11 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.avaje.json.JsonDataException;
+import io.avaje.jsonb.Jsonb;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -34,7 +37,6 @@ import java.util.stream.Stream;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.VisionSource;
@@ -128,7 +130,9 @@ class LegacyConfigProvider extends ConfigProvider {
         if (hardwareConfigFile.exists()) {
             try {
                 hardwareConfig =
-                        JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
+                        Jsonb.instance()
+                                .type(HardwareConfig.class)
+                                .fromJson(new FileReader(hardwareConfigFile));
                 if (hardwareConfig == null) {
                     logger.error("Could not deserialize hardware config! Loading defaults");
                     hardwareConfig = new HardwareConfig();
@@ -145,7 +149,9 @@ class LegacyConfigProvider extends ConfigProvider {
         if (hardwareSettingsFile.exists()) {
             try {
                 hardwareSettings =
-                        JacksonUtils.deserialize(hardwareSettingsFile.toPath(), HardwareSettings.class);
+                        Jsonb.instance()
+                                .type(HardwareSettings.class)
+                                .fromJson(new FileReader(hardwareSettingsFile));
                 if (hardwareSettings == null) {
                     logger.error("Could not deserialize hardware settings! Loading defaults");
                     hardwareSettings = new HardwareSettings();
@@ -161,7 +167,8 @@ class LegacyConfigProvider extends ConfigProvider {
 
         if (networkConfigFile.exists()) {
             try {
-                networkConfig = JacksonUtils.deserialize(networkConfigFile.toPath(), NetworkConfig.class);
+                networkConfig =
+                        Jsonb.instance().type(NetworkConfig.class).fromJson(new FileReader(networkConfigFile));
                 if (networkConfig == null) {
                     logger.error("Could not deserialize network config! Loading defaults");
                     networkConfig = new NetworkConfig();
@@ -186,7 +193,9 @@ class LegacyConfigProvider extends ConfigProvider {
         if (apriltagFieldLayoutFile.exists()) {
             try {
                 atfl =
-                        JacksonUtils.deserialize(apriltagFieldLayoutFile.toPath(), AprilTagFieldLayout.class);
+                        Jsonb.instance()
+                                .type(AprilTagFieldLayout.class)
+                                .fromJson(new FileReader(apriltagFieldLayoutFile));
                 if (atfl == null) {
                     logger.error("Could not deserialize apriltag field layout! (still null)");
                 }
@@ -228,12 +237,16 @@ class LegacyConfigProvider extends ConfigProvider {
         FileUtils.deleteDirectory(camerasFolder.toPath());
 
         try {
-            JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
+            Jsonb.instance()
+                    .type(NetworkConfig.class)
+                    .toJson(config.getNetworkConfig(), new FileWriter(networkConfigFile));
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
         }
         try {
-            JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
+            Jsonb.instance()
+                    .type(HardwareSettings.class)
+                    .toJson(config.getHardwareSettings(), new FileWriter(hardwareSettingsFile));
         } catch (IOException e) {
             logger.error("Could not save hardware config!", e);
         }
@@ -250,14 +263,19 @@ class LegacyConfigProvider extends ConfigProvider {
             }
 
             try {
-                JacksonUtils.serialize(Path.of(subdir.toString(), "config.json"), camConfig);
+                Jsonb.instance()
+                        .type(CameraConfiguration.class)
+                        .toJson(camConfig, new FileWriter(Path.of(subdir.toString(), "config.json").toFile()));
             } catch (IOException e) {
                 logger.error("Could not save config.json for " + subdir, e);
             }
 
             try {
-                JacksonUtils.serialize(
-                        Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
+                Jsonb.instance()
+                        .type(DriverModePipelineSettings.class)
+                        .toJson(
+                                camConfig.driveModeSettings,
+                                new FileWriter(Path.of(subdir.toString(), "drivermode.json").toFile()));
             } catch (IOException e) {
                 logger.error("Could not save drivermode.json for " + subdir, e);
             }
@@ -271,7 +289,9 @@ class LegacyConfigProvider extends ConfigProvider {
                 }
 
                 try {
-                    JacksonUtils.serialize(pipePath, pipe);
+                    Jsonb.instance()
+                            .type(CVPipelineSettings.class)
+                            .toJson(pipe, new FileWriter(pipePath.toFile()));
                 } catch (IOException e) {
                     logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
                 }
@@ -291,9 +311,10 @@ class LegacyConfigProvider extends ConfigProvider {
                 CameraConfiguration loadedConfig = null;
                 try {
                     loadedConfig =
-                            JacksonUtils.deserialize(
-                                    cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
-                } catch (JsonProcessingException e) {
+                            Jsonb.instance()
+                                    .type(CameraConfiguration.class)
+                                    .fromJson(new FileReader(cameraConfigPath.toFile()));
+                } catch (JsonDataException e) {
                     logger.error("Camera config deserialization failed!", e);
                     e.printStackTrace();
                 }
@@ -309,9 +330,10 @@ class LegacyConfigProvider extends ConfigProvider {
                 DriverModePipelineSettings driverMode;
                 try {
                     driverMode =
-                            JacksonUtils.deserialize(
-                                    driverModeFile.toAbsolutePath(), DriverModePipelineSettings.class);
-                } catch (JsonProcessingException e) {
+                            Jsonb.instance()
+                                    .type(DriverModePipelineSettings.class)
+                                    .fromJson(new FileReader(driverModeFile.toFile()));
+                } catch (JsonDataException e) {
                     logger.error("Could not deserialize drivermode.json! Loading defaults");
                     logger.debug(Arrays.toString(e.getStackTrace()));
                     driverMode = new DriverModePipelineSettings();
@@ -340,8 +362,10 @@ class LegacyConfigProvider extends ConfigProvider {
                                                                     .relativize(p)
                                                                     .toString();
                                                     try {
-                                                        return JacksonUtils.deserialize(p, CVPipelineSettings.class);
-                                                    } catch (JsonProcessingException e) {
+                                                        return Jsonb.instance()
+                                                                .type(CVPipelineSettings.class)
+                                                                .fromJson(new FileReader(p.toFile()));
+                                                    } catch (JsonDataException e) {
                                                         logger.error("Exception while deserializing " + relativizedFilePath, e);
                                                     } catch (IOException e) {
                                                         logger.warn(

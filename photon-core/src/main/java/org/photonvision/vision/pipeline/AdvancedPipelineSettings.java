@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonAnySetter;
+import io.avaje.jsonb.Json;
 import java.util.Objects;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
@@ -31,6 +31,7 @@ import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TargetOrientation;
 
+@Json
 public class AdvancedPipelineSettings extends CVPipelineSettings {
     public AdvancedPipelineSettings() {
         ledMode = true;
@@ -96,7 +97,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
      * outputShowMultipleTargets is encountered during deserialization, it sets outputMaximumTargets
      * appropriately. If outputShowMultipleTargets is false, outputMaximumTargets is set to 1.
      */
-    @JsonAnySetter
+    @Json.Unmapped
     public void handleUnknownProperty(String name, Object value) {
         // Handle the old showMultipleTargets property for backward compatibility
         if ("outputShowMultipleTargets".equals(name) && value instanceof Boolean showMultipleTargets) {

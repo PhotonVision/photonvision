@@ -17,10 +17,10 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.avaje.jsonb.Json;
 import org.photonvision.vision.processes.PipelineManager;
 
-@JsonTypeName("FocusPipelineSettings")
+@Json
 public class FocusPipelineSettings extends CVPipelineSettings {
     public FocusPipelineSettings() {
         super();

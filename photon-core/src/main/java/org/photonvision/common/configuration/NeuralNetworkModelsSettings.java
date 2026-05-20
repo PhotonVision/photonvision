@@ -17,9 +17,10 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,27 +28,29 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
+@Json
 public class NeuralNetworkModelsSettings {
     /*
      * The properties of the model. This is used to determine which model to load.
      * The only families currently supported are RKNN and Rubik (custom .tflite)
      */
+    @Json
     public record ModelProperties(
-            @JsonProperty("modelPath") Path modelPath,
-            @JsonProperty("nickname") String nickname,
-            @JsonProperty("labels") List<String> labels,
-            @JsonProperty("resolutionWidth") int resolutionWidth,
-            @JsonProperty("resolutionHeight") int resolutionHeight,
-            @JsonProperty("family") Family family,
-            @JsonProperty("version") Version version) {
-        @JsonCreator
-        public ModelProperties {}
-
+            Path modelPath,
+            String nickname,
+            List<String> labels,
+            int resolutionWidth,
+            int resolutionHeight,
+            Family family,
+            Version version) {
         ModelProperties(ModelProperties other) {
             this(
                     other.modelPath,
@@ -61,7 +64,7 @@ public class NeuralNetworkModelsSettings {
 
         // In v2025.3.1, this was single string for the model path. but the first argument
         // is now nickname
-        public ModelProperties(@JsonProperty("nickname") String filename)
+        public ModelProperties(@Json.Alias("nickname") String filename)
                 throws IllegalArgumentException, IOException {
             this(createFromFilename(filename));
         }
@@ -160,25 +163,57 @@ public class NeuralNetworkModelsSettings {
 
     // The path to the model is used as the key in the map because it is unique to
     // the model, and should not change
-    @JsonProperty("modelPathToProperties")
+    @Json.Ignore()
     private HashMap<Path, ModelProperties> modelPathToProperties =
             new HashMap<Path, ModelProperties>();
 
     /**
      * Constructor for the NeuralNetworkProperties class.
      *
-     * <p>This object holds a LinkedList of {@link ModelProperties} objects
+     * <p>This object holds a HashMap of {@link ModelProperties} objects
      */
     public NeuralNetworkModelsSettings() {}
 
     /**
      * Constructor for the NeuralNetworkProperties class.
      *
-     * <p>This object holds a LinkedList of {@link ModelProperties} objects.
+     * <p>This object holds a HashMap of {@link ModelProperties} objects.
+     *
+     * @param modelPropertiesMap When the class is constructed, it will hold the provided map
+     */
+    public NeuralNetworkModelsSettings(HashMap<Path, ModelProperties> modelPropertiesMap) {
+        modelPathToProperties = modelPropertiesMap;
+    }
+
+    /**
+     * Constructor for the NeuralNetworkProperties class.
+     *
+     * <p>This object holds a HashMap of {@link ModelProperties} objects.
      *
      * @param modelPropertiesList When the class is constructed, it will hold the provided list
      */
-    public NeuralNetworkModelsSettings(HashMap<Path, ModelProperties> modelPropertiesList) {}
+    @Json.Creator
+    public NeuralNetworkModelsSettings(
+            ModelProperties[] models, @Json.Unmapped Map<String, Object> unmapped) {
+        JsonType<Map<String, ModelProperties>> modelPropsMapJsonb =
+                Jsonb.instance().type(Types.mapOf(ModelProperties.class));
+        Stream<ModelProperties> modelPropsStream;
+        if (models != null) {
+            modelPropsStream = Arrays.stream(models);
+        } else if (unmapped.containsKey("modelPathToProperties")) {
+            modelPropsStream =
+                    modelPropsMapJsonb.fromObject(unmapped.get("modelPathToProperties")).values().stream();
+        } else {
+            modelPropsStream = Stream.empty();
+        }
+        this(
+                modelPropsStream.collect(
+                        Collectors.toMap(
+                                (model) -> model.modelPath(),
+                                (model) -> model,
+                                (prev, next) -> next,
+                                HashMap::new)));
+    }
 
     @Override
     public String toString() {
@@ -239,7 +274,7 @@ public class NeuralNetworkModelsSettings {
      *
      * @return A list of all models
      */
-    @JsonIgnore
+    @Json.Property("models")
     public ModelProperties[] getModels() {
         return modelPathToProperties.values().toArray(new ModelProperties[0]);
     }

@@ -22,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.jsonb.Jsonb;
+import java.io.FileReader;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.HardwareConfig;
@@ -36,7 +37,9 @@ public class HardwareConfigTest {
         try {
             System.out.println("Loading Hardware configs...");
             var config =
-                    new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
+                    Jsonb.instance()
+                            .type(HardwareConfig.class)
+                            .fromJson(new FileReader(TestUtils.getHardwareConfigJson()));
             assertEquals(config.deviceName, "PhotonVision");
             // Ensure defaults are not null
             assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});

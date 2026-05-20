@@ -39,8 +39,8 @@ ext {
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
     ejmlVersion = "0.43.1";
-    jacksonVersion = "2.15.2";
-    avajeJsonbVersion = "3.11";
+    avajeJsonbVersion = "3.13";
+    msgpackVersion = "0.9.0";
     quickbufVersion = "1.3.3";
     jacocoVersion = "0.8.14";
 
@@ -70,7 +70,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/src/generated/**'
+            exclude '**/build/**', '**/build-*/**', '**/src/generated/**', "**/bin/generated-sources/**"
         }
         toggleOffOn()
         googleJavaFormat()

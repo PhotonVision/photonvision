@@ -17,6 +17,10 @@
 
 package org.photonvision.common.configuration;
 
+import io.avaje.json.JsonDataException;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -34,7 +38,6 @@ import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
@@ -260,16 +263,16 @@ public class SqlConfigProvider extends ConfigProvider {
         T configObj;
         if (!configString.isBlank()) {
             try {
-                configObj = JacksonUtils.deserialize(configString, ref);
+                configObj = Jsonb.instance().type(ref).fromJson(configString);
                 logger.info("Loaded " + ref.getSimpleName() + " from database");
                 return configObj;
-            } catch (IOException e) {
+            } catch (JsonDataException e) {
                 logger.error("Could not deserialize " + ref.getSimpleName() + " from database!", e);
             }
         } else {
             logger.debug("No " + ref.getSimpleName() + " in database");
         }
-        // either the config entry is empty or Jackson threw an exception
+        // either the config entry is empty or Jsonb threw an exception
         try {
             configObj = factory.get();
             logger.info("Loaded default " + ref.getSimpleName());
@@ -390,8 +393,12 @@ public class SqlConfigProvider extends ConfigProvider {
 
                 var config = c.getValue();
                 statement.setString(1, c.getKey());
-                statement.setString(2, JacksonUtils.serializeToString(config));
-                statement.setString(3, JacksonUtils.serializeToString(config.driveModeSettings));
+                statement.setString(2, Jsonb.instance().type(CameraConfiguration.class).toJson(config));
+                statement.setString(
+                        3,
+                        Jsonb.instance()
+                                .type(DriverModePipelineSettings.class)
+                                .toJson(config.driveModeSettings));
 
                 // Serializing a list of abstract classes sucks. Instead, make it into an array
                 // of strings, which we can later unpack back into individual settings
@@ -400,20 +407,20 @@ public class SqlConfigProvider extends ConfigProvider {
                                 .map(
                                         it -> {
                                             try {
-                                                return JacksonUtils.serializeToString(it);
-                                            } catch (IOException e) {
+                                                return Jsonb.instance().type(CVPipelineSettings.class).toJson(it);
+                                            } catch (JsonDataException e) {
                                                 e.printStackTrace();
                                                 return null;
                                             }
                                         })
                                 .filter(Objects::nonNull)
                                 .toList();
-                statement.setString(4, JacksonUtils.serializeToString(settings));
+                statement.setString(4, Jsonb.instance().type(List.class).toJson(settings));
 
                 statement.executeUpdate();
             }
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | JsonDataException e) {
             logger.error("Err saving cameras", e);
             try {
                 conn.rollback();
@@ -469,7 +476,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement1,
                         GlobalKeys.HARDWARE_SETTINGS,
-                        JacksonUtils.serializeToString(config.getHardwareSettings()));
+                        Jsonb.instance().type(HardwareSettings.class).toJson(config.getHardwareSettings()));
                 statement1.executeUpdate();
             }
 
@@ -478,7 +485,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement2,
                         GlobalKeys.NETWORK_CONFIG,
-                        JacksonUtils.serializeToString(config.getNetworkConfig()));
+                        Jsonb.instance().type(NetworkConfig.class).toJson(config.getNetworkConfig()));
                 statement2.executeUpdate();
                 statement2.close();
             }
@@ -488,7 +495,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement3,
                         GlobalKeys.HARDWARE_CONFIG,
-                        JacksonUtils.serializeToString(config.getHardwareConfig()));
+                        Jsonb.instance().type(HardwareConfig.class).toJson(config.getHardwareConfig()));
                 statement3.executeUpdate();
                 statement3.close();
             }
@@ -498,12 +505,14 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement3,
                         GlobalKeys.NEURAL_NETWORK_PROPERTIES,
-                        JacksonUtils.serializeToString(config.neuralNetworkPropertyManager()));
+                        Jsonb.instance()
+                                .type(NeuralNetworkModelsSettings.class)
+                                .toJson(config.neuralNetworkPropertyManager()));
                 statement3.executeUpdate();
                 statement3.close();
             }
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | JsonDataException e) {
             logger.error("Err saving global", e);
             try {
                 conn.rollback();
@@ -614,7 +623,7 @@ public class SqlConfigProvider extends ConfigProvider {
             while (result.next()) {
                 String uniqueName = "";
                 try {
-                    List<String> dummyList = new ArrayList<>();
+                    JsonType<List<String>> strListJsonb = Jsonb.instance().type(Types.listOf(String.class));
 
                     uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
 
@@ -622,7 +631,7 @@ public class SqlConfigProvider extends ConfigProvider {
                     // We -really- need to delete this -stupid- otherpaths column. I hate it.
                     var configStr = result.getString(Columns.CAM_CONFIG_JSON);
                     CameraConfiguration config =
-                            JacksonUtils.deserialize(configStr, CameraConfiguration.class);
+                            Jsonb.instance().type(CameraConfiguration.class).fromJson(configStr);
 
                     if (config.matchedCameraInfo == null) {
                         logger.info("Legacy CameraConfiguration detected - upgrading");
@@ -630,31 +639,34 @@ public class SqlConfigProvider extends ConfigProvider {
                         // manually create the matchedCameraInfo ourselves. Need to upgrade:
                         // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
                         config.matchedCameraInfo =
-                                JacksonUtils.deserialize(configStr, LegacyCameraConfigStruct.class)
+                                Jsonb.instance()
+                                        .type(LegacyCameraConfigStruct.class)
+                                        .fromJson(configStr)
                                         .matchedCameraInfo;
 
                         // Except that otherPaths used to be its own column. so hack that in here as well
                         var otherPaths =
-                                JacksonUtils.deserialize(
-                                        result.getString(Columns.CAM_OTHERPATHS_JSON), String[].class);
+                                Jsonb.instance()
+                                        .type(String[].class)
+                                        .fromJson(result.getString(Columns.CAM_OTHERPATHS_JSON));
                         if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
                             usbInfo.otherPaths = otherPaths;
                         }
                     }
 
                     var driverMode =
-                            JacksonUtils.deserialize(
-                                    result.getString(Columns.CAM_DRIVERMODE_JSON), DriverModePipelineSettings.class);
+                            Jsonb.instance()
+                                    .type(DriverModePipelineSettings.class)
+                                    .fromJson(result.getString(Columns.CAM_DRIVERMODE_JSON));
                     List<?> pipelineSettings =
-                            JacksonUtils.deserialize(
-                                    result.getString(Columns.CAM_PIPELINE_JSONS), dummyList.getClass());
+                            strListJsonb.fromJson(result.getString(Columns.CAM_PIPELINE_JSONS));
 
                     List<CVPipelineSettings> loadedSettings = new ArrayList<>();
                     for (var setting : pipelineSettings) {
                         if (setting instanceof String str) {
                             try {
-                                loadedSettings.add(JacksonUtils.deserialize(str, CVPipelineSettings.class));
-                            } catch (IOException e) {
+                                loadedSettings.add(Jsonb.instance().type(CVPipelineSettings.class).fromJson(str));
+                            } catch (JsonDataException e) {
                                 logger.error(
                                         "Could not deserialize pipeline setting for camera " + config.nickname, e);
                             }
@@ -664,7 +676,7 @@ public class SqlConfigProvider extends ConfigProvider {
                     config.pipelineSettings = loadedSettings;
                     config.driveModeSettings = driverMode;
                     loadedConfigurations.put(uniqueName, config);
-                } catch (IOException e) {
+                } catch (JsonDataException e) {
                     logger.error(
                             "Could not deserialize camera configuration " + uniqueName + " from database!", e);
                 }

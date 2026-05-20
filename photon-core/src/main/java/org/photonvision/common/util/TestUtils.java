@@ -17,9 +17,11 @@
 
 package org.photonvision.common.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.json.JsonDataException;
+import io.avaje.jsonb.Jsonb;
 import java.awt.HeadlessException;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
@@ -343,11 +345,11 @@ public class TestUtils {
 
     public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
         try {
-            return new ObjectMapper()
-                    .readValue(
-                            (Path.of(getCalibrationPath(testMode).toString(), filename).toFile()),
-                            CameraCalibrationCoefficients.class);
-        } catch (IOException e) {
+            return Jsonb.instance()
+                    .type(CameraCalibrationCoefficients.class)
+                    .fromJson(
+                            new FileReader(Path.of(getCalibrationPath(testMode).toString(), filename).toFile()));
+        } catch (IOException | JsonDataException e) {
             e.printStackTrace();
             return null;
         }

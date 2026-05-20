@@ -17,8 +17,7 @@
 
 package org.photonvision.common.hardware;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import io.avaje.jsonb.Jsonb;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,10 +50,7 @@ public class OsImageData {
         try {
             String content = Files.readString(imageMetadataFile).strip();
 
-            ObjectMapper mapper =
-                    new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-
-            ImageMetadata md = mapper.readValue(content, ImageMetadata.class);
+            ImageMetadata md = Jsonb.instance().type(ImageMetadata.class).fromJson(content);
 
             if (md.buildDate() == null
                     && md.commitSha() == null
