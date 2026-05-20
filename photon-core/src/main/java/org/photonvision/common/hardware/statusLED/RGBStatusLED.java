@@ -15,14 +15,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware;
+package org.photonvision.common.hardware.statusLED;
 
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import java.util.Collections;
 import java.util.List;
+import org.photonvision.common.hardware.PhotonStatus;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 
-public class StatusLED implements AutoCloseable {
+/** Basic RGB LED with individual control over each pin */
+public class RGBStatusLED implements StatusLED {
+    private final Logger logger = new Logger(RGBStatusLED.class, LogGroup.General);
+
     public final LED redLED;
     public final LED greenLED;
     public final LED blueLED;
@@ -30,13 +37,14 @@ public class StatusLED implements AutoCloseable {
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
-    public StatusLED(
+    public RGBStatusLED(
             NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
-        // fill unassigned pins with -1 to disable
         if (statusLedPins.size() != 3) {
-            for (int i = 0; i < 3 - statusLedPins.size(); i++) {
-                statusLedPins.add(-1);
-            }
+            logger.warn(pinErrorTemplate.formatted(3, "a RGB status LED", statusLedPins.size()));
+        }
+        // fill unassigned pins with -1 to disable
+        if (statusLedPins.size() < 3) {
+            statusLedPins.addAll(Collections.nCopies(statusLedPins.size() - 3, -1));
         }
 
         // Outputs are active-low for a common-anode RGB LED
@@ -53,6 +61,7 @@ public class StatusLED implements AutoCloseable {
         blueLED.setOn(b);
     }
 
+    @Override
     public void setStatus(PhotonStatus status) {
         this.status = status;
     }
