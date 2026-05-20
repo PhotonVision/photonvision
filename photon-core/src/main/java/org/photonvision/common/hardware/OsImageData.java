@@ -19,8 +19,9 @@ package org.photonvision.common.hardware;
 
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import org.photonvision.common.logging.LogGroup;
@@ -35,7 +36,7 @@ import org.photonvision.common.logging.Logger;
 public class OsImageData {
     private static final Logger logger = new Logger(OsImageData.class, LogGroup.General);
 
-    private static Path imageMetadataFile = Path.of("/opt/photonvision/image-version.json");
+    private static File imageMetadataFile = Path.of("/opt/photonvision/image-version.json").toFile();
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 
@@ -44,15 +45,14 @@ public class OsImageData {
             String buildDate, String commitSha, String commitTag, String imageName, String imageSource) {}
 
     private static Optional<ImageMetadata> getImageMetadata() {
-        if (!imageMetadataFile.toFile().exists()) {
+        if (!imageMetadataFile.exists()) {
             logger.warn("Photon cannot locate OS image metadata at " + imageMetadataFile.toString());
             return Optional.empty();
         }
 
         try {
-            String content = Files.readString(imageMetadataFile).strip();
-
-            ImageMetadata md = Jsonb.instance().type(ImageMetadata.class).fromJson(content);
+            ImageMetadata md =
+                    Jsonb.instance().type(ImageMetadata.class).fromJson(new FileReader(imageMetadataFile));
 
             if (md.buildDate() == null
                     && md.commitSha() == null
