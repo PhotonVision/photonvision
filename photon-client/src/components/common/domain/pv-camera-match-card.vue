@@ -30,7 +30,7 @@ const { saved, current } = defineProps({
 
 <template>
   <div>
-    <pv-table :style="{ backgroundColor: 'var(--color-pv-primary)' }">
+    <pv-table>
       <tbody>
         <tr>
           <th></th>

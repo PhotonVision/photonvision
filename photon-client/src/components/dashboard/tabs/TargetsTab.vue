@@ -34,7 +34,7 @@ const resetCurrentBuffer = () => {
 <template>
   <div>
     <div class="flex flex-wrap pb-4">
-      <pv-table>
+      <pv-table class="tabular-nums">
         <template #default>
           <thead>
             <tr>

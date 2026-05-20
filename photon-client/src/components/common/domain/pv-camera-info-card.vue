@@ -12,7 +12,7 @@ const { camera } = defineProps({
 
 <template>
   <div>
-    <pv-table :style="{ backgroundColor: 'var(--color-pv-primary)' }">
+    <pv-table>
       <tbody>
         <tr v-if="cameraInfoFor(camera).dev !== undefined && cameraInfoFor(camera).dev !== null">
           <td>Device Number:</td>
