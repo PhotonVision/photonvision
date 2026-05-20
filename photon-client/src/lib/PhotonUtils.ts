@@ -1,5 +1,5 @@
 import { useStateStore } from "@/stores/StateStore";
-import type { PVCameraInfo, Resolution } from "@/types/SettingTypes";
+import type { Resolution } from "@/types/SettingTypes";
 import axios, { type AxiosRequestConfig } from "axios";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
