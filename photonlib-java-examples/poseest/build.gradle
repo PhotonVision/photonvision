@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-2"
+    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-6"
 }
 
 java {
@@ -11,7 +11,7 @@ java {
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = "2027.0.0-alpha-4"
+wpi.versions.wpilibVersion = "2027.0.0-alpha-6"
 
 // Define my targets (SystemCore) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
