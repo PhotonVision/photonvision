@@ -163,3 +163,18 @@ flake.nix
 flake.lock
 
 /workspace
+
+# photon-serde tests (Java & Cpp)
+photon-targeting/src/generated/main/java/org/photonvision/targeting/
+photon-targeting/src/generated/main/java/org/photonvision/struct/test/
+photon-targeting/src/test/java/generated/
+
+photon-targeting/src/generated/main/cpp/photon/serde/test/
+photon-targeting/src/generated/main/native/include/photon/targeting/
+photon-targeting/src/generated/main/native/include/photon/serde/test/
+photon-targeting/src/generated/main/native/include/photon/struct/test/
+photon-targeting/src/test/native/cpp/generated/
+
+# photon-serde tests (Python)
+photon-lib/py/photonlibpy/generated/test
+photon-lib/py/test/generated
