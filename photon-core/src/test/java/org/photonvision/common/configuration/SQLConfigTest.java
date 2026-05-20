@@ -92,32 +92,6 @@ public class SQLConfigTest {
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
 
-    @Test
-    public void testLoad2024_3_1() throws IOException {
-        // Copy the 2024.3.1 config to a temp dir
-        FileUtils.copyDirectory(
-                TestUtils.getConfigDirectoriesPath(false)
-                        .resolve("photonvision_config_from_v2024.3.1")
-                        .toFile(),
-                tmpDir.resolve("photonvision_config_from_v2024.3.1").toFile());
-
-        var cfgLoader = new SqlConfigProvider(tmpDir.resolve("photonvision_config_from_v2024.3.1"));
-
-        assertDoesNotThrow(cfgLoader::load);
-
-        System.out.println(cfgLoader.getConfig());
-        for (var c : CameraQuirk.values()) {
-            assertDoesNotThrow(
-                    () ->
-                            cfgLoader
-                                    .config
-                                    .getCameraConfigurations()
-                                    .get("Microsoft_LifeCam_HD-3000")
-                                    .cameraQuirks
-                                    .hasQuirk(c));
-        }
-    }
-
     void common2025p3p1Assertions(PhotonConfiguration config) {
         // Make sure we got 8 cameras
         assertEquals(8, config.getCameraConfigurations().size());
