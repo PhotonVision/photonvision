@@ -17,6 +17,7 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import io.avaje.jsonb.Json;
 import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.LoadJNI;
@@ -31,6 +32,7 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
 
+@Json
 public class UIPhotonConfiguration {
     public List<UICameraConfiguration> cameraSettings;
     public UIProgramSettings settings;
