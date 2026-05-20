@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PVCameraInfo } from "@/types/SettingTypes";
-import { cameraInfoFor } from "@/lib/PhotonUtils";
 
 function isEqual<T>(a: T, b: T): boolean {
   if (a === b) {
@@ -29,28 +28,28 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <th>Current</th>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).dev !== undefined && cameraInfoFor(saved).dev !== null"
-          :class="cameraInfoFor(saved).dev !== cameraInfoFor(current).dev ? 'mismatch' : ''"
+          v-if="'dev' in saved && 'dev' in current && saved.dev !== null"
+          :class="saved.dev !== current.dev ? 'mismatch' : ''"
         >
           <td>Device Number:</td>
-          <td>{{ cameraInfoFor(saved).dev }}</td>
-          <td>{{ cameraInfoFor(current).dev }}</td>
+          <td>{{ saved.dev }}</td>
+          <td>{{ current.dev }}</td>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).name !== undefined && cameraInfoFor(saved).name !== null"
-          :class="cameraInfoFor(saved).name !== cameraInfoFor(current).name ? 'mismatch' : ''"
+          v-if="'name' in saved && saved.name !== null"
+          :class="saved.name !== current.name ? 'mismatch' : ''"
         >
           <td>Name:</td>
-          <td>{{ cameraInfoFor(saved).name }}</td>
-          <td>{{ cameraInfoFor(current).name }}</td>
+          <td>{{ saved.name }}</td>
+          <td>{{ current.name }}</td>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).baseName !== undefined && cameraInfoFor(saved).baseName !== null"
-          :class="cameraInfoFor(saved).baseName !== cameraInfoFor(current).baseName ? 'mismatch' : ''"
+          v-if="'baseName' in saved && 'baseName' in current && saved.baseName !== null"
+          :class="saved.baseName !== current.baseName ? 'mismatch' : ''"
         >
           <td>Base Name:</td>
-          <td>{{ cameraInfoFor(saved).baseName }}</td>
-          <td>{{ cameraInfoFor(current).baseName }}</td>
+          <td>{{ saved.baseName }}</td>
+          <td>{{ current.baseName }}</td>
         </tr>
         <tr>
           <td>Type:</td>
@@ -64,44 +63,44 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).vendorId !== undefined && cameraInfoFor(saved).vendorId !== null"
-          :class="cameraInfoFor(saved).vendorId !== cameraInfoFor(current).vendorId ? 'mismatch' : ''"
+          v-if="'vendorId' in saved && 'vendorId' in current && saved.vendorId !== null"
+          :class="saved.vendorId !== current.vendorId ? 'mismatch' : ''"
         >
           <td>Vendor ID:</td>
-          <td>{{ cameraInfoFor(saved).vendorId }}</td>
-          <td>{{ cameraInfoFor(current).vendorId }}</td>
+          <td>{{ saved.vendorId }}</td>
+          <td>{{ current.vendorId }}</td>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).productId !== undefined && cameraInfoFor(saved).productId !== null"
-          :class="cameraInfoFor(saved).productId !== cameraInfoFor(current).productId ? 'mismatch' : ''"
+          v-if="'productId' in saved && 'productId' in current && saved.productId !== null"
+          :class="saved.productId !== current.productId ? 'mismatch' : ''"
         >
           <td>Product ID:</td>
-          <td>{{ cameraInfoFor(saved).productId }}</td>
-          <td>{{ cameraInfoFor(current).productId }}</td>
+          <td>{{ saved.productId }}</td>
+          <td>{{ current.productId }}</td>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).path !== undefined && cameraInfoFor(saved).path !== null"
-          :class="cameraInfoFor(saved).path !== cameraInfoFor(current).path ? 'mismatch' : ''"
+          v-if="'path' in saved && saved.path !== null"
+          :class="saved.path !== current.path ? 'mismatch' : ''"
         >
           <td>Path:</td>
-          <td style="word-break: break-all">{{ cameraInfoFor(saved).path }}</td>
-          <td style="word-break: break-all">{{ cameraInfoFor(current).path }}</td>
+          <td style="word-break: break-all">{{ saved.path }}</td>
+          <td style="word-break: break-all">{{ current.path }}</td>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).uniquePath !== undefined && cameraInfoFor(saved).uniquePath !== null"
-          :class="cameraInfoFor(saved).uniquePath !== cameraInfoFor(current).uniquePath ? 'mismatch' : ''"
+          v-if="'uniquePath' in saved && saved.uniquePath !== null"
+          :class="saved.uniquePath !== current.uniquePath ? 'mismatch' : ''"
         >
           <td>Unique Path:</td>
-          <td style="word-break: break-all">{{ cameraInfoFor(saved).uniquePath }}</td>
-          <td style="word-break: break-all">{{ cameraInfoFor(current).uniquePath }}</td>
+          <td style="word-break: break-all">{{ saved.uniquePath }}</td>
+          <td style="word-break: break-all">{{ current.uniquePath }}</td>
         </tr>
         <tr
-          v-if="cameraInfoFor(saved).otherPaths !== undefined && cameraInfoFor(saved).otherPaths !== null"
-          :class="isEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? '' : 'mismatch'"
+          v-if="'otherPaths' in saved && saved.otherPaths !== null"
+          :class="isEqual(saved.otherPaths, current.otherPaths) ? '' : 'mismatch'"
         >
           <td>Other Paths:</td>
-          <td>{{ cameraInfoFor(saved).otherPaths }}</td>
-          <td>{{ cameraInfoFor(current).otherPaths }}</td>
+          <td>{{ saved.otherPaths }}</td>
+          <td>{{ current.otherPaths }}</td>
         </tr>
       </tbody>
     </v-table>
