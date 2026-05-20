@@ -345,19 +345,19 @@ const updateCameraBlueGain = (value: number) => {
 
 <template>
   <div>
-    <pv-card class="mb-3" padding="none">
-      <div class="p-5 pb-2 text-lg font-semibold">Camera Calibration</div>
-      <div class="p-5 pt-0">
+    <pv-card class="mb-3">
+      <div class="pb-2 text-lg font-semibold">Camera Calibration</div>
+      <div>
         <div v-if="!isCalibrating" class="pb-0">
           <div class="pb-3">
             <pv-tooltipped-label
-              label="Curent Calibrations"
+              label="Current Calibrations"
               :icon="IconInformation"
               location="top"
               tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
             />
           </div>
-          <pv-table fixed-header height="100%" density="compact">
+          <pv-table fixed-header height="100%" >
             <thead>
               <tr>
                 <th>Resolution</th>
@@ -419,7 +419,6 @@ const updateCameraBlueGain = (value: number) => {
               <pv-alert
                 v-if="boardType !== CalibrationBoardTypes.Charuco"
                 closable
-                density="compact"
                 variant="tonal"
                 color="warning"
                 :icon="IconAlertBox"
@@ -572,7 +571,6 @@ const updateCameraBlueGain = (value: number) => {
           </div>
           <pv-alert
             closable
-            density="compact"
             class="mb-5"
             :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
             :icon="useSettingsStore().general.mrCalWorking ? IconCheck : IconClose"
@@ -604,7 +602,6 @@ const updateCameraBlueGain = (value: number) => {
             v-if="tooManyPoints"
             class="mt-5"
             color="error"
-            density="compact"
             text="Too many corners. Finish calibration now!"
             :icon="IconAlertCircleOutline"
           />
@@ -640,7 +637,7 @@ const updateCameraBlueGain = (value: number) => {
       </div>
     </pv-card>
     <pv-dialog v-model="showCalibEndDialog" width="500px" persistent>
-      <pv-card padding="none" class="p-5">
+      <pv-card>
         <div class="pb-2 text-lg font-semibold">Camera Calibration</div>
         <div style="text-align: center">
           <template v-if="calibCanceled">

@@ -34,7 +34,7 @@ const resetCurrentBuffer = () => {
 <template>
   <div>
     <div class="flex flex-wrap pb-4">
-      <pv-table density="compact" class="pt-2 pr-3 pb-12 pl-3">
+      <pv-table>
         <template #default>
           <thead>
             <tr>
@@ -43,24 +43,24 @@ const resetCurrentBuffer = () => {
                   currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
                   currentPipelineSettings.pipelineType === PipelineType.Aruco
                 "
-                class="text-center text-pv-on-surface"
+                class="text-pv-on-surface"
               >
                 Fiducial ID
               </th>
               <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
-                <th class="text-center text-pv-on-surface">Class</th>
-                <th class="text-center text-pv-on-surface">Confidence</th>
+                <th class="text-pv-on-surface">Class</th>
+                <th class="text-pv-on-surface">Confidence</th>
               </template>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
-                <th class="text-center text-pv-on-surface">Pitch &theta;&deg;</th>
-                <th class="text-center text-pv-on-surface">Yaw &theta;&deg;</th>
-                <th class="text-center text-pv-on-surface">Skew &theta;&deg;</th>
-                <th class="text-center text-pv-on-surface">Area %</th>
+                <th class="text-pv-on-surface">Pitch &theta;&deg;</th>
+                <th class="text-pv-on-surface">Yaw &theta;&deg;</th>
+                <th class="text-pv-on-surface">Skew &theta;&deg;</th>
+                <th class="text-pv-on-surface">Area %</th>
               </template>
               <template v-else>
-                <th class="text-center text-pv-on-surface">X meters</th>
-                <th class="text-center text-pv-on-surface">Y meters</th>
-                <th class="text-center text-pv-on-surface">Z Angle &theta;&deg;</th>
+                <th class="text-pv-on-surface">X meters</th>
+                <th class="text-pv-on-surface">Y meters</th>
+                <th class="text-pv-on-surface">Z Angle &theta;&deg;</th>
               </template>
               <template
                 v-if="
@@ -69,7 +69,7 @@ const resetCurrentBuffer = () => {
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <th class="text-center text-pv-on-surface">Ambiguity Ratio</th>
+                <th class="text-pv-on-surface">Ambiguity Ratio</th>
               </template>
             </tr>
           </thead>
@@ -90,13 +90,13 @@ const resetCurrentBuffer = () => {
               </td>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-center text-pv-on-surface"
+                class="text-pv-on-surface text-center"
               >
                 {{ useStateStore().currentPipelineResults?.classNames[target.classId] }}
               </td>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-center text-pv-on-surface"
+                class="text-pv-on-surface text-center"
               >
                 {{ target.confidence.toFixed(2) }}
               </td>
@@ -137,54 +137,54 @@ const resetCurrentBuffer = () => {
       "
       class="w-full pr-3 pl-3"
     >
-      <div class="flex flex-wrap pb-4 text-pv-on-surface">
+      <div class="text-pv-on-surface flex flex-wrap pb-4">
         <div class="m-0 p-0 pb-4" style="font-size: 16px">Multi-tag pose, field-to-camera</div>
-        <pv-table density="compact">
+        <pv-table>
           <template #default>
             <thead>
               <tr class="text-pv-on-surface">
-                <th class="text-center text-pv-on-surface">X meters</th>
-                <th class="text-center text-pv-on-surface">Y meters</th>
-                <th class="text-center text-pv-on-surface">Z meters</th>
-                <th class="text-center text-pv-on-surface">X Angle &theta;&deg;</th>
-                <th class="text-center text-pv-on-surface">Y Angle &theta;&deg;</th>
-                <th class="text-center text-pv-on-surface">Z Angle &theta;&deg;</th>
-                <th class="text-center text-pv-on-surface">Tags</th>
+                <th class="text-pv-on-surface">X meters</th>
+                <th class="text-pv-on-surface">Y meters</th>
+                <th class="text-pv-on-surface">Z meters</th>
+                <th class="text-pv-on-surface">X Angle &theta;&deg;</th>
+                <th class="text-pv-on-surface">Y Angle &theta;&deg;</th>
+                <th class="text-pv-on-surface">Z Angle &theta;&deg;</th>
+                <th class="text-pv-on-surface">Tags</th>
               </tr>
             </thead>
             <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
               <tr>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(3) }}&nbsp;m
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(3) }}&nbsp;m
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(3) }}&nbsp;m
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(
                       2
                     )
                   }}&deg;
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0).toFixed(
                       2
                     )
                   }}&deg;
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0).toFixed(
                       2
                     )
                   }}&deg;
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}
                 </td>
               </tr>
@@ -192,62 +192,62 @@ const resetCurrentBuffer = () => {
           </template>
         </pv-table>
       </div>
-      <div class="flex flex-col pb-4 text-pv-on-surface">
+      <div class="text-pv-on-surface flex flex-col pb-4">
         <div class="m-0 p-0 pr-4 pb-4 text-sm">
           Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </div>
         <pv-button variant="primary" class="mt-1 mb-4 w-fit" @click="resetCurrentBuffer">Reset Samples</pv-button>
-        <pv-table density="compact">
+        <pv-table>
           <template #default>
             <thead>
               <tr>
-                <th class="text-center text-pv-on-surface">X meters</th>
-                <th class="text-center text-pv-on-surface">Y meters</th>
-                <th class="text-center text-pv-on-surface">Z meters</th>
-                <th class="text-center text-pv-on-surface">X Angle &theta;&deg;</th>
-                <th class="text-center text-pv-on-surface">Y Angle &theta;&deg;</th>
-                <th class="text-center text-pv-on-surface">Z Angle &theta;&deg;</th>
+                <th class="text-pv-on-surface">X meters</th>
+                <th class="text-pv-on-surface">Y meters</th>
+                <th class="text-pv-on-surface">Z meters</th>
+                <th class="text-pv-on-surface">X Angle &theta;&deg;</th>
+                <th class="text-pv-on-surface">Y Angle &theta;&deg;</th>
+                <th class="text-pv-on-surface">Z Angle &theta;&deg;</th>
               </tr>
             </thead>
             <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
               <tr>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x) || []).toFixed(
                       5
                     )
                   }}&nbsp;m
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y) || []).toFixed(
                       5
                     )
                   }}&nbsp;m
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z) || []).toFixed(
                       5
                     )
                   }}&nbsp;m
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     calculateStdDev(
                       useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
                     ).toFixed(5)
                   }}&deg;
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     calculateStdDev(
                       useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
                     ).toFixed(5)
                   }}&deg;
                 </td>
-                <td class="text-center text-pv-on-surface">
+                <td class="text-pv-on-surface text-center">
                   {{
                     calculateStdDev(
                       useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []

@@ -30,7 +30,7 @@ const { saved, current } = defineProps({
 
 <template>
   <div>
-    <pv-table density="compact" :style="{ backgroundColor: 'var(--color-pv-primary)' }">
+    <pv-table :style="{ backgroundColor: 'var(--color-pv-primary)' }">
       <tbody>
         <tr>
           <th></th>

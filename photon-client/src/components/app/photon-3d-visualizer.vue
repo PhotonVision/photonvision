@@ -117,7 +117,8 @@ const onResize = () => {
     return;
   }
 
-  canvas.style.width = container.clientWidth * 0.85 + "px";
+  // keeping this very very slightly smaller than the container prevents some weird overexpansion that happen during resizing
+  canvas.style.width = container.clientWidth * 0.999 + "px";
   canvas.style.height = container.clientWidth * 0.55 + "px";
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
@@ -235,20 +236,15 @@ watch(
 </script>
 
 <template>
-  <div ref="containerRef" class="flex w-full flex-col items-center">
-    <div class="flex w-full flex-wrap items-center pt-0 pb-2">
-      <div class="w-full pl-0 md:w-1/2">
-        <div class="p-0 text-base font-semibold">Target Visualization</div>
+  <div class="flex w-full flex-col items-center" ref="containerRef">
+    <canvas ref="canvasRef" class="w-full rounded-xl border border-white/10" />
+    <div class="flex w-full gap-2 md:pt-3">
+      <div class="flex w-full items-center">
+        <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
       </div>
-      <div class="flex flex-1 gap-2">
-        <div class="flex w-full items-center pt-0 pl-6 md:pt-3 md:pl-3">
-          <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
-        </div>
-        <div class="flex w-full items-center pt-0 pr-0 md:pt-3">
-          <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
-        </div>
+      <div class="flex w-full items-center">
+        <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
       </div>
     </div>
-    <canvas ref="canvasRef" class="w-100" />
   </div>
 </template>

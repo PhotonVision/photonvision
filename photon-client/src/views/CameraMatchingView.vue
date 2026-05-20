@@ -145,7 +145,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           </div>
           <div v-else class="text-sm">Status: <span class="mismatch-status">Mismatch</span></div>
           <div class="pt-3">
-            <pv-table density="compact">
+            <pv-table>
               <tbody>
                 <tr
                   v-if="
@@ -264,7 +264,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           </div>
           <div class="text-sm">Status: <span class="inactive-status">Deactivated</span></div>
           <div class="pt-3">
-            <pv-table density="compact">
+            <pv-table>
               <tbody>
                 <tr>
                   <td>Name</td>
@@ -378,8 +378,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           variant="transparent"
           :bordered="false"
           :elevated="false"
-          padding="none"
-          class="flex h-full flex-col justify-center px-6"
+          class="flex h-full flex-col justify-center"
         >
           <div class="flex flex-col items-center justify-center">
             <pv-icon size="64" color="primary" :icon="IconPlus" />
@@ -411,7 +410,6 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <pv-alert
             class="mb-3"
             color="buttonActive"
-            density="compact"
             text="A different camera may have been connected to this device! Compare the following information carefully."
             :icon="IconInformationOutline"
           />

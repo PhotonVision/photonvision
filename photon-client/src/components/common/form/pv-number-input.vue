@@ -34,14 +34,14 @@ const localValue = computed({
 
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="pt-3 pb-3 flex items-center pl-0">
+    <div :class="labelWidthClass" class="flex items-center pt-3 pb-3 pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
     </div>
-    <div class="pt-3 pb-3 flex-1 pr-0">
+    <div class="flex-1 pt-3 pr-0 pb-3">
       <pv-text-field
         :id="inputId"
         v-model="localValue"
-        density="compact"
+        
         hide-details
         type="number"
         variant="outline"

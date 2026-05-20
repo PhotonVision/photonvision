@@ -81,7 +81,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <template>
   <div class="w-full p-3">
-    <pv-alert v-if="arducamWarningShown" class="mb-3" color="error" density="compact" :icon="IconAlertCircleOutline">
+    <pv-alert v-if="arducamWarningShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
       <span>
         Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
       </span>
@@ -90,20 +90,19 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       v-if="conflictingHostnameShown"
       class="mb-3"
       color="error"
-      density="compact"
       :icon="IconAlertCircleOutline"
     >
       <span>
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>
     </pv-alert>
-    <pv-alert v-if="fpsLimitWarningShown" class="mb-3" color="error" density="compact" :icon="IconAlertCircleOutline">
+    <pv-alert v-if="fpsLimitWarningShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
       <span
         >One or more cameras have an FPS limit set! This may cause performance issues. Check your logs for more
         information.
       </span>
     </pv-alert>
-    <pv-alert v-if="conflictingCameraShown" class="mb-3" color="error" density="compact" :icon="IconAlertCircleOutline">
+    <pv-alert v-if="conflictingCameraShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
       <span
         >Conflicting camera name(s) detected! Please change the name(s) of
         {{ useSettingsStore().general.conflictingCameras }}!

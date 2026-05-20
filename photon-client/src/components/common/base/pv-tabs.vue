@@ -30,7 +30,7 @@ withDefaults(
         v-for="(item, index) in items"
         :key="item.value"
         :value="index"
-        class="focus-visible:ring-pv-primary/50 relative inline-flex min-h-10 items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold text-pv-on-surface/78 transition outline-none hover:text-pv-on-surface focus-visible:ring-2 data-[state=active]:text-slate-950"
+        class="focus-visible:ring-pv-primary/50 text-pv-on-surface/78 hover:text-pv-on-surface relative inline-flex min-h-10 items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold transition outline-none focus-visible:ring-2 data-[state=active]:text-slate-950"
       >
         {{ item.label }}
       </tabs-trigger>
