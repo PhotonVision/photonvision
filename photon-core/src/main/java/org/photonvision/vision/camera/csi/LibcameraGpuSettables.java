@@ -63,7 +63,14 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         videoModes = new HashMap<>();
 
-        sensorModel = LibCameraJNI.getSensorModel(configuration.matchedCameraInfo.path());
+        LibCameraJNI.SensorModel tempSensorModel;
+        try {
+            tempSensorModel = LibCameraJNI.getSensorModel(configuration.matchedCameraInfo.path());
+        } catch (UnsatisfiedLinkError e) {
+            logger.error("Unable to load libcamera JNI", e);
+            tempSensorModel = LibCameraJNI.SensorModel.Disconnected;
+        }
+        sensorModel = tempSensorModel;
 
         if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
