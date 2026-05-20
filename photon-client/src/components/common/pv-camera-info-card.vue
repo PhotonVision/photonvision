@@ -1,13 +1,8 @@
 <script setup lang="ts">
-import { PVCameraInfo } from "@/types/SettingTypes";
+import type { PVCameraInfo } from "@/types/SettingTypes";
 import { cameraInfoFor } from "@/lib/PhotonUtils";
 
-const { camera } = defineProps({
-  camera: {
-    type: PVCameraInfo,
-    required: true
-  }
-});
+const { camera } = defineProps<{ camera: PVCameraInfo }>();
 </script>
 
 <template>
@@ -24,9 +19,9 @@ const { camera } = defineProps({
         </tr>
         <tr>
           <td>Type:</td>
-          <td v-if="camera.PVUsbCameraInfo" class="mb-3">USB Camera</td>
-          <td v-else-if="camera.PVCSICameraInfo" class="mb-3">CSI Camera</td>
-          <td v-else-if="camera.PVFileCameraInfo" class="mb-3">File Camera</td>
+          <td v-if="camera.type === 'PVUsbCameraInfo'" class="mb-3">USB Camera</td>
+          <td v-else-if="camera.type === 'PVCSICameraInfo'" class="mb-3">CSI Camera</td>
+          <td v-else-if="camera.type === 'PVFileCameraInfo'" class="mb-3">File Camera</td>
           <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr v-if="cameraInfoFor(camera).baseName !== undefined && cameraInfoFor(camera).baseName !== null">

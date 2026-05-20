@@ -105,18 +105,22 @@ const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null)
 const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
     return {
-      PVFileCameraInfo: undefined,
-      PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      type: "PVFileCameraInfo",
+      path: "",
+      name: "",
+      uniquePath: "",
+      otherPaths: []
     };
   }
   return (
     useStateStore().vsmState.allConnectedCameras.find(
       (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
     ) || {
-      PVFileCameraInfo: undefined,
-      PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      type: "PVFileCameraInfo",
+      path: "",
+      name: "",
+      uniquePath: "",
+      otherPaths: []
     }
   );
 };
@@ -354,9 +358,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4" class="pr-0">
         <v-card class="pr-0 rounded-12" color="surface">
           <v-card-title>
-            <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
-            <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
-            <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
+            <span v-if="camera.type === 'PVUsbCameraInfo'">USB Camera:</span>
+            <span v-else-if="camera.type === 'PVCSICameraInfo'">CSI Camera:</span>
+            <span v-else-if="camera.type === 'PVFileCameraInfo'">File Camera:</span>
             <span v-else>Unknown Camera:</span>
             &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
           </v-card-title>

@@ -111,21 +111,19 @@ export const axiosPost = async (
 };
 
 type CameraInfoDetails = Partial<
-  NonNullable<PVCameraInfo["PVUsbCameraInfo"]> &
-    NonNullable<PVCameraInfo["PVCSICameraInfo"]> &
-    NonNullable<PVCameraInfo["PVFileCameraInfo"]>
+  {
+    type: PVCameraInfo["type"];
+    dev: number;
+    name: string;
+    baseName: string;
+    otherPaths: string[];
+    path: string;
+    uniquePath: string;
+    vendorId: number;
+    productId: number;
+  }
 >;
 
 export const cameraInfoFor = (camera: PVCameraInfo | null): CameraInfoDetails => {
-  if (!camera) return {};
-  if (camera.PVUsbCameraInfo) {
-    return camera.PVUsbCameraInfo;
-  }
-  if (camera.PVCSICameraInfo) {
-    return camera.PVCSICameraInfo;
-  }
-  if (camera.PVFileCameraInfo) {
-    return camera.PVFileCameraInfo;
-  }
-  return {};
+  return camera ?? {};
 };

@@ -76,45 +76,35 @@ export type ConfigurableNetworkSettings = Omit<
 >;
 
 export interface PVCameraInfoBase {
-  /*
-  Huge hack. In Jsonb, this is set based on the underlying type -- this
-  then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
-  */
-  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+  type: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+  path: string;
+  name: string;
+  uniquePath: string;
 }
 
-export interface PVUsbCameraInfo {
+export interface PVUsbCameraInfo extends PVCameraInfoBase {
+  type: "PVUsbCameraInfo";
   dev: number;
   name: string;
   otherPaths: string[];
   path: string;
   vendorId: number;
   productId: number;
-
-  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
-  uniquePath: string;
 }
-export interface PVCSICameraInfo {
+export interface PVCSICameraInfo extends PVCameraInfoBase {
+  type: "PVCSICameraInfo";
   baseName: string;
   path: string;
-
-  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
-  uniquePath: string;
+  otherPaths: string[];
 }
-export interface PVFileCameraInfo {
+export interface PVFileCameraInfo extends PVCameraInfoBase {
+  type: "PVFileCameraInfo";
   path: string;
   name: string;
-
-  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
-  uniquePath: string;
+  otherPaths: string[];
 }
 
-// This camera info will only ever hold one of its members - the others should be undefined.
-export class PVCameraInfo {
-  PVUsbCameraInfo: PVUsbCameraInfo | undefined;
-  PVCSICameraInfo: PVCSICameraInfo | undefined;
-  PVFileCameraInfo: PVFileCameraInfo | undefined;
-}
+export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
 
 export interface VsmState {
   disabledConfigs: WebsocketCameraSettingsUpdate[];
@@ -439,13 +429,11 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   minWhiteBalanceTemp: 2000,
   maxWhiteBalanceTemp: 10000,
   matchedCameraInfo: {
-    PVFileCameraInfo: {
-      name: "Foobar",
-      path: "/dev/foobar",
-      uniquePath: "/dev/foobar2"
-    },
-    PVCSICameraInfo: undefined,
-    PVUsbCameraInfo: undefined
+    type: "PVFileCameraInfo",
+    name: "Foobar",
+    path: "/dev/foobar",
+    uniquePath: "/dev/foobar2",
+    otherPaths: []
   },
   fpsLimit: -1,
   isEnabled: true,
