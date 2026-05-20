@@ -17,8 +17,10 @@
 
 package org.photonvision.vision.pipeline;
 
+import io.avaje.jsonb.Json;
 import org.opencv.objdetect.Objdetect;
 
+@Json
 public class UICalibrationData {
     public int videoModeIndex;
     public int count;
@@ -53,11 +55,18 @@ public class UICalibrationData {
         this.tagFamily = tagFamily;
     }
 
+    @Json
     public enum BoardType {
         CHESSBOARD,
-        CHARUCOBOARD,
+        CHARUCOBOARD;
+
+        @Json.Value
+        int toValue() {
+            return ordinal();
+        }
     }
 
+    @Json
     public enum TagFamily {
         Dict_4X4_1000(Objdetect.DICT_4X4_1000),
         Dict_5X5_1000(Objdetect.DICT_5X5_1000),
@@ -74,6 +83,11 @@ public class UICalibrationData {
         // enum constructor - cannot be public or protected
         private TagFamily(int value) {
             this.value = value;
+        }
+
+        @Json.Value
+        int toValue() {
+            return ordinal();
         }
     }
 

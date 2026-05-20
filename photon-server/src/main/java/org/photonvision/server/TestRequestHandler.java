@@ -17,6 +17,7 @@
 
 package org.photonvision.server;
 
+import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
 import io.javalin.http.Context;
 import org.photonvision.common.configuration.ConfigManager;
@@ -39,7 +40,8 @@ public class TestRequestHandler {
         ConfigManager.getInstance().load();
     }
 
-    private record PlatformOverrideRequest(Platform platform) {}
+    @Json
+    record PlatformOverrideRequest(Platform platform) {}
 
     public static void handlePlatformOverrideRequest(Context ctx) {
         try {

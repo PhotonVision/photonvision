@@ -18,6 +18,7 @@
 package org.photonvision.server;
 
 import io.avaje.json.JsonDataException;
+import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
@@ -81,7 +82,8 @@ public class RequestHandler {
         testMode = isTestMode;
     }
 
-    private record CommonCameraUniqueName(String cameraUniqueName) {}
+    @Json
+    record CommonCameraUniqueName(String cameraUniqueName) {}
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -391,7 +393,8 @@ public class RequestHandler {
         NetworkTablesManager.getInstance().setConfig(config);
     }
 
-    private record CameraSettingsRequest(
+    @Json
+    record CameraSettingsRequest(
             double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
     public static void onCameraSettingsRequest(Context ctx) {
@@ -520,7 +523,8 @@ public class RequestHandler {
         }
     }
 
-    private record DataCalibrationImportRequest(
+    @Json
+    record DataCalibrationImportRequest(
             String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
 
     public static void onDataCalibrationImportRequest(Context ctx) {
@@ -858,7 +862,8 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    private record DeleteObjectDetectionModelRequest(Path modelPath) {}
+    @Json
+    record DeleteObjectDetectionModelRequest(Path modelPath) {}
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         logger.info("Deleting object detection model");
@@ -915,7 +920,8 @@ public class RequestHandler {
         }
     }
 
-    private record RenameObjectDetectionModelRequest(Path modelPath, String newName) {}
+    @Json
+    record RenameObjectDetectionModelRequest(Path modelPath, String newName) {}
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
@@ -992,7 +998,8 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
 
-    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
+    @Json
+    record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
@@ -1050,7 +1057,8 @@ public class RequestHandler {
         ctx.status(200);
     }
 
-    private record CalibrationRemoveRequest(int width, int height, String cameraUniqueName) {}
+    @Json
+    record CalibrationRemoveRequest(int width, int height, String cameraUniqueName) {}
 
     public static void onCalibrationRemoveRequest(Context ctx) {
         try {
@@ -1360,7 +1368,8 @@ public class RequestHandler {
         }
     }
 
-    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
+    @Json
+    record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
