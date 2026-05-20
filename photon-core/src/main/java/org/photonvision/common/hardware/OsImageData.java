@@ -17,8 +17,8 @@
 
 package org.photonvision.common.hardware;
 
-import io.avaje.jsonb.Jsonb;
 import io.avaje.jsonb.Json;
+import io.avaje.jsonb.Jsonb;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
