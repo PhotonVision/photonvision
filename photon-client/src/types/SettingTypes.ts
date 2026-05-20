@@ -75,7 +75,7 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
-export interface PVCameraInfoBase {
+interface PVCameraInfoBase {
   type: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
   path: string;
   name: string;
@@ -85,22 +85,17 @@ export interface PVCameraInfoBase {
 export interface PVUsbCameraInfo extends PVCameraInfoBase {
   type: "PVUsbCameraInfo";
   dev: number;
-  name: string;
   otherPaths: string[];
-  path: string;
   vendorId: number;
   productId: number;
 }
 export interface PVCSICameraInfo extends PVCameraInfoBase {
   type: "PVCSICameraInfo";
   baseName: string;
-  path: string;
   otherPaths: string[];
 }
 export interface PVFileCameraInfo extends PVCameraInfoBase {
   type: "PVFileCameraInfo";
-  path: string;
-  name: string;
   otherPaths: string[];
 }
 

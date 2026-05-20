@@ -35,11 +35,13 @@ public sealed interface PVCameraInfo {
     /**
      * @return The path of the camera.
      */
+    @Json.Property("path")
     String path();
 
     /**
      * @return The base name of the camera aka the name as just ascii.
      */
+    @Json.Property("name")
     String name();
 
     /**
@@ -288,6 +290,7 @@ public sealed interface PVCameraInfo {
         return new PVFileCameraInfo(path, baseName);
     }
 
+    // MIGRATION: 2026
     public static String remapConfigJson(String configJson, String cameraType) {
         final JsonType<Map<String, Object>> objMapJsonb =
                 Jsonb.instance().type(Types.mapOf(Object.class));
