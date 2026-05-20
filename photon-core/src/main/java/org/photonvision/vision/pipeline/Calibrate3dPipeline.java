@@ -63,25 +63,14 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    // minSnapshots is the typical limit for the number of snapshots needed, bypassMinSnapshots is the
-    // limit used when the bypass flag is true
-    private final int minSnapshots;
-    private final int bypassMinSnapshots;
-
     private boolean calibrating = false;
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public Calibrate3dPipeline() {
-        this(100, 10);
-    }
-
-    public Calibrate3dPipeline(int minSnapshots, int bypassMinSnapshots) {
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
-        this.minSnapshots = minSnapshots;
-        this.bypassMinSnapshots = bypassMinSnapshots;
     }
 
     @Override
@@ -168,25 +157,7 @@ public class Calibrate3dPipeline
         return foundCornersList.stream().map(it -> it.imagePoints.toList()).toList();
     }
 
-    public boolean hasEnough() {
-        return foundCornersList.size() >= getEffectiveMinSnapshots();
-    }
-
-    private int getEffectiveMinSnapshots() {
-        return settings.bypass ? bypassMinSnapshots : minSnapshots;
-    }
-
     public CameraCalibrationCoefficients tryCalibration(Path imageSavePath) {
-        if (!hasEnough()) {
-            logger.info(
-                    "Not enough snapshots! Only got "
-                            + foundCornersList.size()
-                            + " of "
-                            + getEffectiveMinSnapshots()
-                            + " -- returning null..");
-            return null;
-        }
-
         this.calibrating = true;
 
         /*
@@ -224,8 +195,6 @@ public class Calibrate3dPipeline
                         new UICalibrationData(
                                 foundCornersList.size(),
                                 settings.cameraVideoModeIndex,
-                                getEffectiveMinSnapshots(),
-                                hasEnough(),
                                 Units.metersToInches(settings.gridSize),
                                 Units.metersToInches(settings.markerSize),
                                 settings.boardWidth,

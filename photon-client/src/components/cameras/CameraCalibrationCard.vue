@@ -15,7 +15,6 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import type { Calibration3dPipelineSettings } from "@/types/PipelineTypes";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
@@ -243,7 +242,7 @@ const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
-  if (!useStateStore().calibrationData.hasEnoughImages) {
+  if (!hasEnoughImages.value) {
     calibCanceled.value = true;
   }
 
@@ -270,11 +269,10 @@ const endCalibration = () => {
 };
 
 const drawAllSnapshots = ref(true);
-// TODO: Fix typing for this when we clean up the pipeline settings types
-const bypassVal = computed<boolean>({
-  get: () => !!(useCameraSettingsStore().currentPipelineSettings as Calibration3dPipelineSettings | undefined)?.bypass,
-  set: (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ bypass: value }, true)
-});
+
+const bypassVal = ref(false);
+const minCount = computed(() => (bypassVal.value ? 10 : 100));
+const hasEnoughImages = computed(() => useStateStore().calibrationData.imageCount >= minCount.value);
 
 const showCalDialog = ref(false);
 const selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
@@ -546,10 +544,10 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           <v-chip
             :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
             label
-            :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'"
+            :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'"
           >
             Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-            {{ useStateStore().calibrationData.minimumImageCount }}
+            {{ minCount }}
           </v-chip>
           <v-spacer />
           <pv-switch
@@ -606,16 +604,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonActive' : 'error'"
+              :color="hasEnoughImages ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
               <v-icon start class="calib-btn-icon" size="large">
-                {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
+                {{ hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
               </v-icon>
-              <span class="calib-btn-label">{{
-                useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
-              }}</span>
+              <span class="calib-btn-label">{{ hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}</span>
             </v-btn>
           </v-col>
         </div>
