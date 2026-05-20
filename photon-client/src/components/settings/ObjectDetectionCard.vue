@@ -448,7 +448,6 @@ const handleBulkImport = async () => {
   th,
   td {
     font-size: 1rem !important;
-    color: white !important;
     text-align: center !important;
   }
 

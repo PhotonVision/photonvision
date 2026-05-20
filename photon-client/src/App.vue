@@ -58,7 +58,7 @@ onBeforeMount(() => {
 <template>
   <ConfigProvider :scroll-body="false">
     <v-app>
-      <div class="bg-pv-background flex h-screen w-full flex-col-reverse text-white md:h-full md:flex-row">
+      <div class="bg-pv-background flex h-full w-full flex-row text-pv-on-surface">
         <photon-sidebar />
         <main class="flex min-w-0 flex-1 flex-col overflow-auto">
           <div class="flex-1">
@@ -106,11 +106,4 @@ html {
   padding: 0 !important;
 }
 
-.v-overlay__scrim {
-  background-color: #111111;
-}
-
-div.v-layout {
-  overflow: unset !important;
-}
 </style>

@@ -1,8 +1,8 @@
 <template>
   <div class="not-found-container">
     <div>
-      <div class="pb-9 text-[42px] font-semibold text-white">The page you are looking for isn't here</div>
-      <div class="text-[18px] text-white">Please use the sidebar to find what you are looking for</div>
+      <div class="pb-9 text-[42px] font-semibold text-pv-on-surface">The page you are looking for isn't here</div>
+      <div class="text-[18px] text-pv-on-surface">Please use the sidebar to find what you are looking for</div>
     </div>
     <img src="@/assets/images/notfound.webp" alt="missing-page" style="margin-top: 64px" />
   </div>

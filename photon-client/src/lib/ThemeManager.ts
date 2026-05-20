@@ -2,59 +2,23 @@ type ThemeName = "LightTheme" | "DarkTheme";
 
 type ThemeColors = {
   background: string;
-  onBackground: string;
   surface: string;
-  surfaceVariant: string;
-  onSurface: string;
   primary: string;
   secondary: string;
-  accent: string;
-  error: string;
-  info: string;
-  success: string;
-  warning: string;
-  buttonActive: string;
-  buttonPassive: string;
-  logsBackground: string;
-  sidebar: string;
 };
 
 const LightThemeDefaults: ThemeColors = {
   background: "#232C37",
-  onBackground: "#ffffff",
   surface: "#006492",
-  surfaceVariant: "#8f8f8f",
-  onSurface: "#f0f0f0",
   primary: "#FFD843",
-  secondary: "#39A4D5",
-  accent: "#FFD843",
-  error: "#b80000",
-  info: "#2196F3",
-  success: "#4CAF50",
-  warning: "#FFC107",
-  buttonActive: "#FFD843",
-  buttonPassive: "#39A4D5",
-  logsBackground: "#232C37",
-  sidebar: "#006492"
+  secondary: "#39A4D5"
 };
 
 const DarkThemeDefaults: ThemeColors = {
   background: "#151515",
-  onBackground: "#f0f0f0",
   surface: "#1c232c",
-  surfaceVariant: "#485b70",
-  onSurface: "#f0f0f0",
   primary: "#39A4D5",
-  secondary: "#FFD843",
-  accent: "#006492",
-  error: "#ff2e2e",
-  info: "#2196F3",
-  success: "#4CAF50",
-  warning: "#FFC107",
-  buttonActive: "#FFD843",
-  buttonPassive: "#39A4D5",
-  logsBackground: "#151515",
-  sidebar: "#151515"
+  secondary: "#FFD843"
 };
 
 const themeDefaults: Record<ThemeName, ThemeColors> = {
@@ -64,40 +28,16 @@ const themeDefaults: Record<ThemeName, ThemeColors> = {
 
 const cssVarMap: Record<keyof ThemeColors, string> = {
   background: "--pv-background",
-  onBackground: "--pv-on-background",
   surface: "--pv-surface",
-  surfaceVariant: "--pv-surface-variant",
-  onSurface: "--pv-on-surface",
   primary: "--pv-primary",
-  secondary: "--pv-secondary",
-  accent: "--pv-accent",
-  error: "--pv-error",
-  info: "--pv-info",
-  success: "--pv-success",
-  warning: "--pv-warning",
-  buttonActive: "--pv-button-active",
-  buttonPassive: "--pv-button-passive",
-  logsBackground: "--pv-logs-background",
-  sidebar: "--pv-sidebar"
+  secondary: "--pv-secondary"
 };
 
 const colorVarMap: Record<keyof ThemeColors, string> = {
   background: "--color-pv-background",
-  onBackground: "--color-pv-on-background",
   surface: "--color-pv-surface",
-  surfaceVariant: "--color-pv-surface-variant",
-  onSurface: "--color-pv-on-surface",
   primary: "--color-pv-primary",
-  secondary: "--color-pv-secondary",
-  accent: "--color-pv-accent",
-  error: "--color-pv-error",
-  info: "--color-pv-info",
-  success: "--color-pv-success",
-  warning: "--color-pv-warning",
-  buttonActive: "--color-pv-button-active",
-  buttonPassive: "--color-pv-button-passive",
-  logsBackground: "--color-pv-logs-background",
-  sidebar: "--color-pv-sidebar"
+  secondary: "--color-pv-secondary"
 };
 
 const getStoredThemeName = (): ThemeName => {

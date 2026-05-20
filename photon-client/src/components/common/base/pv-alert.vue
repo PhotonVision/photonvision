@@ -61,8 +61,8 @@ const paddingClass = computed(() => {
 });
 
 const textClass = computed(() => {
-  if (props.variant === "tonal" || props.variant === "outlined") return "text-white";
-  return isLightTone.value ? "text-slate-950" : "text-white";
+  if (props.variant === "tonal" || props.variant === "outlined") return "text-pv-on-surface";
+  return isLightTone.value ? "text-slate-950" : "text-pv-on-surface";
 });
 </script>
 
@@ -73,20 +73,20 @@ const textClass = computed(() => {
     role="alert"
     :style="alertStyle"
     :class="[
-      'flex w-full items-start gap-2 rounded-lg border text-sm leading-5 shadow-sm',
+      'flex w-full items-center gap-2 rounded-lg border text-sm leading-5 shadow-sm',
       paddingClass,
       textClass,
       attrs.class
     ]"
   >
-    <component :is="icon" v-if="icon" class="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+    <component :is="icon" v-if="icon" class="size-5 shrink-0" aria-hidden="true" />
     <div class="min-w-0 flex-1">
       <slot>{{ text }}</slot>
     </div>
     <button
       v-if="closable"
       type="button"
-      class="-mt-1 -mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-75 transition hover:bg-white/12 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+      class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-75 transition hover:bg-white/12 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
       aria-label="Close alert"
       @click="shown = false"
     >

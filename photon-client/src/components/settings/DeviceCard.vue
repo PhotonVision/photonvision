@@ -519,7 +519,7 @@ watch(metricsHistorySnapshot, () => {
         <span> {{ offlineUpdateDialog.confirmString }} </span>
       </div>
       <div class="pt-3">
-        <div class="flex flex-wrap items-center text-white">
+        <div class="flex flex-wrap items-center text-pv-on-surface">
           <div class="w-full">
             <pv-button
               variant="primary"

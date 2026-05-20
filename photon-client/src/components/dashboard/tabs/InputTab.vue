@@ -60,8 +60,7 @@ const currentStreamResolutionIndex = computed<number>({
   },
   set: (index) => {
     useCameraSettingsStore().changeCurrentPipelineSetting(
-      { streamingFrameDivisor: index + getNumberOfSkippedDivisors() },
-      false
+      { streamingFrameDivisor: index + getNumberOfSkippedDivisors() }
     );
   }
 });

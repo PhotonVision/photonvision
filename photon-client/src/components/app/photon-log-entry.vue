@@ -13,7 +13,7 @@ const logColorClass = computed<string>(() => {
     case LogLevel.INFO:
       return "text-light-blue";
     case LogLevel.DEBUG:
-      return "text-white";
+      return "text-pv-on-surface";
   }
   return "";
 });

@@ -77,7 +77,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
       <select-root v-model="value" :disabled="disabled">
         <select-trigger
           :id="selectId"
-          class="focus-within:ring-pv-primary flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-white/12 bg-black/15 px-3 text-left text-sm text-white shadow-sm transition outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-black/20 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-white/45"
+          class="focus-within:ring-pv-primary flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-white/12 bg-black/15 px-3 text-left text-sm text-pv-on-surface shadow-sm transition outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-black/20 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-pv-on-surface/45"
           :aria-label="label"
         >
           <!-- This allows us to work around Reka #2160-->
@@ -87,7 +87,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
             </slot>
           </select-value>
 
-          <select-icon class="shrink-0 text-white/70">
+          <select-icon class="shrink-0 text-pv-on-surface/70">
             <IconChevronDown class="size-5" aria-hidden="true" />
           </select-icon>
         </select-trigger>
