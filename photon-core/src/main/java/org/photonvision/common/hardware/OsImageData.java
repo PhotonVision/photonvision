@@ -18,6 +18,7 @@
 package org.photonvision.common.hardware;
 
 import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Json;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +39,7 @@ public class OsImageData {
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 
+    @Json
     public static record ImageMetadata(
             String buildDate, String commitSha, String commitTag, String imageName, String imageSource) {}
 
