@@ -40,8 +40,6 @@ public final class DatabaseSchema {
          pipeline_jsons mediumtext NOT NULL
          );""",
         // spotless:on
-        // #2 - Unused (was add column otherpaths_json)
-        "",
         // add future migrations here
     };
 
