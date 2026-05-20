@@ -40,8 +40,6 @@ interface StateStore {
   calibrationData: {
     imageCount: number;
     videoFormatIndex: number;
-    minimumImageCount: number;
-    hasEnoughImages: boolean;
   };
 
   snackbarData: {
@@ -89,9 +87,7 @@ export const useStateStore = defineStore("state", {
 
       calibrationData: {
         imageCount: 0,
-        videoFormatIndex: 0,
-        minimumImageCount: 12,
-        hasEnoughImages: false
+        videoFormatIndex: 0
       },
 
       snackbarData: {
@@ -162,9 +158,7 @@ export const useStateStore = defineStore("state", {
     updateCalibrationStateValuesFromWebsocket(data: WebsocketCalibrationData) {
       this.calibrationData = {
         imageCount: data.count,
-        videoFormatIndex: data.videoModeIndex,
-        minimumImageCount: data.minCount,
-        hasEnoughImages: data.hasEnough
+        videoFormatIndex: data.videoModeIndex
       };
     },
     updateDiscoveredCameras(data: VsmState) {

@@ -385,8 +385,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       const payload = {
         startPnpCalibration: {
           count: stateCalibData.imageCount,
-          minCount: stateCalibData.minimumImageCount,
-          hasEnough: stateCalibData.hasEnoughImages,
           videoModeIndex: stateCalibData.videoFormatIndex,
           ...calibrationInitData
         },
