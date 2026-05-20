@@ -507,7 +507,7 @@ public class SqlConfigProvider extends ConfigProvider {
                         GlobalKeys.NEURAL_NETWORK_PROPERTIES,
                         Jsonb.instance()
                                 .type(NeuralNetworkModelsSettings.class)
-                                .toJson(config.neuralNetworkPropertyManager()));
+                                .toJson(config.getNeuralNetworkProperties()));
                 statement3.executeUpdate();
                 statement3.close();
             }

@@ -30,7 +30,8 @@ public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
-    private AprilTagFieldLayout atfl;
+    @Json.Property("atfl")
+    private AprilTagFieldLayout aprilTagFieldLayout;
     private NeuralNetworkModelsSettings neuralNetworkProperties;
     private Map<String, CameraConfiguration> cameraConfigurations;
 
@@ -62,7 +63,7 @@ public class PhotonConfiguration {
         this.networkConfig = networkConfig;
         this.neuralNetworkProperties = neuralNetworkProperties;
         this.cameraConfigurations = cameraConfigurations;
-        this.atfl = atfl;
+        this.aprilTagFieldLayout = atfl;
     }
 
     public PhotonConfiguration() {
@@ -86,18 +87,16 @@ public class PhotonConfiguration {
         return hardwareSettings;
     }
 
-    @Json.Property("atfl")
     public AprilTagFieldLayout getApriltagFieldLayout() {
-        return atfl;
+        return aprilTagFieldLayout;
     }
 
-    @Json.Property("neuralNetworkProperties")
-    public NeuralNetworkModelsSettings neuralNetworkPropertyManager() {
+    public NeuralNetworkModelsSettings getNeuralNetworkProperties() {
         return neuralNetworkProperties;
     }
 
     public void setApriltagFieldLayout(AprilTagFieldLayout atfl) {
-        this.atfl = atfl;
+        this.aprilTagFieldLayout = atfl;
     }
 
     public void setNetworkConfig(NetworkConfig networkConfig) {
@@ -154,8 +153,8 @@ public class PhotonConfiguration {
                 + hardwareSettings
                 + "\n  networkConfig="
                 + networkConfig
-                + "\n  atfl="
-                + atfl
+                + "\n  aprilTagFieldLayout="
+                + aprilTagFieldLayout
                 + "\n  neuralNetworkProperties="
                 + neuralNetworkProperties
                 + "\n  cameraConfigurations={"

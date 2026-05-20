@@ -59,7 +59,7 @@ public class UIPhotonConfiguration {
                                 // TODO add support for other types of GPU accel
                                 LoadJNI.hasLoaded(JNITypes.LIBCAMERA) ? "Zerocopy Libcamera Working" : "",
                                 LoadJNI.hasLoaded(JNITypes.MRCAL),
-                                c.neuralNetworkPropertyManager().getModels(),
+                                c.getNeuralNetworkProperties().getModels(),
                                 NeuralNetworkModelManager.getInstance().getSupportedBackends(),
                                 c.getHardwareConfig().deviceName.isEmpty()
                                         ? Platform.getHardwareModel()

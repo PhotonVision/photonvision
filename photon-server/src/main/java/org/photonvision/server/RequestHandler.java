@@ -703,11 +703,11 @@ public class RequestHandler {
             }
             ConfigManager.getInstance()
                     .getConfig()
-                    .neuralNetworkPropertyManager()
+                    .getNeuralNetworkProperties()
                     .addModelProperties(modelProperties);
 
             logger.debug(
-                    ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().toString());
+                    ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().toString());
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 
@@ -891,7 +891,7 @@ public class RequestHandler {
 
             if (!ConfigManager.getInstance()
                     .getConfig()
-                    .neuralNetworkPropertyManager()
+                    .getNeuralNetworkProperties()
                     .removeModel(request.modelPath)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
@@ -946,7 +946,7 @@ public class RequestHandler {
 
             if (!ConfigManager.getInstance()
                     .getConfig()
-                    .neuralNetworkPropertyManager()
+                    .getNeuralNetworkProperties()
                     .renameModel(request.modelPath, request.newName)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");

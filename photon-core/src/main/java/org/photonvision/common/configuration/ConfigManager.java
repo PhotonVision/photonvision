@@ -236,7 +236,7 @@ public class ConfigManager {
         try {
             Jsonb.instance()
                     .type(NeuralNetworkModelsSettings.class)
-                    .toJson(this.getConfig().neuralNetworkPropertyManager(), new FileWriter(tempProperties));
+                    .toJson(this.getConfig().getNeuralNetworkProperties(), new FileWriter(tempProperties));
             ZipUtil.pack(getModelsDirectory(), out);
             // Now delete the tempProperties
             if (tempProperties.exists()) {
