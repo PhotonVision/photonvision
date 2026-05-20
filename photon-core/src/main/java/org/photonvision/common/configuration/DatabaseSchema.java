@@ -40,8 +40,6 @@ public final class DatabaseSchema {
          pipeline_jsons mediumtext NOT NULL
          );""",
         // spotless:on
-        // #2 - add column otherpaths_json
-        "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]';",
         // add future migrations here
     };
 
@@ -62,6 +60,5 @@ public final class DatabaseSchema {
         static final String CAM_CONFIG_JSON = "config_json";
         static final String CAM_DRIVERMODE_JSON = "drivermode_json";
         static final String CAM_PIPELINE_JSONS = "pipeline_jsons";
-        static final String CAM_OTHERPATHS_JSON = "otherpaths_json";
     }
 }

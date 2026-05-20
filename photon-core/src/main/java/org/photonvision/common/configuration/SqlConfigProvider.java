@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.logging.LogGroup;
@@ -42,7 +41,6 @@ import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.apriltag.AprilTagFields;
-import org.wpilib.vision.camera.UsbCameraInfo;
 
 /**
  * Saves settings in a SQLite database file (called photon.sqlite).
@@ -609,11 +607,10 @@ public class SqlConfigProvider extends ConfigProvider {
             query =
                     conn.prepareStatement(
                             String.format(
-                                    "SELECT %s, %s, %s, %s, %s FROM %s",
+                                    "SELECT %s, %s, %s, %s FROM %s",
                                     Columns.CAM_UNIQUE_NAME,
                                     Columns.CAM_CONFIG_JSON,
                                     Columns.CAM_DRIVERMODE_JSON,
-                                    Columns.CAM_OTHERPATHS_JSON,
                                     Columns.CAM_PIPELINE_JSONS,
                                     Tables.CAMERAS));
 
@@ -627,32 +624,10 @@ public class SqlConfigProvider extends ConfigProvider {
 
                     uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
 
-                    // A horrifying hack to keep backward compat with otherpaths
-                    // We -really- need to delete this -stupid- otherpaths column. I hate it.
                     var configStr = result.getString(Columns.CAM_CONFIG_JSON);
                     CameraConfiguration config =
                             Jsonb.instance().type(CameraConfiguration.class).fromJson(configStr);
 
-                    if (config.matchedCameraInfo == null) {
-                        logger.info("Legacy CameraConfiguration detected - upgrading");
-
-                        // manually create the matchedCameraInfo ourselves. Need to upgrade:
-                        // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
-                        config.matchedCameraInfo =
-                                Jsonb.instance()
-                                        .type(LegacyCameraConfigStruct.class)
-                                        .fromJson(configStr)
-                                        .matchedCameraInfo;
-
-                        // Except that otherPaths used to be its own column. so hack that in here as well
-                        var otherPaths =
-                                Jsonb.instance()
-                                        .type(String[].class)
-                                        .fromJson(result.getString(Columns.CAM_OTHERPATHS_JSON));
-                        if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
-                            usbInfo.otherPaths = otherPaths;
-                        }
-                    }
 
                     var driverMode =
                             Jsonb.instance()
