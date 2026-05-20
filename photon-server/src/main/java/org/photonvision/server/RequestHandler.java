@@ -706,8 +706,7 @@ public class RequestHandler {
                     .getNeuralNetworkProperties()
                     .addModelProperties(modelProperties);
 
-            logger.debug(
-                    ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().toString());
+            logger.debug(ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().toString());
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 

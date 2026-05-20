@@ -30,8 +30,10 @@ public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
+
     @Json.Property("atfl")
     private AprilTagFieldLayout aprilTagFieldLayout;
+
     private NeuralNetworkModelsSettings neuralNetworkProperties;
     private Map<String, CameraConfiguration> cameraConfigurations;
 
