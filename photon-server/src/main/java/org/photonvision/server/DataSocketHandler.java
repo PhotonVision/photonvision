@@ -49,7 +49,8 @@ import org.wpilib.math.util.Pair;
 public class DataSocketHandler {
     private final Logger logger = new Logger(DataSocketHandler.class, LogGroup.WebServer);
     private final List<WsContext> users = new CopyOnWriteArrayList<>();
-    private final JacksonAdapter adapter = new JacksonAdapter(new MessagePackFactory());
+    private final JacksonAdapter adapter =
+            JacksonAdapter.builder().jsonFactory(new MessagePackFactory()).serializeEmpty(true).build();
     private final Jsonb msgpackJsonb = Jsonb.builder().adapter(adapter).build();
     private final DataChangeService dcService = DataChangeService.getInstance();
 
