@@ -63,7 +63,6 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   th,
   td {
     font-size: 1rem !important;
-    color: white !important;
   }
 
   td {

@@ -5,15 +5,16 @@
 
 @import "tailwindcss";
 
-@theme {
+@theme inline {
   --font-sans: "Public Sans", sans-serif;
+
   --color-pv-background: var(--pv-background);
-  --color-pv-on-background: var(--pv-on-background);
   --color-pv-surface: var(--pv-surface);
-  --color-pv-surface-variant: var(--pv-surface-variant);
-  --color-pv-on-surface: var(--pv-on-surface);
   --color-pv-primary: var(--pv-primary);
   --color-pv-secondary: var(--pv-secondary);
+
+  --color-pv-on-background: var(--pv-on-background);
+  --color-pv-on-surface: var(--pv-on-surface);
   --color-pv-accent: var(--pv-accent);
   --color-pv-error: var(--pv-error);
   --color-pv-info: var(--pv-info);
@@ -23,8 +24,32 @@
   --color-pv-button-passive: var(--pv-button-passive);
   --color-pv-logs-background: var(--pv-logs-background);
   --color-pv-sidebar: var(--pv-sidebar);
+
   --color-pv-surface-text: contrast-color(var(--pv-surface));
   --animate-progress: progress 1s infinite linear;
+}
+
+:root {
+  --pv-on-background: contrast-color(var(--pv-background));
+  --pv-on-surface: contrast-color(var(--pv-surface));
+  --pv-accent: var(--pv-primary);
+  --pv-error: var(--color-red-700);
+  --pv-info: var(--color-blue-400);
+  --pv-success: var(--color-green-600);
+  --pv-warning: var(--color-yellow-400);
+  --pv-button-active: var(--pv-primary);
+  --pv-button-passive: var(--pv-secondary);
+  --pv-logs-background: var(--color-slate-800);
+  --pv-sidebar: var(--color-slate-700);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --pv-accent: var(--pv-surface);
+  --pv-error: var(--color-red-400);
+  --pv-logs-background: var(--color-slate-900);
+  --pv-sidebar: var(--color-slate-600);
+  --pv-button-active: var(--pv-secondary);
 }
 
 @keyframes progress {

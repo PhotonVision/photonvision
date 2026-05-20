@@ -297,7 +297,7 @@ const tabItems: TabItem[] = [
                   size="icon"
                   variant="text"
                   :class="
-                    viewingImg === (internalItem as { index: number }).index ? 'text-pv-button-active' : 'text-white/70'
+                    viewingImg === (internalItem as { index: number }).index ? 'text-pv-button-active' : 'text-pv-on-surface/70'
                   "
                   @click="
                     viewingImg = (internalItem as { index: number }).index;

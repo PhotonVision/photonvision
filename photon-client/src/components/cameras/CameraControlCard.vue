@@ -144,7 +144,7 @@ const expanded = ref([]);
                 size="icon"
                 variant="ghost"
                 :icon="IconEye"
-                class="text-white/70 hover:text-white"
+                class="text-pv-on-surface/70 hover:text-pv-on-surface"
                 @click="toggleExpand()"
               />
             </template>
@@ -171,11 +171,9 @@ const expanded = ref([]);
 </template>
 
 <style scoped>
-.v-divider {
-  border-color: white !important;
-}
 
-.v-table {
+
+.pv-table {
   text-align: center;
 
   th,

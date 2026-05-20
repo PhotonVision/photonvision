@@ -2,21 +2,20 @@ import { onBeforeUnmount, onMounted, ref, type Ref } from "vue";
 
 export type ThemeColors = {
   background: string;
-  onBackground: string;
   surface: string;
-  surfaceVariant: string;
-  onSurface: string;
   primary: string;
   secondary: string;
-  accent: string;
-  error: string;
-  info: string;
-  success: string;
-  warning: string;
-  buttonActive: string;
-  buttonPassive: string;
-  logsBackground: string;
-  sidebar: string;
+  onBackground?: string;
+  onSurface?: string;
+  accent?: string;
+  error?: string;
+  info?: string;
+  success?: string;
+  warning?: string;
+  buttonActive?: string;
+  buttonPassive?: string;
+  logsBackground?: string;
+  sidebar?: string;
 };
 
 export type ThemeState = {
@@ -27,40 +26,16 @@ export type ThemeState = {
 
 const defaultDark: ThemeColors = {
   background: "#151515",
-  onBackground: "#f0f0f0",
   surface: "#1c232c",
-  surfaceVariant: "#485b70",
-  onSurface: "#f0f0f0",
   primary: "#39A4D5",
   secondary: "#FFD843",
-  accent: "#006492",
-  error: "#ff2e2e",
-  info: "#2196F3",
-  success: "#4CAF50",
-  warning: "#FFC107",
-  buttonActive: "#FFD843",
-  buttonPassive: "#39A4D5",
-  logsBackground: "#151515",
-  sidebar: "#151515"
 };
 
 const defaultLight: ThemeColors = {
   background: "#232C37",
-  onBackground: "#ffffff",
   surface: "#006492",
-  surfaceVariant: "#8f8f8f",
-  onSurface: "#f0f0f0",
   primary: "#FFD843",
   secondary: "#39A4D5",
-  accent: "#FFD843",
-  error: "#b80000",
-  info: "#2196F3",
-  success: "#4CAF50",
-  warning: "#FFC107",
-  buttonActive: "#FFD843",
-  buttonPassive: "#39A4D5",
-  logsBackground: "#232C37",
-  sidebar: "#006492"
 };
 
 const themeState: ThemeState = {
@@ -74,7 +49,7 @@ let observer: MutationObserver | null = null;
 let mediaQuery: MediaQueryList | null = null;
 let subscriberCount = 0;
 
-const readCssVar = (name: string, fallback: string) => {
+const readCssVar = <T extends (string | undefined),>(name: string, fallback: T): string | T => {
   if (typeof window === "undefined") return fallback;
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return value || fallback;
@@ -100,7 +75,6 @@ const refreshTheme = () => {
     background: readCssVar("--pv-background", fallback.background),
     onBackground: readCssVar("--pv-on-background", fallback.onBackground),
     surface: readCssVar("--pv-surface", fallback.surface),
-    surfaceVariant: readCssVar("--pv-surface-variant", fallback.surfaceVariant),
     onSurface: readCssVar("--pv-on-surface", fallback.onSurface),
     primary: readCssVar("--pv-primary", fallback.primary),
     secondary: readCssVar("--pv-secondary", fallback.secondary),

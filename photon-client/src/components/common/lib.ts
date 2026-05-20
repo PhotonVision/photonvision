@@ -37,11 +37,11 @@ export function useColFlexBasis(contentCols: Ref<number> | (() => number)) {
 
 /** Popover / dropdown / select-content floating surface */
 export const popoverSurfaceClass =
-  "z-[2500] overflow-hidden rounded-xl border border-white/12 bg-pv-surface text-white shadow-2xl shadow-black/45 ring-1 ring-white/8";
+  "z-[2500] overflow-hidden rounded-xl border border-white/12 bg-pv-surface text-pv-on-surface shadow-2xl shadow-black/45 ring-1 ring-white/8";
 
 /** Inline number-input box used inside sliders */
 export const sliderNumberInputClass =
-  "h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-left text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45";
+  "h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-left text-sm text-pv-on-surface outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45";
 
 /** Slider thumb (reka-ui) */
 export const sliderThumbClass =

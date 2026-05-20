@@ -739,7 +739,7 @@ th {
   padding: 0 8px !important;
 }
 
-.v-table {
+.pv-table {
   text-align: center;
   width: 100%;
 

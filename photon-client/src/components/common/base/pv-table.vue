@@ -85,7 +85,7 @@ const tableClasses = computed(() => [
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.95rem;
-  color: var(--pv-table-text);
+  color: var(--pv-on-surface);
 }
 
 .pv-table thead th {

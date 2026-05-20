@@ -39,13 +39,13 @@ const variantClass = computed(() => {
     case "primary":
       return "shadow-sm bg-pv-button-active text-slate-950 hover:brightness-105";
     case "danger":
-      return "shadow-sm border border-pv-error/45 bg-pv-error/25 text-white hover:bg-pv-error/20";
+      return "shadow-sm border border-pv-error/45 bg-pv-error/25 text-pv-on-surface hover:bg-pv-error/20";
     case "ghost":
-      return "border border-white/12 bg-transparent text-white hover:bg-white/6 ";
+      return "border border-white/12 bg-transparent text-pv-on-surface hover:bg-white/6 ";
     case "text":
-      return "bg-transparent text-white hover:bg-white/6 ";
+      return "bg-transparent text-pv-on-surface hover:bg-white/6 ";
     default:
-      return "shadow-sm border border-white/12 bg-black/15 text-white hover:bg-white/8";
+      return "shadow-sm border border-white/12 bg-black/15 text-pv-on-surface hover:bg-white/8";
   }
 });
 

@@ -18,7 +18,7 @@ const props = withDefaults(
     padding: "md",
     rounded: "xl",
     bordered: true,
-    elevated: true
+    elevated: false
   }
 );
 

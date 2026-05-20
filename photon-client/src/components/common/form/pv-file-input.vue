@@ -86,7 +86,7 @@ const displayValue = computed(() => {
         <div :class="fieldClass">
           <Label
             class="flex min-w-0 flex-1 cursor-pointer items-center"
-            :class="[{ 'text-white': value, 'text-white/40': !value }, props.variant === 'outline' ? 'py-2' : 'py-1']"
+            :class="[{ 'text-pv-on-surface': value, 'text-pv-on-surface/40': !value }, props.variant === 'outline' ? 'py-2' : 'py-1']"
           >
             <input
               ref="fileInput"
@@ -102,7 +102,7 @@ const displayValue = computed(() => {
           <button
             v-if="clearable && value"
             type="button"
-            class="inline-flex items-center justify-center px-2 text-white/60 transition hover:text-white"
+            class="inline-flex items-center justify-center px-2 text-pv-on-surface/60 transition hover:text-pv-on-surface"
             aria-label="Clear"
             @click.prevent="clearValue"
           >

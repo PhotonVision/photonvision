@@ -101,11 +101,11 @@ const fieldClass = computed(() =>
 
 <template>
   <div :class="wrapperClass" :style="wrapperStyle">
-    <Label v-if="label" :for="inputId" class="text-xs font-medium text-white/70">
+    <Label v-if="label" :for="inputId" class="text-xs font-medium text-pv-on-surface/70">
       {{ label }}
     </Label>
     <div :class="fieldClass">
-      <component :is="prependIcon" v-if="prependIcon" class="size-4 text-white/70" aria-hidden="true" />
+      <component :is="prependIcon" v-if="prependIcon" class="size-4 text-pv-on-surface/70" aria-hidden="true" />
       <input
         :id="inputId"
         v-model="inputValue"
@@ -117,7 +117,7 @@ const fieldClass = computed(() =>
         :min="min"
         :max="max"
         :class="[
-          'min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-white/40',
+          'min-w-0 flex-1 bg-transparent text-pv-on-surface outline-none placeholder:text-pv-on-surface/40',
           props.variant === 'outline' ? 'py-2' : 'py-1',
           inputClass
         ]"
@@ -126,7 +126,7 @@ const fieldClass = computed(() =>
       <button
         v-if="clearable && hasValue"
         type="button"
-        class="inline-flex items-center justify-center text-white/60 transition hover:text-white"
+        class="inline-flex items-center justify-center text-pv-on-surface/60 transition hover:text-pv-on-surface"
         aria-label="Clear"
         @click="clearValue"
       >
