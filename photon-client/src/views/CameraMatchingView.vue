@@ -59,22 +59,15 @@ const deleteThisCamera = async (cameraUniqueName: string) => {
 
 const cameraConnected = (uniquePath: string | undefined): boolean => {
   if (!uniquePath) return false;
-  return (
-    useStateStore().vsmState.allConnectedCameras.find((it) => it.uniquePath === uniquePath) !== undefined
-  );
+  return useStateStore().vsmState.allConnectedCameras.find((it) => it.uniquePath === uniquePath) !== undefined;
 };
 
 const unmatchedCameras = computed(() => {
-  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map(
-    (it) => it.matchedCameraInfo.uniquePath
-  );
-  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map(
-    (it) => it.matchedCameraInfo.uniquePath
-  );
+  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map((it) => it.matchedCameraInfo.uniquePath);
+  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map((it) => it.matchedCameraInfo.uniquePath);
 
   return useStateStore().vsmState.allConnectedCameras.filter(
-    (it) =>
-      !activeVmPaths.includes(it.uniquePath) && !disabledVmPaths.includes(it.uniquePath)
+    (it) => !activeVmPaths.includes(it.uniquePath) && !disabledVmPaths.includes(it.uniquePath)
   );
 });
 
@@ -113,9 +106,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     };
   }
   return (
-    useStateStore().vsmState.allConnectedCameras.find(
-      (it) => it.uniquePath === info.uniquePath
-    ) || {
+    useStateStore().vsmState.allConnectedCameras.find((it) => it.uniquePath === info.uniquePath) || {
       type: "PVFileCameraInfo",
       path: "",
       name: "",
@@ -143,8 +134,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <v-card-subtitle v-if="!cameraConnected(module.matchedCameraInfo.uniquePath)"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
           >
-          <v-card-subtitle
-            v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch"
+          <v-card-subtitle v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
           <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
@@ -214,12 +204,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   color="buttonPassive"
                   style="width: 100%"
                   :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                  @click="
-                    setCameraView(
-                      module.matchedCameraInfo,
-                      cameraConnected(module.matchedCameraInfo.uniquePath)
-                    )
-                  "
+                  @click="setCameraView(module.matchedCameraInfo, cameraConnected(module.matchedCameraInfo.uniquePath))"
                 >
                   <span>Details</span>
                 </v-btn>
@@ -308,12 +293,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   color="buttonPassive"
                   style="width: 100%"
                   :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                  @click="
-                    setCameraView(
-                      module.matchedCameraInfo,
-                      cameraConnected(module.matchedCameraInfo.uniquePath)
-                    )
-                  "
+                  @click="setCameraView(module.matchedCameraInfo, cameraConnected(module.matchedCameraInfo.uniquePath))"
                 >
                   <span>Details</span>
                 </v-btn>
@@ -427,9 +407,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
         </v-card-text>
         <v-card-text
           v-else-if="
-            activeVisionModules.find(
-              (it) => it.matchedCameraInfo.uniquePath === viewingCamera[0]?.uniquePath
-            )?.mismatch
+            activeVisionModules.find((it) => it.matchedCameraInfo.uniquePath === viewingCamera[0]?.uniquePath)?.mismatch
           "
         >
           <v-alert
