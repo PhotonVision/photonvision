@@ -116,7 +116,10 @@ public class SolvePNPTest {
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
         outputPipe.process(
-                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                pipelineResult.inputAndOutputFrame,
+                pipeline.getSettings(),
+                pipelineResult.targets,
+                pipelineResult.mlDetectionRois);
 
         TestUtils.showImage(
                 pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
@@ -171,7 +174,10 @@ public class SolvePNPTest {
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
         outputPipe.process(
-                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                pipelineResult.inputAndOutputFrame,
+                pipeline.getSettings(),
+                pipelineResult.targets,
+                pipelineResult.mlDetectionRois);
 
         TestUtils.showImage(
                 pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);

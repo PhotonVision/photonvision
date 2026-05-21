@@ -18,7 +18,10 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("AprilTagPipelineSettings")
@@ -34,6 +37,28 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int decisionMargin = 35;
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
+
+    // ML-assisted detection settings
+    public boolean useMLDetection = false;
+    public double mlConfidenceThreshold = 0.5;
+    public double mlNmsThreshold = 0.45;
+    public int mlRoiPaddingPixels = 40;
+    public ModelProperties model =
+            NeuralNetworkModelManager.getInstance()
+                    .getDefaultModel()
+                    .map(Model::getProperties)
+                    .orElse(null);
+    public boolean showDetectionBoxes = true;
+
+    // Adaptive Tag Resizing (ATR) settings
+    /** Enable adaptive tag resizing for ML-assisted detection */
+    public boolean atrEnabled = true;
+
+    /** Target dimension (pixels) for ATR resizing. Tags larger than this will be downscaled. */
+    public int atrTargetDimension = 200;
+
+    /** Minimum scale factor - prevents extreme downscaling. Default: 0.25 (4x max downscale) */
+    public double atrMinScaleFactor = 0.25;
 
     // 3d settings
 
@@ -63,6 +88,20 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + decisionMargin;
         result = prime * result + (doMultiTarget ? 1231 : 1237);
         result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
+        // ML-assisted detection fields
+        result = prime * result + (useMLDetection ? 1231 : 1237);
+        temp = Double.doubleToLongBits(mlConfidenceThreshold);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(mlNmsThreshold);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + mlRoiPaddingPixels;
+        result = prime * result + ((model.modelPath() == null) ? 0 : model.modelPath().hashCode());
+        result = prime * result + (showDetectionBoxes ? 1231 : 1237);
+        // ATR fields
+        result = prime * result + (atrEnabled ? 1231 : 1237);
+        result = prime * result + atrTargetDimension;
+        temp = Double.doubleToLongBits(atrMinScaleFactor);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 
@@ -83,6 +122,22 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (decisionMargin != other.decisionMargin) return false;
         if (doMultiTarget != other.doMultiTarget) return false;
         if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
+        // ML-assisted detection fields
+        if (useMLDetection != other.useMLDetection) return false;
+        if (Double.doubleToLongBits(mlConfidenceThreshold)
+                != Double.doubleToLongBits(other.mlConfidenceThreshold)) return false;
+        if (Double.doubleToLongBits(mlNmsThreshold) != Double.doubleToLongBits(other.mlNmsThreshold))
+            return false;
+        if (mlRoiPaddingPixels != other.mlRoiPaddingPixels) return false;
+        if (model == null) {
+            if (other.model != null) return false;
+        } else if (!model.equals(other.model)) return false;
+        if (showDetectionBoxes != other.showDetectionBoxes) return false;
+        // ATR fields
+        if (atrEnabled != other.atrEnabled) return false;
+        if (atrTargetDimension != other.atrTargetDimension) return false;
+        if (Double.doubleToLongBits(atrMinScaleFactor)
+                != Double.doubleToLongBits(other.atrMinScaleFactor)) return false;
         return true;
     }
 }

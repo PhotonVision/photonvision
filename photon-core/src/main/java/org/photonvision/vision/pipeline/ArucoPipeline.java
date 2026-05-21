@@ -160,8 +160,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                                     false, null, null, null, null, frameStaticProperties)));
         }
 
-        // Do multi-tag pose estimation
         Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
+
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
@@ -186,7 +186,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                     tagPoseEstimate = poseResult.output;
                 }
 
-                // If single-tag estimation was not done, this is a multi-target tag from the layout
+                // If single-tag estimation was not done, this tag was used in multi-tag estimation
                 if (tagPoseEstimate == null && multiTagResult.isPresent()) {
                     // compute this tag's camera-to-tag transform using the multitag result
                     var tagPose = atfl.getTagPose(detection.getId());

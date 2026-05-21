@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -244,6 +245,7 @@ public class VisionModule {
         private Frame latestFrame;
         private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
         private List<TrackedTarget> targets = new ArrayList<>();
+        private List<RotatedRect> latestMlRois = List.of();
 
         private boolean shouldRun = false;
 
@@ -252,7 +254,10 @@ public class VisionModule {
         }
 
         public void updateData(
-                Frame inputOutputFrame, AdvancedPipelineSettings settings, List<TrackedTarget> targets) {
+                Frame inputOutputFrame,
+                AdvancedPipelineSettings settings,
+                List<TrackedTarget> targets,
+                List<RotatedRect> mlDetectionRois) {
             synchronized (frameLock) {
                 if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
@@ -262,6 +267,7 @@ public class VisionModule {
                 this.latestFrame = inputOutputFrame;
                 this.settings = settings;
                 this.targets = targets;
+                this.latestMlRois = mlDetectionRois != null ? mlDetectionRois : List.of();
 
                 shouldRun = inputOutputFrame != null;
                 // && inputOutputFrame.colorImage != null
@@ -277,6 +283,7 @@ public class VisionModule {
                 final Frame m_frame;
                 final AdvancedPipelineSettings settings;
                 final List<TrackedTarget> targets;
+                final List<RotatedRect> mlRois;
                 final boolean shouldRun;
                 synchronized (frameLock) {
                     m_frame = this.latestFrame;
@@ -284,13 +291,14 @@ public class VisionModule {
 
                     settings = this.settings;
                     targets = this.targets;
+                    mlRois = this.latestMlRois;
                     shouldRun = this.shouldRun;
 
                     this.shouldRun = false;
                 }
                 if (shouldRun) {
                     try {
-                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
+                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets, mlRois);
                         consumeResults(m_frame, targets);
 
                     } catch (Exception e) {
@@ -693,7 +701,8 @@ public class VisionModule {
         if (result.inputAndOutputFrame != null
                 && (pipelineManager.getCurrentPipelineSettings()
                         instanceof AdvancedPipelineSettings settings)) {
-            streamRunnable.updateData(result.inputAndOutputFrame, settings, result.targets);
+            streamRunnable.updateData(
+                    result.inputAndOutputFrame, settings, result.targets, result.mlDetectionRois);
             // The streamRunnable manages releasing in this case
         } else {
             consumeResults(result.inputAndOutputFrame, result.targets);
