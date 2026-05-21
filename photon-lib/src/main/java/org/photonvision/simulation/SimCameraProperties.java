@@ -27,7 +27,7 @@ package org.photonvision.simulation;
 import io.avaje.json.JsonIoException;
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -137,7 +137,8 @@ public class SimCameraProperties {
      *     calibrated resolution.
      */
     public SimCameraProperties(Path path, int width, int height) throws IOException {
-        var data = Jsonb.instance().type(SimCameraData.class).fromJson(new FileReader(path.toFile()));
+        var data =
+                Jsonb.instance().type(SimCameraData.class).fromJson(new FileInputStream(path.toFile()));
         boolean success = false;
         try {
             for (var calib : data.calibrations) {

@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.avaje.jsonb.JsonType;
 import io.avaje.jsonb.Jsonb;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -35,8 +35,8 @@ public class NetworkConfigTest {
     public void testSerialization() throws IOException {
         var path = Path.of("netTest.json");
         JsonType<NetworkConfig> jsonb = Jsonb.instance().type(NetworkConfig.class);
-        jsonb.toJson(new NetworkConfig(), new FileWriter(path.toFile()));
-        assertDoesNotThrow(() -> jsonb.fromJson(new FileReader(path.toFile())));
+        jsonb.toJson(new NetworkConfig(), new FileOutputStream(path.toFile()));
+        assertDoesNotThrow(() -> jsonb.fromJson(new FileInputStream(path.toFile())));
         new File("netTest.json").delete();
     }
 

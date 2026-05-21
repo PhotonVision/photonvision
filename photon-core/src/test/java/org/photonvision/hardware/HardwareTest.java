@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.diozero.internal.provider.builtin.DefaultDeviceFactory;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import io.avaje.jsonb.Jsonb;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -72,7 +72,7 @@ public class HardwareTest {
             hardwareConfig =
                     Jsonb.instance()
                             .type(HardwareConfig.class)
-                            .fromJson(new FileReader(TestUtils.getHardwareConfigJson()));
+                            .fromJson(new FileInputStream(TestUtils.getHardwareConfigJson()));
             deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
         }
 

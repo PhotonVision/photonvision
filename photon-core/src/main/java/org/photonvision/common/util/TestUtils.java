@@ -21,7 +21,7 @@ import io.avaje.json.JsonDataException;
 import io.avaje.jsonb.Jsonb;
 import java.awt.HeadlessException;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
@@ -348,7 +348,8 @@ public class TestUtils {
             return Jsonb.instance()
                     .type(CameraCalibrationCoefficients.class)
                     .fromJson(
-                            new FileReader(Path.of(getCalibrationPath(testMode).toString(), filename).toFile()));
+                            new FileInputStream(
+                                    Path.of(getCalibrationPath(testMode).toString(), filename).toFile()));
         } catch (IOException | JsonDataException e) {
             e.printStackTrace();
             return null;

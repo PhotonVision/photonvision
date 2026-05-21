@@ -20,8 +20,8 @@ package org.photonvision.common.configuration;
 import io.avaje.json.JsonDataException;
 import io.avaje.jsonb.Jsonb;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -132,7 +132,7 @@ class LegacyConfigProvider extends ConfigProvider {
                 hardwareConfig =
                         Jsonb.instance()
                                 .type(HardwareConfig.class)
-                                .fromJson(new FileReader(hardwareConfigFile));
+                                .fromJson(new FileInputStream(hardwareConfigFile));
                 if (hardwareConfig == null) {
                     logger.error("Could not deserialize hardware config! Loading defaults");
                     hardwareConfig = new HardwareConfig();
@@ -151,7 +151,7 @@ class LegacyConfigProvider extends ConfigProvider {
                 hardwareSettings =
                         Jsonb.instance()
                                 .type(HardwareSettings.class)
-                                .fromJson(new FileReader(hardwareSettingsFile));
+                                .fromJson(new FileInputStream(hardwareSettingsFile));
                 if (hardwareSettings == null) {
                     logger.error("Could not deserialize hardware settings! Loading defaults");
                     hardwareSettings = new HardwareSettings();
@@ -168,7 +168,9 @@ class LegacyConfigProvider extends ConfigProvider {
         if (networkConfigFile.exists()) {
             try {
                 networkConfig =
-                        Jsonb.instance().type(NetworkConfig.class).fromJson(new FileReader(networkConfigFile));
+                        Jsonb.instance()
+                                .type(NetworkConfig.class)
+                                .fromJson(new FileInputStream(networkConfigFile));
                 if (networkConfig == null) {
                     logger.error("Could not deserialize network config! Loading defaults");
                     networkConfig = new NetworkConfig();
@@ -195,7 +197,7 @@ class LegacyConfigProvider extends ConfigProvider {
                 atfl =
                         Jsonb.instance()
                                 .type(AprilTagFieldLayout.class)
-                                .fromJson(new FileReader(apriltagFieldLayoutFile));
+                                .fromJson(new FileInputStream(apriltagFieldLayoutFile));
                 if (atfl == null) {
                     logger.error("Could not deserialize apriltag field layout! (still null)");
                 }
@@ -239,14 +241,14 @@ class LegacyConfigProvider extends ConfigProvider {
         try {
             Jsonb.instance()
                     .type(NetworkConfig.class)
-                    .toJson(config.getNetworkConfig(), new FileWriter(networkConfigFile));
+                    .toJson(config.getNetworkConfig(), new FileOutputStream(networkConfigFile));
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
         }
         try {
             Jsonb.instance()
                     .type(HardwareSettings.class)
-                    .toJson(config.getHardwareSettings(), new FileWriter(hardwareSettingsFile));
+                    .toJson(config.getHardwareSettings(), new FileOutputStream(hardwareSettingsFile));
         } catch (IOException e) {
             logger.error("Could not save hardware config!", e);
         }
@@ -265,7 +267,9 @@ class LegacyConfigProvider extends ConfigProvider {
             try {
                 Jsonb.instance()
                         .type(CameraConfiguration.class)
-                        .toJson(camConfig, new FileWriter(Path.of(subdir.toString(), "config.json").toFile()));
+                        .toJson(
+                                camConfig,
+                                new FileOutputStream(Path.of(subdir.toString(), "config.json").toFile()));
             } catch (IOException e) {
                 logger.error("Could not save config.json for " + subdir, e);
             }
@@ -275,7 +279,7 @@ class LegacyConfigProvider extends ConfigProvider {
                         .type(DriverModePipelineSettings.class)
                         .toJson(
                                 camConfig.driveModeSettings,
-                                new FileWriter(Path.of(subdir.toString(), "drivermode.json").toFile()));
+                                new FileOutputStream(Path.of(subdir.toString(), "drivermode.json").toFile()));
             } catch (IOException e) {
                 logger.error("Could not save drivermode.json for " + subdir, e);
             }
@@ -291,7 +295,7 @@ class LegacyConfigProvider extends ConfigProvider {
                 try {
                     Jsonb.instance()
                             .type(CVPipelineSettings.class)
-                            .toJson(pipe, new FileWriter(pipePath.toFile()));
+                            .toJson(pipe, new FileOutputStream(pipePath.toFile()));
                 } catch (IOException e) {
                     logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
                 }
@@ -313,7 +317,7 @@ class LegacyConfigProvider extends ConfigProvider {
                     loadedConfig =
                             Jsonb.instance()
                                     .type(CameraConfiguration.class)
-                                    .fromJson(new FileReader(cameraConfigPath.toFile()));
+                                    .fromJson(new FileInputStream(cameraConfigPath.toFile()));
                 } catch (JsonDataException e) {
                     logger.error("Camera config deserialization failed!", e);
                     e.printStackTrace();
@@ -332,7 +336,7 @@ class LegacyConfigProvider extends ConfigProvider {
                     driverMode =
                             Jsonb.instance()
                                     .type(DriverModePipelineSettings.class)
-                                    .fromJson(new FileReader(driverModeFile.toFile()));
+                                    .fromJson(new FileInputStream(driverModeFile.toFile()));
                 } catch (JsonDataException e) {
                     logger.error("Could not deserialize drivermode.json! Loading defaults");
                     logger.debug(Arrays.toString(e.getStackTrace()));
@@ -364,7 +368,7 @@ class LegacyConfigProvider extends ConfigProvider {
                                                     try {
                                                         return Jsonb.instance()
                                                                 .type(CVPipelineSettings.class)
-                                                                .fromJson(new FileReader(p.toFile()));
+                                                                .fromJson(new FileInputStream(p.toFile()));
                                                     } catch (JsonDataException e) {
                                                         logger.error("Exception while deserializing " + relativizedFilePath, e);
                                                     } catch (IOException e) {

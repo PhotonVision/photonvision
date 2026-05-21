@@ -20,7 +20,7 @@ package org.photonvision.common.hardware;
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -52,7 +52,9 @@ public class OsImageData {
 
         try {
             ImageMetadata md =
-                    Jsonb.instance().type(ImageMetadata.class).fromJson(new FileReader(imageMetadataFile));
+                    Jsonb.instance()
+                            .type(ImageMetadata.class)
+                            .fromJson(new FileInputStream(imageMetadataFile));
 
             if (md.buildDate() == null
                     && md.commitSha() == null
