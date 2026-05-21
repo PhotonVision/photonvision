@@ -9,7 +9,7 @@ allprojects {
         mavenCentral()
         mavenLocal()
         maven { url = "https://maven.photonvision.org/releases" }
-	    wpilibRepositories.use2027Repos()
+        wpilibRepositories.use2027Repos()
     }
 }
 
