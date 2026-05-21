@@ -137,26 +137,26 @@ public class SimCameraProperties {
      *     calibrated resolution.
      */
     public SimCameraProperties(Path path, int width, int height) throws IOException {
-        var data =
-                Jsonb.instance().type(SimCameraData.class).fromJson(new FileInputStream(path.toFile()));
-        boolean success = false;
-        try {
-            for (var calib : data.calibrations) {
-                // check if this calibration entry is our desired resolution
-                if (calib.resolution.width != width || calib.resolution.height != height) continue;
-                // get the relevant calibration values
-                double avgViewError = Arrays.stream(calib.perViewErrors).average().orElse(0);
-                // assign the read JSON values to this CameraProperties
-                setCalibration(
-                        calib.resolution.width,
-                        calib.resolution.height,
-                        MatBuilder.fill(Nat.N3(), Nat.N3(), calib.cameraIntrinsics.data),
-                        MatBuilder.fill(Nat.N8(), Nat.N1(), calib.distCoeffs.data));
-                setCalibError(avgViewError, calib.standardDeviation);
-                success = true;
-            }
+        SimCameraData data;
+        try (var stream = new FileInputStream(path.toFile())) {
+            data = Jsonb.instance().type(SimCameraData.class).fromJson(stream);
         } catch (JsonIoException e) {
             throw new IOException("Invalid calibration JSON", e);
+        }
+        boolean success = false;
+        for (var calib : data.calibrations) {
+            // check if this calibration entry is our desired resolution
+            if (calib.resolution.width != width || calib.resolution.height != height) continue;
+            // get the relevant calibration values
+            double avgViewError = Arrays.stream(calib.perViewErrors).average().orElse(0);
+            // assign the read JSON values to this CameraProperties
+            setCalibration(
+                    calib.resolution.width,
+                    calib.resolution.height,
+                    MatBuilder.fill(Nat.N3(), Nat.N3(), calib.cameraIntrinsics.data),
+                    MatBuilder.fill(Nat.N8(), Nat.N1(), calib.distCoeffs.data));
+            setCalibError(avgViewError, calib.standardDeviation);
+            success = true;
         }
         if (!success) throw new IOException("Requested resolution not found in calibration");
     }

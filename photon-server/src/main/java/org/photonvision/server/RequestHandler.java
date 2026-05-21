@@ -528,11 +528,9 @@ public class RequestHandler {
             String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
 
     public static void onDataCalibrationImportRequest(Context ctx) {
-        try {
+        try (var stream = ctx.req().getInputStream()) {
             DataCalibrationImportRequest request =
-                    Jsonb.instance()
-                            .type(DataCalibrationImportRequest.class)
-                            .fromJson(ctx.req().getInputStream());
+                    Jsonb.instance().type(DataCalibrationImportRequest.class).fromJson(stream);
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(

@@ -69,10 +69,9 @@ public class HardwareTest {
         @BeforeEach
         void setup() throws IOException {
             System.out.println("Loading Hardware configs...");
-            hardwareConfig =
-                    Jsonb.instance()
-                            .type(HardwareConfig.class)
-                            .fromJson(new FileInputStream(TestUtils.getHardwareConfigJson()));
+            try (var stream = new FileInputStream(TestUtils.getHardwareConfigJson())) {
+                hardwareConfig = Jsonb.instance().type(HardwareConfig.class).fromJson(stream);
+            }
             deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
         }
 

@@ -22,6 +22,7 @@ import io.avaje.jsonb.Jsonb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Optional;
 import org.photonvision.common.logging.LogGroup;
@@ -50,11 +51,8 @@ public class OsImageData {
             return Optional.empty();
         }
 
-        try {
-            ImageMetadata md =
-                    Jsonb.instance()
-                            .type(ImageMetadata.class)
-                            .fromJson(new FileInputStream(imageMetadataFile));
+        try (InputStream stream = new FileInputStream(imageMetadataFile)) {
+            ImageMetadata md = Jsonb.instance().type(ImageMetadata.class).fromJson(stream);
 
             if (md.buildDate() == null
                     && md.commitSha() == null

@@ -128,11 +128,8 @@ class LegacyConfigProvider extends ConfigProvider {
         AprilTagFieldLayout atfl = null;
 
         if (hardwareConfigFile.exists()) {
-            try {
-                hardwareConfig =
-                        Jsonb.instance()
-                                .type(HardwareConfig.class)
-                                .fromJson(new FileInputStream(hardwareConfigFile));
+            try (var stream = new FileInputStream(hardwareConfigFile)) {
+                hardwareConfig = Jsonb.instance().type(HardwareConfig.class).fromJson(stream);
                 if (hardwareConfig == null) {
                     logger.error("Could not deserialize hardware config! Loading defaults");
                     hardwareConfig = new HardwareConfig();
@@ -147,11 +144,8 @@ class LegacyConfigProvider extends ConfigProvider {
         }
 
         if (hardwareSettingsFile.exists()) {
-            try {
-                hardwareSettings =
-                        Jsonb.instance()
-                                .type(HardwareSettings.class)
-                                .fromJson(new FileInputStream(hardwareSettingsFile));
+            try (var stream = new FileInputStream(hardwareSettingsFile)) {
+                hardwareSettings = Jsonb.instance().type(HardwareSettings.class).fromJson(stream);
                 if (hardwareSettings == null) {
                     logger.error("Could not deserialize hardware settings! Loading defaults");
                     hardwareSettings = new HardwareSettings();
@@ -166,11 +160,8 @@ class LegacyConfigProvider extends ConfigProvider {
         }
 
         if (networkConfigFile.exists()) {
-            try {
-                networkConfig =
-                        Jsonb.instance()
-                                .type(NetworkConfig.class)
-                                .fromJson(new FileInputStream(networkConfigFile));
+            try (var stream = new FileInputStream(networkConfigFile)) {
+                networkConfig = Jsonb.instance().type(NetworkConfig.class).fromJson(stream);
                 if (networkConfig == null) {
                     logger.error("Could not deserialize network config! Loading defaults");
                     networkConfig = new NetworkConfig();
@@ -193,11 +184,8 @@ class LegacyConfigProvider extends ConfigProvider {
         }
 
         if (apriltagFieldLayoutFile.exists()) {
-            try {
-                atfl =
-                        Jsonb.instance()
-                                .type(AprilTagFieldLayout.class)
-                                .fromJson(new FileInputStream(apriltagFieldLayoutFile));
+            try (var stream = new FileInputStream(apriltagFieldLayoutFile)) {
+                atfl = Jsonb.instance().type(AprilTagFieldLayout.class).fromJson(stream);
                 if (atfl == null) {
                     logger.error("Could not deserialize apriltag field layout! (still null)");
                 }
@@ -238,17 +226,13 @@ class LegacyConfigProvider extends ConfigProvider {
         // Delete old configs
         FileUtils.deleteDirectory(camerasFolder.toPath());
 
-        try {
-            Jsonb.instance()
-                    .type(NetworkConfig.class)
-                    .toJson(config.getNetworkConfig(), new FileOutputStream(networkConfigFile));
+        try (var stream = new FileOutputStream(networkConfigFile)) {
+            Jsonb.instance().type(NetworkConfig.class).toJson(config.getNetworkConfig(), stream);
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
         }
-        try {
-            Jsonb.instance()
-                    .type(HardwareSettings.class)
-                    .toJson(config.getHardwareSettings(), new FileOutputStream(hardwareSettingsFile));
+        try (var stream = new FileOutputStream(hardwareSettingsFile)) {
+            Jsonb.instance().type(HardwareSettings.class).toJson(config.getHardwareSettings(), stream);
         } catch (IOException e) {
             logger.error("Could not save hardware config!", e);
         }
@@ -264,22 +248,17 @@ class LegacyConfigProvider extends ConfigProvider {
                 subdir.toFile().mkdirs();
             }
 
-            try {
-                Jsonb.instance()
-                        .type(CameraConfiguration.class)
-                        .toJson(
-                                camConfig,
-                                new FileOutputStream(Path.of(subdir.toString(), "config.json").toFile()));
+            try (var stream = new FileOutputStream(Path.of(subdir.toString(), "config.json").toFile())) {
+                Jsonb.instance().type(CameraConfiguration.class).toJson(camConfig, stream);
             } catch (IOException e) {
                 logger.error("Could not save config.json for " + subdir, e);
             }
 
-            try {
+            try (var stream =
+                    new FileOutputStream(Path.of(subdir.toString(), "drivermode.json").toFile())) {
                 Jsonb.instance()
                         .type(DriverModePipelineSettings.class)
-                        .toJson(
-                                camConfig.driveModeSettings,
-                                new FileOutputStream(Path.of(subdir.toString(), "drivermode.json").toFile()));
+                        .toJson(camConfig.driveModeSettings, stream);
             } catch (IOException e) {
                 logger.error("Could not save drivermode.json for " + subdir, e);
             }
@@ -292,10 +271,8 @@ class LegacyConfigProvider extends ConfigProvider {
                     pipePath.getParent().toFile().mkdirs();
                 }
 
-                try {
-                    Jsonb.instance()
-                            .type(CVPipelineSettings.class)
-                            .toJson(pipe, new FileOutputStream(pipePath.toFile()));
+                try (var stream = new FileOutputStream(pipePath.toFile())) {
+                    Jsonb.instance().type(CVPipelineSettings.class).toJson(pipe, stream);
                 } catch (IOException e) {
                     logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
                 }
@@ -313,11 +290,8 @@ class LegacyConfigProvider extends ConfigProvider {
             for (var subdir : subdirectories) {
                 var cameraConfigPath = Path.of(subdir.toString(), "config.json");
                 CameraConfiguration loadedConfig = null;
-                try {
-                    loadedConfig =
-                            Jsonb.instance()
-                                    .type(CameraConfiguration.class)
-                                    .fromJson(new FileInputStream(cameraConfigPath.toFile()));
+                try (var stream = new FileInputStream(cameraConfigPath.toFile())) {
+                    loadedConfig = Jsonb.instance().type(CameraConfiguration.class).fromJson(stream);
                 } catch (JsonDataException e) {
                     logger.error("Camera config deserialization failed!", e);
                     e.printStackTrace();
@@ -332,11 +306,8 @@ class LegacyConfigProvider extends ConfigProvider {
                 // driver mode settings
                 var driverModeFile = Path.of(subdir.toString(), "drivermode.json");
                 DriverModePipelineSettings driverMode;
-                try {
-                    driverMode =
-                            Jsonb.instance()
-                                    .type(DriverModePipelineSettings.class)
-                                    .fromJson(new FileInputStream(driverModeFile.toFile()));
+                try (var stream = new FileInputStream(driverModeFile.toFile())) {
+                    driverMode = Jsonb.instance().type(DriverModePipelineSettings.class).fromJson(stream);
                 } catch (JsonDataException e) {
                     logger.error("Could not deserialize drivermode.json! Loading defaults");
                     logger.debug(Arrays.toString(e.getStackTrace()));
@@ -365,10 +336,8 @@ class LegacyConfigProvider extends ConfigProvider {
                                                                     .toAbsolutePath()
                                                                     .relativize(p)
                                                                     .toString();
-                                                    try {
-                                                        return Jsonb.instance()
-                                                                .type(CVPipelineSettings.class)
-                                                                .fromJson(new FileInputStream(p.toFile()));
+                                                    try (var stream = new FileInputStream(p.toFile())) {
+                                                        return Jsonb.instance().type(CVPipelineSettings.class).fromJson(stream);
                                                     } catch (JsonDataException e) {
                                                         logger.error("Exception while deserializing " + relativizedFilePath, e);
                                                     } catch (IOException e) {

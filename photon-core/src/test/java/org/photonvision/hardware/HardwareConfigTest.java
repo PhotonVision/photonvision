@@ -34,12 +34,9 @@ import org.photonvision.common.util.TestUtils;
 public class HardwareConfigTest {
     @Test
     public void loadJson() {
-        try {
-            System.out.println("Loading Hardware configs...");
-            var config =
-                    Jsonb.instance()
-                            .type(HardwareConfig.class)
-                            .fromJson(new FileInputStream(TestUtils.getHardwareConfigJson()));
+        System.out.println("Loading Hardware configs...");
+        try (var stream = new FileInputStream(TestUtils.getHardwareConfigJson())) {
+            var config = Jsonb.instance().type(HardwareConfig.class).fromJson(stream);
             assertEquals(config.deviceName, "PhotonVision");
             // Ensure defaults are not null
             assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});

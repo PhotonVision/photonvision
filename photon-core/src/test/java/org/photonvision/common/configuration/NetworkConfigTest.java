@@ -35,8 +35,12 @@ public class NetworkConfigTest {
     public void testSerialization() throws IOException {
         var path = Path.of("netTest.json");
         JsonType<NetworkConfig> jsonb = Jsonb.instance().type(NetworkConfig.class);
-        jsonb.toJson(new NetworkConfig(), new FileOutputStream(path.toFile()));
-        assertDoesNotThrow(() -> jsonb.fromJson(new FileInputStream(path.toFile())));
+        try (var outputStream = new FileOutputStream(path.toFile())) {
+            jsonb.toJson(new NetworkConfig(), outputStream);
+        }
+        try (var inputStream = new FileInputStream(path.toFile())) {
+            assertDoesNotThrow(() -> jsonb.fromJson(inputStream));
+        }
         new File("netTest.json").delete();
     }
 

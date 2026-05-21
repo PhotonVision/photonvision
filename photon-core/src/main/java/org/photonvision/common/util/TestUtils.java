@@ -344,12 +344,9 @@ public class TestUtils {
     public static final String LIMELIGHT_480P_CAL_FILE = "limelight_1280_720.json";
 
     public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
-        try {
-            return Jsonb.instance()
-                    .type(CameraCalibrationCoefficients.class)
-                    .fromJson(
-                            new FileInputStream(
-                                    Path.of(getCalibrationPath(testMode).toString(), filename).toFile()));
+        try (var stream =
+                new FileInputStream(Path.of(getCalibrationPath(testMode).toString(), filename).toFile())) {
+            return Jsonb.instance().type(CameraCalibrationCoefficients.class).fromJson(stream);
         } catch (IOException | JsonDataException e) {
             e.printStackTrace();
             return null;
