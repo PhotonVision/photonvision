@@ -62,13 +62,6 @@ public class NeuralNetworkModelsSettings {
                     other.version);
         }
 
-        // In v2025.3.1, this was single string for the model path. but the first argument
-        // is now nickname
-        public ModelProperties(@Json.Alias("nickname") String filename)
-                throws IllegalArgumentException, IOException {
-            this(createFromFilename(filename));
-        }
-
         // ============= Migration code from v2025.3.1 ===========
 
         private static Pattern modelPattern =
