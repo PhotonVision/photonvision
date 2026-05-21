@@ -15,15 +15,15 @@ const props = withDefaults(
   { disabled: false, switchCols: 8 }
 );
 
-const id = useId();
-const switchId = computed(() => props.id || id);
+const uniqueId = useId();
+const switchId = computed(() => props.id || uniqueId);
 const { labelWidth, contentWidth: switchWidth } = useColFlexBasis(() => props.switchCols);
 </script>
 
 <template>
   <div class="flex flex-col gap-2 py-1.5 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="switchId" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :target-id="switchId" />
     </div>
     <div class="flex sm:flex-1 sm:justify-start" :style="{ flexBasis: switchWidth }">
       <switch-root

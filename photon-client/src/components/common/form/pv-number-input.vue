@@ -21,8 +21,8 @@ const props = withDefaults(
   }
 );
 
-const id = useId();
-const inputId = computed(() => props.id || id);
+const uniqueId = useId();
+const inputId = computed(() => props.id || uniqueId);
 
 const labelWidthClass = computed(() => colWidthClass(props.labelCols));
 
@@ -35,7 +35,7 @@ const localValue = computed({
 <template>
   <div class="flex gap-2 sm:gap-3">
     <div :class="labelWidthClass" class="flex items-center pt-3 pb-3 pl-0">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :target-id="inputId" />
     </div>
     <div class="flex-1 pt-3 pr-0 pb-3">
       <pv-text-field

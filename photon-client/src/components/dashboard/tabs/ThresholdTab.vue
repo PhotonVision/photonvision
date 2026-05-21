@@ -143,8 +143,8 @@ const interactiveCols = computed(() =>
   <div class="threshold-modifiers" :style="{ '--averageHue': averageHue }">
     <pv-range-slider
       id="hue-slider"
-      class="hue-slider"
       v-model="hsvHue"
+      class="hue-slider"
       :class="useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'inverted-slider' : 'normal-slider'"
       label="Hue"
       tooltip="Describes color"

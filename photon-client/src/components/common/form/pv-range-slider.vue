@@ -27,8 +27,8 @@ const props = withDefaults(
   }
 );
 
-const id = useId();
-const inputId = computed(() => props.id || id);
+const uniqueId = useId();
+const inputId = computed(() => props.id || uniqueId);
 const { labelWidth } = useColFlexBasis(() => props.sliderCols);
 
 const localValue = computed<[number, number]>({
@@ -66,7 +66,7 @@ const sliderModel = computed<number[]>({
 <template>
   <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :target-id="inputId" />
     </div>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
       <input
