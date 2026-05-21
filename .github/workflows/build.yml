@@ -401,7 +401,7 @@ jobs:
             arch-override: macarm64
           - os: macos-latest
             artifact-name: macOS
-            arch-override: macx64
+            arch-override: macx86-64
 
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
@@ -416,8 +416,8 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact-name: Win64
-            arch-override: winx64
+            artifact-name: Win
+            arch-override: winx86-64
 
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
@@ -435,7 +435,7 @@ jobs:
             artifact-name: photonvision-*-linuxx86-64.jar
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
-            artifact-name: photonvision-*-winx64.jar
+            artifact-name: photonvision-*-winx86-64.jar
           - os: macos-latest
             artifact-name: photonvision-*-macarm64.jar
           - os: ubuntu-24.04-arm

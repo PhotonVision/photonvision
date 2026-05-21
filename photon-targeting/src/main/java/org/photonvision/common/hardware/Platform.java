@@ -153,7 +153,7 @@ public enum Platform {
         if (platPath == "/linux/x86-64/") {
             return "linuxx86-64";
         } else if (platPath == "/windows/x86-64/") {
-            return "winx64";
+            return "winx86-64";
         } else if (platPath == "/linux/arm64/") {
             return "linuxarm64";
         } else {

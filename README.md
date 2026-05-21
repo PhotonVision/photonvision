@@ -32,9 +32,9 @@ You can run one of the many built in examples straight from the command line, to
 Note that these are case sensitive!
 
 * `-PArchOverride=foobar`: builds for a target system other than your current architecture. [Valid overrides](https://github.com/wpilibsuite/wpilib-tool-plugin/blob/main/src/main/java/edu/wpi/first/tools/NativePlatforms.java) are:
-    * winx64
+    * winx86-64
     * winarm64
-    * macx64
+    * macx86-64
     * macarm64
     * linux86-64
     * linuxarm64
