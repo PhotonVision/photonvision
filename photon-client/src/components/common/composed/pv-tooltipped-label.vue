@@ -7,7 +7,7 @@ defineProps<{
   tooltip?: string;
   icon?: Component;
   location?: "top" | "bottom" | "left" | "right";
-  for?: string;
+  targetId?: string;
 }>();
 </script>
 
@@ -15,7 +15,7 @@ defineProps<{
   <div class="inline-flex max-w-full items-center">
     <Label
       v-if="!tooltip"
-      :for="for"
+      :for="targetId"
       class="text-pv-on-surface inline-flex max-w-full items-center gap-2 text-sm font-medium"
     >
       <span class="truncate">{{ label }}</span>
@@ -24,7 +24,7 @@ defineProps<{
 
     <pv-tooltip v-else :text="tooltip" :location="location">
       <Label
-        :for="for"
+        :for="targetId"
         as="button"
         type="button"
         class="text-pv-on-surface inline-flex max-w-full items-center gap-2 text-left text-sm font-medium outline-none"

@@ -20,8 +20,8 @@ const props = withDefaults(
   { step: 1, disabled: false, sliderCols: 8 }
 );
 
-const id = useId();
-const inputId = computed(() => props.id || id);
+const uniqueId = useId();
+const inputId = computed(() => props.id || uniqueId);
 const emit = defineEmits<{ (e: "update:modelValue", value: number): void }>();
 const { labelWidth } = useColFlexBasis(() => props.sliderCols);
 
@@ -77,7 +77,7 @@ const updateFromInput = (rawValue: string) => {
 <template>
   <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="inputId" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :target-id="inputId" />
     </div>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
       <pv-button
@@ -85,9 +85,9 @@ const updateFromInput = (rawValue: string) => {
         variant="passive"
         :icon="IconMenuLeft"
         :disabled="disabled"
-        @click="stepValue(-1)"
         :aria-label="`Decrease ${label} value`"
-        :aria-controls="id"
+        :aria-controls="uniqueId"
+        @click="stepValue(-1)"
       />
       <slider-root
         v-model="sliderModel"
@@ -108,9 +108,9 @@ const updateFromInput = (rawValue: string) => {
         variant="passive"
         :icon="IconMenuRight"
         :disabled="disabled"
-        @click="stepValue(1)"
         :aria-label="`Increase ${label} value`"
-        :aria-controls="id"
+        :aria-controls="uniqueId"
+        @click="stepValue(1)"
       />
       <input
         :id="inputId"

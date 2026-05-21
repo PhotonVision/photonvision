@@ -45,8 +45,8 @@ const props = withDefaults(
   }
 );
 
-const id = useId();
-const selectId = computed(() => props.id || id);
+const uniqueId = useId();
+const selectId = computed(() => props.id || uniqueId);
 
 const areSelectItems = (items: SelectItems): items is SelectItem<T>[] => typeof items[0] === "object";
 const { labelWidth, contentWidth: selectWidth } = useColFlexBasis(() => props.selectCols);
@@ -71,7 +71,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
 <template>
   <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <pv-tooltipped-label :tooltip="tooltip" :label="label" :for="selectId" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" :target-id="selectId" />
     </div>
     <div class="min-w-0 sm:flex-1" :style="{ flexBasis: selectWidth }">
       <select-root v-model="value" :disabled="disabled">

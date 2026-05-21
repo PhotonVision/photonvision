@@ -8,8 +8,6 @@ defineOptions({
   inheritAttrs: false
 });
 
-type Density = "compact" | "comfortable" | "default";
-
 type RuleFn = (value: string | number | null) => boolean | string;
 
 const value = defineModel<string | number | null>({ required: true });
@@ -44,8 +42,8 @@ const props = withDefaults(
   }
 );
 
-const id = useId();
-const inputId = computed(() => props.id || id);
+const uniqueId = useId();
+const inputId = computed(() => props.id || uniqueId);
 const attrs = useAttrs();
 
 const validationMessage = computed(() => {
