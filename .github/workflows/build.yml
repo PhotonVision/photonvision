@@ -345,7 +345,7 @@ jobs:
         include:
           - os: ubuntu-24.04
             artifact-name: Linux
-            arch-override: linuxx64
+            arch-override: linuxx86-64
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             arch-override: linuxarm64
@@ -432,7 +432,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            artifact-name: photonvision-*-linuxx64.jar
+            artifact-name: photonvision-*-linuxx86-64.jar
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
             artifact-name: photonvision-*-winx64.jar
