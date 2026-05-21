@@ -236,7 +236,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex w-full flex-col items-center" ref="containerRef">
+  <div ref="containerRef" class="flex w-full flex-col items-center">
     <canvas ref="canvasRef" class="w-full rounded-xl border border-white/10" />
     <div class="flex w-full gap-2 md:pt-3">
       <div class="flex w-full items-center">
