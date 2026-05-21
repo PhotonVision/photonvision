@@ -67,7 +67,7 @@ PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vis
 * [EJML](https://github.com/lessthanoptimal/ejml)
 * [Javalin](https://javalin.io/)
 * [JSON](https://json.org)
-* [Avaje](https://avaje.io) - Specifically [jsonb](https://avaje.io/jsonb/)\
+* [Avaje](https://avaje.io) - Specifically [jsonb](https://avaje.io/jsonb/)
 * [MessagePack for Java](https://github.com/msgpack/msgpack-java)
 * [OSHI](https://github.com/oshi/oshi)
 * [QuickBuffers](https://github.com/HebiRobotics/QuickBuffers)
