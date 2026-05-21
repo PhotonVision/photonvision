@@ -86,12 +86,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
       </span>
     </pv-alert>
-    <pv-alert
-      v-if="conflictingHostnameShown"
-      class="mb-3"
-      color="error"
-      :icon="IconAlertCircleOutline"
-    >
+    <pv-alert v-if="conflictingHostnameShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
       <span>
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>

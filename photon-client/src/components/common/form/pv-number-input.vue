@@ -41,7 +41,6 @@ const localValue = computed({
       <pv-text-field
         :id="inputId"
         v-model="localValue"
-        
         hide-details
         type="number"
         variant="outline"

@@ -26,7 +26,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
     </div>
     <div>
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <pv-table fixed-header height="100%" >
+      <pv-table fixed-header height="100%">
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
