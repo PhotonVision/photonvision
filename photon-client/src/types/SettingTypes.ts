@@ -92,11 +92,9 @@ export interface PVUsbCameraInfo extends PVCameraInfoBase {
 export interface PVCSICameraInfo extends PVCameraInfoBase {
   type: "PVCSICameraInfo";
   baseName: string;
-  otherPaths: string[];
 }
 export interface PVFileCameraInfo extends PVCameraInfoBase {
   type: "PVFileCameraInfo";
-  otherPaths: string[];
 }
 
 export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
@@ -427,8 +425,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
     type: "PVFileCameraInfo",
     name: "Foobar",
     path: "/dev/foobar",
-    uniquePath: "/dev/foobar2",
-    otherPaths: []
+    uniquePath: "/dev/foobar2"
   },
   fpsLimit: -1,
   isEnabled: true,

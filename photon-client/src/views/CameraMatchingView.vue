@@ -101,8 +101,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       type: "PVFileCameraInfo",
       path: "",
       name: "",
-      uniquePath: "",
-      otherPaths: []
+      uniquePath: ""
     };
   }
   return (
@@ -110,8 +109,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       type: "PVFileCameraInfo",
       path: "",
       name: "",
-      uniquePath: "",
-      otherPaths: []
+      uniquePath: ""
     }
   );
 };

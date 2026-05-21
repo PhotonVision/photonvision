@@ -89,7 +89,7 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td style="word-break: break-all">{{ current.uniquePath }}</td>
         </tr>
         <tr
-          v-if="'otherPaths' in saved && saved.otherPaths !== null"
+          v-if="'otherPaths' in saved && 'otherPaths' in current && saved.otherPaths !== null"
           :class="isEqual(saved.otherPaths, current.otherPaths) ? '' : 'mismatch'"
         >
           <td>Other Paths:</td>
