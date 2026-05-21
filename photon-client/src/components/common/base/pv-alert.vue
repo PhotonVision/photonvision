@@ -47,7 +47,6 @@ const alertStyle = computed(() => {
   };
 });
 
-
 const textClass = computed(() => {
   if (props.variant === "tonal" || props.variant === "outlined") return "text-pv-on-surface";
   return isLightTone.value ? "text-slate-950" : "text-pv-on-surface";
@@ -61,7 +60,7 @@ const textClass = computed(() => {
     role="alert"
     :style="alertStyle"
     :class="[
-      'flex w-full items-center gap-2 rounded-lg border text-sm leading-5 shadow-sm px-3 py-2',
+      'flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm leading-5 shadow-sm',
       textClass,
       attrs.class
     ]"

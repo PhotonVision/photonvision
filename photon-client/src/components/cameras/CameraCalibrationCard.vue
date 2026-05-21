@@ -352,7 +352,7 @@ const updateCameraBlueGain = (value: number) => {
               tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
             />
           </div>
-          <pv-table fixed-header height="100%" >
+          <pv-table fixed-header height="100%">
             <thead>
               <tr>
                 <th>Resolution</th>

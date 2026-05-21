@@ -55,7 +55,6 @@ export function fieldWrapperClasses(opts: {
   variant: "underlined" | "outline";
   hasError: boolean;
 }): string[] {
-
   const base = [
     "flex w-full items-center gap-2",
     "min-h-9 text-sm",

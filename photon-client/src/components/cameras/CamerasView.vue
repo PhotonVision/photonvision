@@ -74,7 +74,7 @@ const streamToggleModel = computed<string[]>({
       </span>
       <span
         v-if="useCameraSettingsStore().isFocusMode"
-        class="text-pv-primary  inline-flex rounded-full px-3 py-1 text-sm font-medium"
+        class="text-pv-primary inline-flex rounded-full px-3 py-1 text-sm font-medium"
       >
         Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }}
       </span>
