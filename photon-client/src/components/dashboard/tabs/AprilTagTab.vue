@@ -8,6 +8,8 @@ import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useDisplay } from "vuetify";
 
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
 const currentPipelineSettings = computed<AprilTagPipelineSettings>(
@@ -88,6 +90,30 @@ const interactiveCols = computed(() =>
       tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
+      "
+    />
+    <pv-switch
+      v-for="(tag, index) in useSettingsStore().currentFieldLayout.tags"
+      :key="index"
+      :model-value="
+        currentPipelineSettings.excludeTags instanceof Set ? currentPipelineSettings.excludeTags.has(tag.ID) : false
+      "
+      :switch-cols="interactiveCols"
+      :label="`Ignore tag ${tag.ID}`"
+      @update:modelValue="
+        (value) => {
+          const next = new Set<number>(
+            currentPipelineSettings.excludeTags instanceof Set ? currentPipelineSettings.excludeTags : []
+          );
+
+          if (value) {
+            next.add(tag.ID);
+          } else {
+            next.delete(tag.ID);
+          }
+
+          useCameraSettingsStore().changeCurrentPipelineSetting({ excludeTags: next }, true);
+        }
       "
     />
   </div>

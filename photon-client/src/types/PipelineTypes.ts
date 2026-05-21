@@ -276,6 +276,7 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   tagFamily: AprilTagFamily;
   doMultiTarget: boolean;
   doSingleTargetAlways: boolean;
+  excludeTags: Set<number>;
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
   Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">
@@ -299,7 +300,8 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   threads: 4,
   tagFamily: AprilTagFamily.Family36h11,
   doMultiTarget: false,
-  doSingleTargetAlways: false
+  doSingleTargetAlways: false,
+  excludeTags: new Set<number>()
 };
 
 export interface ArucoPipelineSettings extends PipelineSettings {
@@ -320,6 +322,7 @@ export interface ArucoPipelineSettings extends PipelineSettings {
 
   doMultiTarget: boolean;
   doSingleTargetAlways: boolean;
+  excludeTags: Set<number>;
 }
 export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
@@ -342,7 +345,8 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   aruco3MinMarkerSideRatio: 0.02,
   aruco3MinCanonicalImgSide: 32,
   doMultiTarget: false,
-  doSingleTargetAlways: false
+  doSingleTargetAlways: false,
+  excludeTags: new Set<number>()
 };
 
 export interface ObjectDetectionPipelineSettings extends PipelineSettings {

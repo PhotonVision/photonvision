@@ -151,13 +151,14 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             // Populate target list for multitag
             // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
             // not be necessary.)
-
-            targetList.add(
-                    new TrackedTarget(
-                            detection,
-                            null,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties)));
+            if (settings.excludeTags.contains(detection.getId())) {
+                targetList.add(
+                        new TrackedTarget(
+                                detection,
+                                null,
+                                new TargetCalculationParameters(
+                                        false, null, null, null, null, frameStaticProperties)));
+            }
         }
 
         // Do multi-tag pose estimation

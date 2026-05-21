@@ -158,14 +158,16 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             // Populate target list for multitag
             // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
             // not be necessary.)
-            TrackedTarget target =
-                    new TrackedTarget(
-                            detection,
-                            null,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties));
+            if (settings.excludeTags.contains(detection.getId())) {
+                TrackedTarget target =
+                        new TrackedTarget(
+                                detection,
+                                null,
+                                new TargetCalculationParameters(
+                                        false, null, null, null, null, frameStaticProperties));
 
-            targetList.add(target);
+                targetList.add(target);
+            }
         }
 
         // Do multi-tag pose estimation
