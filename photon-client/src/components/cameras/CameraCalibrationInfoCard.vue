@@ -166,7 +166,7 @@ const tabItems: TabItem[] = [
         <pv-tabs v-model="tab" :items="tabItems" class="mt-2" />
         <div class="pt-3">
           <div v-if="tab === 0">
-            <pv-table style="width: 100%" >
+            <pv-table style="width: 100%">
               <template #default>
                 <tbody>
                   <tr>
@@ -282,7 +282,6 @@ const tabItems: TabItem[] = [
             <pv-data-table
               id="observations-table"
               v-model:expanded="expandedObservations"
-              
               style="width: 100%"
               :columns="[
                 { header: 'Id', accessorKey: 'index' },

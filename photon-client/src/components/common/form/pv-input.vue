@@ -63,7 +63,6 @@ const handleKeydown = ({ key }: KeyboardEvent) => {
       <pv-text-field
         :id="inputId"
         v-model="value"
-        
         :placeholder="placeholder"
         :type="type"
         :disabled="disabled"

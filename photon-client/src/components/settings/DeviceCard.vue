@@ -292,11 +292,11 @@ watch(metricsHistorySnapshot, () => {
   <div class="flex flex-wrap">
     <!-- Device control card -->
     <div class="flex-1 pr-3">
-      <pv-card  class="fill-height mb-3 flex flex-col justify-between">
+      <pv-card class="fill-height mb-3 flex flex-col justify-between">
         <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Control</span>
         </div>
-        <div class="flex-0-0  pb-4">
+        <div class="flex-0-0 pb-4">
           <pv-table>
             <tbody>
               <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)" :key="itemIndex">
@@ -311,7 +311,7 @@ watch(metricsHistorySnapshot, () => {
           </pv-table>
         </div>
         <div class="flex-0-0 pt-0 pb-4">
-          <div class=" flex flex-wrap">
+          <div class="flex flex-wrap">
             <div class="flex-1 pr-3">
               <pv-button variant="passive" :icon="IconEye" block @click="useStateStore().showLogModal = true">
                 <span class="open-label">View Logs</span>
@@ -334,7 +334,7 @@ watch(metricsHistorySnapshot, () => {
           </div>
         </div>
         <div class="flex-0-0 pt-0 pb-4">
-          <div class=" flex flex-wrap">
+          <div class="flex flex-wrap">
             <div class="flex-1 pr-3">
               <pv-button variant="passive" :icon="IconImport" block @click="() => (showImportDialog = true)">
                 <span class="open-label">Import Settings</span>
@@ -348,7 +348,7 @@ watch(metricsHistorySnapshot, () => {
           </div>
         </div>
         <div class="flex-0-0 pt-0 pb-4">
-          <div class=" flex flex-wrap">
+          <div class="flex flex-wrap">
             <div class="w-full pr-3 sm:w-1/2">
               <pv-button variant="primary" :icon="IconRestart" block @click="restartProgram">
                 <span class="open-label">Restart Software</span>
@@ -369,7 +369,7 @@ watch(metricsHistorySnapshot, () => {
           </div>
         </div>
         <div class="flex-0-0 pt-0 pb-4">
-          <div class=" flex flex-wrap">
+          <div class="flex flex-wrap">
             <div class="w-full pr-3 sm:w-1/2">
               <pv-button variant="primary" :icon="IconRestartAlert" block @click="restartDevice">
                 <span class="open-label">Reboot Device</span>

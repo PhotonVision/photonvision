@@ -143,7 +143,6 @@ const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
     <template v-if="!useCameraSettingsStore().hasConnected">
       <pv-alert
         color="error"
-        
         text="Camera is not connected. Please check your connection and try again."
         :icon="IconAlertCircleOutline"
       />

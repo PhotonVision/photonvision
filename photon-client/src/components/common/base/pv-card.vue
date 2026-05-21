@@ -10,7 +10,7 @@ const props = withDefaults(
     bordered?: boolean;
   }>(),
   {
-    bordered: true,
+    bordered: true
   }
 );
 

@@ -7,9 +7,7 @@ const docsSrc = import.meta.env.MODE === "demo" ? "https://docs.photonvision.org
 <template>
   <div style="overflow: hidden; height: 100vh; width: 100%">
     <div v-if="devMode" style="width: 60%; height: 100%; margin: auto">
-      <pv-card
-        class="flex h-full flex-col items-center justify-center gap-4 text-center bg-transparent border-0"
-      >
+      <pv-card class="flex h-full flex-col items-center justify-center gap-4 border-0 bg-transparent text-center">
         <div class="flex flex-col">
           <pv-icon size="64" color="primary" :icon="IconWebOff" />
         </div>

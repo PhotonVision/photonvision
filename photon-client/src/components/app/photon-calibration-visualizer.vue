@@ -225,8 +225,8 @@ onMounted(async () => {
     const initHeight = Math.max(
       1,
       Math.floor(
-        (document.getElementById("container")?.clientHeight ||
-          1) - (document.querySelector(".buttons")?.clientHeight || 0)
+        (document.getElementById("container")?.clientHeight || 1) -
+          (document.querySelector(".buttons")?.clientHeight || 0)
       )
     );
     baseAspect = initWidth / Math.max(1, initHeight);
