@@ -61,11 +61,8 @@ public class CameraConfiguration {
 
     public int streamIndex = 0; // 0 index means ports [1181, 1182], 1 means [1183, 1184], etc...
 
-    // Ignore the pipes, as we serialize them to their own column to hack around
-    // polymorphic lists
-    @Json.Ignore public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
+    public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
 
-    @Json.Ignore
     public DriverModePipelineSettings driveModeSettings = new DriverModePipelineSettings();
 
     public CameraConfiguration(PVCameraInfo cameraInfo, String uniqueName, String nickname) {

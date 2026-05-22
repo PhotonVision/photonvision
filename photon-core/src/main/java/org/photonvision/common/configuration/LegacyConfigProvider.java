@@ -37,8 +37,6 @@ import java.util.stream.Stream;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.VisionSource;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.apriltag.AprilTagFields;
@@ -253,30 +251,6 @@ class LegacyConfigProvider extends ConfigProvider {
             } catch (IOException e) {
                 logger.error("Could not save config.json for " + subdir, e);
             }
-
-            try (var stream =
-                    new FileOutputStream(Path.of(subdir.toString(), "drivermode.json").toFile())) {
-                Jsonb.instance()
-                        .type(DriverModePipelineSettings.class)
-                        .toJson(camConfig.driveModeSettings, stream);
-            } catch (IOException e) {
-                logger.error("Could not save drivermode.json for " + subdir, e);
-            }
-
-            for (var pipe : camConfig.pipelineSettings) {
-                var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
-
-                if (!pipePath.getParent().toFile().exists()) {
-                    // TODO: check for error
-                    pipePath.getParent().toFile().mkdirs();
-                }
-
-                try (var stream = new FileOutputStream(pipePath.toFile())) {
-                    Jsonb.instance().type(CVPipelineSettings.class).toJson(pipe, stream);
-                } catch (IOException e) {
-                    logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
-                }
-            }
         }
         logger.info("Settings saved!");
         return false; // TODO, deal with this. Do I need to?
@@ -300,61 +274,6 @@ class LegacyConfigProvider extends ConfigProvider {
                     logger.warn("Could not load camera " + subdir + "'s config.json! Loading " + "default");
                     continue; // TODO how do we later try to load this camera if it gets reconnected?
                 }
-
-                // At this point we have only loaded the base stuff
-                // We still need to deserialize pipelines, as well as
-                // driver mode settings
-                var driverModeFile = Path.of(subdir.toString(), "drivermode.json");
-                DriverModePipelineSettings driverMode;
-                try (var stream = new FileInputStream(driverModeFile.toFile())) {
-                    driverMode = Jsonb.instance().type(DriverModePipelineSettings.class).fromJson(stream);
-                } catch (JsonDataException e) {
-                    logger.error("Could not deserialize drivermode.json! Loading defaults");
-                    logger.debug(Arrays.toString(e.getStackTrace()));
-                    driverMode = new DriverModePipelineSettings();
-                }
-                if (driverMode == null) {
-                    logger.warn(
-                            "Could not load camera " + subdir + "'s drivermode.json! Loading" + " default");
-                    driverMode = new DriverModePipelineSettings();
-                }
-
-                // Load pipelines by mapping the files within the pipelines subdir
-                // to their deserialized equivalents
-                var pipelineSubdirectory = Path.of(subdir.toString(), "pipelines");
-                List<CVPipelineSettings> settings = Collections.emptyList();
-                if (pipelineSubdirectory.toFile().exists()) {
-                    try (Stream<Path> subdirectoryFiles = Files.list(pipelineSubdirectory)) {
-                        settings =
-                                subdirectoryFiles
-                                        .filter(p -> p.toFile().isFile())
-                                        .map(
-                                                p -> {
-                                                    var relativizedFilePath =
-                                                            configDirectoryFile
-                                                                    .toPath()
-                                                                    .toAbsolutePath()
-                                                                    .relativize(p)
-                                                                    .toString();
-                                                    try (var stream = new FileInputStream(p.toFile())) {
-                                                        return Jsonb.instance().type(CVPipelineSettings.class).fromJson(stream);
-                                                    } catch (JsonDataException e) {
-                                                        logger.error("Exception while deserializing " + relativizedFilePath, e);
-                                                    } catch (IOException e) {
-                                                        logger.warn(
-                                                                "Could not load pipeline at "
-                                                                        + relativizedFilePath
-                                                                        + "! Skipping...");
-                                                    }
-                                                    return null;
-                                                })
-                                        .filter(Objects::nonNull)
-                                        .toList();
-                    }
-                }
-
-                loadedConfig.driveModeSettings = driverMode;
-                loadedConfig.addPipelineSettings(settings);
 
                 loadedConfigurations.put(subdir.toFile().getName(), loadedConfig);
             }

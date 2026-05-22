@@ -27,10 +27,8 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -396,32 +394,14 @@ public class SqlConfigProvider extends ConfigProvider {
                 var config = c.getValue();
                 statement.setString(1, c.getKey());
                 statement.setString(2, Jsonb.instance().type(CameraConfiguration.class).toJson(config));
-                statement.setString(
-                        3,
-                        Jsonb.instance()
-                                .type(DriverModePipelineSettings.class)
-                                .toJson(config.driveModeSettings));
 
-                // Serializing a list of abstract classes sucks. Instead, make it into an array
-                // of strings, which we can later unpack back into individual settings
-                List<String> settings =
-                        config.pipelineSettings.stream()
-                                .map(
-                                        it -> {
-                                            try {
-                                                return Jsonb.instance().type(CVPipelineSettings.class).toJson(it);
-                                            } catch (JsonDataException e) {
-                                                e.printStackTrace();
-                                                return null;
-                                            }
-                                        })
-                                .filter(Objects::nonNull)
-                                .toList();
-                statement.setString(4, Jsonb.instance().type(List.class).toJson(settings));
+                // MIGRATION: 2026
+                // We used to serialize pipelines separately, but don't anymore
+                statement.setString(3, "null");
+                statement.setString(4, "null");
 
                 statement.executeUpdate();
             }
-
         } catch (SQLException | JsonDataException e) {
             logger.error("Err saving cameras", e);
             try {
@@ -645,13 +625,6 @@ public class SqlConfigProvider extends ConfigProvider {
                     CameraConfiguration config =
                             Jsonb.instance().type(CameraConfiguration.class).fromJson(configJson);
 
-                    // MIGRATION: 2026
-                    var driverModeJson = result.getString(Columns.CAM_DRIVERMODE_JSON);
-                    if (driverModeJson.startsWith("[")) {
-                        logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
-                        driverModeJson = CVPipelineSettings.remapSettingsJson(driverModeJson);
-                    }
-
                     // MIGRATION: 2024
                     if (config.matchedCameraInfo == null) {
                         logger.info("Legacy CameraConfiguration detected - upgrading");
@@ -674,21 +647,19 @@ public class SqlConfigProvider extends ConfigProvider {
                         }
                     }
 
-                    var driverMode =
-                            Jsonb.instance().type(DriverModePipelineSettings.class).fromJson(driverModeJson);
-                    List<String> pipelineSettings =
+                    // MIGRATION: 2026
+                    List<String> legacyPipelineSettings =
                             strListJsonb.fromJson(result.getString(Columns.CAM_PIPELINE_JSONS));
 
-                    List<CVPipelineSettings> loadedSettings = new ArrayList<>();
-                    for (var pipelineJson : pipelineSettings) {
-                        // MIGRATION: 2026
+                    for (var pipelineJson : legacyPipelineSettings) {
+                        logger.info("Importing pipeline JSON into camera settings");
                         if (pipelineJson.startsWith("[")) {
                             logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
                             pipelineJson = CVPipelineSettings.remapSettingsJson(pipelineJson);
                         }
 
                         try {
-                            loadedSettings.add(
+                            config.pipelineSettings.add(
                                     Jsonb.instance().type(CVPipelineSettings.class).fromJson(pipelineJson));
                         } catch (JsonDataException e) {
                             logger.error(
@@ -696,8 +667,19 @@ public class SqlConfigProvider extends ConfigProvider {
                         }
                     }
 
-                    config.pipelineSettings = loadedSettings;
-                    config.driveModeSettings = driverMode;
+                    // MIGRATION: 2026
+                    if (config.driveModeSettings == null) {
+                        logger.info("Importing driver mode JSON into camera settings");
+                        var driverModeJson = result.getString(Columns.CAM_DRIVERMODE_JSON);
+                        if (driverModeJson.startsWith("[")) {
+                            logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
+                            driverModeJson = CVPipelineSettings.remapSettingsJson(driverModeJson);
+                        }
+
+                        config.driveModeSettings =
+                                Jsonb.instance().type(DriverModePipelineSettings.class).fromJson(driverModeJson);
+                    }
+
                     loadedConfigurations.put(uniqueName, config);
                 } catch (JsonDataException e) {
                     logger.error(
