@@ -729,7 +729,7 @@ public class VisionModule {
 
     public void addCalibrationToConfig(CameraCalibrationCoefficients newCalibration) {
         if (newCalibration != null) {
-            logger.info("Got new calibration for " + newCalibration.unrotatedImageSize);
+            logger.info("Got new calibration for " + newCalibration.resolution);
             visionSource.getSettables().addCalibration(newCalibration);
         } else {
             logger.error("Got null calibration?");
@@ -738,9 +738,9 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    public void removeCalibrationFromConfig(Size unrotatedImageSize) {
-        if (unrotatedImageSize != null) {
-            visionSource.getSettables().removeCalibration(unrotatedImageSize);
+    public void removeCalibrationFromConfig(Size resolution) {
+        if (resolution != null) {
+            visionSource.getSettables().removeCalibration(resolution);
         } else {
             logger.error("Got null size?");
         }

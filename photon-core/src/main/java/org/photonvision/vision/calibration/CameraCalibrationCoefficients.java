@@ -28,8 +28,8 @@ import org.photonvision.vision.opencv.Releasable;
 
 @Json
 public class CameraCalibrationCoefficients implements Releasable {
-    @Json.Property("resolution")
-    public final Size unrotatedImageSize;
+    /** The unrotated resolution of the calibration */
+    public final Size resolution;
 
     public final JsonMatOfDouble cameraIntrinsics;
 
@@ -72,7 +72,7 @@ public class CameraCalibrationCoefficients implements Releasable {
             Size calobjectSize,
             double calobjectSpacing,
             CameraLensModel lensmodel) {
-        this.unrotatedImageSize = resolution;
+        this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
         this.calobjectWarp = calobjectWarp;
@@ -116,7 +116,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedIntrinsics.put(1, 1, fx);
 
                 // CX
-                rotatedIntrinsics.put(0, 2, unrotatedImageSize.height - cy);
+                rotatedIntrinsics.put(0, 2, resolution.height - cy);
                 // CY
                 rotatedIntrinsics.put(1, 2, cx);
 
@@ -126,14 +126,14 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 3, -p1);
 
                 // The rotated image size is the same as the unrotated image size, but the width and height
-                // are flipped
-                rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
+                // are swapped
+                rotatedImageSize = new Size(resolution.height, resolution.width);
                 break;
             case DEG_180_CCW:
                 // CX
-                rotatedIntrinsics.put(0, 2, unrotatedImageSize.width - cx);
+                rotatedIntrinsics.put(0, 2, resolution.width - cx);
                 // CY
-                rotatedIntrinsics.put(1, 2, unrotatedImageSize.height - cy);
+                rotatedIntrinsics.put(1, 2, resolution.height - cy);
 
                 // P1
                 rotatedDistCoeffs.put(0, 2, -p1);
@@ -141,7 +141,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 3, -p2);
 
                 // The rotated image size is the same as the unrotated image size
-                rotatedImageSize = unrotatedImageSize;
+                rotatedImageSize = resolution;
                 break;
             case DEG_90_CCW:
                 // FX
@@ -152,7 +152,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // CX
                 rotatedIntrinsics.put(0, 2, cy);
                 // CY
-                rotatedIntrinsics.put(1, 2, unrotatedImageSize.width - cx);
+                rotatedIntrinsics.put(1, 2, resolution.width - cx);
 
                 // P1
                 rotatedDistCoeffs.put(0, 2, -p2);
@@ -160,8 +160,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 3, p1);
 
                 // The rotated image size is the same as the unrotated image size, but the width and height
-                // are flipped
-                rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
+                // are swapped
+                rotatedImageSize = new Size(resolution.height, resolution.width);
                 break;
         }
 
@@ -212,7 +212,7 @@ public class CameraCalibrationCoefficients implements Releasable {
     @Override
     public String toString() {
         return "CameraCalibrationCoefficients [resolution="
-                + unrotatedImageSize
+                + resolution
                 + ", cameraIntrinsics="
                 + cameraIntrinsics
                 + ", distCoeffs="
@@ -226,7 +226,7 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     public UICameraCalibrationCoefficients cloneWithoutObservations() {
         return new UICameraCalibrationCoefficients(
-                unrotatedImageSize,
+                resolution,
                 cameraIntrinsics,
                 distCoeffs,
                 calobjectWarp,

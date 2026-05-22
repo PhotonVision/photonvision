@@ -121,8 +121,8 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
-    public void removeCalibration(Size unrotatedImageSize) {
-        configuration.removeCalibration(unrotatedImageSize);
+    public void removeCalibration(Size resolution) {
+        configuration.removeCalibration(resolution);
         calculateFrameStaticProps();
     }
 
@@ -135,8 +135,8 @@ public abstract class VisionSourceSettables {
                         configuration.calibrations.stream()
                                 .filter(
                                         it ->
-                                                it.unrotatedImageSize.width == videoMode.width
-                                                        && it.unrotatedImageSize.height == videoMode.height)
+                                                it.resolution.width == videoMode.width
+                                                        && it.resolution.height == videoMode.height)
                                 .findFirst()
                                 .orElse(null));
     }

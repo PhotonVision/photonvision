@@ -167,16 +167,16 @@ public class CameraConfiguration {
     }
 
     /**
-     * Replace a calibration in our list with the same unrotatedImageSize with a new one, or add it if
-     * none exists yet. If we are replacing an existing calibration, the old one will be "released"
-     * and the underlying data matrices will become invalid.
+     * Replace a calibration in our list with the same resolution with a new one, or add it if none
+     * exists yet. If we are replacing an existing calibration, the old one will be "released" and the
+     * underlying data matrices will become invalid.
      *
      * @param calibration The calibration to add.
      */
     public void addCalibration(CameraCalibrationCoefficients calibration) {
-        logger.info("adding calibration " + calibration.unrotatedImageSize);
+        logger.info("adding calibration " + calibration.resolution);
         calibrations.stream()
-                .filter(it -> it.unrotatedImageSize.equals(calibration.unrotatedImageSize))
+                .filter(it -> it.resolution.equals(calibration.resolution))
                 .findAny()
                 .ifPresent(
                         (it) -> {
@@ -190,12 +190,12 @@ public class CameraConfiguration {
      * Remove a calibration from our list. If found, the calibration will be "released". If not found,
      * no-op.
      *
-     * @param unrotatedImageSize The resolution to remove.
+     * @param resolution The resolution to remove.
      */
-    public void removeCalibration(Size unrotatedImageSize) {
-        logger.info("deleting calibration " + unrotatedImageSize);
+    public void removeCalibration(Size resolution) {
+        logger.info("deleting calibration " + resolution);
         calibrations.stream()
-                .filter(it -> it.unrotatedImageSize.equals(unrotatedImageSize))
+                .filter(it -> it.resolution.equals(resolution))
                 .findAny()
                 .ifPresent(
                         (it) -> {
