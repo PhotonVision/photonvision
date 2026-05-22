@@ -127,6 +127,7 @@ public enum TargetModel implements Releasable {
                             -Units.inchesToMeters(16.25) / 2)),
             0),
     // 2023 AprilTag, with 6 inch marker width (inner black square).
+    // MIGRATION: 2023
     @Json.Alias({"k6in_16h5"})
     kAprilTag6in_16h5(
             // Corners of the tag's inner black square (excluding white border)
@@ -137,6 +138,7 @@ public enum TargetModel implements Releasable {
                     new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
             Units.inchesToMeters(3 * 2)),
     // 2024 AprilTag, with 6.5 inch marker width (inner black square).
+    // MIGRATION: 2023
     @Json.Alias({"k6p5in_36h11", "k200mmAprilTag", "kAruco6p5in_36h11"})
     kAprilTag6p5in_36h11(
             // Corners of the tag's inner black square (excluding white border)

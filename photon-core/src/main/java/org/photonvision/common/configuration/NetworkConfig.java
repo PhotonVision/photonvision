@@ -24,6 +24,7 @@ import org.photonvision.common.networking.NetworkMode;
 @Json
 public class NetworkConfig {
     // Can be an integer team number, or an IP address
+    // MIGRATION: 2023
     @Json.Alias("teamNumber")
     public String ntServerAddress = "0";
 

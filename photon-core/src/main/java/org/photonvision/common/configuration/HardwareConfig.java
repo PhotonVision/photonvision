@@ -33,9 +33,11 @@ public class HardwareConfig {
     public int ledPWMFrequency;
     public StatusLEDType statusLEDType;
 
+    // MIGRATION: 2026
     @Json.Alias("statusRGBPins")
     public List<Integer> statusLEDPins;
 
+    // MIGRATION: 2026
     @Json.Alias("statusRGBActiveHigh")
     public boolean statusLEDActiveHigh;
 
