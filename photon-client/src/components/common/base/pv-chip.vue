@@ -43,7 +43,7 @@ const chipStyle = computed(() => {
     v-bind="attrs"
     :style="chipStyle"
     :class="[
-      'inline-flex items-center gap-1 whitespace-nowrap select-none align-middle text-sm font-medium leading-6',
+      'inline-flex items-center gap-1 align-middle text-sm leading-6 font-medium whitespace-nowrap select-none',
       label ? 'rounded-[0.25rem]' : 'rounded-full',
       variant === 'text'
         ? 'bg-transparent p-0 text-[color:var(--pv-chip-fg)]'
