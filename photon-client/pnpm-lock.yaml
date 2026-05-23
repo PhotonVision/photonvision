@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@fontsource/public-sans':
+      '@fontsource/lato':
         specifier: ^5.2.7
         version: 5.2.7
       '@mdi/font':
@@ -226,8 +226,8 @@ packages:
   '@floating-ui/vue@1.1.11':
     resolution: {integrity: sha512-HzHKCNVxnGS35r9fCHBc3+uCnjw9IWIlCPL683cGgM9Kgj2BiAl8x1mS7vtvP6F9S/e/q4O6MApwSHj8hNLGfw==}
 
-  '@fontsource/public-sans@5.2.7':
-    resolution: {integrity: sha512-pVttDr3HvhVIt2x6sZJfZKksNEpq23C1JCHTQwT9KWJdmFRdNeRM8gQftq8uP72sPW+p3Ku9x8HPk2E392DFvg==}
+  '@fontsource/lato@5.2.7':
+    resolution: {integrity: sha512-k5mum1ADbDW5cTw1Ett1eQVWeoZ6gq0ct6SFBibEhB4LRxhniChJZTBgd6ph5yBxLkN1fcnsnmicBNA4S/3nbw==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -1941,7 +1941,7 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
-  '@fontsource/public-sans@5.2.7': {}
+  '@fontsource/lato@5.2.7': {}
 
   '@humanfs/core@0.19.1': {}
 

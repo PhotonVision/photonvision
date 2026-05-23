@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
 import { useTheme, type ThemeColors } from "@/composables/useTheme";
-
 // Color  -  original        (adjusted)
 // blue   -   59, 130, 246   (r:  92, g: 154, b: 255)
 // purple -  154, 100, 180   (r: 167, g: 104, b: 196)
@@ -45,7 +44,7 @@ const getOptions = (data: ChartData[] = []) => {
     tooltip: {
       trigger: "axis",
       formatter: (params: TooltipSeriesParam[]) => {
-        const p = params[0];
+        const p = Array.isArray(params) ? params[0] : params;
         const append = typeLabels[props.type];
         const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";
 
@@ -61,8 +60,10 @@ const getOptions = (data: ChartData[] = []) => {
         return `${tooltip}</div>`;
       },
       backgroundColor: themeColors.value.background,
+      extraCssText: "border-color: #ffffff14;",
       textStyle: {
-        color: themeColors.value.onBackground
+        color: themeColors.value.onBackground,
+        fontFamily: "var(--font-family-sans)",
       },
       axisPointer: {
         animation: false

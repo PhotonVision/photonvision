@@ -2,7 +2,7 @@
 import { computed, useAttrs, useId } from "vue";
 import type { Component } from "vue";
 import IconClose from "~icons/mdi/close";
-import { fieldWrapperClasses } from "../lib";
+import { fieldWrapperClasses } from "../../../lib/ComponentUtils";
 
 defineOptions({
   inheritAttrs: false

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { colWidthClass } from "../lib";
+import { colWidthClass } from "../../../lib/ComponentUtils";
 import { computed } from "vue";
 import { Label, RadioGroupIndicator, RadioGroupItem, RadioGroupRoot } from "reka-ui";
 

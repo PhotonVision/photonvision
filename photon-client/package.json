@@ -23,7 +23,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@fontsource/public-sans": "^5.2.7",
+    "@fontsource/lato": "^5.2.7",
     "@mdi/font": "^7.4.47",
     "@msgpack/msgpack": "^3.1.2",
     "@tanstack/vue-table": "^8.21.3",

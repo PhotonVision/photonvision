@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ProgressIndicator, ProgressRoot } from "reka-ui";
-import { useThemeColor } from "../lib";
+import { useThemeColor } from "../../../lib/ComponentUtils";
 
 const props = withDefaults(
   defineProps<{
