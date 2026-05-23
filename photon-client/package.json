@@ -18,9 +18,7 @@
     "test": "playwright test",
     "test-ui": "playwright test --ui",
     "test-setup": "playwright install --with-deps",
-    "type-check": "vue-tsc --noEmit",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@fontsource/lato": "^5.2.7",
