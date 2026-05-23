@@ -194,6 +194,7 @@ public class NeuralNetworkModelsSettings {
         if (models != null) {
             modelPropsStream = Arrays.stream(models);
         } else if (unmapped.containsKey("modelPathToProperties")) {
+            // MIGRATION: 2026
             modelPropsStream =
                     modelPropsMapJsonb.fromObject(unmapped.get("modelPathToProperties")).values().stream();
         } else {
