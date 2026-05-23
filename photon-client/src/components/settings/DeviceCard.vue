@@ -300,7 +300,7 @@ watch(metricsHistorySnapshot, () => {
           <pv-table>
             <tbody>
               <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)" :key="itemIndex">
-                <td :key="itemIndex">
+                <td :key="itemIndex" class="text-gray-200">
                   {{ item.header }}
                 </td>
                 <td :key="itemIndex">
