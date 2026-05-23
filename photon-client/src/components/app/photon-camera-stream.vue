@@ -94,19 +94,19 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="stream-container" :style="containerStyle">
-    <pv-loading class="stream-loading" />
+  <div class="stream-container flex relative w-full h-full max-w-full max-h-full justify-center items-center group" :style="containerStyle">
+    <pv-loading class="absolute w-1/4 h-1/4 object-contain" />
     <img
       :id="id"
       ref="mjpgStream"
-      class="stream-video"
+      class="absolute w-100 h-100 object-contain"
       crossorigin="anonymous"
       :src="streamSrc"
       :alt="streamDesc"
       :style="streamStyle"
       @error="handleStreamError"
     />
-    <div class="stream-overlay" :style="overlayStyle">
+    <div class="flex opacity-0 transition duration-100 absolute top-0 right-0 group-hover:opacity-100" :style="overlayStyle">
       <pv-tooltipped-icon
         color="primary"
         :icon="IconCameraImage"
@@ -131,43 +131,3 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.stream-container {
-  display: flex;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  justify-content: center;
-  align-items: center;
-}
-
-.stream-loading {
-  position: absolute;
-  width: 25%;
-  height: 25%;
-  object-fit: contain;
-}
-
-.stream-video {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.stream-overlay {
-  display: flex;
-  opacity: 0;
-  transition: 0.1s ease;
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.stream-container:hover .stream-overlay {
-  opacity: 1;
-}
-</style>
