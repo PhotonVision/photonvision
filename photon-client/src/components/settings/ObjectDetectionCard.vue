@@ -424,14 +424,6 @@ const handleBulkImport = async () => {
 </template>
 
 <style scoped>
-.v-col-12 > .v-btn {
-  width: 100%;
-}
-
-.pt-3 {
-  padding-top: 10px !important;
-}
-
 @media only screen and (max-width: 351px) {
   .open-icon {
     margin: 0 !important;

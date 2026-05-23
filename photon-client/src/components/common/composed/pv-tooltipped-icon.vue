@@ -27,7 +27,7 @@ defineEmits<{
     <pv-tooltip :text="tooltip" :location="right ? 'right' : 'left'" :disabled="!tooltip">
       <pv-button size="icon">
         <pv-icon
-          :class="hover ? 'hover' : ''"
+          :class="hover ? 'hover:text-white' : ''"
           :icon="icon"
           :color="color"
           :disabled="disabled"
@@ -37,9 +37,3 @@ defineEmits<{
     </pv-tooltip>
   </div>
 </template>
-
-<style scoped>
-.hover:hover {
-  color: white !important;
-}
-</style>

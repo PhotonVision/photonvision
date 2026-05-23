@@ -332,7 +332,7 @@ const tabItems: TabItem[] = [
             <template #fallback> Loading... </template>
           </Suspense>
           <div v-else style="display: flex; justify-content: center; width: 100%">
-            <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+            <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="max-h-full max-w-full py-2" />
           </div>
         </div>
       </div>
@@ -348,9 +348,3 @@ const tabItems: TabItem[] = [
   />
 </template>
 
-<style scoped>
-.snapshot-preview {
-  max-width: 100%;
-  max-height: 100%;
-}
-</style>

@@ -436,10 +436,6 @@ watchEffect(() => {
 </template>
 
 <style scoped>
-.mt-3 {
-  margin-top: 10px !important;
-}
-
 .hue-gradient {
   background: linear-gradient(
     to right,
