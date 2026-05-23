@@ -398,7 +398,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 // MIGRATION: 2026
                 // We used to serialize pipelines separately, but don't anymore
                 statement.setString(3, "null");
-                statement.setString(4, "null");
+                statement.setString(4, "[]");
 
                 statement.executeUpdate();
             }
