@@ -18,13 +18,17 @@
 package org.photonvision.common.networking;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -262,17 +266,34 @@ public class NetworkUtils {
             // Not managed? See if we're connected to a network. General assumption is one interface in
             // use at a time
             if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
-                // Use NT client IP address to find the interface in use
+                // Use NT client IP address to find the interface in use, if a client
                 if (!config.runNTServer) {
-                    var conn = NetworkTableInstance.getDefault().getConnections();
-                    if (conn.length > 0 && !conn[0].remote_ip.equals("127.0.0.1")) {
-                        var addr = InetAddress.getByName(conn[0].remote_ip);
-                        return formatMacAddress(NetworkInterface.getByInetAddress(addr).getHardwareAddress());
+                    // All active connections. Client, so either empty or the active connection
+                    logger.debug("Trying MAC address via NT inst server route");
+                    var conn = NetworkTablesManager.getInstance().getNTInst().getConnections();
+                    if (conn.length > 0) {
+                        // We have a connection to server. Check it looks valid (paranoia)
+                        var remoteIp = conn[0].remote_ip;
+                        var remotePort = conn[0].remote_port;
+                        if (remoteIp != null && !remoteIp.isBlank()) {
+                            var remoteAddr = InetAddress.getByName(remoteIp);
+                            if (!remoteAddr.isLoopbackAddress()) {
+                                var iface = getInterfaceForRemoteAddress(remoteAddr, remotePort);
+                                if (iface != null) {
+                                    byte[] mac = iface.getHardwareAddress();
+                                    if (mac != null) {
+                                        return formatMacAddress(mac);
+                                    }
+                                } else {
+                                    logger.debug(
+                                            "Unable to resolve local interface for NT remote address " + remoteIp);
+                                }
+                            }
+                        }
                     }
                 }
-                // Connected to a localhost server or we are the server? Try resolving ourselves. Only
-                // returns a localhost address when there's no other interface available on Windows, but
-                // like to return a localhost address on Linux
+                // We are the server? Try resolving ourselves. Only returns a localhost address when there's
+                // no other interface available on Windows, but like to return a localhost address on Linux
                 var localIface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
                 if (localIface != null) {
                     byte[] mac = localIface.getHardwareAddress();
@@ -280,7 +301,7 @@ public class NetworkUtils {
                         return formatMacAddress(mac);
                     }
                 }
-                // Fine. Just find something with a MAC address
+                // Fallback: Just find something with a MAC address
                 for (var iface : NetworkInterface.networkInterfaces().toList()) {
                     if (iface.isUp() && iface.getHardwareAddress() != null) {
                         return formatMacAddress(iface.getHardwareAddress());
@@ -300,7 +321,80 @@ public class NetworkUtils {
         } catch (Exception e) {
             logger.error("Error getting MAC address", e);
         }
+
+        logger.debug("Fallback to null");
         return "";
+    }
+
+    private static NetworkInterface getInterfaceForRemoteAddress(
+            InetAddress remoteAddress, int remotePort) {
+        // Paranoia -- validate remote address
+        if (remoteAddress == null
+                || remoteAddress.isLoopbackAddress()
+                || remoteAddress.isAnyLocalAddress()) {
+            return null;
+        }
+
+        // IPv6 link-local addresses require a scope to be routable
+        if (remoteAddress instanceof Inet6Address v6
+                && v6.isLinkLocalAddress()
+                && v6.getScopeId() == 0) {
+            logger.debug("Cannot route to unscoped IPv6 link-local address: " + remoteAddress);
+            return null;
+        }
+
+        // Trigger routing-table lookup with a connected, non-transmitting UDP socket
+        int port = remotePort > 0 ? remotePort : 9; // discard protocol
+        try (var socket = new DatagramSocket()) {
+            socket.connect(remoteAddress, port);
+
+            InetAddress localAddress = socket.getLocalAddress();
+
+            if (localAddress == null
+                    || localAddress.isAnyLocalAddress()
+                    || localAddress.isLoopbackAddress()) {
+                logger.debug(
+                        "Routing lookup yielded unusable local address "
+                                + localAddress
+                                + " for "
+                                + remoteAddress
+                                + ":"
+                                + remotePort);
+                return null;
+            }
+
+            NetworkInterface iface = NetworkInterface.getByInetAddress(localAddress);
+            if (iface == null) {
+                logger.debug(
+                        "No interface found for local address "
+                                + localAddress
+                                + " (interface may have changed)");
+                return null;
+            }
+
+            // Skip interfaces that have no MAC
+            byte[] mac = iface.getHardwareAddress();
+            if (mac == null || mac.length == 0) {
+                logger.debug(
+                        "Interface "
+                                + iface.getName()
+                                + " has no hardware address (tunnel/virtual?); skipping");
+                return null;
+            }
+
+            return iface;
+
+        } catch (SocketException e) {
+            logger.debug(
+                    "Error resolving local interface for remote address "
+                            + remoteAddress
+                            + ":"
+                            + remotePort
+                            + " ("
+                            + e.toString()
+                            + ")");
+            return null;
+        }
     }
 
     private static String formatMacAddress(byte[] mac) {
