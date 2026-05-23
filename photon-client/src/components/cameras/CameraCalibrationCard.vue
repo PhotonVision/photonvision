@@ -15,7 +15,7 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import { unit } from "mathjs";
+import { length } from "@adam-rocska/units-and-measurement/length";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
@@ -120,22 +120,22 @@ const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_10
 const requestedVideoFormatIndex = ref(0);
 
 const squareSizeMeters = computed({
-  get: () => unit(squareSize.value, dimensionUnit.value).to("m").value,
+  get: () => length[dimensionUnit.value](squareSize.value).m.value,
   set(value) {
-    squareSize.value = unit(value, "m").to(dimensionUnit.value).value;
+    squareSize.value = length.m(value)[dimensionUnit.value].value;
   }
 });
 
 const markerSizeMeters = computed({
-  get: () => unit(markerSize.value, dimensionUnit.value).to("m").value,
+  get: () => length[dimensionUnit.value](markerSize.value).m.value,
   set(value) {
-    markerSize.value = unit(value, "m").to(dimensionUnit.value).value;
+    markerSize.value = length.m(value)[dimensionUnit.value].value;
   }
 });
 
 watch(dimensionUnit, (value, oldValue) => {
-  squareSize.value = unit(squareSize.value, oldValue).to(value).value;
-  markerSize.value = unit(markerSize.value, oldValue).to(value).value;
+  squareSize.value = length[oldValue](squareSize.value)[value].value;
+  markerSize.value = length[oldValue](markerSize.value)[value].value;
 });
 
 const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
