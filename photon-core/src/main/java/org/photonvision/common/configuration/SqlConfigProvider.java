@@ -584,7 +584,11 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
-        final var cameraInfoPattern = Pattern.compile("\"(PV\\w*CameraInfo)\"\\s*:");
+
+        // MIGRATION: 2026
+        // This is designed to always match for efficiency reasons, so that the whole camera config isn't scanned
+        // The second capture group determines if the camera info is in the old or new format
+        final var cameraInfoPattern = Pattern.compile("\"(PV[\\w.]*CameraInfo)\"\\s*(:?)");
 
         // Query every single row of the cameras db
         PreparedStatement query = null;
@@ -617,7 +621,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
                     // MIGRATION: 2026
                     var cameraInfoMatcher = cameraInfoPattern.matcher(configJson);
-                    if (cameraInfoMatcher.find()) {
+                    if (cameraInfoMatcher.find() && cameraInfoMatcher.group(2).equals(":")) {
                         logger.info("Legacy type-wrapper PVCameraInfo being migrated");
                         configJson = PVCameraInfo.remapConfigJson(configJson, cameraInfoMatcher.group(1));
                     }
