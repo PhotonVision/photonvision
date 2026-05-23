@@ -1,13 +1,11 @@
-@import "@fontsource/public-sans/latin-300.css";
-@import "@fontsource/public-sans/latin-400.css";
-@import "@fontsource/public-sans/latin-500.css";
-@import "@fontsource/public-sans/latin-600.css";
-@import "@fontsource/public-sans/latin-700.css";
+@import "@fontsource/lato/latin-300.css";
+@import "@fontsource/lato/latin-400.css";
+@import "@fontsource/lato/latin-700.css";
 
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: "Public Sans", sans-serif;
+@theme inline static {
+  --font-sans: "Lato", sans-serif;
 
   --color-pv-background: var(--pv-background);
   --color-pv-surface: var(--pv-surface);
@@ -70,7 +68,6 @@
     overscroll-behavior: none;
     scrollbar-gutter: stable;
   }
-
   body {
     min-height: 100vh;
     background-color: var(--color-pv-background);
