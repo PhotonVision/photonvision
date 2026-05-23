@@ -431,6 +431,7 @@ watch(metricsHistorySnapshot, () => {
               :icon="IconInformation"
               location="top"
               tooltip="Measured rate for this coprocessor ONLY. This FMS limit is for ALL robot communication. If you are experiencing bandwidth issues while under this limit, check other sources."
+              class="text-base!"
             />
             <span
               >{{

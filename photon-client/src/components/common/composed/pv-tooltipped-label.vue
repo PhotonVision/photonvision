@@ -28,6 +28,7 @@ defineProps<{
         as="button"
         type="button"
         class="text-pv-on-surface inline-flex max-w-full cursor-help items-center gap-2 text-left text-sm font-medium outline-none"
+        v-bind="$attrs"
       >
         <span class="truncate">{{ label }}</span>
         <component :is="icon" v-if="icon" class="text-pv-primary size-4" aria-hidden="true" />
