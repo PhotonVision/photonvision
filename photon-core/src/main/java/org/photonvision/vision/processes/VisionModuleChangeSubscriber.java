@@ -56,10 +56,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     }
 
     @Override
-    public void onDataChangeEvent(DataChangeEvent<?> event) {
+    public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
         // Camera index -1 means a "multicast event" (i.e. the event is received by all
         // cameras)
-        if (event instanceof IncomingWebSocketEvent wsEvent
+        if (event instanceof IncomingWebSocketEvent<T> wsEvent
                 && wsEvent.cameraUniqueName != null
                 && wsEvent.cameraUniqueName.equals(parentModule.uniqueName())) {
             logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
@@ -67,7 +67,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             try {
                 getSettingChanges()
                         .add(
-                                new VisionModuleChange<Object>(
+                                new VisionModuleChange<T>(
                                         wsEvent.propertyName,
                                         wsEvent.data,
                                         parentModule.pipelineManager.getCurrentPipeline().getSettings(),

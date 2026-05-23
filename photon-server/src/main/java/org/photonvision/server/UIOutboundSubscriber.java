@@ -43,8 +43,8 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
     }
 
     @Override
-    public void onDataChangeEvent(DataChangeEvent event) {
-        if (event instanceof OutgoingUIEvent thisEvent) {
+    public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
+        if (event instanceof OutgoingUIEvent<T> thisEvent) {
             try {
                 if (event.data instanceof HashMap data) {
                     socketHandler.broadcastMessage(data, thisEvent.originContext);
