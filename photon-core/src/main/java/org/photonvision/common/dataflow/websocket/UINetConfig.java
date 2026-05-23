@@ -39,5 +39,7 @@ public class UINetConfig extends NetworkConfig {
 
     public List<NMDeviceInfo> networkInterfaceNames;
     public boolean networkingDisabled;
+
+    @Json.Ignore(serialize = true)
     public boolean canManage;
 }
