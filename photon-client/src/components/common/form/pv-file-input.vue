@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { colWidthClass, fieldWrapperClasses } from "../lib";
+import { colWidthClass, fieldWrapperClasses } from "../../../lib/ComponentUtils";
 import { computed, useTemplateRef } from "vue";
 import { Label } from "reka-ui";
 import IconClose from "~icons/mdi/close";

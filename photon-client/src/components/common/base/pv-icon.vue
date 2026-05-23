@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import type { Component } from "vue";
 import { useTheme } from "@/composables/useTheme";
-import { isRawCssColor } from "../lib";
+import { isRawCssColor } from "../../../lib/ComponentUtils";
 
 defineOptions({
   inheritAttrs: false

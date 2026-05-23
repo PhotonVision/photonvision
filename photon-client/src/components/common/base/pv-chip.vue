@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
-import { useThemeColor } from "../lib";
+import { useThemeColor } from "../../../lib/ComponentUtils";
 
 defineOptions({
   inheritAttrs: false

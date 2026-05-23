@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useColFlexBasis, sliderNumberInputClass, sliderThumbClass } from "../lib";
+import { useColFlexBasis, sliderNumberInputClass, sliderThumbClass } from "../../../lib/ComponentUtils";
 import { computed, useId } from "vue";
 import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from "reka-ui";
 import IconMenuLeft from "~icons/mdi/menu-left";
