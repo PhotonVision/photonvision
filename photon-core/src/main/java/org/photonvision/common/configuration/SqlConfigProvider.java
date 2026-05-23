@@ -586,8 +586,9 @@ public class SqlConfigProvider extends ConfigProvider {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
 
         // MIGRATION: 2026
-        // This is designed to always match for efficiency reasons, so that the whole camera config isn't scanned
-        // The second capture group determines if the camera info is in the old or new format
+        // This is designed to always match for efficiency reasons, so that the whole camera config
+        // isn't scanned. The second capture group determines if the camera info is in the old or new
+        // format
         final var cameraInfoPattern = Pattern.compile("\"(PV[\\w.]*CameraInfo)\"\\s*(:?)");
 
         // Query every single row of the cameras db

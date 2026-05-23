@@ -156,7 +156,7 @@ public class NeuralNetworkModelsSettings {
 
     // The path to the model is used as the key in the map because it is unique to
     // the model, and should not change
-    @Json.Ignore()
+    @Json.Ignore
     private HashMap<Path, ModelProperties> modelPathToProperties =
             new HashMap<Path, ModelProperties>();
 

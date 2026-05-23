@@ -74,7 +74,8 @@ public class CameraConfiguration {
         logger.debug("Creating USB camera configuration for " + this.toShortString());
     }
 
-    // JSON Constructor (can't be marked with @Json.Creator due to public fields that aren't part of the parameters)
+    // JSON Constructor (can't be marked with @Json.Creator due to public fields that aren't part of
+    // the parameters)
     public CameraConfiguration(
             String uniqueName,
             PVCameraInfo matchedCameraInfo,
