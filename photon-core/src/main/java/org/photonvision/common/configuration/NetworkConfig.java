@@ -35,8 +35,8 @@ public class NetworkConfig {
     public boolean shouldManage;
     public boolean shouldPublishProto = false;
 
-    @Json.Ignore public static final String NM_IFACE_STRING = "${interface}";
-    @Json.Ignore public static final String NM_IP_STRING = "${ipaddr}";
+    public static final String NM_IFACE_STRING = "${interface}";
+    public static final String NM_IP_STRING = "${ipaddr}";
 
     public String networkManagerIface = "";
     // TODO: remove these strings if no longer needed
