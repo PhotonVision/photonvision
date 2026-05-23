@@ -2,7 +2,7 @@
 import { computed, useId } from "vue";
 import IconChevronDown from "~icons/mdi/chevron-down";
 import IconCheck from "~icons/mdi/check";
-import { useColFlexBasis, popoverSurfaceClass } from "../lib";
+import { useColFlexBasis, popoverSurfaceClass } from "../../../lib/ComponentUtils";
 import {
   SelectContent,
   SelectIcon,

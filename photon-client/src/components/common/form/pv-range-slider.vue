@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, useId } from "vue";
-import { useColFlexBasis, sliderNumberInputClass, sliderThumbClass } from "../lib";
+import { useColFlexBasis, sliderNumberInputClass, sliderThumbClass } from "../../../lib/ComponentUtils";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from "reka-ui";
 

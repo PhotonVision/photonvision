@@ -2,7 +2,7 @@
 import { computed, ref, useAttrs } from "vue";
 import type { Component } from "vue";
 import IconClose from "~icons/mdi/close";
-import { useThemeColor } from "../lib";
+import { useThemeColor } from "../../../lib/ComponentUtils";
 
 defineOptions({
   inheritAttrs: false

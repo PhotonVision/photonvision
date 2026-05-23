@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useColFlexBasis } from "../lib";
+import { useColFlexBasis } from "../../../lib/ComponentUtils";
 import { SwitchRoot, SwitchThumb } from "reka-ui";
 import { computed, useId } from "vue";
 

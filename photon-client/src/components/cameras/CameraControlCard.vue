@@ -120,6 +120,7 @@ const expanded = ref([]);
             text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
             :icon="IconInformationOutline"
             variant="tonal"
+            class="mb-2"
           />
           <pv-data-table
             v-model:expanded="expanded"
@@ -133,7 +134,6 @@ const expanded = ref([]);
             ]"
             :data="imgData"
             :grouping="['cameraUniqueName']"
-            class="elevation-0"
             item-value="index"
             show-expand
           >

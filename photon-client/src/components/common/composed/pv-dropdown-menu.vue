@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger
 } from "reka-ui";
 import type { Component } from "vue";
-import { popoverSurfaceClass } from "../lib";
+import { popoverSurfaceClass } from "../../../lib/ComponentUtils";
 
 export interface DropdownMenuAction {
   /** Icon component imported from unplugin-icons */

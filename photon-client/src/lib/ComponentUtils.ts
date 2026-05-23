@@ -3,7 +3,6 @@ import type { Ref } from "vue";
 
 /**
  * Maps a 12-column grid number to a Tailwind width class.
- * Shared across pv-input, pv-number-input, pv-radio, pv-file-input.
  */
 export const colWidthClasses: Record<number, string> = {
   1: "w-1/12",
@@ -33,7 +32,7 @@ export function useColFlexBasis(contentCols: Ref<number> | (() => number)) {
   return { labelWidth, contentWidth };
 }
 
-// ─── Shared Tailwind class constants ─────────────────────────────────────────
+// Shared Tailwind class constants 
 
 /** Popover / dropdown / select-content floating surface */
 export const popoverSurfaceClass =
@@ -43,7 +42,7 @@ export const popoverSurfaceClass =
 export const sliderNumberInputClass =
   "h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-left text-sm text-pv-on-surface outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45";
 
-/** Slider thumb (reka-ui) */
+/** Slider thumb */
 export const sliderThumbClass =
   "block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50 pv-slider-thumb";
 
@@ -74,7 +73,7 @@ export function fieldWrapperClasses(opts: {
   return base;
 }
 
-// ─── Theme color helpers ─────────────────────────────────────────────────────
+//  Theme color helpers
 
 /**
  * Returns true when the value is already a usable CSS color
@@ -155,7 +154,7 @@ export function useThemeColor(
 
   const isRaw = computed(() => isRawCssColor(toValue(color)));
 
-  /** Common "light tone" tokens whose filled variant needs dark text */
+  /** Light theme tokens that need dark text for contrast */
   const isLightTone = computed(() =>
     ["buttonActive", "primary", "secondary", "warning", "success"].includes(toValue(color))
   );
