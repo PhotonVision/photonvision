@@ -24,6 +24,7 @@ import org.photonvision.common.networking.NetworkUtils.NMDeviceInfo;
 
 @Json
 public class UINetConfig extends NetworkConfig {
+    // Constructor for JSON to allow all properties to be set directly
     public UINetConfig() {
         this.canManage = this.deviceCanManageNetwork();
     }
