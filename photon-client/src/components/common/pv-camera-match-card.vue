@@ -35,7 +35,7 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td>{{ saved.dev }}</td>
           <td>{{ current.dev }}</td>
         </tr>
-        <tr v-if="'name' in saved && saved.name !== null" :class="saved.name !== current.name ? 'mismatch' : ''">
+        <tr v-if="saved.name !== null" :class="saved.name !== current.name ? 'mismatch' : ''">
           <td>Name:</td>
           <td>{{ saved.name }}</td>
           <td>{{ current.name }}</td>
@@ -75,15 +75,12 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td>{{ saved.productId }}</td>
           <td>{{ current.productId }}</td>
         </tr>
-        <tr v-if="'path' in saved && saved.path !== null" :class="saved.path !== current.path ? 'mismatch' : ''">
+        <tr v-if="saved.path !== null" :class="saved.path !== current.path ? 'mismatch' : ''">
           <td>Path:</td>
           <td style="word-break: break-all">{{ saved.path }}</td>
           <td style="word-break: break-all">{{ current.path }}</td>
         </tr>
-        <tr
-          v-if="'uniquePath' in saved && saved.uniquePath !== null"
-          :class="saved.uniquePath !== current.uniquePath ? 'mismatch' : ''"
-        >
+        <tr v-if="saved.uniquePath !== null" :class="saved.uniquePath !== current.uniquePath ? 'mismatch' : ''">
           <td>Unique Path:</td>
           <td style="word-break: break-all">{{ saved.uniquePath }}</td>
           <td style="word-break: break-all">{{ current.uniquePath }}</td>
