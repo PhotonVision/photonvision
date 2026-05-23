@@ -32,7 +32,7 @@ export function useColFlexBasis(contentCols: Ref<number> | (() => number)) {
   return { labelWidth, contentWidth };
 }
 
-// Shared Tailwind class constants 
+// Shared Tailwind class constants
 
 /** Popover / dropdown / select-content floating surface */
 export const popoverSurfaceClass =

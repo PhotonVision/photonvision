@@ -4,7 +4,7 @@ import { ToastProvider, ToastRoot, ToastTitle, ToastDescription, ToastViewport }
 
 import { useThemeColor } from "../../lib/ComponentUtils";
 
-const {solid, border} = useThemeColor(useStateStore().snackbarData.color);
+const { solid, border } = useThemeColor(useStateStore().snackbarData.color);
 </script>
 
 <template>
@@ -15,10 +15,7 @@ const {solid, border} = useThemeColor(useStateStore().snackbarData.color);
       class="data-[state=open]:animate-slideIn data-[state=closed]:animate-hide data-[swipe=end]:animate-swipeOut grid grid-cols-[auto_max-content] items-center gap-x-4 rounded-lg border p-4 shadow-sm [grid-template-areas:'title_action'_'description_action'] data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=move]:translate-x-(--reka-toast-swipe-move-x)"
       :duration="useStateStore().snackbarData.timeout"
     >
-      <ToastTitle
-        class="mb-1.25 text-sm font-medium [grid-area:title]"
-        :style="{ color: `contrast-color(${solid})` }"
-      >
+      <ToastTitle class="mb-1.25 text-sm font-medium [grid-area:title]" :style="{ color: `contrast-color(${solid})` }">
         {{ useStateStore().snackbarData.message }}
       </ToastTitle>
       <ToastDescription as-child>

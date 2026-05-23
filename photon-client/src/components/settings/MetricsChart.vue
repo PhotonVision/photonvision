@@ -63,7 +63,7 @@ const getOptions = (data: ChartData[] = []) => {
       extraCssText: "border-color: #ffffff14;",
       textStyle: {
         color: themeColors.value.onBackground,
-        fontFamily: "var(--font-family-sans)",
+        fontFamily: "var(--font-family-sans)"
       },
       axisPointer: {
         animation: false
