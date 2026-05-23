@@ -68,6 +68,28 @@
     overscroll-behavior: none;
     scrollbar-gutter: stable;
   }
+
+  /* Custom scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-pv-background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-pv-accent);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-pv-primary);
+  }
+
+  .main-container {
+    padding: 0 !important;
+  }
   body {
     min-height: 100vh;
     background-color: var(--color-pv-background);
