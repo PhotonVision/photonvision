@@ -347,4 +347,3 @@ const tabItems: TabItem[] = [
     :on-confirm="() => removeCalibration(confirmRemoveDialog.vf)"
   />
 </template>
-
