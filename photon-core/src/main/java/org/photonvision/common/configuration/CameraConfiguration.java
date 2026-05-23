@@ -74,8 +74,7 @@ public class CameraConfiguration {
         logger.debug("Creating USB camera configuration for " + this.toShortString());
     }
 
-    // Shiny new constructor
-    @Json.Creator
+    // JSON Constructor (can't be marked with @Json.Creator due to public fields that aren't part of the parameters)
     public CameraConfiguration(
             String uniqueName,
             PVCameraInfo matchedCameraInfo,
@@ -83,7 +82,6 @@ public class CameraConfiguration {
             boolean deactivated,
             QuirkyCamera cameraQuirks,
             double FOV,
-            List<CameraCalibrationCoefficients> calibrations,
             int currentPipelineIndex) {
         this.uniqueName = uniqueName;
         this.matchedCameraInfo = matchedCameraInfo;
@@ -91,7 +89,6 @@ public class CameraConfiguration {
         this.deactivated = deactivated;
         this.cameraQuirks = cameraQuirks;
         this.FOV = FOV;
-        this.calibrations = calibrations != null ? calibrations : new ArrayList<>();
         this.currentPipelineIndex = currentPipelineIndex;
     }
 
