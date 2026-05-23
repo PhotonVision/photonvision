@@ -638,9 +638,7 @@ const updateCameraBlueGain = (value: number) => {
                 :disabled="!isCalibrating || !settingsValid"
                 @click="endCalibration"
               >
-                <span class="calib-btn-label">{{
-                  hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
-                }}</span>
+                <span class="calib-btn-label">{{ hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}</span>
               </pv-button>
             </div>
           </div>
