@@ -69,38 +69,3 @@ onBeforeMount(() => {
     </div>
   </ConfigProvider>
 </template>
-<style>
-html {
-  font-size: 0.875rem;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 1rem;
-  }
-}
-</style>
-
-<style>
-/* Custom scrollbar styles */
-::-webkit-scrollbar {
-  width: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-pv-background);
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: var(--color-pv-accent);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-pv-primary);
-}
-
-.main-container {
-  padding: 0 !important;
-}
-</style>
