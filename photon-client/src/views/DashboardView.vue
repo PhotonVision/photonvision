@@ -72,8 +72,18 @@ const conflictingCameraShown = computed<boolean>(() => {
   return useSettingsStore().general.conflictingCameras.length > 0;
 });
 
-const fpsLimitWarningShown = computed<boolean>(() => {
-  return Object.values(useCameraSettingsStore().cameras).some((c) => c.fpsLimit > 0);
+const fpsLimitedCameras = computed<string>(() => {
+  return Object.values(useCameraSettingsStore().cameras)
+    .filter((c) => c.fpsLimit > 0)
+    .map((c) => c.nickname)
+    .join(", ");
+});
+
+const disabledCameras = computed<string>(() => {
+  return Object.values(useCameraSettingsStore().cameras)
+    .filter((c) => !c.isEnabled)
+    .map((c) => c.nickname)
+    .join(", ");
 });
 
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
@@ -91,15 +101,20 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>
     </pv-alert>
-    <pv-alert v-if="fpsLimitWarningShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
-      <span
-        >One or more cameras have an FPS limit set! This may cause performance issues. Check your logs for more
+    <pv-alert v-if="fpsLimitedCameras" class="mb-3" color="error" :icon="IconAlertCircleOutline">
+      <span>
+        {{ fpsLimitedCameras }} have an FPS limit set! This may cause performance issues. Check your logs for more
         information.
       </span>
     </pv-alert>
+    <pv-alert v-if="disabledCameras" class="mb-3" color="error" :icon="IconAlertCircleOutline">
+      <span>
+        {{ disabledCameras }} are disabled! This may cause performance issues. Check your logs for more information.
+      </span>
+    </pv-alert>
     <pv-alert v-if="conflictingCameraShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
-      <span
-        >Conflicting camera name(s) detected! Please change the name(s) of
+      <span>
+        Conflicting camera name(s) detected! Please change the name(s) of
         {{ useSettingsStore().general.conflictingCameras }}!
       </span>
     </pv-alert>

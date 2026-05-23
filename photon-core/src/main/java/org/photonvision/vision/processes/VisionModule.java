@@ -88,6 +88,7 @@ public class VisionModule {
     private int outputStreamPort = -1;
 
     private int fpsLimit = -1;
+    private boolean enabled = true;
 
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
@@ -137,7 +138,8 @@ public class VisionModule {
                         this::consumeResult,
                         this.cameraQuirks,
                         getChangeSubscriber(),
-                        this::getFPSLimit);
+                        this::getFPSLimit,
+                        this::getEnabled);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
@@ -153,7 +155,9 @@ public class VisionModule {
                         pipelineManager::getDriverMode,
                         this::setDriverMode,
                         this::getFPSLimit,
-                        this::setFPSLimit);
+                        this::setFPSLimit,
+                        this::getEnabled,
+                        this::setEnabled);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
@@ -178,7 +182,10 @@ public class VisionModule {
         if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
-                    .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
+                    .ifPresent(
+                            (visionLED) ->
+                                    visionLED.setPipelineModeSupplier(
+                                            () -> pipelineManager.getCurrentPipelineSettings().ledMode));
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
@@ -513,8 +520,9 @@ public class VisionModule {
     }
 
     private void setVisionLEDs(boolean on) {
-        if (camShouldControlLEDs() && HardwareManager.getInstance().visionLED != null)
-            HardwareManager.getInstance().visionLED.setState(on);
+        if (camShouldControlLEDs()) {
+            HardwareManager.getInstance().visionLED.ifPresent((visionLED) -> visionLED.setState(on));
+        }
     }
 
     public void saveModule() {
@@ -576,6 +584,7 @@ public class VisionModule {
         ret.maxWhiteBalanceTemp = visionSource.getSettables().getMaxWhiteBalanceTemp();
 
         ret.deactivated = config.deactivated;
+        ret.isEnabled = getEnabled();
 
         ret.mismatch = this.mismatch;
 
@@ -643,6 +652,25 @@ public class VisionModule {
      */
     public int getFPSLimit() {
         return fpsLimit;
+    }
+
+    /**
+     * Sets whether the camera is enabled/disabled, disabling the camera allows you to reduce util
+     * while keeping the vision runner up for fast toggling.
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        saveAndBroadcastAll();
+    }
+
+    /**
+     * Gets whether the camera is enabled or disabled, if disabled the vision runner will still be
+     * running but the camera will not capture frames, allowing for fast toggling.
+     *
+     * @return the enabled state of the camera
+     */
+    public boolean getEnabled() {
+        return enabled;
     }
 
     public CameraConfiguration getStateAsCameraConfig() {

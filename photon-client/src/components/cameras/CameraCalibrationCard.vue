@@ -265,7 +265,7 @@ const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
-  if (!useStateStore().calibrationData.hasEnoughImages) {
+  if (!hasEnoughImages.value) {
     calibCanceled.value = true;
   }
 
@@ -292,6 +292,10 @@ const endCalibration = () => {
 };
 
 const drawAllSnapshots = ref(true);
+
+const bypassVal = ref(false);
+const minCount = computed(() => (bypassVal.value ? 10 : 100));
+const hasEnoughImages = computed(() => useStateStore().calibrationData.imageCount >= minCount.value);
 
 const showCalDialog = ref(false);
 const selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
@@ -580,11 +584,18 @@ const updateCameraBlueGain = (value: number) => {
                 : 'MrCal failed to load, check journalctl logs for details.'
             "
           />
-          <div v-if="isCalibrating" class="d-flex align-center justify-center pb-5">
-            <pv-chip label :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'">
+          <div v-if="isCalibrating" class="flex flex-wrap items-center justify-between gap-4 pb-5">
+            <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'">
               Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-              {{ useStateStore().calibrationData.minimumImageCount }}
+              {{ minCount }}
             </pv-chip>
+            <pv-switch
+              v-model="bypassVal"
+              label="Bypass minimum"
+              :label-cols="6"
+              :switch-cols="6"
+              tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+            />
           </div>
           <div>
             <pv-button
@@ -621,14 +632,14 @@ const updateCameraBlueGain = (value: number) => {
             <div class="w-1/2 p-0 pl-2">
               <pv-button
                 size="sm"
-                :variant="useStateStore().calibrationData.hasEnoughImages ? 'primary' : 'danger'"
-                :icon="useStateStore().calibrationData.hasEnoughImages ? IconFlagCheckered : IconFlagOffOutline"
+                :variant="hasEnoughImages ? 'primary' : 'danger'"
+                :icon="hasEnoughImages ? IconFlagCheckered : IconFlagOffOutline"
                 block
                 :disabled="!isCalibrating || !settingsValid"
                 @click="endCalibration"
               >
                 <span class="calib-btn-label">{{
-                  useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
+                  hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
                 }}</span>
               </pv-button>
             </div>

@@ -145,7 +145,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          archive: false
+          name: "Playwright Report"
           path: photon-client/playwright-report/
           retention-days: 30
   build-gradle:
