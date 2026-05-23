@@ -80,7 +80,7 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <pv-dialog v-model="useStateStore().showLogModal" :width="1500">
-    <pv-card class="dialog-container p-5">
+    <pv-card class="dialog-container">
       <!-- Logs header -->
       <div class="flex flex-wrap pb-3">
         <div class="w-1/3">
