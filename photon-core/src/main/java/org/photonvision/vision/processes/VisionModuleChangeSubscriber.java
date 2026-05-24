@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.processes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.jsonb.Jsonb;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +30,6 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -57,10 +56,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     }
 
     @Override
-    public void onDataChangeEvent(DataChangeEvent<?> event) {
+    public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
         // Camera index -1 means a "multicast event" (i.e. the event is received by all
         // cameras)
-        if (event instanceof IncomingWebSocketEvent wsEvent
+        if (event instanceof IncomingWebSocketEvent<T> wsEvent
                 && wsEvent.cameraUniqueName != null
                 && wsEvent.cameraUniqueName.equals(parentModule.uniqueName())) {
             logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
@@ -68,7 +67,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             try {
                 getSettingChanges()
                         .add(
-                                new VisionModuleChange(
+                                new VisionModuleChange<T>(
                                         wsEvent.propertyName,
                                         wsEvent.data,
                                         parentModule.pipelineManager.getCurrentPipeline().getSettings(),
@@ -92,6 +91,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 var newPropValue = change.getNewPropValue();
                 var currentSettings = change.getCurrentSettings();
                 var originContext = change.getOriginContext();
+                if (newPropValue instanceof Long) {
+                    newPropValue = ((Long) newPropValue).intValue();
+                }
+
                 switch (propName) {
                     case "pipelineName" -> newPipelineNickname((String) newPropValue);
                     case "newPipelineInfo" -> newPipelineInfo((Pair<String, PipelineType>) newPropValue);
@@ -199,7 +202,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
     public void startCalibration(Map<String, Object> data) {
         try {
-            var deserialized = JacksonUtils.deserialize(data, UICalibrationData.class);
+            var deserialized = Jsonb.instance().type(UICalibrationData.class).fromObject(data);
             parentModule.startCalibration(deserialized);
             parentModule.saveAndBroadcastAll();
         } catch (Exception e) {
@@ -295,8 +298,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             }
         } else if (propField.getType() == ModelProperties.class
                 && newPropValue instanceof LinkedHashMap) {
-            ObjectMapper mapper = new ObjectMapper();
-            ModelProperties modelProps = mapper.convertValue(newPropValue, ModelProperties.class);
+            ModelProperties modelProps =
+                    Jsonb.instance().type(ModelProperties.class).fromObject(newPropValue);
             propField.set(currentSettings, modelProps);
         } else {
             propField.set(currentSettings, newPropValue);

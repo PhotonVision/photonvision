@@ -17,10 +17,12 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import java.io.IOException;
+import io.avaje.json.JsonException;
+import io.avaje.jsonb.Jsonb;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Map;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -34,7 +36,6 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.wpilib.driverstation.Alert;
 import org.wpilib.driverstation.Alert.Level;
 import org.wpilib.networktables.LogMessage;
@@ -199,7 +200,7 @@ public class NetworkTablesManager {
         var atfl_json = event.valueData.value.getString();
         try {
             System.out.println("Got new field layout!");
-            var atfl = JacksonUtils.deserialize(atfl_json, AprilTagFieldLayout.class);
+            var atfl = Jsonb.instance().type(AprilTagFieldLayout.class).fromJson(atfl_json);
             ConfigManager.getInstance().getConfig().setApriltagFieldLayout(atfl);
             ConfigManager.getInstance().requestSave();
             DataChangeService.getInstance()
@@ -207,7 +208,7 @@ public class NetworkTablesManager {
                             new OutgoingUIEvent<>(
                                     "fullsettings",
                                     UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
-        } catch (IOException e) {
+        } catch (IllegalStateException | JsonException e) {
             logger.error("Error deserializing atfl!");
             logger.error(atfl_json);
         }
@@ -270,7 +271,7 @@ public class NetworkTablesManager {
             return;
         }
 
-        HashMap<String, CameraConfiguration> cameraConfigs =
+        Map<String, CameraConfiguration> cameraConfigs =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations();
         String[] cameraNames =
                 cameraConfigs.entrySet().stream()
