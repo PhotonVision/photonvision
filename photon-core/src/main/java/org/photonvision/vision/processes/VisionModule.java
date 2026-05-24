@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -591,23 +592,23 @@ public class VisionModule {
         ret.fpsLimit = this.fpsLimit;
 
         // TODO refactor into helper method
-        var temp = new HashMap<Integer, HashMap<String, Object>>();
+        var temp = new ArrayList<Map<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
 
-        for (var k : videoModes.entrySet()) {
+        for (var videoMode : videoModes) {
             var internalMap = new HashMap<String, Object>();
 
-            internalMap.put("width", k.getValue().width);
-            internalMap.put("height", k.getValue().height);
-            internalMap.put("fps", k.getValue().fps);
+            internalMap.put("width", videoMode.width);
+            internalMap.put("height", videoMode.height);
+            internalMap.put("fps", videoMode.fps);
             internalMap.put(
                     "pixelFormat",
-                    ((k.getValue() instanceof LibcameraGpuSource.FPSRatedVideoMode)
+                    ((videoMode instanceof LibcameraGpuSource.FPSRatedVideoMode)
                                     ? "kPicam"
-                                    : k.getValue().pixelFormat.toString())
+                                    : videoMode.pixelFormat.toString())
                             .substring(1)); // Remove the k prefix
 
-            temp.put(k.getKey(), internalMap);
+            temp.add(internalMap);
         }
 
         if (videoModes.size() == 0) {
@@ -728,7 +729,7 @@ public class VisionModule {
 
     public void addCalibrationToConfig(CameraCalibrationCoefficients newCalibration) {
         if (newCalibration != null) {
-            logger.info("Got new calibration for " + newCalibration.unrotatedImageSize);
+            logger.info("Got new calibration for " + newCalibration.resolution);
             visionSource.getSettables().addCalibration(newCalibration);
         } else {
             logger.error("Got null calibration?");
@@ -737,9 +738,9 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    public void removeCalibrationFromConfig(Size unrotatedImageSize) {
-        if (unrotatedImageSize != null) {
-            visionSource.getSettables().removeCalibration(unrotatedImageSize);
+    public void removeCalibrationFromConfig(Size resolution) {
+        if (resolution != null) {
+            visionSource.getSettables().removeCalibration(resolution);
         } else {
             logger.error("Got null size?");
         }

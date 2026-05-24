@@ -17,6 +17,7 @@
 
 package org.photonvision.common.networking;
 
+import io.avaje.jsonb.Json;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -62,9 +63,10 @@ public class NetworkUtils {
      * @param devName The underlying device name, used by dhclient
      * @param nmType The NetworkManager device type
      */
+    @Json
     public static record NMDeviceInfo(String connName, String devName, NMType nmType) {
-        public NMDeviceInfo(String c, String d, String type) {
-            this(c, d, NMType.typeForString(type));
+        public NMDeviceInfo(String connName, String devName, String nmType) {
+            this(connName, devName, NMType.typeForString(nmType));
         }
     }
 

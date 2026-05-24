@@ -17,13 +17,15 @@
 
 package org.photonvision.common.dataflow.websocket;
 
-import java.util.HashMap;
+import io.avaje.jsonb.Json;
 import java.util.List;
+import java.util.Map;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 
+@Json
 public class UICameraConfiguration {
     // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id
     // or /dev/videoN.
@@ -37,10 +39,10 @@ public class UICameraConfiguration {
     public String uniqueName;
 
     public double fov;
-    public HashMap<String, Object> currentPipelineSettings;
+    public Map<String, Object> currentPipelineSettings;
     public int currentPipelineIndex;
     public List<String> pipelineNicknames;
-    public HashMap<Integer, HashMap<String, Object>> videoFormatList;
+    public List<Map<String, Object>> videoFormatList;
     public int outputStreamPort;
     public int inputStreamPort;
     public List<UICameraCalibrationCoefficients> calibrations;
