@@ -240,7 +240,7 @@ jobs:
          - os: windows-2022
            artifact-name: Win64
          - os: macos-26
-          artifact-name: macOS
+           artifact-name: macOS
          - os: ubuntu-24.04
            artifact-name: Linux
 
