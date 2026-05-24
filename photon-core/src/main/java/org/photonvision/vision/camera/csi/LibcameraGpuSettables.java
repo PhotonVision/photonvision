@@ -75,18 +75,18 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 320, 240, 120, 120, .39));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 320, 240, 30, 30, .39));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 480, 65, 90, .39));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 480, 30, 30, .39));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 320, 240, 120, 120, .39));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 320, 240, 30, 30, .39));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 640, 480, 65, 90, .39));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 640, 480, 30, 30, .39));
             // TODO: fix 1280x720 in the native code and re-add it
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 1920, 1080, 15, 20, .53));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 3280 / 2, 2464 / 2, 15, 20, 1));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 3280 / 4, 2464 / 4, 15, 20, 1));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 1920, 1080, 15, 20, .53));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 3280 / 2, 2464 / 2, 15, 20, 1));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 3280 / 4, 2464 / 4, 15, 20, 1));
         } else if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
             // Taken from https://www.ovt.com/wp-content/uploads/2022/01/OV9281-OV9282-PB-v1.3-WEB.pdf
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 400, 120, 240, 1));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 1280, 800, 120, 120, 1));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 640, 400, 120, 240, 1));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 1280, 800, 120, 120, 1));
 
         } else {
             if (sensorModel == LibCameraJNI.SensorModel.IMX477) {
@@ -101,13 +101,13 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             }
 
             // Settings for the OV5647 sensor, which is used by the Pi Camera Module v1
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 320, 240, 90, 90, 1));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 480, 85, 90, 1));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 960, 720, 45, 49, 0.74));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 320, 240, 90, 90, 1));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 640, 480, 85, 90, 1));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 960, 720, 45, 49, 0.74));
             // Half the size of the active areas on the OV5647
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 2592 / 2, 1944 / 2, 20, 20, 1));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 1280, 720, 30, 45, 0.91));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 2592 / 2, 1944 / 2, 20, 20, 1));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 1280, 720, 30, 45, 0.91));
+            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 1920, 1080, 15, 20, 0.72));
         }
 
         // TODO need to add more video modes for new sensors here
