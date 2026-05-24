@@ -352,10 +352,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 
       <!-- Info card -->
       <div class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
-        <pv-card variant="transparent" :bordered="false" class="flex h-full flex-col justify-center">
-          <div class="flex flex-col items-center justify-center">
-            <pv-icon size="64" color="primary" :icon="IconPlus" />
-          </div>
+        <pv-card variant="transparent" :bordered="false" class="flex h-full flex-col items-center justify-center">
+          <pv-icon size="64" color="primary" :icon="IconPlus" />
           <div class="pt-3 text-lg font-semibold">Additional plugged in cameras will display here!</div>
         </pv-card>
       </div>
