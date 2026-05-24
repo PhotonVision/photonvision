@@ -22,6 +22,7 @@ import io.avaje.json.JsonReader;
 import io.avaje.json.JsonWriter;
 import io.avaje.jsonb.CustomAdapter;
 import io.avaje.jsonb.Jsonb;
+import java.net.URI;
 import java.nio.file.Path;
 
 @CustomAdapter
@@ -30,11 +31,11 @@ public class PathAdapter implements JsonAdapter<Path> {
 
     @Override
     public Path fromJson(JsonReader reader) {
-        return Path.of(reader.readString());
+        return Path.of(URI.create(reader.readString()));
     }
 
     @Override
     public void toJson(JsonWriter writer, Path value) {
-        writer.value(value.toString());
+        writer.value(value.toUri().toString());
     }
 }
