@@ -239,8 +239,8 @@ jobs:
         include:
          - os: windows-2022
            artifact-name: Win64
-         - os: macos-15  # TODO: Restore to macos-26 with WPILib alpha-6
-           artifact-name: macOS
+         - os: macos-26
+          artifact-name: macOS
          - os: ubuntu-24.04
            artifact-name: Linux
 
