@@ -19,6 +19,7 @@ package org.photonvision.common.configuration;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import io.avaje.json.JsonDataException;
 import java.io.IOException;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
@@ -182,5 +184,32 @@ public class SQLConfigTest {
         }
 
         ConfigManager.INSTANCE = null;
+    }
+
+    @Test
+    public void testV2026p3p4WindowsPaths() throws JsonDataException, IOException {
+        assumeTrue(
+                Platform.isWindows(), "This test is only relevant on Windows, skipping on other platforms");
+
+        var configName = "2026.3.4-windows";
+        var folder = tmpDir.resolve(configName);
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve(configName).toFile(), folder.toFile());
+
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+
+        cfgManager.load();
+
+        // Make sure we have calibrated 1280x720, and the board observation paths matches
+        var camCfg =
+                cfgManager
+                        .getConfig()
+                        .getCameraConfigurations()
+                        .get("1414304b-6812-487a-ab5c-89ee70704fae");
+        assertEquals(1280, camCfg.calibrations.get(0).resolution.width);
+        assertEquals(720, camCfg.calibrations.get(0).resolution.height);
+        assertEquals(
+                "file:///C:/Users/matth/Documents/GitHub/photonvision/test/photonvision_config/calibration/1414304b-6812-487a-ab5c-89ee70704fae/imgs/1280x720/img0.png",
+                camCfg.calibrations.get(0).observations.get(0).snapshotDataLocation);
     }
 }
