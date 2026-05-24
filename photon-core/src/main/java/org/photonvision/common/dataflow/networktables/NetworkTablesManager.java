@@ -17,7 +17,7 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import io.avaje.json.JsonDataException;
+import io.avaje.json.JsonException;
 import io.avaje.jsonb.Jsonb;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -208,7 +208,7 @@ public class NetworkTablesManager {
                             new OutgoingUIEvent<>(
                                     "fullsettings",
                                     UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             logger.error("Error deserializing atfl!");
             logger.error(atfl_json);
         }

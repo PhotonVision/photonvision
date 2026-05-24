@@ -17,7 +17,7 @@
 
 package org.photonvision.common.configuration;
 
-import io.avaje.json.JsonDataException;
+import io.avaje.json.JsonException;
 import io.avaje.jsonb.Jsonb;
 import java.io.File;
 import java.io.FileInputStream;
@@ -132,7 +132,7 @@ class LegacyConfigProvider extends ConfigProvider {
                     logger.error("Could not deserialize hardware config! Loading defaults");
                     hardwareConfig = new HardwareConfig();
                 }
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException | JsonException e) {
                 logger.error("Could not deserialize hardware config! Loading defaults");
                 hardwareConfig = new HardwareConfig();
             }
@@ -148,7 +148,7 @@ class LegacyConfigProvider extends ConfigProvider {
                     logger.error("Could not deserialize hardware settings! Loading defaults");
                     hardwareSettings = new HardwareSettings();
                 }
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException | JsonException e) {
                 logger.error("Could not deserialize hardware settings! Loading defaults");
                 hardwareSettings = new HardwareSettings();
             }
@@ -164,7 +164,7 @@ class LegacyConfigProvider extends ConfigProvider {
                     logger.error("Could not deserialize network config! Loading defaults");
                     networkConfig = new NetworkConfig();
                 }
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException | JsonException e) {
                 logger.error("Could not deserialize network config! Loading defaults");
                 networkConfig = new NetworkConfig();
             }
@@ -187,7 +187,7 @@ class LegacyConfigProvider extends ConfigProvider {
                 if (atfl == null) {
                     logger.error("Could not deserialize apriltag field layout! (still null)");
                 }
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException | JsonException e) {
                 logger.error("Could not deserialize apriltag field layout!", e);
                 atfl = null; // not required, nice to be explicit
             }
@@ -226,12 +226,12 @@ class LegacyConfigProvider extends ConfigProvider {
 
         try (var stream = new FileOutputStream(networkConfigFile)) {
             Jsonb.instance().type(NetworkConfig.class).toJson(config.getNetworkConfig(), stream);
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException | JsonException e) {
             logger.error("Could not save network config!", e);
         }
         try (var stream = new FileOutputStream(hardwareSettingsFile)) {
             Jsonb.instance().type(HardwareSettings.class).toJson(config.getHardwareSettings(), stream);
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException | JsonException e) {
             logger.error("Could not save hardware config!", e);
         }
 
@@ -248,7 +248,7 @@ class LegacyConfigProvider extends ConfigProvider {
 
             try (var stream = new FileOutputStream(Path.of(subdir.toString(), "config.json").toFile())) {
                 Jsonb.instance().type(CameraConfiguration.class).toJson(camConfig, stream);
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException | JsonException e) {
                 logger.error("Could not save config.json for " + subdir, e);
             }
         }
@@ -266,7 +266,7 @@ class LegacyConfigProvider extends ConfigProvider {
                 CameraConfiguration loadedConfig = null;
                 try (var stream = new FileInputStream(cameraConfigPath.toFile())) {
                     loadedConfig = Jsonb.instance().type(CameraConfiguration.class).fromJson(stream);
-                } catch (JsonDataException e) {
+                } catch (IllegalStateException | JsonException e) {
                     logger.error("Camera config deserialization failed!", e);
                     e.printStackTrace();
                 }

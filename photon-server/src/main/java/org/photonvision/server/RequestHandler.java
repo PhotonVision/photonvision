@@ -17,7 +17,7 @@
 
 package org.photonvision.server;
 
-import io.avaje.json.JsonDataException;
+import io.avaje.json.JsonException;
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
 import io.javalin.http.Context;
@@ -376,7 +376,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully saved general settings");
             logger.info("Successfully saved general settings");
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             // If the settings can't be parsed, use the default network settings
             config = new NetworkConfig();
 
@@ -509,7 +509,7 @@ public class RequestHandler {
             ctx.result("Camera calibration successfully completed!");
             ctx.status(200);
             logger.info("Camera calibration successfully completed!");
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             ctx.status(400);
             ctx.result(
                     "The 'cameraUniqueName' field was not found in the request. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.");
@@ -544,7 +544,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Calibration imported successfully from imported data!");
             logger.info("Calibration imported successfully from imported data!");
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             ctx.status(400);
             ctx.result("The provided calibration data was malformed");
             logger.error("The provided calibration data was malformed", e);
@@ -1011,7 +1011,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully changed the camera name to: " + request.name);
             logger.info("Successfully changed the camera name to: " + request.name);
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             ctx.status(400).result("Invalid JSON format");
             logger.error("Failed to process camera nickname change request", e);
         } catch (Exception e) {
@@ -1087,7 +1087,7 @@ public class RequestHandler {
                             + request.width
                             + "x"
                             + request.height);
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             ctx.status(400).result("Invalid JSON format");
             logger.error("Failed to process calibration removed request", e);
         } catch (Exception e) {
@@ -1338,7 +1338,7 @@ public class RequestHandler {
             VisionSourceManager.getInstance().deleteVisionSource(request.cameraUniqueName);
 
             ctx.status(200);
-        } catch (IOException | JsonDataException e) {
+        } catch (IOException | IllegalStateException | JsonException e) {
             logger.error("Failed to delete camera", e);
             ctx.status(500);
             ctx.result("Failed to delete camera");
@@ -1358,7 +1358,7 @@ public class RequestHandler {
             } else {
                 ctx.status(403);
             }
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             ctx.status(401);
             logger.error("Failed to process activate matched camera request", e);
             ctx.result("Failed to process activate matched camera request");
@@ -1390,7 +1390,7 @@ public class RequestHandler {
             }
 
             ctx.result("Successfully assigned camera: " + request.cameraInfo);
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             ctx.status(401);
             logger.error("Failed to process assign unmatched camera request", e);
             ctx.result("Failed to process assign unmatched camera request");
@@ -1409,7 +1409,7 @@ public class RequestHandler {
             } else {
                 ctx.status(403);
             }
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             ctx.status(401);
             logger.error("Failed to process unassign camera request", e);
             ctx.result("Failed to process unassign camera request");

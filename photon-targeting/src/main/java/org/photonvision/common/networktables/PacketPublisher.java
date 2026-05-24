@@ -17,7 +17,7 @@
 
 package org.photonvision.common.networktables;
 
-import io.avaje.json.JsonDataException;
+import io.avaje.json.JsonException;
 import io.avaje.jsonb.Jsonb;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,7 +38,7 @@ public class PacketPublisher<T> implements AutoCloseable {
             this.publisher
                     .getTopic()
                     .setProperty("message_uuid", Jsonb.instance().toJson(photonStruct.getInterfaceUUID()));
-        } catch (JsonDataException e) {
+        } catch (IllegalStateException | JsonException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             throw new RuntimeException(e);

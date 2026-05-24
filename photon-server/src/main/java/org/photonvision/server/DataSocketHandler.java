@@ -17,8 +17,7 @@
 
 package org.photonvision.server;
 
-import io.avaje.json.JsonDataException;
-import io.avaje.json.JsonIoException;
+import io.avaje.json.JsonException;
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
 import io.avaje.jsonb.jackson.JacksonAdapter;
@@ -276,7 +275,7 @@ public class DataSocketHandler {
                     logger.error("Failed to parse message!", e);
                 }
             }
-        } catch (JsonIoException e) {
+        } catch (IllegalStateException | JsonException e) {
             logger.error("Failed to deserialize message!", e);
         }
     }
@@ -287,7 +286,7 @@ public class DataSocketHandler {
         }
     }
 
-    public void broadcastMessage(Object message, WsContext userToSkip) throws JsonDataException {
+    public void broadcastMessage(Object message, WsContext userToSkip) throws JsonException {
         ByteBuffer b = ByteBuffer.wrap(msgpackJsonb.toJsonBytes(message));
 
         if (userToSkip == null) {

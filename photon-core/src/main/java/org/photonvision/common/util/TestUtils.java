@@ -17,7 +17,7 @@
 
 package org.photonvision.common.util;
 
-import io.avaje.json.JsonDataException;
+import io.avaje.json.JsonException;
 import io.avaje.jsonb.Jsonb;
 import java.awt.HeadlessException;
 import java.io.File;
@@ -347,7 +347,7 @@ public class TestUtils {
         try (var stream =
                 new FileInputStream(Path.of(getCalibrationPath(testMode).toString(), filename).toFile())) {
             return Jsonb.instance().type(CameraCalibrationCoefficients.class).fromJson(stream);
-        } catch (IOException | JsonDataException e) {
+        } catch (IOException | IllegalStateException | JsonException e) {
             e.printStackTrace();
             return null;
         }

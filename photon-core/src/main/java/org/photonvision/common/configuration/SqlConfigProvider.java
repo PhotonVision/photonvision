@@ -17,7 +17,7 @@
 
 package org.photonvision.common.configuration;
 
-import io.avaje.json.JsonDataException;
+import io.avaje.json.JsonException;
 import io.avaje.jsonb.JsonType;
 import io.avaje.jsonb.Jsonb;
 import io.avaje.jsonb.Types;
@@ -266,7 +266,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 configObj = Jsonb.instance().type(ref).fromJson(configString);
                 logger.info("Loaded " + ref.getSimpleName() + " from database");
                 return configObj;
-            } catch (JsonDataException e) {
+            } catch (IllegalStateException | JsonException e) {
                 logger.error("Could not deserialize " + ref.getSimpleName() + " from database!", e);
             }
         } else {
@@ -402,7 +402,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
                 statement.executeUpdate();
             }
-        } catch (SQLException | JsonDataException e) {
+        } catch (SQLException | IllegalStateException | JsonException e) {
             logger.error("Err saving cameras", e);
             try {
                 conn.rollback();
@@ -494,7 +494,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 statement3.close();
             }
 
-        } catch (SQLException | JsonDataException e) {
+        } catch (SQLException | IllegalStateException | JsonException e) {
             logger.error("Err saving global", e);
             try {
                 conn.rollback();
@@ -666,7 +666,7 @@ public class SqlConfigProvider extends ConfigProvider {
                         try {
                             config.pipelineSettings.add(
                                     Jsonb.instance().type(CVPipelineSettings.class).fromJson(pipelineJson));
-                        } catch (JsonDataException e) {
+                        } catch (IllegalStateException | JsonException e) {
                             logger.error(
                                     "Could not deserialize pipeline setting for camera " + config.nickname, e);
                         }
@@ -686,7 +686,7 @@ public class SqlConfigProvider extends ConfigProvider {
                     }
 
                     loadedConfigurations.put(uniqueName, config);
-                } catch (JsonDataException e) {
+                } catch (IllegalStateException | JsonException e) {
                     logger.error(
                             "Could not deserialize camera configuration " + uniqueName + " from database!", e);
                 }

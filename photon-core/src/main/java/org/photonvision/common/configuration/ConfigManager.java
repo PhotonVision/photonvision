@@ -17,6 +17,7 @@
 
 package org.photonvision.common.configuration;
 
+import io.avaje.json.JsonException;
 import io.avaje.jsonb.Jsonb;
 import java.io.File;
 import java.io.FileWriter;
@@ -242,7 +243,7 @@ public class ConfigManager {
             if (tempProperties.exists()) {
                 Files.delete(tempProperties.toPath());
             }
-        } catch (Exception e) {
+        } catch (IOException | IllegalStateException | JsonException e) {
             e.printStackTrace();
         }
         return out;
