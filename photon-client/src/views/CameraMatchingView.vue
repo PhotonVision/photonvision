@@ -2,8 +2,8 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings, PVCameraInfo } from "@/types/SettingTypes";
-import { axiosPost, getResolutionString, cameraInfoFor } from "@/lib/PhotonUtils";
+import { PlaceholderCameraSettings, type PVCameraInfo } from "@/types/SettingTypes";
+import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
 import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
@@ -58,22 +58,15 @@ const deleteThisCamera = async (cameraUniqueName: string) => {
 
 const cameraConnected = (uniquePath: string | undefined): boolean => {
   if (!uniquePath) return false;
-  return (
-    useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
-  );
+  return useStateStore().vsmState.allConnectedCameras.find((it) => it.uniquePath === uniquePath) !== undefined;
 };
 
 const unmatchedCameras = computed(() => {
-  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map(
-    (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath
-  );
-  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map(
-    (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath
-  );
+  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map((it) => it.matchedCameraInfo.uniquePath);
+  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map((it) => it.matchedCameraInfo.uniquePath);
 
   return useStateStore().vsmState.allConnectedCameras.filter(
-    (it) =>
-      !activeVmPaths.includes(cameraInfoFor(it).uniquePath) && !disabledVmPaths.includes(cameraInfoFor(it).uniquePath)
+    (it) => !activeVmPaths.includes(it.uniquePath) && !disabledVmPaths.includes(it.uniquePath)
   );
 });
 
@@ -84,8 +77,8 @@ const activeVisionModules = computed(() =>
     // Display connected cameras first
     .sort(
       (first, second) =>
-        (cameraConnected(cameraInfoFor(second.matchedCameraInfo).uniquePath) ? 1 : 0) -
-        (cameraConnected(cameraInfoFor(first.matchedCameraInfo).uniquePath) ? 1 : 0)
+        (cameraConnected(second.matchedCameraInfo.uniquePath) ? 1 : 0) -
+        (cameraConnected(first.matchedCameraInfo.uniquePath) ? 1 : 0)
     )
 );
 
@@ -104,18 +97,18 @@ const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null)
 const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
     return {
-      PVFileCameraInfo: undefined,
-      PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      type: "PVFileCameraInfo",
+      path: "",
+      name: "",
+      uniquePath: ""
     };
   }
   return (
-    useStateStore().vsmState.allConnectedCameras.find(
-      (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
-    ) || {
-      PVFileCameraInfo: undefined,
-      PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+    useStateStore().vsmState.allConnectedCameras.find((it) => it.uniquePath === info.uniquePath) || {
+      type: "PVFileCameraInfo",
+      path: "",
+      name: "",
+      uniquePath: ""
     }
   );
 };
@@ -132,13 +125,13 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       >
         <pv-card class="rounded-2xl">
           <div class="text-lg font-semibold wrap-break-word">
-            {{ cameraInfoFor(module.matchedCameraInfo).name }}
+            {{ module.matchedCameraInfo.name }}
           </div>
-          <div v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="text-sm">
+          <div v-if="!cameraConnected(module.matchedCameraInfo.uniquePath)" class="text-sm">
             Status: <span class="inactive-status">Disconnected</span>
           </div>
           <div
-            v-else-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) && !module.mismatch"
+            v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch"
             class="text-sm"
           >
             Status: <span class="active-status">Active</span>
@@ -149,7 +142,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               <tbody>
                 <tr
                   v-if="
-                    cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
+                    cameraConnected(module.matchedCameraInfo.uniquePath) &&
                     useStateStore().backendResults[module.uniqueName]
                   "
                 >
@@ -191,7 +184,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               </tbody>
             </pv-table>
             <div
-              v-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
+              v-if="cameraConnected(module.matchedCameraInfo.uniquePath)"
               :id="`stream-container-${index}`"
               class="d-flex flex-column align-center mt-3 justify-center"
               style="height: 250px"
@@ -212,7 +205,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
-                      cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                      cameraConnected(module.matchedCameraInfo.uniquePath)
                     )
                   "
                 >
@@ -286,7 +279,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 </tr>
                 <tr>
                   <td>Connected</td>
-                  <td>{{ cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
+                  <td>{{ cameraConnected(module.matchedCameraInfo.uniquePath) }}</td>
                 </tr>
               </tbody>
             </pv-table>
@@ -300,7 +293,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
-                      cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                      cameraConnected(module.matchedCameraInfo.uniquePath)
                     )
                   "
                 >
@@ -343,15 +336,15 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <div v-for="(camera, index) in unmatchedCameras" :key="index" class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
         <pv-card class="rounded-2xl">
           <div class="text-lg font-semibold wrap-break-word">
-            <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
-            <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
-            <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
+            <span v-if="camera.type === 'PVUsbCameraInfo'">USB Camera:</span>
+            <span v-else-if="camera.type === 'PVCSICameraInfo'">CSI Camera:</span>
+            <span v-else-if="camera.type === 'PVFileCameraInfo'">File Camera:</span>
             <span v-else>Unknown Camera:</span>
-            &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
+            &nbsp;<span>{{ camera.name }}</span>
           </div>
           <div class="text-sm">Status: Unassigned</div>
           <div class="pt-3">
-            <span style="word-break: break-all">{{ cameraInfoFor(camera)?.path }}</span>
+            <span style="word-break: break-all">{{ camera.path }}</span>
           </div>
           <div class="pt-0">
             <div class="-mx-2 flex flex-wrap">
@@ -386,7 +379,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <pv-card v-if="viewingCamera[0] !== null" class="flex flex-col gap-3">
         <div class="flex items-center justify-between text-lg font-semibold">
           <span class="wrap-break-word">
-            {{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}
+            {{ viewingCamera[0].name }}
           </span>
           <pv-button variant="text" size="icon" :icon="IconClose" @click="setCameraView(null, null)" />
         </div>
@@ -395,9 +388,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
         </div>
         <div
           v-else-if="
-            activeVisionModules.find(
-              (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath === cameraInfoFor(viewingCamera[0]).uniquePath
-            )?.mismatch
+            activeVisionModules.find((it) => it.matchedCameraInfo.uniquePath === viewingCamera[0]?.uniquePath)?.mismatch
           "
         >
           <pv-alert

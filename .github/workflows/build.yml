@@ -98,7 +98,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 10
       - name: Setup Node.js
@@ -240,7 +240,7 @@ jobs:
         include:
 #          - os: windows-2022
 #            artifact-name: Win64
-          - os: macos-26
+          - os: macos-15  # TODO: Restore to macos-26 with WPILib alpha-6
             artifact-name: macOS
           - os: ubuntu-24.04
             artifact-name: Linux

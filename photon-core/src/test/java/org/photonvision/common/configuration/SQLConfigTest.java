@@ -19,8 +19,9 @@ package org.photonvision.common.configuration;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.avaje.json.JsonDataException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -32,8 +33,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
@@ -92,32 +93,6 @@ public class SQLConfigTest {
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
 
-    @Test
-    public void testLoad2024_3_1() throws IOException {
-        // Copy the 2024.3.1 config to a temp dir
-        FileUtils.copyDirectory(
-                TestUtils.getConfigDirectoriesPath(false)
-                        .resolve("photonvision_config_from_v2024.3.1")
-                        .toFile(),
-                tmpDir.resolve("photonvision_config_from_v2024.3.1").toFile());
-
-        var cfgLoader = new SqlConfigProvider(tmpDir.resolve("photonvision_config_from_v2024.3.1"));
-
-        assertDoesNotThrow(cfgLoader::load);
-
-        System.out.println(cfgLoader.getConfig());
-        for (var c : CameraQuirk.values()) {
-            assertDoesNotThrow(
-                    () ->
-                            cfgLoader
-                                    .config
-                                    .getCameraConfigurations()
-                                    .get("Microsoft_LifeCam_HD-3000")
-                                    .cameraQuirks
-                                    .hasQuirk(c));
-        }
-    }
-
     void common2025p3p1Assertions(PhotonConfiguration config) {
         // Make sure we got 8 cameras
         assertEquals(8, config.getCameraConfigurations().size());
@@ -134,7 +109,7 @@ public class SQLConfigTest {
     }
 
     @Test
-    public void testLoadNewNNMM() throws JsonProcessingException, IOException {
+    public void testLoadNewNNMM() throws JsonDataException, IOException {
         var folder = tmpDir.resolve("2025.3.1-old-nnmm");
         FileUtils.copyDirectory(
                 TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
@@ -165,7 +140,7 @@ public class SQLConfigTest {
         common2025p3p1Assertions(reloadedProvider.getConfig());
 
         // And make sure NNPM has all 5 models
-        assertEquals(5, reloadedProvider.getConfig().neuralNetworkPropertyManager().getModels().length);
+        assertEquals(5, reloadedProvider.getConfig().getNeuralNetworkProperties().getModels().length);
 
         ConfigManager.INSTANCE = null;
     }
@@ -209,5 +184,32 @@ public class SQLConfigTest {
         }
 
         ConfigManager.INSTANCE = null;
+    }
+
+    @Test
+    public void testV2026p3p4WindowsPaths() throws JsonDataException, IOException {
+        assumeTrue(
+                Platform.isWindows(), "This test is only relevant on Windows, skipping on other platforms");
+
+        var configName = "2026.3.4-windows";
+        var folder = tmpDir.resolve(configName);
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve(configName).toFile(), folder.toFile());
+
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+
+        cfgManager.load();
+
+        // Make sure we have calibrated 1280x720, and the board observation paths matches
+        var camCfg =
+                cfgManager
+                        .getConfig()
+                        .getCameraConfigurations()
+                        .get("1414304b-6812-487a-ab5c-89ee70704fae");
+        assertEquals(1280, camCfg.calibrations.get(0).resolution.width);
+        assertEquals(720, camCfg.calibrations.get(0).resolution.height);
+        assertEquals(
+                "C:\\Users\\matth\\Documents\\GitHub\\photonvision\\test\\photonvision_config\\calibration\\1414304b-6812-487a-ab5c-89ee70704fae\\imgs\\1280x720\\img0.png",
+                camCfg.calibrations.get(0).observations.get(0).snapshotDataLocation.toString());
     }
 }

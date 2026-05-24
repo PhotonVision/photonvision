@@ -17,10 +17,12 @@
 
 package org.photonvision.common.hardware;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import io.avaje.jsonb.Json;
+import io.avaje.jsonb.Jsonb;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Optional;
 import org.photonvision.common.logging.LogGroup;
@@ -35,26 +37,22 @@ import org.photonvision.common.logging.Logger;
 public class OsImageData {
     private static final Logger logger = new Logger(OsImageData.class, LogGroup.General);
 
-    private static Path imageMetadataFile = Path.of("/opt/photonvision/image-version.json");
+    private static File imageMetadataFile = Path.of("/opt/photonvision/image-version.json").toFile();
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 
+    @Json(naming = Json.Naming.LowerUnderscore)
     public static record ImageMetadata(
             String buildDate, String commitSha, String commitTag, String imageName, String imageSource) {}
 
     private static Optional<ImageMetadata> getImageMetadata() {
-        if (!imageMetadataFile.toFile().exists()) {
+        if (!imageMetadataFile.exists()) {
             logger.warn("Photon cannot locate OS image metadata at " + imageMetadataFile.toString());
             return Optional.empty();
         }
 
-        try {
-            String content = Files.readString(imageMetadataFile).strip();
-
-            ObjectMapper mapper =
-                    new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-
-            ImageMetadata md = mapper.readValue(content, ImageMetadata.class);
+        try (InputStream stream = new FileInputStream(imageMetadataFile)) {
+            ImageMetadata md = Jsonb.instance().type(ImageMetadata.class).fromJson(stream);
 
             if (md.buildDate() == null
                     && md.commitSha() == null

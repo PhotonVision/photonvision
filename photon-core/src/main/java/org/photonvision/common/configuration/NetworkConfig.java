@@ -17,16 +17,17 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
 
+@Json
 public class NetworkConfig {
     // Can be an integer team number, or an IP address
+    // MIGRATION: 2023
+    @Json.Alias("teamNumber")
     public String ntServerAddress = "0";
+
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
     public String hostname = "photonvision";
@@ -34,8 +35,8 @@ public class NetworkConfig {
     public boolean shouldManage;
     public boolean shouldPublishProto = false;
 
-    @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
-    @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
+    public static final String NM_IFACE_STRING = "${interface}";
+    public static final String NM_IP_STRING = "${ipaddr}";
 
     public String networkManagerIface = "";
     // TODO: remove these strings if no longer needed
@@ -50,19 +51,17 @@ public class NetworkConfig {
         setShouldManage(deviceCanManageNetwork());
     }
 
-    @JsonCreator
     public NetworkConfig(
-            @JsonProperty("ntServerAddress") @JsonAlias({"ntServerAddress", "teamNumber"})
-                    String ntServerAddress,
-            @JsonProperty("connectionType") NetworkMode connectionType,
-            @JsonProperty("staticIp") String staticIp,
-            @JsonProperty("hostname") String hostname,
-            @JsonProperty("runNTServer") boolean runNTServer,
-            @JsonProperty("shouldManage") boolean shouldManage,
-            @JsonProperty("shouldPublishProto") boolean shouldPublishProto,
-            @JsonProperty("networkManagerIface") String networkManagerIface,
-            @JsonProperty("setStaticCommand") String setStaticCommand,
-            @JsonProperty("setDHCPcommand") String setDHCPcommand) {
+            String ntServerAddress,
+            NetworkMode connectionType,
+            String staticIp,
+            String hostname,
+            boolean runNTServer,
+            boolean shouldManage,
+            boolean shouldPublishProto,
+            String networkManagerIface,
+            String setStaticCommand,
+            String setDHCPcommand) {
         this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
@@ -89,12 +88,10 @@ public class NetworkConfig {
                 config.setDHCPcommand);
     }
 
-    @JsonIgnore
     public String getPhysicalInterfaceName() {
         return this.networkManagerIface;
     }
 
-    @JsonIgnore
     public String getEscapedInterfaceName() {
         return "\"" + networkManagerIface + "\"";
     }
@@ -103,7 +100,6 @@ public class NetworkConfig {
         this.shouldManage = shouldManage && this.deviceCanManageNetwork();
     }
 
-    @JsonIgnore
     protected boolean deviceCanManageNetwork() {
         return Platform.isLinux();
     }

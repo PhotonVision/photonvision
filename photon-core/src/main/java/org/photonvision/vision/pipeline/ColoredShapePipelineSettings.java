@@ -17,14 +17,12 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Objects;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ContourShape;
 
-@JsonTypeName("ColoredShapePipelineSettings")
 public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public ContourShape contourShape = ContourShape.Triangle;
     public DoubleCouple contourPerimeter = new DoubleCouple(0, Double.MAX_VALUE);
