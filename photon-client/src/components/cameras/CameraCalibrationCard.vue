@@ -119,20 +119,6 @@ const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
 
-const squareSizeMeters = computed({
-  get: () => length[dimensionUnit.value](squareSize.value).m.value,
-  set(value) {
-    squareSize.value = length.m(value)[dimensionUnit.value].value;
-  }
-});
-
-const markerSizeMeters = computed({
-  get: () => length[dimensionUnit.value](markerSize.value).m.value,
-  set(value) {
-    markerSize.value = length.m(value)[dimensionUnit.value].value;
-  }
-});
-
 watch(dimensionUnit, (value, oldValue) => {
   squareSize.value = length[oldValue](squareSize.value)[value].value;
   markerSize.value = length[oldValue](markerSize.value)[value].value;
@@ -148,8 +134,7 @@ const tooManyPoints = computed(
 const downloadCalibBoard = async () => {
   const { jsPDF } = await jspdf;
   const { font } = await PromptRegular;
-  const doc = new jsPDF({ unit: "mm", format: "letter" });
-  // TODO: Convert dimensioned constants
+  const doc = new jsPDF({ unit: "in", format: "letter" });
 
   doc.addFileToVFS("Prompt-Regular.tff", font);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
@@ -161,18 +146,19 @@ const downloadCalibBoard = async () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      const chessboardStartX = (paperWidth - (patternWidth.value * squareSizeMeters.value) / 1000) / 2;
+      const squareSizeIn = length[dimensionUnit.value](squareSize.value).in.value;
+      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn) / 2;
 
-      const chessboardStartY = (paperHeight - (patternWidth.value * squareSizeMeters.value) / 1000) / 2;
+      const chessboardStartY = (paperHeight - patternHeight.value * squareSizeIn) / 2;
 
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
         for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = chessboardStartX + (squareX * squareSizeMeters.value) / 1000;
-          const yPos = chessboardStartY + (squareY * squareSizeMeters.value) / 1000;
+          const xPos = chessboardStartX + squareX * squareSizeIn;
+          const yPos = chessboardStartY + squareY * squareSizeIn;
 
           // Only draw the odd squares to create the chessboard pattern
           if (squareY % 2 !== squareX % 2) {
-            doc.rect(xPos, yPos, squareSizeMeters.value / 1000, squareSizeMeters.value / 1000, "F");
+            doc.rect(xPos, yPos, squareSizeIn, squareSizeIn, "F");
           }
         }
       }
@@ -225,8 +211,8 @@ const isCalibrating = computed(
 
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
-    squareSizeMm: squareSizeMeters.value,
-    markerSizeMm: markerSizeMeters.value,
+    squareSizeMeters: length[dimensionUnit.value](squareSize.value).m.value,
+    markerSizeMeters: length[dimensionUnit.value](markerSize.value).m.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
