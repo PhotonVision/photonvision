@@ -150,6 +150,8 @@ dependencies {
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
     implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, openCVversion)
 
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: jacksonVersion
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
     implementation group: "io.avaje", name: "avaje-jsonb", version: avajeJsonbVersion
     annotationProcessor group: "io.avaje", name: "avaje-jsonb-generator", version: avajeJsonbVersion
 
