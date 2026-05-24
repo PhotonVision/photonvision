@@ -102,7 +102,7 @@ onBeforeUnmount(() => {
     <img
       :id="id"
       ref="mjpgStream"
-      class="absolute h-100 w-100 object-contain"
+      class="absolute h-full w-full object-contain"
       crossorigin="anonymous"
       :src="streamSrc"
       :alt="streamDesc"

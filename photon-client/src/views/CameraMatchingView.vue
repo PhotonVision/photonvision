@@ -130,10 +130,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <div v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="text-sm">
             Status: <span class="inactive-status">Disconnected</span>
           </div>
-          <div
-            v-else-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) && !module.mismatch"
-            class="text-sm"
-          >
+          <div v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch" class="text-sm">
             Status: <span class="active-status">Active</span>
           </div>
           <div v-else class="text-sm">Status: <span class="mismatch-status">Mismatch</span></div>
@@ -196,18 +193,13 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               />
             </div>
           </div>
-          <div class="pt-0">
+          <div class="pt-3">
             <div class="-mx-2 flex flex-wrap">
               <div class="w-full px-2 pb-3 md:w-1/3 md:pb-0">
                 <pv-button
                   variant="passive"
                   block
-                  @click="
-                    setCameraView(
-                      module.matchedCameraInfo,
-                      cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
-                    )
-                  "
+                  @click="setCameraView(module.matchedCameraInfo, cameraConnected(module.matchedCameraInfo.uniquePath))"
                 >
                   <span>Details</span>
                 </pv-button>
@@ -290,12 +282,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 <pv-button
                   variant="passive"
                   block
-                  @click="
-                    setCameraView(
-                      module.matchedCameraInfo,
-                      cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
-                    )
-                  "
+                  @click="setCameraView(module.matchedCameraInfo, cameraConnected(module.matchedCameraInfo.uniquePath))"
                 >
                   <span>Details</span>
                 </pv-button>
