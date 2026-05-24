@@ -209,7 +209,7 @@ public class SQLConfigTest {
         assertEquals(1280, camCfg.calibrations.get(0).resolution.width);
         assertEquals(720, camCfg.calibrations.get(0).resolution.height);
         assertEquals(
-                "file:///C:/Users/matth/Documents/GitHub/photonvision/test/photonvision_config/calibration/1414304b-6812-487a-ab5c-89ee70704fae/imgs/1280x720/img0.png",
-                camCfg.calibrations.get(0).observations.get(0).snapshotDataLocation);
+                "C:\\Users\\matth\\Documents\\GitHub\\photonvision\\test\\photonvision_config\\calibration\\1414304b-6812-487a-ab5c-89ee70704fae\\imgs\\1280x720\\img0.png",
+                camCfg.calibrations.get(0).observations.get(0).snapshotDataLocation.toString());
     }
 }
