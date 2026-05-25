@@ -16,7 +16,7 @@ const props = defineProps<{
 const uncertaintyData: Ref<CvPoint3[] | null> = ref(null);
 const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
-const containerRef = useTemplateRef<HTMLDivElement | null>("container");
+const containerRef = useTemplateRef<HTMLDivElement | null>("containerRef");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let plotly: any = null;
