@@ -42,7 +42,8 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
             List<BoardObservation> observations,
             Size calobjectSize,
             double calobjectSpacing,
-            CameraLensModel lensmodel, OptimizationInputs optimizationInputs) {
+            CameraLensModel lensmodel,
+            OptimizationInputs optimizationInputs) {
         // yeet observations + optimization inputs, keep all else
         super(
                 resolution,

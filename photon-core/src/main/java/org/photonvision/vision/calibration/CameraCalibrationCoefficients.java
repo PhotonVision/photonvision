@@ -21,7 +21,6 @@ import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.jetbrains.annotations.Nullable;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Point3;
@@ -257,10 +256,17 @@ public class CameraCalibrationCoefficients implements Releasable {
                 observations,
                 calobjectSize,
                 calobjectSpacing,
-                lensmodel, null);
+                lensmodel,
+                null);
     }
 
-    public double[] framePosesToRtToref() {
+    /**
+     * Convert from WPILib geometry types to a raw RT array
+     *
+     * @return array of size [numObservations * 6] where each group of 6 is (rvec[0], rvec[1],
+     *     rvec[2], tvec[0], tvec[1], tvec[2]) for the
+     */
+    private double[] optimizationInputsRtToRef() {
         int numObs = optimizationInputs.rt_cam_ref.size();
         double[] ret = new double[numObs * 6];
 
@@ -294,7 +300,7 @@ public class CameraCalibrationCoefficients implements Releasable {
         int boardHeight = (int) calobjectSize.height;
 
         double[] xylevels = new double[boardWidth * boardHeight * 3 * observations.size()];
-        var rt_ref_frames = framePosesToRtToref();
+        var rt_ref_frames = optimizationInputsRtToRef();
 
         int xylevelsIdx = 0;
         for (var board : observations) {
