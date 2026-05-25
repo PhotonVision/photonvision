@@ -37,9 +37,9 @@ public class Pose3dJsonAdapter implements JsonAdapter<Pose3d>, ViewBuilderAware 
     private final PropertyNames names;
 
     public Pose3dJsonAdapter(Jsonb jsonb) {
-        this.translation3dJsonAdapter = jsonb.adapter(Translation3d.class);
-        this.rotation3dJsonAdapter = jsonb.adapter(Rotation3d.class);
-        this.names = jsonb.properties("translation", "rotation");
+        translation3dJsonAdapter = jsonb.adapter(Translation3d.class);
+        rotation3dJsonAdapter = jsonb.adapter(Rotation3d.class);
+        names = jsonb.properties("translation", "rotation");
     }
 
     @Override
