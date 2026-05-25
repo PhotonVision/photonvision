@@ -24,6 +24,7 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,5 +58,10 @@ public class PhotonVersionTest {
         assertTrue(versionMatches("dev-v2021.1.6-5-gca49ea50", "v2021.1.6"));
         assertFalse(versionMatches("", "v2021.1.6"));
         assertFalse(versionMatches("v2021.1.6", ""));
+    }
+
+    @Test
+    public void testNominalDeps() {
+        assertDoesNotThrow(PhotonCamera::verifyDependencies);
     }
 }
