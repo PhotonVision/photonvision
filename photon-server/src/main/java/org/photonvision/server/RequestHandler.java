@@ -1070,8 +1070,8 @@ public class RequestHandler {
                 module.getStateAsCameraConfig().calibrations.stream()
                         .filter(
                                 it ->
-                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                                        Math.abs(it.resolution.width - width) < 1e-4
+                                                && Math.abs(it.resolution.height - height) < 1e-4)
                         .findFirst()
                         .orElse(null);
 

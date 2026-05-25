@@ -63,7 +63,8 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     public final CameraLensModel lensmodel;
 
-    @Nullable public final OptimizationInputs optimizationInputs;
+    // Solver optimization inputs, or null if not available (e.g. legacy calibrations)
+    public final OptimizationInputs optimizationInputs;
 
     /**
      * Contains all camera calibration data for a particular resolution of a camera. Designed for use
@@ -256,10 +257,9 @@ public class CameraCalibrationCoefficients implements Releasable {
                 observations,
                 calobjectSize,
                 calobjectSpacing,
-                lensmodel);
+                lensmodel, null);
     }
 
-    @JsonIgnore
     public double[] framePosesToRtToref() {
         int numObs = optimizationInputs.rt_cam_ref.size();
         double[] ret = new double[numObs * 6];
@@ -283,7 +283,6 @@ public class CameraCalibrationCoefficients implements Releasable {
      * Estimate uncertainty across a grid of points. Returned list is (u, v, uncertainty) in pixels.
      * Please find a better home for this code
      */
-    @JsonIgnore
     public List<Point3> estimateUncertainty() {
         if (this.optimizationInputs == null) {
             logger.error("Cannot compute uncertainty without optimization inputs");
@@ -347,8 +346,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                         boardWidth,
                         boardHeight,
                         calobjectSpacing,
-                        (int) unrotatedImageSize.width,
-                        (int) unrotatedImageSize.height,
+                        (int) resolution.width,
+                        (int) resolution.height,
                         60,
                         40,
                         warpX,
