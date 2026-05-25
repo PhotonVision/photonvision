@@ -89,7 +89,7 @@ More info on what these parameters mean can be found in [OpenCV's docs](https://
 - FOV: calculated using estimated focal length and image size. Useful for gut-checking calibration results
 - Mean Err: Mean reprojection error, or distance between expected and observed chessboard cameras for the full calibration dataset
 
-The "observations" tab shows snapshots, along with a per-snapshot mean reprojection error. A snapshot with a larger reprojection error might indicate a bad snapshot, due to effects such as motion blur or misidentified chessboard corners. Corners marked green were used in the final solve, while red corners were marked as outliers. Charuco chessboars may have some corners entirely undetected -- these are not marked.
+The "observations" tab shows snapshots, along with a per-snapshot mean reprojection error. A snapshot with a larger reprojection error might indicate a bad snapshot, due to effects such as motion blur or misidentified chessboard corners. Corners marked green were used in the final solve, while red corners were marked as outliers. ChArUco boards may have some corners entirely undetected -- these are not marked.
 
 ```{image} images/cal-outliers.png
 :alt: Calibration outliers and inliners
@@ -101,7 +101,7 @@ The "uncertainty" tab shows camera [projection uncertainty](https://mrcal.secret
 This tool only measures sampling error — noise from imperfect corner detection. It does not catch model errors, like using the wrong lens model or blurry images. If your calibration has those problems, the map will look optimistically good even when the calibration is actually bad. A good calibration will have a clean uncertainty map, but a bad calibration can have one too.
 
 ```{image} images/cal-uncertainty.png
-:alt: Calibration outliers and inliners
+:alt: Calibration outliers and inliers
 :width: 600
 ```
 
