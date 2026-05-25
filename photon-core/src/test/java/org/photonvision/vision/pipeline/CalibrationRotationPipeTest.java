@@ -129,10 +129,7 @@ public class CalibrationRotationPipeTest {
 
         FrameStaticProperties frameProps =
                 new FrameStaticProperties(
-                        (int) coeffs.unrotatedImageSize.width,
-                        (int) coeffs.unrotatedImageSize.height,
-                        66,
-                        coeffs);
+                        (int) coeffs.resolution.width, (int) coeffs.resolution.height, 66, coeffs);
 
         FrameStaticProperties rotatedFrameProps = frameProps.rotate(rot);
 
@@ -212,7 +209,7 @@ public class CalibrationRotationPipeTest {
         double[] rotatedCamMat = {fx, 0, res.width - cx, 0, fy, res.height - cy, 0, 0, 1};
         assertArrayEquals(rotatedCamMat, coeffs2.cameraIntrinsics.data);
         // AND the image size should be the same
-        assertEquals(res, coeffs2.unrotatedImageSize);
+        assertEquals(res, coeffs2.resolution);
 
         // WHEN the camera calibration is rotated 180 degrees
         var coeffs3 = coeffs2.rotateCoefficients(rot);
@@ -220,7 +217,7 @@ public class CalibrationRotationPipeTest {
         // THEN the camera matrix will be the same as the original
         assertArrayEquals(intrinsics, coeffs3.cameraIntrinsics.data);
         // AND the image size should be the same
-        assertEquals(res, coeffs2.unrotatedImageSize);
+        assertEquals(res, coeffs2.resolution);
     }
 
     @CartesianTest

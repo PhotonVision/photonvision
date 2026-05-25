@@ -41,7 +41,7 @@ public class Server {
         }
 
         @Override
-        public void onDataChangeEvent(DataChangeEvent<?> event) {
+        public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
             if (event.propertyName.equals("restartServer")) {
                 Server.restart();
             }

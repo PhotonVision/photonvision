@@ -5,6 +5,7 @@
 
 common-errors
 logging
+status-leds
 camera-troubleshooting
 networking-troubleshooting
 unix-commands

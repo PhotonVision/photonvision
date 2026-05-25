@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.apache.commons.cli.*;
 import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
@@ -235,6 +236,8 @@ public class Main {
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
 
+        System.setProperty("jsonb.disableAdapterSpi", "true");
+
         logger.info(
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString
@@ -354,7 +357,7 @@ public class Main {
         VisionSourceManager.getInstance().registerTimedTasks();
 
         logger.info("Starting server...");
-        HardwareManager.getInstance().setError(null);
+        HardwareManager.getInstance().setError(Optional.empty());
         Server.initialize(DEFAULT_WEBPORT);
     }
 }

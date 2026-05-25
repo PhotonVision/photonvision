@@ -242,7 +242,7 @@ const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
-  if (!useStateStore().calibrationData.hasEnoughImages) {
+  if (!hasEnoughImages.value) {
     calibCanceled.value = true;
   }
 
@@ -269,6 +269,10 @@ const endCalibration = () => {
 };
 
 const drawAllSnapshots = ref(true);
+
+const bypassVal = ref(false);
+const minCount = computed(() => (bypassVal.value ? 10 : 100));
+const hasEnoughImages = computed(() => useStateStore().calibrationData.imageCount >= minCount.value);
 
 const showCalDialog = ref(false);
 const selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
@@ -540,11 +544,22 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           <v-chip
             :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
             label
-            :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'"
+            :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'"
           >
             Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-            {{ useStateStore().calibrationData.minimumImageCount }}
+            {{ minCount }}
           </v-chip>
+          <v-spacer />
+          <pv-switch
+            v-model="bypassVal"
+            color="error"
+            hide-details
+            class="ml-4"
+            label="Bypass minimum"
+            :label-cols="6"
+            :switch-cols="6"
+            tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+          />
         </div>
         <div>
           <v-btn
@@ -589,16 +604,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonActive' : 'error'"
+              :color="hasEnoughImages ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
               <v-icon start class="calib-btn-icon" size="large">
-                {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
+                {{ hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
               </v-icon>
-              <span class="calib-btn-label">{{
-                useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
-              }}</span>
+              <span class="calib-btn-label">{{ hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}</span>
             </v-btn>
           </v-col>
         </div>

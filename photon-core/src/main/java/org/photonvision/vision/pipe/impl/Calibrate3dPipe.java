@@ -165,7 +165,7 @@ public class Calibrate3dPipe
 
         // initial camera matrix guess
         double cx = (in.get(0).size.width / 2.0) - 0.5;
-        double cy = (in.get(0).size.width / 2.0) - 0.5;
+        double cy = (in.get(0).size.height / 2.0) - 0.5;
         cameraMatrix.put(0, 0, new double[] {fxGuess, 0, cx, 0, fyGuess, cy, 0, 0, 1});
 
         try {

@@ -39,6 +39,7 @@ shadowJar {
     configurations = [
         project.configurations.runtimeClasspath
     ]
+    mergeServiceFiles()
 }
 
 node {

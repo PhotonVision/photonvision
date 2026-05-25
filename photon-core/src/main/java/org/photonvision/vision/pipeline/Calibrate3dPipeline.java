@@ -63,21 +63,14 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    private final int minSnapshots;
-
     private boolean calibrating = false;
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public Calibrate3dPipeline() {
-        this(12);
-    }
-
-    public Calibrate3dPipeline(int minSnapshots) {
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
-        this.minSnapshots = minSnapshots;
     }
 
     @Override
@@ -164,21 +157,7 @@ public class Calibrate3dPipeline
         return foundCornersList.stream().map(it -> it.imagePoints.toList()).toList();
     }
 
-    public boolean hasEnough() {
-        return foundCornersList.size() >= minSnapshots;
-    }
-
     public CameraCalibrationCoefficients tryCalibration(Path imageSavePath) {
-        if (!hasEnough()) {
-            logger.info(
-                    "Not enough snapshots! Only got "
-                            + foundCornersList.size()
-                            + " of "
-                            + minSnapshots
-                            + " -- returning null..");
-            return null;
-        }
-
         this.calibrating = true;
 
         /*
@@ -216,8 +195,6 @@ public class Calibrate3dPipeline
                         new UICalibrationData(
                                 foundCornersList.size(),
                                 settings.cameraVideoModeIndex,
-                                minSnapshots,
-                                hasEnough(),
                                 Units.metersToInches(settings.gridSize),
                                 Units.metersToInches(settings.markerSize),
                                 settings.boardWidth,
