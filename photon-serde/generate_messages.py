@@ -127,7 +127,7 @@ def get_python_qualified_name(
     if "optional" in field and field["optional"] == True:
         typestr = f"Optional[{base_type}]"
     elif "vla" in field and field["vla"] == True:
-        typestr = f"List[{base_type}]"
+        typestr = f"list[{base_type}]"
     else:
         typestr = base_type
 

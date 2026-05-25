@@ -18,7 +18,7 @@
   java_encode_shim_ref: PacketUtils::packTransform3d
   cpp_type: wpi::math::Transform3d
   cpp_include: "<wpi/math/geometry/Transform3d.hpp>"
-  python_import: "from wpimath.geometry import Transform3d"
+  python_module: "wpimath.geometry"
   python_decode_shim: decodeTransform
   python_encode_shim: encodeTransform
   java_import: org.wpilib.math.geometry.Transform3d

@@ -7,6 +7,7 @@ cpp_includes:
 - '<wpi/math/geometry/Rotation3d.hpp>'
 - '<wpi/math/geometry/Translation3d.hpp>'
 - '<wpi/math/geometry/Transform3d.hpp>'
+- '<wpi/units/angle.hpp>'
 python_imports:
 - 'from wpimath.geometry import Rotation3d'
 - 'from wpimath.geometry import Translation3d'

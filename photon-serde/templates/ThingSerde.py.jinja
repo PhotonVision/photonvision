@@ -29,10 +29,12 @@
 
 from typing import TYPE_CHECKING
 
+{% if test %}
+from ...packet import Packet
+from ...targeting import *  # noqa
+{% else %}
 from ..packet import Packet
 from ..targeting import *  # noqa
-{% if test %}
-from ..targeting.test import *
 {% endif %}
 
 

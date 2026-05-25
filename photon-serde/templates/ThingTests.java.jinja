@@ -44,7 +44,7 @@ public class AutoSerdeTest {
     {% for test in tests %}
     @Test
     public void {{ test.name }}() {
-        System.out.println("Running {{ test.name }} Test");
+        System.out.println("Running {{ test.name }}");
         {% for test_case in test.cases %}
         var {{ test_case.name }} = new {{ test.type }}();
         {% for field in test_case.fields %}
