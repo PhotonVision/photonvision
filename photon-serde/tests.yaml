@@ -1,0 +1,11 @@
+---
+- name: Int8Test
+  type: Int8TestMessage
+  cases:
+  - name: ret1
+    py: Int8TestMessage()
+    java: new Int8TestMessage()
+    # We just need the brace initializer list. Ts is kinda cooked but whatever
+    cpp: "{}"
+  - name: ret2
+    py: Int8TestMessage()

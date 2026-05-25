@@ -18,6 +18,7 @@
   java_encode_shim_ref: PacketUtils::packTransform3d
   cpp_type: wpi::math::Transform3d
   cpp_include: "<wpi/math/geometry/Transform3d.hpp>"
+  python_import: "from wpimath.geometry import Transform3d"
   python_decode_shim: decodeTransform
   python_encode_shim: encodeTransform
   java_import: org.wpilib.math.geometry.Transform3d
@@ -93,102 +94,4 @@
     vla: True
   - name: multitagResult
     type: MultiTargetPNPResult
-    optional: True
-
-# Messages for ser/de unit tests, not actually used in dataflow
-- name: Int8TestMessage
-  test: True
-  fields:
-  - name: test
-    type: int8
-  - name: vlaTest
-    type: int8
-    vla: True
-  - name: optTest
-    type: int8
-    optional: True
-
-- name: Int16TestMessage
-  test: True
-  fields:
-  - name: test
-    type: int16
-  - name: vlaTest
-    type: int16
-    vla: True
-  - name: optTest
-    type: int16
-    optional: True
-
-- name: Int32TestMessage
-  test: True
-  fields:
-  - name: test
-    type: int32
-  - name: vlaTest
-    type: int32
-    vla: True
-  - name: optTest
-    type: int32
-    optional: True
-
-- name: Int64TestMessage
-  test: True
-  fields:
-  - name: test
-    type: int64
-  - name: vlaTest
-    type: int64
-    vla: True
-  - name: optTest
-    type: int64
-    optional: True
-
-- name: Float32TestMessage
-  test: True
-  fields:
-  - name: test
-    type: float32
-  - name: vlaTest
-    type: float32
-    vla: True
-  - name: optTest
-    type: float32
-    optional: True
-
-- name: Float64TestMessage
-  test: True
-  fields:
-  - name: test
-    type: float64
-  - name: vlaTest
-    type: float64
-    vla: True
-  - name: optTest
-    type: float64
-    optional: True
-
-- name: BoolTestMessage
-  test: True
-  fields:
-  - name: test
-    type: bool
-  - name: vlaTest
-    type: bool
-    vla: True
-  - name: optTest
-    type: bool
-    optional: True
-
-# Test for shimmed ser/de
-- name: Transform3dTestMessage
-  test: True
-  fields:
-  - name: test
-    type: Transform3d
-  - name: vlaTest
-    type: Transform3d
-    vla: True
-  - name: optTest
-    type: Transform3d
     optional: True

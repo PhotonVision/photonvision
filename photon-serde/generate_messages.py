@@ -23,10 +23,10 @@ import os
 import sys
 from pathlib import Path
 from typing import List, TypedDict, cast
+from dataclasses import dataclass
 
 import yaml
-from jinja2 import Environment, FileSystemLoader
-
+from jinja2 import Environment, FileSystemLoader, Template
 
 class SerdeField(TypedDict):
     name: str
@@ -89,7 +89,7 @@ def get_shimmed_filter(message_db):
     return is_shimmed
 
 
-def get_qualified_cpp_name(
+def get_cpp_qualified_name(
     message_db: List[MessageType], data_types, field: SerdeField
 ):
     """
@@ -107,6 +107,27 @@ def get_qualified_cpp_name(
         typestr = f"std::optional<{base_type}>"
     elif "vla" in field and field["vla"] == True:
         typestr = f"std::vector<{base_type}>"
+    else:
+        typestr = base_type
+
+    return typestr
+
+
+
+def get_python_qualified_name(
+    message_db: List[MessageType], data_types, field: SerdeField
+):
+    """
+    Get the full name of the type encoded. Eg:
+      list[Transform3d]
+    """
+
+    base_type = data_types[field["type"]]["python_type"]
+
+    if "optional" in field and field["optional"] == True:
+        typestr = f"Optional[{base_type}]"
+    elif "vla" in field and field["vla"] == True:
+        typestr = f"List[{base_type}]"
     else:
         typestr = base_type
 
@@ -179,8 +200,8 @@ def get_includes(db, message: MessageType) -> str:
     return sorted(set(includes))
 
 
-def parse_yaml() -> List[MessageType]:
-    config = yaml_to_dict("messages.yaml")
+def parse_yaml(message_file: str) -> List[MessageType]:
+    config = yaml_to_dict(message_file)
 
     return config
 
@@ -241,9 +262,8 @@ def get_struct_schema_str(message: MessageType, message_db: List[MessageType]):
 
     return ret
 
-
 def generate_photon_messages(cpp_java_root, py_root, template_root):
-    messages = parse_yaml()
+    messages = parse_yaml("messages.yaml")
 
     for message in messages:
         message["message_hash"] = get_message_hash(messages, message)
@@ -265,15 +285,11 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
             "len": -1,
             "java_type": name,
             "cpp_type": "photon::" + name,
+            "python_type": name
         }
 
     java_output_dir = Path(cpp_java_root) / "main/java/org/photonvision/struct"
     java_output_dir.mkdir(parents=True, exist_ok=True)
-
-    java_test_class_output_dir = (
-        Path(cpp_java_root) / "main/java/org/photonvision/targeting"
-    )
-    java_test_class_output_dir.mkdir(parents=True, exist_ok=True)
 
     cpp_serde_header_dir = Path(cpp_java_root) / "main/native/include/photon/serde/"
     cpp_serde_header_dir.mkdir(parents=True, exist_ok=True)
@@ -283,20 +299,19 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
     cpp_struct_header_dir = Path(cpp_java_root) / "main/native/include/photon/struct/"
     cpp_struct_header_dir.mkdir(parents=True, exist_ok=True)
 
-    cpp_test_struct_output_dir = (
-        Path(cpp_java_root) / "main/native/include/photon/targeting/"
-    )
-    cpp_test_struct_output_dir.mkdir(parents=True, exist_ok=True)
-
     py_serde_source_dir = Path(py_root)
     py_serde_source_dir.mkdir(parents=True, exist_ok=True)
 
-    env.filters["get_qualified_name"] = lambda field: get_qualified_cpp_name(
+    env.filters["get_cpp_qualified_name"] = lambda field: get_cpp_qualified_name(
+        messages, extended_data_types, field
+    )
+
+    env.filters["get_python_qualified_name"] = lambda field: get_python_qualified_name(
         messages, extended_data_types, field
     )
 
     for message in messages:
-        # don't generate shimmed types
+        # don't generate shimmed types. Probably not necessa
         if get_shimmed_filter(messages)(message["name"]):
             continue
 
@@ -323,7 +338,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
             [cpp_serde_header_name, cpp_serde_header_template, cpp_serde_header_dir],
             [cpp_serde_source_name, cpp_serde_source_template, cpp_serde_source_dir],
             [cpp_struct_header_name, cpp_struct_header_template, cpp_struct_header_dir],
-            [py_name, py_template, py_serde_source_dir],
+            [py_name, py_template, py_serde_source_dir]
         ]:
             # Hack in our message getter
             template.globals["get_message_by_name"] = lambda name: get_message_by_name(
@@ -361,69 +376,166 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                     cpp_includes=get_includes(messages, message),
                     nested_photon_types=nested_photon_types,
                     nested_wpilib_types=nested_wpilib_types,
+                    test=False
                 ),
                 encoding="utf-8",
             )
 
-        if "test" in message.keys() and message["test"]:
-            java_test_class_name = f"{message['name']}.java"
-            java_test_class_template = env.get_template("ThingTestClass.java.jinja")
+# TODO: code duplication
+def generate_tests(cpp_java_root, py_root, template_root):
 
-            cpp_test_struct_name = f"{message['name']}.h"
-            cpp_test_struct_template = env.get_template("ThingTestStruct.h.jinja")
-            for output_name, template, output_folder in [
+    # Generate test messages
+    test_messages = parse_yaml("test_messages.yaml")
+    real_messages = parse_yaml("messages.yaml")
+    message_db = test_messages + real_messages
+
+    for message in real_messages:
+        message["message_hash"] = get_message_hash(real_messages, message)
+
+    for test_message in test_messages:
+        test_message["message_hash"] = get_message_hash(message_db, message)
+
+    env = Environment(
+        loader=FileSystemLoader(str(template_root)),
+        # autoescape=False,
+        # keep_trailing_newline=False,
+    )
+
+    env.filters["is_intrinsic"] = is_intrinsic_type
+    env.filters["is_shimmed"] = get_shimmed_filter(message_db)
+
+    # add our custom types
+    extended_data_types = data_types.copy()
+    for message in message_db:
+        name = message["name"]
+        extended_data_types[name] = {
+            "len": -1,
+            "java_type": name,
+            "cpp_type": "photon::" + name,
+            "python_type": name
+        }
+
+    java_output_dir = Path(cpp_java_root) / "main/java/org/photonvision/struct/test"
+    java_output_dir.mkdir(parents=True, exist_ok=True)
+
+    java_test_class_output_dir = (
+        Path(cpp_java_root) / "main/java/org/photonvision/targeting"
+    )
+    java_test_class_output_dir.mkdir(parents=True, exist_ok=True)
+
+    cpp_serde_header_dir = Path(cpp_java_root) / "main/native/include/photon/serde/test/"
+    cpp_serde_header_dir.mkdir(parents=True, exist_ok=True)
+    cpp_serde_source_dir = Path(cpp_java_root) / "main/native/cpp/photon/serde/test/"
+    cpp_serde_source_dir.mkdir(parents=True, exist_ok=True)
+
+    cpp_struct_header_dir = Path(cpp_java_root) / "main/native/include/photon/struct/test/"
+    cpp_struct_header_dir.mkdir(parents=True, exist_ok=True)
+
+    cpp_test_struct_output_dir = (
+        Path(cpp_java_root) / "main/native/include/photon/targeting/"
+    )
+    cpp_test_struct_output_dir.mkdir(parents=True, exist_ok=True)
+
+    py_serde_source_dir = Path(py_root) / "test"
+    py_serde_source_dir.mkdir(parents=True, exist_ok=True)
+
+    python_test_dataclass_output_dir = (
+        Path(py_root) / "test"
+    )
+
+    env.filters["get_cpp_qualified_name"] = lambda field: get_cpp_qualified_name(
+        message_db, extended_data_types, field
+    )
+
+    env.filters["get_python_qualified_name"] = lambda field: get_python_qualified_name(
+        message_db, extended_data_types, field
+    )
+
+    for test_message in test_messages:
+
+        # don't generate shimmed types. TODO: Probably unnecessary for test messages
+        if get_shimmed_filter(message_db)(test_message["name"]):
+            continue
+
+        test_message = cast(MessageType, test_message)
+
+        java_name = f"{test_message['name']}Serde.java"
+        cpp_serde_header_name = f"{test_message['name']}Serde.h"
+        cpp_serde_source_name = f"{test_message['name']}Serde.cpp"
+        cpp_struct_header_name = f"{test_message['name']}Struct.h"
+        py_name = f"{test_message['name']}Serde.py"
+
+        java_template = env.get_template("Message.java.jinja")
+
+        cpp_serde_header_template = env.get_template("ThingSerde.h.jinja")
+        cpp_serde_source_template = env.get_template("ThingSerde.cpp.jinja")
+        cpp_struct_header_template = env.get_template("ThingStruct.h.jinja")
+
+        py_template = env.get_template("ThingSerde.py.jinja")
+
+        message_hash = get_message_hash(message_db, test_message)
+
+        java_test_class_name = f"{test_message['name']}.java"
+        java_test_class_template = env.get_template("ThingTestClass.java.jinja")
+
+        cpp_test_struct_name = f"{test_message['name']}.h"
+        cpp_test_struct_template = env.get_template("ThingTestStruct.h.jinja")
+
+        python_test_dataclass_name = f"{test_message['name']}.py"
+        python_test_dataclass_template = env.get_template("ThingTestDataclass.py.jinja")
+
+        for output_name, template, output_folder in [
+            [java_name, java_template, java_output_dir],
+            [cpp_serde_header_name, cpp_serde_header_template, cpp_serde_header_dir],
+            [cpp_serde_source_name, cpp_serde_source_template, cpp_serde_source_dir],
+            [cpp_struct_header_name, cpp_struct_header_template, cpp_struct_header_dir],
+            [py_name, py_template, py_serde_source_dir],
+            [java_test_class_name,java_test_class_template,java_test_class_output_dir],
+            [cpp_test_struct_name,cpp_test_struct_template,cpp_test_struct_output_dir],
+            [python_test_dataclass_name,python_test_dataclass_template,python_test_dataclass_output_dir]
+        ]:
+            # Hack in our message getter
+            template.globals["get_message_by_name"] = lambda name: get_message_by_name(
+                message_db, name
+            )
+
+            nested_photon_types = set(
                 [
-                    java_test_class_name,
-                    java_test_class_template,
-                    java_test_class_output_dir,
-                ],
+                    field["type"]
+                    for field in test_message["fields"]
+                    if (
+                        not is_intrinsic_type(field["type"])
+                        and not get_shimmed_filter(message_db)(field["type"])
+                    )
+                ]
+            )
+            nested_wpilib_types = set(
                 [
-                    cpp_test_struct_name,
-                    cpp_test_struct_template,
-                    cpp_test_struct_output_dir,
-                ],
-            ]:
-                # Hack in our message getter
-                template.globals["get_message_by_name"] = (
-                    lambda name: get_message_by_name(messages, name)
-                )
+                    field["type"]
+                    for field in test_message["fields"]
+                    if (
+                        not is_intrinsic_type(field["type"])
+                        and get_shimmed_filter(message_db)(field["type"])
+                    )
+                ]
+            )
 
-                # TODO: Are the nested types really necessary for ts?
-                nested_photon_types = set(
-                    [
-                        field["type"]
-                        for field in message["fields"]
-                        if (
-                            not is_intrinsic_type(field["type"])
-                            and not get_shimmed_filter(messages)(field["type"])
-                        )
-                    ]
-                )
-                nested_wpilib_types = set(
-                    [
-                        field["type"]
-                        for field in message["fields"]
-                        if (
-                            not is_intrinsic_type(field["type"])
-                            and get_shimmed_filter(messages)(field["type"])
-                        )
-                    ]
-                )
+            output_file = output_folder / output_name
+            output_file.write_text(
+                template.render(
+                    test_message,
+                    type_map=extended_data_types,
+                    message_fmt=get_struct_schema_str(test_message, message_db),
+                    message_hash=message_hash,
+                    cpp_includes=get_includes(message_db, test_message),
+                    nested_photon_types=nested_photon_types,
+                    nested_wpilib_types=nested_wpilib_types,
+                    test=True
+                ),
+                encoding="utf-8",
+            )
 
-                output_file = output_folder / output_name
-                output_file.write_text(
-                    template.render(
-                        message,
-                        type_map=extended_data_types,
-                        message_fmt=get_struct_schema_str(message, messages),
-                        message_hash=message_hash,
-                        cpp_includes=get_includes(messages, message),
-                        nested_photon_types=nested_photon_types,
-                        nested_wpilib_types=nested_wpilib_types,
-                    ),
-                    encoding="utf-8",
-                )
-
+    # Generate test fixtures (WIP)
 
 def main(argv):
     script_path = Path(__file__).resolve()
@@ -448,11 +560,19 @@ def main(argv):
         default=dirname / "templates",
         type=Path,
     )
+    parser.add_argument(
+        "--tests",
+        help="Generates tests and test messages instead of regular serde",
+        action="store_true"
+    )
     args = parser.parse_args(argv)
 
-    generate_photon_messages(
-        args.cpp_java_output_dir, args.py_output_dir, args.template_root
-    )
+    if (args.tests):
+        generate_tests(args.cpp_java_output_dir, args.py_output_dir, args.template_root)
+    else:
+        generate_photon_messages(
+            args.cpp_java_output_dir, args.py_output_dir, args.template_root
+        )
 
 
 if __name__ == "__main__":

@@ -31,6 +31,10 @@ from typing import TYPE_CHECKING
 
 from ..packet import Packet
 from ..targeting import *  # noqa
+{% if test %}
+from ..targeting.test import *
+{% endif %}
+
 
 if TYPE_CHECKING:
 {%- set ns = namespace(types=[]) -%}

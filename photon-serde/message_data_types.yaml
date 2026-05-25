@@ -5,6 +5,7 @@ bool:
   java_type: boolean
   java_boxed_type: Boolean
   cpp_type: bool
+  python_type: bool
   java_decode_method: decodeBoolean
   java_decode_shim_ref: PacketUtils::unpackBoolean
   java_encode_shim_ref: PacketUtils::packBoolean
@@ -15,6 +16,7 @@ int8:
   java_type: byte
   java_boxed_type: Byte
   cpp_type: int8_t
+  python_type: int
   java_decode_method: decodeByte
   java_decode_shim_ref: PacketUtils::unpackByte
   java_encode_shim_ref: PacketUtils::packByte
@@ -30,11 +32,13 @@ int16:
   java_encode_shim_ref: PacketUtils::packShort
   python_decode_shim: decode16
   python_encode_shim: encode16
+  python_type: int
 int32:
   len: 4
   java_type: int
   java_boxed_type: Integer
   cpp_type: int32_t
+  python_type: int
   java_decode_method: decodeInt
   java_decode_shim_ref: PacketUtils::unpackInt
   java_encode_shim_ref: PacketUtils::packInt
@@ -45,6 +49,7 @@ int64:
   java_type: long
   java_boxed_type: Long
   cpp_type: int64_t
+  python_type: int
   java_decode_method: decodeLong
   java_decode_shim_ref: PacketUtils::unpackLong
   java_encode_shim_ref: PacketUtils::packLong
@@ -55,6 +60,7 @@ float32:
   java_type: float
   java_boxed_type: Float
   cpp_type: float
+  python_type: float
   java_decode_method: decodeFloat
   java_decode_shim_ref: PacketUtils::unpackFloat
   java_encode_shim_ref: PacketUtils::packFloat
@@ -65,6 +71,7 @@ float64:
   java_type: double
   java_boxed_type: Double
   cpp_type: double
+  python_type: float
   java_decode_method: decodeDouble
   java_decode_shim_ref: PacketUtils::unpackDouble
   java_encode_shim_ref: PacketUtils::packDouble
