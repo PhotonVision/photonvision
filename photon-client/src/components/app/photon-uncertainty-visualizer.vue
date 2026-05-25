@@ -76,27 +76,36 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
     })
   );
 
-  const zValues = data.map((p) => p.z);
-  const zMin = 0;
-  const zMax = Math.ceil(Math.max(...zValues));
+  const zMax = 4.0; // sane max
 
   const trace = {
     type: "contour" as const,
     x: xValues,
     y: yValues,
     z: zMatrix,
+
+    // gnuplot pm3d
     colorscale: [
-      [0, "blue"],
-      [0.25, "cyan"],
-      [0.5, "green"],
-      [0.75, "yellow"],
-      [1, "red"]
-    ] as [number, string][],
+      [0.0, "#000000"],
+      [0.25, "#2b0066"],
+      [0.5, "#7f00ff"],
+      [0.7, "#ff0000"],
+      [0.85, "#ff7f00"],
+      [1.0, "#ffff00"]
+    ],
+
+    zmin: 0.0,
+    zMax: zMax,
+
     contours: {
       coloring: "heatmap" as const,
       showlabels: false,
-      labelfont: { color: textColor }
+      labelfont: { color: textColor },
+      start: 0.0,
+      end: zMax,
+      size: 0.2
     },
+
     colorbar: {
       title: {
         text: "px",
@@ -107,8 +116,6 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
       bordercolor: textColor
     },
     hovertemplate: "X: %{x}<br>Y: %{y}<br>Uncertainty: %{z:.4f}<extra></extra>",
-    zmin: zMin,
-    zmax: zMax,
     line: {
       smoothing: 0.7,
       width: 1,
