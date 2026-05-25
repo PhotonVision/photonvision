@@ -44,10 +44,10 @@ const chipStyle = computed(() => {
     :style="chipStyle"
     :class="[
       'inline-flex items-center gap-1 align-middle text-sm leading-6 font-medium whitespace-nowrap select-none',
-      label ? 'rounded-[0.25rem]' : 'rounded-full',
+      label ? 'rounded-sm' : 'rounded-full',
       variant === 'text'
-        ? 'bg-transparent p-0 text-[color:var(--pv-chip-fg)]'
-        : 'bg-[color:var(--pv-chip-bg)] px-[0.65em] py-[0.15em] text-[color:var(--pv-chip-fg)]',
+        ? 'bg-transparent p-0 text-(--pv-chip-fg)'
+        : 'bg-(--pv-chip-bg) px-[0.65em] py-[0.15em] text-(--pv-chip-fg)',
       attrs.class
     ]"
   >
