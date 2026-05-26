@@ -36,7 +36,7 @@ Note that these are case sensitive!
     * winarm64
     * macx86-64
     * macarm64
-    * linux86-64
+    * linuxx86-64
     * linuxarm64
     * linuxathena
 - `-PtgtIP`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
