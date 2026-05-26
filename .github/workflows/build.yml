@@ -614,7 +614,7 @@ jobs:
           minimum_free_mb: ${{ matrix.minimum_free_mb }}
           root_location: ${{ matrix.root_location || 'partition=2' }}
           shrink_image: ${{ matrix.shrink_image || 'yes' }}
-          commands: java -jar /opt/photonvision/*.jar --smoketest --platform=${{ matrix.plat_override }}
+          commands: pwd && java -jar /opt/photonvision/*.jar --smoketest --platform=${{ matrix.plat_override }}
 
   matrix-checker:
     # This job always runs last to set the overall result based on the matrix jobs. If any matrix job failed, this job will fail.
