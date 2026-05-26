@@ -194,7 +194,7 @@ public class PhotonCamera implements AutoCloseable {
         // spotless:off
         // WPILIB names their opencv version in the format YEAR-OPENCVVERSION-PATCH
         // so we split on '-' and take the middle part to get the version number
-        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion).split("-")[1]) {
+        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion.split("-")[1])) {
             String bfw = """
 
 
