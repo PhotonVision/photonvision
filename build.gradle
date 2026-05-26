@@ -6,7 +6,7 @@ plugins {
     id "org.wpilib.WPILibRepositoriesPlugin" version "2027.0.0"
     id 'org.wpilib.NativeUtils' version '2027.7.1' apply false
     id 'org.wpilib.DeployUtils' version '2027.1.0' apply false
-    id 'org.photonvision.tools.WpilibTools' version 'v5.0.1'
+    id 'org.photonvision.tools.WpilibTools' version 'dev-v5.0.0-2-ge2df0f1'
     id 'com.google.protobuf' version '0.9.5' apply false
     id 'org.wpilib.GradleJni' version '2027.0.0'
     id "org.ysb33r.doxygen" version "2.0.0" apply false

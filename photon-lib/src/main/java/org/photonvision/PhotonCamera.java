@@ -189,6 +189,9 @@ public class PhotonCamera implements AutoCloseable {
         verifyDependencies();
     }
 
+    /**
+     * This is something we only need to check for java because of the way java packages opencv.
+     */
     static void verifyDependencies() {
         // spotless:off
         if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
