@@ -59,7 +59,7 @@ onBeforeMount(() => {
   <ConfigProvider :scroll-body="false">
     <div class="bg-pv-background text-pv-on-surface flex h-full w-full flex-row">
       <photon-sidebar />
-      <main class="flex min-w-0 flex-1 flex-col overflow-auto">
+      <main class="flex min-w-0 flex-1 flex-col">
         <div class="flex-1">
           <router-view />
         </div>

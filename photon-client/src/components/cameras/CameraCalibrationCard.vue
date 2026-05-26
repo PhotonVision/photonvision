@@ -581,26 +581,7 @@ const updateCameraBlueGain = (value: number) => {
               {{ useStateStore().calibrationData.minimumImageCount }}
             </pv-chip>
           </div>
-          <div>
-            <pv-button
-              size="sm"
-              variant="passive"
-              :icon="IconDownload"
-              block
-              :disabled="!settingsValid"
-              @click="downloadCalibBoard"
-            >
-              <span class="calib-btn-label">Generate Board</span>
-            </pv-button>
-          </div>
-          <pv-alert
-            v-if="tooManyPoints"
-            class="mt-5"
-            color="error"
-            text="Too many corners. Finish calibration now!"
-            :icon="IconAlertCircleOutline"
-          />
-          <div class="flex pt-5">
+          <div class="flex pb-5">
             <div class="w-1/2 p-0 pr-2">
               <pv-button
                 size="sm"
@@ -626,6 +607,26 @@ const updateCameraBlueGain = (value: number) => {
               </pv-button>
             </div>
           </div>
+          <div>
+            <pv-button
+              size="sm"
+              variant="passive"
+              :icon="IconDownload"
+              block
+              :disabled="!settingsValid"
+              @click="downloadCalibBoard"
+            >
+              <span class="calib-btn-label">Generate Board</span>
+            </pv-button>
+          </div>
+          <pv-alert
+            v-if="tooManyPoints"
+            class="mt-5"
+            color="error"
+            text="Too many corners. Finish calibration now!"
+            :icon="IconAlertCircleOutline"
+          />
+       
         </div>
       </div>
     </pv-card>
