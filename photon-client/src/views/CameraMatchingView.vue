@@ -184,7 +184,6 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               v-if="cameraConnected(module.matchedCameraInfo.uniquePath)"
               :id="`stream-container-${index}`"
               class="d-flex flex-column align-center mt-3 justify-center"
-              style="height: 250px"
             >
               <photon-camera-stream
                 :id="`output-camera-stream-${index}`"

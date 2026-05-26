@@ -207,7 +207,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <pv-card class="my-3">
+  <pv-card class="mb-3">
     <div class="flex items-center justify-between pb-2">
       <div class="text-lg font-semibold">Global Settings</div>
       <pv-button
