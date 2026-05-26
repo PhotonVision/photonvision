@@ -167,7 +167,6 @@ flake.lock
 # photon-serde tests (Java & Cpp)
 photon-targeting/src/generated/main/java/org/photonvision/targeting
 photon-targeting/src/generated/main/java/org/photonvision/struct/test
-photon-targeting/src/test/java/org/photonvision/AutoSerdeTest.java
 
 photon-targeting/src/generated/main/cpp/photon/serde/test
 photon-targeting/src/generated/main/native/include/photon/targeting
@@ -175,8 +174,8 @@ photon-targeting/src/generated/main/native/include/photon/serde/test
 photon-targeting/src/generated/main/native/cpp/photon/serde/test
 photon-targeting/src/generated/main/native/include/photon/struct/test
 photon-targeting/src/generated/main/native/include/photon/targeting
-photon-targeting/src/test/native/cpp/AutoSerdeTest.cpp
+photon-targeting/src/generated-test
 
 # photon-serde tests (Python)
 photon-lib/py/photonlibpy/generated/test
-photon-lib/py/test/generated
+photon-lib/py/generated-test

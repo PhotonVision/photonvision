@@ -35,12 +35,10 @@ tests:
       java_value: '(byte) 42'
       cpp_value: '42'
       python_value: '42'
-    fields:
     - name: optTest
       java_value: 'Optional.of((byte) 7)'
       cpp_value: '{7}'
       python_value: '7'
-    fields:
     - name: vlaTest
       java_value: 'List.of((byte) 4, (byte) 5, (byte) 6)'
       cpp_value: '{4, 5, 6}'
@@ -67,12 +65,10 @@ tests:
       java_value: '(short) 42'
       cpp_value: '42'
       python_value: '42'
-    fields:
     - name: optTest
       java_value: 'Optional.of((short) 7)'
       cpp_value: '{7}'
       python_value: '7'
-    fields:
     - name: vlaTest
       java_value: 'List.of((short) 4, (short) 5, (short) 6)'
       cpp_value: '{4, 5, 6}'
@@ -99,12 +95,10 @@ tests:
       java_value: '(int) 42'
       cpp_value: '42'
       python_value: '42'
-    fields:
     - name: optTest
       java_value: 'Optional.of((int) 7)'
       cpp_value: '{7}'
       python_value: '7'
-    fields:
     - name: vlaTest
       java_value: 'List.of((int) 4, (int) 5, (int) 6)'
       cpp_value: '{4, 5, 6}'
@@ -131,12 +125,10 @@ tests:
       java_value: '(long) 42'
       cpp_value: '42'
       python_value: '42'
-    fields:
     - name: optTest
       java_value: 'Optional.of((long) 7)'
       cpp_value: '{7}'
       python_value: '7'
-    fields:
     - name: vlaTest
       java_value: 'List.of((long) 4, (long) 5, (long) 6)'
       cpp_value: '{4, 5, 6}'

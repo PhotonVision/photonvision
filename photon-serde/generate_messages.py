@@ -382,7 +382,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
             )
 
 # TODO: code duplication
-def generate_tests(cpp_java_root, py_root, template_root):
+def generate_tests(cpp_java_root, cpp_java_test_root, py_root, py_test_root, template_root):
 
     # Generate test messages
     test_messages = parse_yaml("test_messages.yaml")
@@ -536,6 +536,22 @@ def generate_tests(cpp_java_root, py_root, template_root):
             )
 
     # Generate test fixtures (WIP)
+    tests = parse_yaml("tests.yaml")
+    java_test_target = Path(cpp_java_test_root) / "java/org/photonvision/AutoSerdeTest.java"
+    java_test_target.parent.mkdir(parents=True, exist_ok=True)
+    cpp_test_target = Path(cpp_java_test_root) / "native/cpp/AutoSerdeTest.cpp"
+    cpp_test_target.parent.mkdir(parents=True, exist_ok=True)
+    py_test_target = Path(py_test_root) / "AutoSerdeTest.py"
+    
+    java_test_template = env.get_template("ThingTests.java.jinja")
+    cpp_test_template = env.get_template("ThingTests.cpp.jinja")
+
+    java_test_target.write_text(
+        java_test_template.render(tests)
+    )
+    cpp_test_target.write_text(
+        cpp_test_template.render(tests)
+    )
 
 def main(argv):
     script_path = Path(__file__).resolve()
@@ -555,6 +571,18 @@ def main(argv):
         type=Path,
     )
     parser.add_argument(
+        "--cpp_java_test_dir",
+        help="Optional. If set, will output the generated test fixtures to this directory, otherwise it will use a path relative to the script",
+        default=dirname.parent / "photon-targeting/src/generated-test",
+        type=Path,
+    )
+    parser.add_argument(
+        "--py_test_dir",
+        help="Optional. If set, will spit Python test fixtures here",
+        default=dirname.parent / "photon-lib/py/generated-test",
+        type=Path,
+    )
+    parser.add_argument(
         "--template_root",
         help="Optional. If set, will use this directory as the root for the jinja templates",
         default=dirname / "templates",
@@ -568,7 +596,7 @@ def main(argv):
     args = parser.parse_args(argv)
 
     if (args.tests):
-        generate_tests(args.cpp_java_output_dir, args.py_output_dir, args.template_root)
+        generate_tests(args.cpp_java_output_dir, args.cpp_java_test_dir, args.py_output_dir, args.py_test_dir, args.template_root)
     else:
         generate_photon_messages(
             args.cpp_java_output_dir, args.py_output_dir, args.template_root
