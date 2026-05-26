@@ -605,7 +605,7 @@ public class VisionModule {
                     "pixelFormat",
                     ((videoMode instanceof LibcameraGpuSource.FPSRatedVideoMode)
                                     ? "kPicam"
-                                    : videoMode.pixelFormat.toString());
+                                    : videoMode.pixelFormat.toString()));
 
             temp.add(internalMap);
         }
