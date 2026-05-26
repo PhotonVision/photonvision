@@ -4,7 +4,9 @@ cppHeaderFileInclude {
 
 modifiableFileExclude {
   photon-lib/py/photonlibpy/generated/
+  photon-lib/py/generated-test
   photon-targeting/src/generated/
+  photon-targeting/src/generated-test/
   photon-targeting/src/main/native/cpp/photon/constrained_solvepnp/generate/
 }
 

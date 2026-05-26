@@ -23,10 +23,10 @@ import os
 import sys
 from pathlib import Path
 from typing import List, TypedDict, cast
-from dataclasses import dataclass
 
 import yaml
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Environment, FileSystemLoader
+
 
 class SerdeField(TypedDict):
     name: str
@@ -111,7 +111,6 @@ def get_cpp_qualified_name(
         typestr = base_type
 
     return typestr
-
 
 
 def get_python_qualified_name(
@@ -262,6 +261,7 @@ def get_struct_schema_str(message: MessageType, message_db: List[MessageType]):
 
     return ret
 
+
 def generate_photon_messages(cpp_java_root, py_root, template_root):
     messages = parse_yaml("messages.yaml")
 
@@ -285,7 +285,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
             "len": -1,
             "java_type": name,
             "cpp_type": "photon::" + name,
-            "python_type": name
+            "python_type": name,
         }
 
     java_output_dir = Path(cpp_java_root) / "main/java/org/photonvision/struct"
@@ -338,7 +338,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
             [cpp_serde_header_name, cpp_serde_header_template, cpp_serde_header_dir],
             [cpp_serde_source_name, cpp_serde_source_template, cpp_serde_source_dir],
             [cpp_struct_header_name, cpp_struct_header_template, cpp_struct_header_dir],
-            [py_name, py_template, py_serde_source_dir]
+            [py_name, py_template, py_serde_source_dir],
         ]:
             # Hack in our message getter
             template.globals["get_message_by_name"] = lambda name: get_message_by_name(
@@ -376,13 +376,16 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                     cpp_includes=get_includes(messages, message),
                     nested_photon_types=nested_photon_types,
                     nested_wpilib_types=nested_wpilib_types,
-                    test=False
+                    test=False,
                 ),
                 encoding="utf-8",
             )
 
+
 # TODO: code duplication
-def generate_tests(cpp_java_root, cpp_java_test_root, py_root, py_test_root, template_root):
+def generate_tests(
+    cpp_java_root, cpp_java_test_root, py_root, py_test_root, template_root
+):
 
     # Generate test messages
     test_messages = parse_yaml("test_messages.yaml")
@@ -412,7 +415,7 @@ def generate_tests(cpp_java_root, cpp_java_test_root, py_root, py_test_root, tem
             "len": -1,
             "java_type": name,
             "cpp_type": "photon::" + name,
-            "python_type": name
+            "python_type": name,
         }
 
     java_output_dir = Path(cpp_java_root) / "main/java/org/photonvision/struct/test"
@@ -423,12 +426,16 @@ def generate_tests(cpp_java_root, cpp_java_test_root, py_root, py_test_root, tem
     )
     java_test_class_output_dir.mkdir(parents=True, exist_ok=True)
 
-    cpp_serde_header_dir = Path(cpp_java_root) / "main/native/include/photon/serde/test/"
+    cpp_serde_header_dir = (
+        Path(cpp_java_root) / "main/native/include/photon/serde/test/"
+    )
     cpp_serde_header_dir.mkdir(parents=True, exist_ok=True)
     cpp_serde_source_dir = Path(cpp_java_root) / "main/native/cpp/photon/serde/test/"
     cpp_serde_source_dir.mkdir(parents=True, exist_ok=True)
 
-    cpp_struct_header_dir = Path(cpp_java_root) / "main/native/include/photon/struct/test/"
+    cpp_struct_header_dir = (
+        Path(cpp_java_root) / "main/native/include/photon/struct/test/"
+    )
     cpp_struct_header_dir.mkdir(parents=True, exist_ok=True)
 
     cpp_test_struct_output_dir = (
@@ -439,9 +446,7 @@ def generate_tests(cpp_java_root, cpp_java_test_root, py_root, py_test_root, tem
     py_serde_source_dir = Path(py_root) / "test"
     py_serde_source_dir.mkdir(parents=True, exist_ok=True)
 
-    python_test_dataclass_output_dir = (
-        Path(py_root) / "test"
-    )
+    python_test_dataclass_output_dir = Path(py_root) / "test"
 
     env.filters["get_cpp_qualified_name"] = lambda field: get_cpp_qualified_name(
         message_db, extended_data_types, field
@@ -490,9 +495,21 @@ def generate_tests(cpp_java_root, cpp_java_test_root, py_root, py_test_root, tem
             [cpp_serde_source_name, cpp_serde_source_template, cpp_serde_source_dir],
             [cpp_struct_header_name, cpp_struct_header_template, cpp_struct_header_dir],
             [py_name, py_template, py_serde_source_dir],
-            [java_test_class_name,java_test_class_template,java_test_class_output_dir],
-            [cpp_test_struct_name,cpp_test_struct_template,cpp_test_struct_output_dir],
-            [python_test_dataclass_name,python_test_dataclass_template,python_test_dataclass_output_dir]
+            [
+                java_test_class_name,
+                java_test_class_template,
+                java_test_class_output_dir,
+            ],
+            [
+                cpp_test_struct_name,
+                cpp_test_struct_template,
+                cpp_test_struct_output_dir,
+            ],
+            [
+                python_test_dataclass_name,
+                python_test_dataclass_template,
+                python_test_dataclass_output_dir,
+            ],
         ]:
             # Hack in our message getter
             template.globals["get_message_by_name"] = lambda name: get_message_by_name(
@@ -530,28 +547,27 @@ def generate_tests(cpp_java_root, cpp_java_test_root, py_root, py_test_root, tem
                     cpp_includes=get_includes(message_db, test_message),
                     nested_photon_types=nested_photon_types,
                     nested_wpilib_types=nested_wpilib_types,
-                    test=True
+                    test=True,
                 ),
                 encoding="utf-8",
             )
 
     # Generate test fixtures (WIP)
     tests = parse_yaml("tests.yaml")
-    java_test_target = Path(cpp_java_test_root) / "java/org/photonvision/AutoSerdeTest.java"
+    java_test_target = (
+        Path(cpp_java_test_root) / "java/org/photonvision/AutoSerdeTest.java"
+    )
     java_test_target.parent.mkdir(parents=True, exist_ok=True)
     cpp_test_target = Path(cpp_java_test_root) / "native/cpp/AutoSerdeTest.cpp"
     cpp_test_target.parent.mkdir(parents=True, exist_ok=True)
-    py_test_target = Path(py_test_root) / "AutoSerdeTest.py"
-    
+    Path(py_test_root) / "AutoSerdeTest.py"
+
     java_test_template = env.get_template("ThingTests.java.jinja")
     cpp_test_template = env.get_template("ThingTests.cpp.jinja")
 
-    java_test_target.write_text(
-        java_test_template.render(tests)
-    )
-    cpp_test_target.write_text(
-        cpp_test_template.render(tests)
-    )
+    java_test_target.write_text(java_test_template.render(tests))
+    cpp_test_target.write_text(cpp_test_template.render(tests))
+
 
 def main(argv):
     script_path = Path(__file__).resolve()
@@ -591,12 +607,18 @@ def main(argv):
     parser.add_argument(
         "--tests",
         help="Generates tests and test messages instead of regular serde",
-        action="store_true"
+        action="store_true",
     )
     args = parser.parse_args(argv)
 
-    if (args.tests):
-        generate_tests(args.cpp_java_output_dir, args.cpp_java_test_dir, args.py_output_dir, args.py_test_dir, args.template_root)
+    if args.tests:
+        generate_tests(
+            args.cpp_java_output_dir,
+            args.cpp_java_test_dir,
+            args.py_output_dir,
+            args.py_test_dir,
+            args.template_root,
+        )
     else:
         generate_photon_messages(
             args.cpp_java_output_dir, args.py_output_dir, args.template_root
