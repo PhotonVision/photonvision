@@ -189,12 +189,12 @@ public class PhotonCamera implements AutoCloseable {
         verifyDependencies();
     }
 
-    /**
-     * This is something we only need to check for java because of the way java packages opencv.
-     */
+    /** This is something we only need to check for java because of the way java packages opencv. */
     static void verifyDependencies() {
         // spotless:off
-        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
+        // WPILIB names their opencv version in the format YEAR-OPENCVVERSION-PATCH
+        // so we split on '-' and take the middle part to get the version number
+        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion).split("-")[1]) {
             String bfw = """
 
 
