@@ -27,7 +27,7 @@ defineProps<{
         :for="targetId"
         as="button"
         type="button"
-        class="text-pv-on-surface inline-flex max-w-full cursor-help items-center gap-2 text-left text-sm font-medium outline-none"
+        class="text-pv-on-surface inline-flex max-w-full cursor-help items-center gap-2 text-left text-sm font-medium outline-none select-text"
         v-bind="$attrs"
       >
         <span class="truncate">{{ label }}</span>

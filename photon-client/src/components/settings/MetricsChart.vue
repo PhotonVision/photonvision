@@ -244,8 +244,10 @@ watch(
 
 <style scoped>
 div {
-  width: calc(100% + 20px);
   height: 100px;
+  overflow: clip;
+  width: calc(100% + 20px);
   margin-right: -20px;
+  max-width: calc(50vw);
 }
 </style>

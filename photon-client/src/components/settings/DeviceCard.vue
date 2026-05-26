@@ -289,10 +289,10 @@ watch(metricsHistorySnapshot, () => {
 </script>
 
 <template>
-  <div class="flex flex-wrap">
+  <div class="flex flex-wrap gap-3 mb-3">
     <!-- Device control card -->
-    <div class="flex-1 pr-3">
-      <pv-card class="fill-height mb-3 flex flex-col justify-between">
+    <div class="flex-1">
+      <pv-card class="h-full flex flex-col justify-between">
         <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Control</span>
         </div>
@@ -387,7 +387,7 @@ watch(metricsHistorySnapshot, () => {
 
     <!-- Device metrics card -->
     <div class="flex-1">
-      <pv-card class="fill-height mb-3 flex flex-col justify-between">
+      <pv-card class="h-full flex flex-col justify-between">
         <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Metrics</span>
         </div>
@@ -551,9 +551,6 @@ watch(metricsHistorySnapshot, () => {
 </template>
 
 <style scoped>
-.fill-height {
-  height: calc(100% - 12px) !important;
-}
 @media only screen and (max-width: 351px) {
   .open-icon {
     margin: 0 !important;
