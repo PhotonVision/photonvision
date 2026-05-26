@@ -637,7 +637,7 @@ const updateCameraBlueGain = (value: number) => {
           <template v-if="calibCanceled">
             <pv-icon color="primary" size="70" :icon="IconCancel" />
             <div>
-              Camera calibration has been canceled. The backend is attempting to cleanly cancel the calibration process.
+              Camera calibration has been canceled. The backend {{ !isCalibrating ? "is attempting" : "has attempted" }} to cleanly cancel the calibration process.
             </div>
           </template>
           <!-- No result reported yet -->
