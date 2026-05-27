@@ -133,7 +133,7 @@ class Drivetrain:
         )
 
     def addVisionPoseEstimate(self, pose: wpimath.Pose3d, timestamp: float) -> None:
-        self.poseEst.addVisionMeasurement(pose, timestamp)
+        self.poseEst.addVisionMeasurement(pose.toPose2d(), timestamp)
 
     def resetPose(self) -> None:
         self.poseEst.resetPosition(

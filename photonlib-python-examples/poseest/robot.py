@@ -55,9 +55,10 @@ class MyRobot(wpilib.TimedRobot):
             if camEstPose is None:
                 camEstPose = self.camPoseEst.estimateLowestAmbiguityPose(result)
 
-            self.swerve.addVisionPoseEstimate(
-                camEstPose.estimatedPose, camEstPose.timestampSeconds
-            )
+            if camEstPose:
+                self.swerve.addVisionPoseEstimate(
+                    camEstPose.estimatedPose, camEstPose.timestampSeconds
+                )
 
         self.swerve.updateOdometry()
         self.swerve.log()
