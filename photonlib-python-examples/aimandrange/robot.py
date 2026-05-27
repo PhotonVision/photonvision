@@ -39,9 +39,11 @@ TAG_7_MOUNT_HEIGHT_m = 1.435  # From the 2024 game manual
 
 
 class MyRobot(wpilib.TimedRobot):
-    def robotInit(self) -> None:
+    def __init__(self) -> None:
         """Robot initialization function"""
-        self.controller = wpilib.XboxController(0)
+        super().__init__()
+
+        self.controller = wpilib.NiDsXboxController(0)
         self.swerve = drivetrain.Drivetrain()
         self.cam = PhotonCamera("YOUR CAMERA NAME")
 

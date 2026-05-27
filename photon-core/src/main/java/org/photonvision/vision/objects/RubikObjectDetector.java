@@ -26,7 +26,8 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
-import org.photonvision.rubik.RubikJNI;
+import org.photonvision.tflite.TFLiteJNI;
+import org.photonvision.tflite.TFLiteJNI.TFLiteSource;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 /** Manages an object detector using the rubik backend. */
@@ -38,7 +39,7 @@ public class RubikObjectDetector implements ObjectDetector {
     private final Cleanable cleanable;
 
     private static Runnable cleanupAction(long ptr) {
-        return () -> RubikJNI.destroy(ptr);
+        return () -> TFLiteJNI.destroy(ptr);
     }
 
     /** Pointer to the native object */
@@ -68,8 +69,10 @@ public class RubikObjectDetector implements ObjectDetector {
         // Create the detector
         try {
             ptr =
-                    RubikJNI.create(
-                            model.modelFile.getPath().toString(), model.properties.version().ordinal());
+                    TFLiteJNI.create(
+                            model.modelFile.getPath().toString(),
+                            model.properties.version().ordinal(),
+                            TFLiteSource.RUBIK.value());
         } catch (Exception e) {
             logger.error("Failed to create detector from path " + model.modelFile.getPath(), e);
             throw new RuntimeException(
@@ -83,7 +86,7 @@ public class RubikObjectDetector implements ObjectDetector {
                             + ". Please ensure the model is valid and compatible with the Rubik backend.");
             throw new RuntimeException(
                     "Failed to create detector from path " + model.modelFile.getPath());
-        } else if (!RubikJNI.isQuantized(ptr)) {
+        } else if (!TFLiteJNI.isQuantized(ptr)) {
             throw new UnsupportedOperationException("Model must be quantized.");
         }
 
@@ -131,7 +134,7 @@ public class RubikObjectDetector implements ObjectDetector {
         }
 
         // Detect objects in the letterboxed frame
-        var results = RubikJNI.detect(ptr, letterboxed.getNativeObjAddr(), boxThresh, nmsThresh);
+        var results = TFLiteJNI.detect(ptr, letterboxed.getNativeObjAddr(), boxThresh, nmsThresh);
 
         letterboxed.release();
 
