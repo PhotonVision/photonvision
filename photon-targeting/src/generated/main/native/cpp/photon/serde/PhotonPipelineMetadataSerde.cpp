@@ -26,6 +26,7 @@
 
 #include "photon/serde/PhotonPipelineMetadataSerde.h"
 
+
 namespace photon {
 
 using StructType = SerdeType<PhotonPipelineMetadata>;

@@ -383,9 +383,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
 
 
 # TODO: code duplication
-def generate_tests(
-    cpp_java_root, cpp_java_test_root, py_root, py_test_root, template_root
-):
+def generate_tests(cpp_java_test_root, py_test_root, template_root):
 
     # Generate test messages
     test_messages = parse_yaml("test_messages.yaml")
@@ -418,35 +416,33 @@ def generate_tests(
             "python_type": name,
         }
 
-    java_output_dir = Path(cpp_java_root) / "main/java/org/photonvision/struct/test"
+    java_output_dir = Path(cpp_java_test_root) / "main/java/org/photonvision/struct"
     java_output_dir.mkdir(parents=True, exist_ok=True)
 
     java_test_class_output_dir = (
-        Path(cpp_java_root) / "main/java/org/photonvision/targeting"
+        Path(cpp_java_test_root) / "main/java/org/photonvision/targeting"
     )
     java_test_class_output_dir.mkdir(parents=True, exist_ok=True)
 
-    cpp_serde_header_dir = (
-        Path(cpp_java_root) / "main/native/include/photon/serde/test/"
-    )
+    cpp_serde_header_dir = Path(cpp_java_test_root) / "main/native/include/photon/serde"
     cpp_serde_header_dir.mkdir(parents=True, exist_ok=True)
-    cpp_serde_source_dir = Path(cpp_java_root) / "main/native/cpp/photon/serde/test/"
+    cpp_serde_source_dir = Path(cpp_java_test_root) / "main/native/cpp/photon/serde"
     cpp_serde_source_dir.mkdir(parents=True, exist_ok=True)
 
     cpp_struct_header_dir = (
-        Path(cpp_java_root) / "main/native/include/photon/struct/test/"
+        Path(cpp_java_test_root) / "main/native/include/photon/struct/"
     )
     cpp_struct_header_dir.mkdir(parents=True, exist_ok=True)
 
     cpp_test_struct_output_dir = (
-        Path(cpp_java_root) / "main/native/include/photon/targeting/"
+        Path(cpp_java_test_root) / "main/native/include/photon/targeting/"
     )
     cpp_test_struct_output_dir.mkdir(parents=True, exist_ok=True)
 
-    py_serde_source_dir = Path(py_root) / "test"
+    py_serde_source_dir = Path(py_test_root)
     py_serde_source_dir.mkdir(parents=True, exist_ok=True)
 
-    python_test_dataclass_output_dir = Path(py_root) / "test"
+    python_test_dataclass_output_dir = Path(py_test_root)
 
     env.filters["get_cpp_qualified_name"] = lambda field: get_cpp_qualified_name(
         message_db, extended_data_types, field
@@ -555,10 +551,10 @@ def generate_tests(
     # Generate test fixtures (WIP)
     tests = parse_yaml("tests.yaml")
     java_test_target = (
-        Path(cpp_java_test_root) / "java/org/photonvision/AutoSerdeTest.java"
+        Path(cpp_java_test_root) / "test/java/org/photonvision/AutoSerdeTest.java"
     )
     java_test_target.parent.mkdir(parents=True, exist_ok=True)
-    cpp_test_target = Path(cpp_java_test_root) / "native/cpp/AutoSerdeTest.cpp"
+    cpp_test_target = Path(cpp_java_test_root) / "test/native/cpp/AutoSerdeTest.cpp"
     cpp_test_target.parent.mkdir(parents=True, exist_ok=True)
     Path(py_test_root) / "AutoSerdeTest.py"
 
@@ -581,21 +577,21 @@ def main(argv):
         type=Path,
     )
     parser.add_argument(
+        "--cppjava_test_output_dir",
+        help="Optional. If set, will spit cpp/java test files here",
+        default=dirname.parent / "photon-serde-tests/src",
+        type=Path,
+    )
+    parser.add_argument(
         "--py_output_dir",
         help="Optional. If set, will spit Python serde files here",
         default=dirname.parent / "photon-lib/py/photonlibpy/generated",
         type=Path,
     )
     parser.add_argument(
-        "--cpp_java_test_dir",
-        help="Optional. If set, will output the generated test fixtures to this directory, otherwise it will use a path relative to the script",
-        default=dirname.parent / "photon-targeting/src/generated-test",
-        type=Path,
-    )
-    parser.add_argument(
-        "--py_test_dir",
-        help="Optional. If set, will spit Python test fixtures here",
-        default=dirname.parent / "photon-lib/py/generated-test",
+        "--py_test_output_dir",
+        help="Optional. If set, will spit python test files here",
+        default=dirname.parent / "photon-serde-tests/py",
         type=Path,
     )
     parser.add_argument(
@@ -613,10 +609,8 @@ def main(argv):
 
     if args.tests:
         generate_tests(
-            args.cpp_java_output_dir,
-            args.cpp_java_test_dir,
-            args.py_output_dir,
-            args.py_test_dir,
+            args.cppjava_test_output_dir,
+            args.py_test_output_dir,
             args.template_root,
         )
     else:

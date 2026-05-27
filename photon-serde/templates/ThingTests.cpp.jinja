@@ -21,7 +21,7 @@
 #include <optional>
 #include <vector>
 
-#include <wpi/units/angle.hpp>
+#include <wpi/hal/HAL.h>
 
 #include "gtest/gtest.h"
 
@@ -32,6 +32,12 @@
 {% for test in tests -%}
 #include "photon/targeting/{{ test.type }}.h"
 {% endfor %}
+
+// Hack
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
 
 using namespace photon;
 

@@ -26,6 +26,7 @@
 
 #include "photon/serde/PnpResultSerde.h"
 
+
 namespace photon {
 
 using StructType = SerdeType<PnpResult>;

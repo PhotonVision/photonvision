@@ -29,46 +29,50 @@
 
 from typing import TYPE_CHECKING
 
-from ..packet import Packet
-from ..targeting import *  # noqa
+
+from photonlib.packet import Packet
+from photonlib.targeting import *  # noqa
+
+
 
 if TYPE_CHECKING:
-    from ..targeting import Transform3dTestMessage  # noqa
+    from ...targeting import Float32TestMessage  # noqa
 
 
-class Transform3dTestMessageSerde:
+class Float32TestMessageSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "37188f532d61c3b549080489012b4d07"
-    MESSAGE_FORMAT = "Transform3d test;Transform3d vlaTest[?];optional Transform3d optTest;"
+    MESSAGE_VERSION = "9fd9ed51ec69d6738ee24af43b2b9c7e"
+    MESSAGE_FORMAT = "float32 test;float32 vlaTest[?];optional float32 optTest;"
 
     @staticmethod
-    def pack(value: "Transform3dTestMessage") -> "Packet":
+    def pack(value: "Float32TestMessage") -> "Packet":
         ret = Packet()
 
-        # test is of shimmed type Transform3d
-        ret.encodeTransform(value.test)
+        # test is of intrinsic type float32
+        ret.encodeFloat(value.test)
 
         # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encodeTransform)
+        ret.encodeListShimmed(value.vlaTest, ret.encodeFloat)
 
         # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encodeTransform)
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeFloat)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "Transform3dTestMessage":
-        ret = Transform3dTestMessage()
+    def unpack(packet: "Packet") -> "Float32TestMessage":
+        ret = Float32TestMessage()
 
-        ret.test = packet.decodeTransform()
+        # test is of intrinsic type float32
+        ret.test = packet.decodeFloat()
 
-        # vlaTest is a shimmed VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decodeTransform)
+        # vlaTest is an intrinsic VLA!
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeFloat)
 
         # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decodeTransform)
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeFloat)
 
         return ret
 
 
 # Hack ourselves into the base class
-Transform3dTestMessage.photonStruct = Transform3dTestMessageSerde()
+Float32TestMessage.photonStruct = Float32TestMessageSerde()

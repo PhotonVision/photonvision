@@ -30,8 +30,8 @@
 from typing import TYPE_CHECKING, Optional
 from dataclasses import dataclass
 
-from ...packet import Packet
-from ...targeting import *  # noqa
+from photonlib.packet import Packet
+from photonlib.targeting import *  # noqa
 
 {% for type in nested_wpilib_types -%}
 from {{ get_message_by_name(type).python_module }} import {{ type }}

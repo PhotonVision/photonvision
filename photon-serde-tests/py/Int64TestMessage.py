@@ -27,49 +27,16 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from dataclasses import dataclass
 
-from ..packet import Packet
-from ..targeting import *  # noqa
-
-if TYPE_CHECKING:
-    from ..targeting import Int64TestMessage  # noqa
+from photonlib.packet import Packet
+from photonlib.targeting import *  # noqa
 
 
-class Int64TestMessageSerde:
-    # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "dd2e470b4d07bbcd208906c26a2ae37a"
-    MESSAGE_FORMAT = "int64 test;int64 vlaTest[?];optional int64 optTest;"
 
-    @staticmethod
-    def pack(value: "Int64TestMessage") -> "Packet":
-        ret = Packet()
-
-        # test is of intrinsic type int64
-        ret.encodeLong(value.test)
-
-        # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encodeLong)
-
-        # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encodeLong)
-        return ret
-
-    @staticmethod
-    def unpack(packet: "Packet") -> "Int64TestMessage":
-        ret = Int64TestMessage()
-
-        # test is of intrinsic type int64
-        ret.test = packet.decodeLong()
-
-        # vlaTest is an intrinsic VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decodeLong)
-
-        # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decodeLong)
-
-        return ret
-
-
-# Hack ourselves into the base class
-Int64TestMessage.photonStruct = Int64TestMessageSerde()
+@dataclass
+class Int64TestMessage:
+    test: int
+    vlaTest: list[int]
+    optTest: Optional[int]

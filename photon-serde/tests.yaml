@@ -9,9 +9,9 @@ cpp_includes:
 - '<wpi/math/geometry/Transform3d.hpp>'
 - '<wpi/units/angle.hpp>'
 python_imports:
-- 'from wpimath.geometry import Rotation3d'
-- 'from wpimath.geometry import Translation3d'
-- 'from wpimath.geometry import Transform3d'
+- 'from wpimath import Rotation3d'
+- 'from wpimath import Translation3d'
+- 'from wpimath import Transform3d'
 tests:
 - name: Int8Test
   type: Int8TestMessage

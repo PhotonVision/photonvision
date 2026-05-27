@@ -29,47 +29,50 @@
 
 from typing import TYPE_CHECKING
 
-from ..packet import Packet
-from ..targeting import *  # noqa
+
+from photonlib.packet import Packet
+from photonlib.targeting import *  # noqa
+
+
 
 if TYPE_CHECKING:
-    from ..targeting import BoolTestMessage  # noqa
+    from ...targeting import Float64TestMessage  # noqa
 
 
-class BoolTestMessageSerde:
+class Float64TestMessageSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "c8efe94a9c0d815658c74de6f672939c"
-    MESSAGE_FORMAT = "bool test;bool vlaTest[?];optional bool optTest;"
+    MESSAGE_VERSION = "bc96c1f7d9db9371269d0e4f4d4b4cb2"
+    MESSAGE_FORMAT = "float64 test;float64 vlaTest[?];optional float64 optTest;"
 
     @staticmethod
-    def pack(value: "BoolTestMessage") -> "Packet":
+    def pack(value: "Float64TestMessage") -> "Packet":
         ret = Packet()
 
-        # test is of intrinsic type bool
-        ret.encodeBoolean(value.test)
+        # test is of intrinsic type float64
+        ret.encodeDouble(value.test)
 
         # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encodeBoolean)
+        ret.encodeListShimmed(value.vlaTest, ret.encodeDouble)
 
         # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encodeBoolean)
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeDouble)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "BoolTestMessage":
-        ret = BoolTestMessage()
+    def unpack(packet: "Packet") -> "Float64TestMessage":
+        ret = Float64TestMessage()
 
-        # test is of intrinsic type bool
-        ret.test = packet.decodeBoolean()
+        # test is of intrinsic type float64
+        ret.test = packet.decodeDouble()
 
         # vlaTest is an intrinsic VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decodeBoolean)
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeDouble)
 
         # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decodeBoolean)
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeDouble)
 
         return ret
 
 
 # Hack ourselves into the base class
-BoolTestMessage.photonStruct = BoolTestMessageSerde()
+Float64TestMessage.photonStruct = Float64TestMessageSerde()

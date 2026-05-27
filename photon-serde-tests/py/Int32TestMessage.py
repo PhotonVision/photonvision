@@ -27,49 +27,16 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from dataclasses import dataclass
 
-from ..packet import Packet
-from ..targeting import *  # noqa
-
-if TYPE_CHECKING:
-    from ..targeting import Int16TestMessage  # noqa
+from photonlib.packet import Packet
+from photonlib.targeting import *  # noqa
 
 
-class Int16TestMessageSerde:
-    # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "23e6ccab160b942600aae8e94a72778a"
-    MESSAGE_FORMAT = "int16 test;int16 vlaTest[?];optional int16 optTest;"
 
-    @staticmethod
-    def pack(value: "Int16TestMessage") -> "Packet":
-        ret = Packet()
-
-        # test is of intrinsic type int16
-        ret.encode16(value.test)
-
-        # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encode16)
-
-        # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encode16)
-        return ret
-
-    @staticmethod
-    def unpack(packet: "Packet") -> "Int16TestMessage":
-        ret = Int16TestMessage()
-
-        # test is of intrinsic type int16
-        ret.test = packet.decode16()
-
-        # vlaTest is an intrinsic VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decode16)
-
-        # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decode16)
-
-        return ret
-
-
-# Hack ourselves into the base class
-Int16TestMessage.photonStruct = Int16TestMessageSerde()
+@dataclass
+class Int32TestMessage:
+    test: int
+    vlaTest: list[int]
+    optTest: Optional[int]
