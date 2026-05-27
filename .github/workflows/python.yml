@@ -121,7 +121,7 @@ jobs:
           for folder in */;
           do
             echo $folder
-            ./run.sh $folder
+            ./test.sh $folder
           done
 
   deploy:
