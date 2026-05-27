@@ -58,8 +58,8 @@ class Drivetrain:
         self.debugField = wpilib.Field2d()
         wpilib.SmartDashboard.putData("Drivetrain Debug", self.debugField)
 
-        self.gyro = wpilib.AnalogGyro(0)
-        self.simGyro = wpilib.simulation.OnboardIMUSim(self.gyro)
+        self.gyro = wpilib.OnboardIMU(wpilib.OnboardIMU.MountOrientation.FLAT)
+        self.simGyro = wpilib.simulation.OnboardIMUSim()
         self._yaw = 0.0
 
         self.kinematics = wpimath.SwerveDrive4Kinematics(
@@ -78,11 +78,12 @@ class Drivetrain:
                 self.backLeft.getPosition(),
                 self.backRight.getPosition(),
             ),
+            wpimath.Pose2d(),
         )
 
         self.targetChassisVelocities = wpimath.ChassisVelocities()
 
-        self.gyro.reset()
+        self.gyro.resetYaw()
 
     def drive(
         self,
@@ -121,7 +122,7 @@ class Drivetrain:
 
     def updateOdometry(self) -> None:
         """Updates the field relative position of the robot."""
-        self.odometry.update(
+        self.poseEst.update(
             self.gyro.getRotation2d(),
             (
                 self.frontLeft.getPosition(),
@@ -146,13 +147,20 @@ class Drivetrain:
             kInitialPose,
         )
 
-    def getModuleVelocities(self) -> list[wpimath.SwerveModuleVelocity]:
-        return [
+    def getModuleVelocities(
+        self,
+    ) -> tuple[
+        wpimath.SwerveModuleVelocity,
+        wpimath.SwerveModuleVelocity,
+        wpimath.SwerveModuleVelocity,
+        wpimath.SwerveModuleVelocity,
+    ]:
+        return (
             self.frontLeft.getVelocity(),
             self.frontRight.getVelocity(),
             self.backLeft.getVelocity(),
             self.backRight.getVelocity(),
-        ]
+        )
 
     def getModulePoses(self) -> list[wpimath.Pose2d]:
         p = self.poseEst.getEstimatedPosition()
@@ -181,7 +189,7 @@ class Drivetrain:
     def log(self):
         table = "Drive/"
 
-        pose = self.odometry.getPose()
+        pose = self.poseEst.getEstimatedPosition()
         wpilib.SmartDashboard.putNumber(table + "X", pose.X())
         wpilib.SmartDashboard.putNumber(table + "Y", pose.Y())
         wpilib.SmartDashboard.putNumber(table + "Heading", pose.rotation().degrees())
@@ -208,7 +216,7 @@ class Drivetrain:
         self.backLeft.log()
         self.backRight.log()
 
-        self.debugField.getRobotObject().setPose(self.odometry.getPose())
+        self.debugField.getRobotObject().setPose(self.poseEst.getEstimatedPosition())
         self.debugField.getObject("SwerveModules").setPoses(self.getModulePoses())
 
     def simulationPeriodic(self):
@@ -217,6 +225,6 @@ class Drivetrain:
         self.backLeft.simulationPeriodic()
         self.backRight.simulationPeriodic()
         rate = -1.0 * self.getChassisVelocities().omega_dps
-        self.simGyro.setRate(rate)
+        self.simGyro.setGyroRateZ(rate)
         self._yaw += rate * 0.02
-        self.simGyro.setYaw(self._yaw)
+        self.simGyro.setYaw(math.radians(self._yaw))

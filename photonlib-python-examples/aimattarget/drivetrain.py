@@ -53,8 +53,8 @@ class Drivetrain:
         self.debugField = wpilib.Field2d()
         wpilib.SmartDashboard.putData("Drivetrain Debug", self.debugField)
 
-        self.gyro = wpilib.AnalogGyro(0)
-        self.simGyro = wpilib.simulation.OnboardIMUSim(self.gyro)
+        self.gyro = wpilib.OnboardIMU(wpilib.OnboardIMU.MountOrientation.FLAT)
+        self.simGyro = wpilib.simulation.OnboardIMUSim()
         self._yaw = 0.0
 
         self.kinematics = wpimath.SwerveDrive4Kinematics(
@@ -77,7 +77,7 @@ class Drivetrain:
 
         self.targetChassisVelocities = wpimath.ChassisVelocities()
 
-        self.gyro.reset()
+        self.gyro.resetYaw()
 
     def drive(
         self,
@@ -126,13 +126,20 @@ class Drivetrain:
             ),
         )
 
-    def getModuleVelocities(self) -> list[wpimath.SwerveModuleVelocity]:
-        return [
+    def getModuleVelocities(
+        self,
+    ) -> tuple[
+        wpimath.SwerveModuleVelocity,
+        wpimath.SwerveModuleVelocity,
+        wpimath.SwerveModuleVelocity,
+        wpimath.SwerveModuleVelocity,
+    ]:
+        return (
             self.frontLeft.getVelocity(),
             self.frontRight.getVelocity(),
             self.backLeft.getVelocity(),
             self.backRight.getVelocity(),
-        ]
+        )
 
     def getModulePoses(self) -> list[wpimath.Pose2d]:
         p = self.odometry.getPose()
@@ -197,6 +204,6 @@ class Drivetrain:
         self.backLeft.simulationPeriodic()
         self.backRight.simulationPeriodic()
         rate = -1.0 * self.getChassisVelocities().omega_dps
-        self.simGyro.setRate(rate)
+        self.simGyro.setGyroRateZ(rate)
         self._yaw += rate * 0.02
-        self.simGyro.setYaw(self._yaw)
+        self.simGyro.setYaw(math.radians(self._yaw))

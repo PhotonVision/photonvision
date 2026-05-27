@@ -92,6 +92,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.swerve.drive(xSpeed, ySpeed, rot, True, self.getPeriod())
 
-    def _simulationPeriodic(self) -> None:
+    def simulationPeriodic(self) -> None:
         self.swerve.simulationPeriodic()
-        return super()._simulationPeriodic()
+        return super().simulationPeriodic()
