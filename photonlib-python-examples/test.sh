@@ -11,4 +11,4 @@ cd $1
 
 # Run the example
 mypy --show-column-numbers --config-file ../../photon-lib/py/pyproject.toml .
-python3 -m robotpy --main=robot.py test
+python3 -m robotpy test
