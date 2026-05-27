@@ -2,7 +2,7 @@ cppHeaderFileInclude {
   \.h$
 }
 
-modifiableFileExclude {
+generatedFileExclude {
   photon-lib/py/photonlibpy/generated/
   photon-lib/py/generated-test
   photon-targeting/src/generated/

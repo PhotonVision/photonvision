@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -72,7 +73,7 @@ public class VisionSourceManager {
         return SingletonHolder.INSTANCE;
     }
 
-    // Jackson does use these members even if your IDE claims otherwise
+    @Json
     public static class VisionSourceManagerState {
         public List<UICameraConfiguration> disabledConfigs;
         public List<PVCameraInfo> allConnectedCameras;

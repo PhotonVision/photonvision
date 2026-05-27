@@ -17,11 +17,7 @@
 
 package org.photonvision.vision.calibration;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Mat;
@@ -30,31 +26,23 @@ import org.opencv.core.Size;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Json
 public class CameraCalibrationCoefficients implements Releasable {
-    @JsonProperty("resolution")
-    public final Size unrotatedImageSize;
+    /** The unrotated resolution of the calibration */
+    public final Size resolution;
 
-    @JsonProperty("cameraIntrinsics")
     public final JsonMatOfDouble cameraIntrinsics;
 
-    @JsonProperty("distCoeffs")
-    @JsonAlias({"distCoeffs", "distCoeffs"})
     public final JsonMatOfDouble distCoeffs;
 
-    @JsonProperty("observations")
     public final List<BoardObservation> observations;
 
-    @JsonProperty("calobjectWarp")
     public final double[] calobjectWarp;
 
-    @JsonProperty("calobjectSize")
     public final Size calobjectSize;
 
-    @JsonProperty("calobjectSpacing")
     public final double calobjectSpacing;
 
-    @JsonProperty("lensmodel")
     public final CameraLensModel lensmodel;
 
     /**
@@ -75,17 +63,16 @@ public class CameraCalibrationCoefficients implements Releasable {
      *     width/height
      * @param calobjectSpacing Spacing between adjacent squares, in meters
      */
-    @JsonCreator
     public CameraCalibrationCoefficients(
-            @JsonProperty("resolution") Size resolution,
-            @JsonProperty("cameraIntrinsics") JsonMatOfDouble cameraIntrinsics,
-            @JsonProperty("distCoeffs") JsonMatOfDouble distCoeffs,
-            @JsonProperty("calobjectWarp") double[] calobjectWarp,
-            @JsonProperty("observations") List<BoardObservation> observations,
-            @JsonProperty("calobjectSize") Size calobjectSize,
-            @JsonProperty("calobjectSpacing") double calobjectSpacing,
-            @JsonProperty("lensmodel") CameraLensModel lensmodel) {
-        this.unrotatedImageSize = resolution;
+            Size resolution,
+            JsonMatOfDouble cameraIntrinsics,
+            JsonMatOfDouble distCoeffs,
+            double[] calobjectWarp,
+            List<BoardObservation> observations,
+            Size calobjectSize,
+            double calobjectSpacing,
+            CameraLensModel lensmodel) {
+        this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
         this.calobjectWarp = calobjectWarp;
@@ -129,7 +116,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedIntrinsics.put(1, 1, fx);
 
                 // CX
-                rotatedIntrinsics.put(0, 2, unrotatedImageSize.height - cy);
+                rotatedIntrinsics.put(0, 2, resolution.height - cy);
                 // CY
                 rotatedIntrinsics.put(1, 2, cx);
 
@@ -139,14 +126,14 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 3, -p1);
 
                 // The rotated image size is the same as the unrotated image size, but the width and height
-                // are flipped
-                rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
+                // are swapped
+                rotatedImageSize = new Size(resolution.height, resolution.width);
                 break;
             case DEG_180_CCW:
                 // CX
-                rotatedIntrinsics.put(0, 2, unrotatedImageSize.width - cx);
+                rotatedIntrinsics.put(0, 2, resolution.width - cx);
                 // CY
-                rotatedIntrinsics.put(1, 2, unrotatedImageSize.height - cy);
+                rotatedIntrinsics.put(1, 2, resolution.height - cy);
 
                 // P1
                 rotatedDistCoeffs.put(0, 2, -p1);
@@ -154,7 +141,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 3, -p2);
 
                 // The rotated image size is the same as the unrotated image size
-                rotatedImageSize = unrotatedImageSize;
+                rotatedImageSize = resolution;
                 break;
             case DEG_90_CCW:
                 // FX
@@ -165,7 +152,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // CX
                 rotatedIntrinsics.put(0, 2, cy);
                 // CY
-                rotatedIntrinsics.put(1, 2, unrotatedImageSize.width - cx);
+                rotatedIntrinsics.put(1, 2, resolution.width - cx);
 
                 // P1
                 rotatedDistCoeffs.put(0, 2, -p2);
@@ -173,8 +160,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 3, p1);
 
                 // The rotated image size is the same as the unrotated image size, but the width and height
-                // are flipped
-                rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
+                // are swapped
+                rotatedImageSize = new Size(resolution.height, resolution.width);
                 break;
         }
 
@@ -196,27 +183,22 @@ public class CameraCalibrationCoefficients implements Releasable {
                 lensmodel);
     }
 
-    @JsonIgnore
     public Mat getCameraIntrinsicsMat() {
         return cameraIntrinsics.getAsMatOfDouble();
     }
 
-    @JsonIgnore
     public MatOfDouble getDistCoeffsMat() {
         return distCoeffs.getAsMatOfDouble();
     }
 
-    @JsonIgnore
     public double[] getIntrinsicsArr() {
         return cameraIntrinsics.data;
     }
 
-    @JsonIgnore
     public double[] getDistCoeffsArr() {
         return distCoeffs.data;
     }
 
-    @JsonIgnore
     public List<BoardObservation> getObservations() {
         return observations;
     }
@@ -230,7 +212,7 @@ public class CameraCalibrationCoefficients implements Releasable {
     @Override
     public String toString() {
         return "CameraCalibrationCoefficients [resolution="
-                + unrotatedImageSize
+                + resolution
                 + ", cameraIntrinsics="
                 + cameraIntrinsics
                 + ", distCoeffs="
@@ -244,7 +226,7 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     public UICameraCalibrationCoefficients cloneWithoutObservations() {
         return new UICameraCalibrationCoefficients(
-                unrotatedImageSize,
+                resolution,
                 cameraIntrinsics,
                 distCoeffs,
                 calobjectWarp,

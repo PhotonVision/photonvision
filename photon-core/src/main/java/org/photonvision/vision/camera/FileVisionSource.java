@@ -18,7 +18,8 @@
 package org.photonvision.vision.camera;
 
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -100,7 +101,7 @@ public class FileVisionSource extends VisionSource {
     public static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
 
-        private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();
+        private final ArrayList<VideoMode> videoModes = new ArrayList<>();
 
         FileSourceSettables(
                 CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {
@@ -108,11 +109,11 @@ public class FileVisionSource extends VisionSource {
             this.frameStaticProperties = frameStaticProperties;
             videoMode =
                     new VideoMode(
-                            PixelFormat.kMJPEG,
+                            PixelFormat.MJPEG,
                             frameStaticProperties.imageWidth,
                             frameStaticProperties.imageHeight,
                             30);
-            videoModes.put(0, videoMode);
+            videoModes.add(videoMode);
         }
 
         @Override
@@ -137,7 +138,7 @@ public class FileVisionSource extends VisionSource {
         }
 
         @Override
-        public HashMap<Integer, VideoMode> getAllVideoModes() {
+        public List<VideoMode> getAllVideoModes() {
             return videoModes;
         }
 

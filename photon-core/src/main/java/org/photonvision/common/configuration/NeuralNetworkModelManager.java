@@ -318,7 +318,7 @@ public class NeuralNetworkModelManager {
         }
 
         ModelProperties properties =
-                ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().getModel(path);
+                ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().getModel(path);
 
         if (properties == null) {
             logger.warn(
@@ -332,7 +332,7 @@ public class NeuralNetworkModelManager {
                 // NeuralNetworkModelsSettings
                 ConfigManager.getInstance()
                         .getConfig()
-                        .neuralNetworkPropertyManager()
+                        .getNeuralNetworkProperties()
                         .addModelProperties(properties);
             } catch (IllegalArgumentException | IOException e) {
                 logger.error("Failed to translate legacy model filename to properties: " + path, e);
@@ -486,7 +486,7 @@ public class NeuralNetworkModelManager {
                 .getConfig()
                 .setNeuralNetworkProperties(
                         supportedProperties.sum(
-                                ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()));
+                                ConfigManager.getInstance().getConfig().getNeuralNetworkProperties()));
     }
 
     public boolean clearModels() {
@@ -511,7 +511,7 @@ public class NeuralNetworkModelManager {
         }
 
         // Delete model info
-        return ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().clear();
+        return ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().clear();
     }
 
     public File exportSingleModel(String modelPath) {
@@ -525,7 +525,7 @@ public class NeuralNetworkModelManager {
             ModelProperties properties =
                     ConfigManager.getInstance()
                             .getConfig()
-                            .neuralNetworkPropertyManager()
+                            .getNeuralNetworkProperties()
                             .getModel(Path.of(modelPath));
 
             String fileName = "";
