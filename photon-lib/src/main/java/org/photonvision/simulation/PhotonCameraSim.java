@@ -153,7 +153,7 @@ public class PhotonCameraSim implements AutoCloseable {
 
         videoSimRaw =
                 CameraServer.putVideo(camera.getName() + "-raw", prop.getResWidth(), prop.getResHeight());
-        videoSimRaw.setPixelFormat(PixelFormat.kGray);
+        videoSimRaw.setPixelFormat(PixelFormat.GRAY);
         videoSimProcessed =
                 CameraServer.putVideo(
                         camera.getName() + "-processed", prop.getResWidth(), prop.getResHeight());
@@ -649,7 +649,7 @@ public class PhotonCameraSim implements AutoCloseable {
         }
 
         // put this simulated data to NT
-        var now = RobotController.getFPGATime();
+        var now = RobotController.getMonotonicTime();
         var ret =
                 new PhotonPipelineResult(
                         heartbeatCounter,

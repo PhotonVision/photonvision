@@ -152,9 +152,9 @@ public enum Platform {
 
         switch (platPath) {
             case "/linux/x86-64/":
-                return "linuxx64";
+                return "linuxx86-64";
             case "/windows/x86-64/":
-                return "winx64";
+                return "winx86-64";
             case "/linux/arm64/":
                 return "linuxarm64";
             default:

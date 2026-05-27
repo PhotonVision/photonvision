@@ -36,8 +36,8 @@ import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
-import org.wpilib.driverstation.DriverStation;
-import org.wpilib.driverstation.DriverStation.MatchType;
+import org.wpilib.driverstation.MatchType;
+import org.wpilib.driverstation.internal.DriverStationBackend;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.simulation.DriverStationSim;
@@ -103,7 +103,7 @@ public class FileSaveFrameConsumerTest {
         DriverStationSim.setMatchType(matchType);
         DriverStationSim.setMatchNumber(matchNumber);
         DriverStationSim.setEventName(eventName);
-        DriverStation.refreshData();
+        DriverStationBackend.refreshData();
 
         // WHEN we save the image
         var currentTime = new Date();
