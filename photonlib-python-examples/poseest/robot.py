@@ -55,9 +55,10 @@ class MyRobot(wpilib.TimedRobot):
             if camEstPose is None:
                 camEstPose = self.camPoseEst.estimateLowestAmbiguityPose(result)
 
-            self.swerve.addVisionPoseEstimate(
-                camEstPose.estimatedPose, camEstPose.timestampSeconds
-            )
+            if camEstPose:
+                self.swerve.addVisionPoseEstimate(
+                    camEstPose.estimatedPose, camEstPose.timestampSeconds
+                )
 
         self.swerve.updateOdometry()
         self.swerve.log()
@@ -69,6 +70,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.swerve.drive(xSpeed, ySpeed, rot, True, self.getPeriod())
 
-    def _simulationPeriodic(self) -> None:
+    def simulationPeriodic(self) -> None:
         self.swerve.simulationPeriodic()
-        return super()._simulationPeriodic()
+        return super().simulationPeriodic()

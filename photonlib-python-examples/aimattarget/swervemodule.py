@@ -95,12 +95,16 @@ class SwerveModule:
         # Simulation Support
         self.simDriveEncoder = wpilib.simulation.EncoderSim(self.driveEncoder)
         self.simTurningEncoder = wpilib.simulation.EncoderSim(self.turningEncoder)
-        self.simDrivingMotor = wpilib.simulation.PWMSim(driveMotorChannel)
-        self.simTurningMotor = wpilib.simulation.PWMSim(turningMotorChannel)
+        self.simDrivingMotor = wpilib.simulation.PWMMotorControllerSim(
+            driveMotorChannel
+        )
+        self.simTurningMotor = wpilib.simulation.PWMMotorControllerSim(
+            turningMotorChannel
+        )
         self.simDrivingMotorFilter = wpimath.LinearFilter.singlePoleIIR(0.1, 0.02)
         self.simTurningMotorFilter = wpimath.LinearFilter.singlePoleIIR(0.0001, 0.02)
-        self.simTurningEncoderPos = 0
-        self.simDrivingEncoderPos = 0
+        self.simTurningEncoderPos = 0.0
+        self.simDrivingEncoderPos = 0.0
 
     def getVelocity(self) -> wpimath.SwerveModuleVelocity:
         """Returns the current state of the module.
@@ -188,10 +192,12 @@ class SwerveModule:
 
     def simulationPeriodic(self) -> None:
         driveVoltage = (
-            self.simDrivingMotor.getSpeed() * wpilib.RobotController.getBatteryVoltage()
+            self.simDrivingMotor.getThrottle()
+            * wpilib.RobotController.getBatteryVoltage()
         )
         turnVoltage = (
-            self.simTurningMotor.getSpeed() * wpilib.RobotController.getBatteryVoltage()
+            self.simTurningMotor.getThrottle()
+            * wpilib.RobotController.getBatteryVoltage()
         )
         driveSpdRaw = (
             driveVoltage / 12.0 * self.driveFeedforward.maxAchievableVelocity(12.0, 0)
