@@ -16,7 +16,7 @@ PhotonVision requires a JDK installed and on the system path. **JDK 17 is needed
 
 ## Downloading the Latest Stable Release of PhotonVision
 
-Go to the [GitHub releases page](https://github.com/PhotonVision/photonvision/releases) and download the winx64.jar file.
+Go to the [GitHub releases page](https://github.com/PhotonVision/photonvision/releases) and download the winx86-64.jar file.
 
 ## Running PhotonVision
 

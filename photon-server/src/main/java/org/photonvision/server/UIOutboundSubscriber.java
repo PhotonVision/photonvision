@@ -17,7 +17,7 @@
 
 package org.photonvision.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.avaje.json.JsonDataException;
 import java.util.Collections;
 import java.util.HashMap;
 import org.photonvision.common.dataflow.DataChangeDestination;
@@ -43,15 +43,15 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
     }
 
     @Override
-    public void onDataChangeEvent(DataChangeEvent event) {
-        if (event instanceof OutgoingUIEvent thisEvent) {
+    public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
+        if (event instanceof OutgoingUIEvent<T> thisEvent) {
             try {
                 if (event.data instanceof HashMap data) {
                     socketHandler.broadcastMessage(data, thisEvent.originContext);
                 } else {
                     socketHandler.broadcastMessage(event.data, thisEvent.originContext);
                 }
-            } catch (JsonProcessingException e) {
+            } catch (JsonDataException e) {
                 logger.error("Failed to process outgoing message!", e);
             }
         }

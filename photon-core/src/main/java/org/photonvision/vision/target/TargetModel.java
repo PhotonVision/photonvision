@@ -17,10 +17,7 @@
 
 package org.photonvision.vision.target;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.MatOfPoint3f;
@@ -49,6 +46,7 @@ import org.wpilib.math.util.Units;
  *
  * <p>AprilTag models are currently only used for drawing on the output stream.
  */
+@Json
 public enum TargetModel implements Releasable {
     k2016HighGoal(
             List.of(
@@ -129,7 +127,8 @@ public enum TargetModel implements Releasable {
                             -Units.inchesToMeters(16.25) / 2)),
             0),
     // 2023 AprilTag, with 6 inch marker width (inner black square).
-    @JsonAlias({"k6in_16h5"})
+    // MIGRATION: 2023
+    @Json.Alias({"k6in_16h5"})
     kAprilTag6in_16h5(
             // Corners of the tag's inner black square (excluding white border)
             List.of(
@@ -139,7 +138,8 @@ public enum TargetModel implements Releasable {
                     new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
             Units.inchesToMeters(3 * 2)),
     // 2024 AprilTag, with 6.5 inch marker width (inner black square).
-    @JsonAlias({"k6p5in_36h11", "k200mmAprilTag", "kAruco6p5in_36h11"})
+    // MIGRATION: 2023
+    @Json.Alias({"k6p5in_36h11", "k200mmAprilTag", "kAruco6p5in_36h11"})
     kAprilTag6p5in_36h11(
             // Corners of the tag's inner black square (excluding white border)
             List.of(
@@ -149,17 +149,12 @@ public enum TargetModel implements Releasable {
                     new Point3(-Units.inchesToMeters(6.5 / 2.0), -Units.inchesToMeters(6.5 / 2.0), 0)),
             Units.inchesToMeters(6.5));
 
-    @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
-    @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-    @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
+    @Json.Ignore private final MatOfPoint3f realWorldTargetCoordinates;
+    @Json.Ignore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @Json.Ignore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
-    @JsonProperty("realWorldCoordinatesArray")
     private List<Point3> realWorldCoordinatesArray;
-
-    @JsonProperty("boxHeight")
     private double boxHeight;
-
-    TargetModel() {}
 
     TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
         this.realWorldTargetCoordinates = realWorldTargetCoordinates;
@@ -176,11 +171,8 @@ public enum TargetModel implements Releasable {
         this.visualizationBoxTop.fromList(topList);
     }
 
-    @JsonCreator
-    TargetModel(
-            @JsonProperty(value = "realWorldCoordinatesArray") List<Point3> points,
-            @JsonProperty(value = "boxHeight") double boxHeight) {
-        this(listToMat(points), boxHeight);
+    TargetModel(List<Point3> realWorldCoordinatesArray, double boxHeight) {
+        this(listToMat(realWorldCoordinatesArray), boxHeight);
     }
 
     public List<Point3> getRealWorldCoordinatesArray() {
@@ -226,6 +218,12 @@ public enum TargetModel implements Releasable {
     //                new Point3(Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2));
     //        return new TargetModel(corners, 0);
     //    }
+
+    @Json.Value
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 
     @Override
     public void release() {

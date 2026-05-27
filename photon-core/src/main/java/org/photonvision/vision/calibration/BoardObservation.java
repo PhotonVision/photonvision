@@ -17,10 +17,7 @@
 
 package org.photonvision.vision.calibration;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.awt.Color;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -36,45 +33,36 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
 import org.wpilib.math.geometry.Pose3d;
 
+@Json
 // Ignore the previous calibration data that was stored in the json file.
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class BoardObservation implements Cloneable {
     // Expected feature 3d location in the camera frame
-    @JsonProperty("locationInObjectSpace")
     public List<Point3> locationInObjectSpace;
 
     // Observed location in pixel space
-    @JsonProperty("locationInImageSpace")
     public List<Point> locationInImageSpace;
 
     // (measured location in pixels) - (expected from FK)
-    @JsonProperty("reprojectionErrors")
     public List<Point> reprojectionErrors;
 
     // Solver optimized board poses
-    @JsonProperty("optimisedCameraToObject")
     public Pose3d optimisedCameraToObject;
 
     // If we should use this observation when re-calculating camera calibration
-    @JsonProperty("cornersUsed")
     public boolean[] cornersUsed;
 
-    @JsonProperty("snapshotName")
     public String snapshotName;
 
-    @JsonProperty("snapshotDataLocation")
-    @Nullable
-    public Path snapshotDataLocation;
+    @Nullable public Path snapshotDataLocation;
 
-    @JsonCreator
     public BoardObservation(
-            @JsonProperty("locationInObjectSpace") List<Point3> locationInObjectSpace,
-            @JsonProperty("locationInImageSpace") List<Point> locationInImageSpace,
-            @JsonProperty("reprojectionErrors") List<Point> reprojectionErrors,
-            @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
-            @JsonProperty("cornersUsed") boolean[] cornersUsed,
-            @JsonProperty("snapshotName") String snapshotName,
-            @JsonProperty("snapshotDataLocation") Path snapshotDataLocation) {
+            List<Point3> locationInObjectSpace,
+            List<Point> locationInImageSpace,
+            List<Point> reprojectionErrors,
+            Pose3d optimisedCameraToObject,
+            boolean[] cornersUsed,
+            String snapshotName,
+            Path snapshotDataLocation) {
         this.locationInObjectSpace = locationInObjectSpace;
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;
@@ -119,7 +107,6 @@ public final class BoardObservation implements Cloneable {
         }
     }
 
-    @JsonIgnore
     /**
      * Load the captured board image from disk. Allocates a new Mat, which the caller is responsible
      * for releasing.
@@ -141,7 +128,6 @@ public final class BoardObservation implements Cloneable {
      * @return Annotated image, or null if the image could not be loaded. Caller is responsible for
      *     releasing the Mat.
      */
-    @JsonIgnore
     public Mat annotateImage() {
         var image = loadImage();
 
@@ -179,7 +165,6 @@ public final class BoardObservation implements Cloneable {
      *
      * @return Mean reprojection error in pixels.
      */
-    @JsonIgnore
     double meanReprojectionError() {
         return reprojectionErrors.stream()
                 .filter(pt -> cornersUsed[reprojectionErrors.indexOf(pt)])

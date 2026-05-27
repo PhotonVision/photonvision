@@ -22,4 +22,5 @@ set PYTHONPATH=%PHOTONLIBPY_ROOT%
 cd %~1
 
 :: Run the example
+mypy --show-column-numbers --config-file ../../photon-lib/py/pyproject.toml .
 robotpy sim

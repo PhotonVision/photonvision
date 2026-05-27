@@ -26,13 +26,13 @@
 
 import drivetrain
 import wpilib
-import wpimath.geometry
+import wpimath
 from photonlibpy import PhotonCamera, PhotonPoseEstimator
 from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
-kRobotToCam = wpimath.geometry.Transform3d(
-    wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
-    wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
+kRobotToCam = wpimath.Transform3d(
+    wpimath.Translation3d(0.5, 0.0, 0.5),
+    wpimath.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
 )
 
 # Constants for filtering vision estimates.
@@ -43,9 +43,11 @@ kMaxAcceptedPoseAmbiguity = 0.2
 
 
 class MyRobot(wpilib.TimedRobot):
-    def robotInit(self) -> None:
+    def __init__(self) -> None:
         """Robot initialization function"""
-        self.controller = wpilib.XboxController(0)
+        super().__init__()
+
+        self.controller = wpilib.NiDsXboxController(0)
         self.swerve = drivetrain.Drivetrain()
         self.cam = PhotonCamera("YOUR CAMERA NAME")
         self.aprilTagField = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)
@@ -89,6 +91,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.swerve.drive(xSpeed, ySpeed, rot, True, self.getPeriod())
 
-    def _simulationPeriodic(self) -> None:
+    def simulationPeriodic(self) -> None:
         self.swerve.simulationPeriodic()
-        return super()._simulationPeriodic()
+        return super().simulationPeriodic()
