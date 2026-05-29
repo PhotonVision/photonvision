@@ -76,8 +76,8 @@ jobs:
         run: pytest --import-mode=importlib photon-lib/py/test/
 
       - name: Run mypy type checking
-        run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib     
-  
+        run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
+
   test-photonserde-py:
     needs: build-py
     runs-on: ubuntu-24.04
