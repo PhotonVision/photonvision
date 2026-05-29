@@ -306,7 +306,7 @@ class Packet:
         """
         Encodes an optional value using a specific serializer.
         """
-        if value is not None:
+        if value is None:
             self.encodeBoolean(False)
         else:
             self.encodeBoolean(True)
@@ -318,7 +318,7 @@ class Packet:
         """
         Encodes an optional value using a specific shimmed serializer.
         """
-        if value is not None:
+        if value is None:
             self.encodeBoolean(False)
         else:
             self.encodeBoolean(True)
