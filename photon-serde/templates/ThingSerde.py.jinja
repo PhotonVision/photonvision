@@ -47,7 +47,7 @@ if TYPE_CHECKING:
 {%- for type in ns.types|sort%}
 {%- if not type | is_shimmed and not type | is_intrinsic %}
 {%- if test %}
-    from ...targeting import {{ type }}  # noqa
+    from .{{ type }} import {{ type }}  # noqa
 {%- else %}
     from ..targeting import {{ type }}  # noqa
 {% endif -%}

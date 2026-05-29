@@ -27,16 +27,49 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, ClassVar
 from dataclasses import dataclass
 
 from photonlib.packet import Packet
 from photonlib.targeting import *  # noqa
 
-from wpimath.geometry import Transform3d
+from .Int16TestMessageSerde import Int16TestMessageSerde  # noqa
 
-@dataclass
-class Transform3dTestMessage:
-    test: Transform3d
-    vlaTest: list[Transform3d]
-    optTest: Optional[Transform3d]
+
+
+
+class _Int16TestMessage_test_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'test'>"
+
+    def __eq__(self, other):
+        return isinstance(other, _Int16TestMessage_test_PLACEHOLDER)
+
+class _Int16TestMessage_vlaTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'vlaTest'>"
+
+    def __eq__(self, other):
+        return isinstance(other, _Int16TestMessage_vlaTest_PLACEHOLDER)
+
+class _Int16TestMessage_optTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'optTest'>"
+
+    def __eq__(self, other):
+        return isinstance(other, _Int16TestMessage_optTest_PLACEHOLDER)
+
+Int16TestMessage_test_PLACEHOLDER = _Int16TestMessage_test_PLACEHOLDER()
+Int16TestMessage_vlaTest_PLACEHOLDER = _Int16TestMessage_vlaTest_PLACEHOLDER()
+Int16TestMessage_optTest_PLACEHOLDER = _Int16TestMessage_optTest_PLACEHOLDER()
+
+
+@dataclass(kw_only=True)
+class Int16TestMessage:
+    test: int | _Int16TestMessage_test_PLACEHOLDER = Int16TestMessage_test_PLACEHOLDER
+    vlaTest: list[int] | _Int16TestMessage_vlaTest_PLACEHOLDER = Int16TestMessage_vlaTest_PLACEHOLDER
+    optTest: Optional[int] | _Int16TestMessage_optTest_PLACEHOLDER = Int16TestMessage_optTest_PLACEHOLDER
+    photonStruct: ClassVar[Int16TestMessageSerde]

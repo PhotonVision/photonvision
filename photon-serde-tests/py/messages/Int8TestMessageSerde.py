@@ -27,16 +27,52 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING, Optional
-from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
 
 from photonlib.packet import Packet
 from photonlib.targeting import *  # noqa
 
 
 
-@dataclass
-class Float32TestMessage:
-    test: float
-    vlaTest: list[float]
-    optTest: Optional[float]
+if TYPE_CHECKING:
+    from .Int8TestMessage import Int8TestMessage  # noqa
+
+
+class Int8TestMessageSerde:
+    # Message definition md5sum. See photon_packet.adoc for details
+    MESSAGE_VERSION = "76297a79f30e4d995b8f95c5fa6297fa"
+    MESSAGE_FORMAT = "int8 test;int8 vlaTest[?];optional int8 optTest;"
+
+    @staticmethod
+    def pack(value: "Int8TestMessage") -> "Packet":
+        ret = Packet()
+
+        # test is of intrinsic type int8
+        ret.encode8(value.test)
+
+        # vlaTest is a custom VLA!
+        ret.encodeListShimmed(value.vlaTest, ret.encode8)
+
+        # optTest is optional! it better not be a VLA too
+        ret.encodeOptionalShimmed(value.optTest, ret.encode8)
+        return ret
+
+    @staticmethod
+    def unpack(packet: "Packet") -> "Int8TestMessage":
+        ret = Int8TestMessage()
+
+        # test is of intrinsic type int8
+        ret.test = packet.decode8()
+
+        # vlaTest is an intrinsic VLA!
+        ret.vlaTest = packet.decodeListShimmed(packet.decode8)
+
+        # optTest is optional! it better not be a VLA too
+        ret.optTest = packet.decodeOptionalShimmed(packet.decode8)
+
+        return ret
+
+
+# Hack ourselves into the base class
+Int8TestMessage.photonStruct = Int8TestMessageSerde()

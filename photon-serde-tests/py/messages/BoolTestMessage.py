@@ -27,52 +27,49 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
+from typing import TYPE_CHECKING, Optional, ClassVar
+from dataclasses import dataclass
 
 from photonlib.packet import Packet
 from photonlib.targeting import *  # noqa
 
+from .BoolTestMessageSerde import BoolTestMessageSerde  # noqa
 
 
-if TYPE_CHECKING:
-    from ...targeting import Float64TestMessage  # noqa
 
 
-class Float64TestMessageSerde:
-    # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "bc96c1f7d9db9371269d0e4f4d4b4cb2"
-    MESSAGE_FORMAT = "float64 test;float64 vlaTest[?];optional float64 optTest;"
+class _BoolTestMessage_test_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'test'>"
 
-    @staticmethod
-    def pack(value: "Float64TestMessage") -> "Packet":
-        ret = Packet()
+    def __eq__(self, other):
+        return isinstance(other, _BoolTestMessage_test_PLACEHOLDER)
 
-        # test is of intrinsic type float64
-        ret.encodeDouble(value.test)
+class _BoolTestMessage_vlaTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'vlaTest'>"
 
-        # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encodeDouble)
+    def __eq__(self, other):
+        return isinstance(other, _BoolTestMessage_vlaTest_PLACEHOLDER)
 
-        # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encodeDouble)
-        return ret
+class _BoolTestMessage_optTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'optTest'>"
 
-    @staticmethod
-    def unpack(packet: "Packet") -> "Float64TestMessage":
-        ret = Float64TestMessage()
+    def __eq__(self, other):
+        return isinstance(other, _BoolTestMessage_optTest_PLACEHOLDER)
 
-        # test is of intrinsic type float64
-        ret.test = packet.decodeDouble()
-
-        # vlaTest is an intrinsic VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decodeDouble)
-
-        # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decodeDouble)
-
-        return ret
+BoolTestMessage_test_PLACEHOLDER = _BoolTestMessage_test_PLACEHOLDER()
+BoolTestMessage_vlaTest_PLACEHOLDER = _BoolTestMessage_vlaTest_PLACEHOLDER()
+BoolTestMessage_optTest_PLACEHOLDER = _BoolTestMessage_optTest_PLACEHOLDER()
 
 
-# Hack ourselves into the base class
-Float64TestMessage.photonStruct = Float64TestMessageSerde()
+@dataclass(kw_only=True)
+class BoolTestMessage:
+    test: bool | _BoolTestMessage_test_PLACEHOLDER = BoolTestMessage_test_PLACEHOLDER
+    vlaTest: list[bool] | _BoolTestMessage_vlaTest_PLACEHOLDER = BoolTestMessage_vlaTest_PLACEHOLDER
+    optTest: Optional[bool] | _BoolTestMessage_optTest_PLACEHOLDER = BoolTestMessage_optTest_PLACEHOLDER
+    photonStruct: ClassVar[BoolTestMessageSerde]

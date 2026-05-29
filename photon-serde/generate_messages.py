@@ -439,10 +439,10 @@ def generate_tests(cpp_java_test_root, py_test_root, template_root):
     )
     cpp_test_struct_output_dir.mkdir(parents=True, exist_ok=True)
 
-    py_serde_source_dir = Path(py_test_root)
+    py_serde_source_dir = Path(py_test_root) / "messages"
     py_serde_source_dir.mkdir(parents=True, exist_ok=True)
 
-    python_test_dataclass_output_dir = Path(py_test_root)
+    python_test_dataclass_output_dir = Path(py_test_root) / "messages"
 
     env.filters["get_cpp_qualified_name"] = lambda field: get_cpp_qualified_name(
         message_db, extended_data_types, field
@@ -548,6 +548,12 @@ def generate_tests(cpp_java_test_root, py_test_root, template_root):
                 encoding="utf-8",
             )
 
+    # Generate python messages __init__.py file
+    pyinit_template = env.get_template("PyInit.py.jinja")
+    pyinit_target = py_serde_source_dir / "__init__.py"
+    types = [message["name"] for message in test_messages]
+    pyinit_target.write_text(pyinit_template.render(types=types), encoding="utf-8")
+
     # Generate test fixtures (WIP)
     tests = parse_yaml("tests.yaml")
     java_test_target = (
@@ -556,13 +562,16 @@ def generate_tests(cpp_java_test_root, py_test_root, template_root):
     java_test_target.parent.mkdir(parents=True, exist_ok=True)
     cpp_test_target = Path(cpp_java_test_root) / "test/native/cpp/AutoSerdeTest.cpp"
     cpp_test_target.parent.mkdir(parents=True, exist_ok=True)
-    Path(py_test_root) / "AutoSerdeTest.py"
+    py_test_target = Path(py_test_root) / "AutoSerdeTest.py"
+    py_test_target.parent.mkdir(parents=True, exist_ok=True)
 
     java_test_template = env.get_template("ThingTests.java.jinja")
     cpp_test_template = env.get_template("ThingTests.cpp.jinja")
+    py_test_template = env.get_template("ThingTests.py.jinja")
 
     java_test_target.write_text(java_test_template.render(tests))
     cpp_test_target.write_text(cpp_test_template.render(tests))
+    py_test_target.write_text(py_test_template.render(tests))
 
 
 def main(argv):

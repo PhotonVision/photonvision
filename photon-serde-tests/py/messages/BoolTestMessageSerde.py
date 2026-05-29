@@ -36,43 +36,43 @@ from photonlib.targeting import *  # noqa
 
 
 if TYPE_CHECKING:
-    from ...targeting import Int8TestMessage  # noqa
+    from .BoolTestMessage import BoolTestMessage  # noqa
 
 
-class Int8TestMessageSerde:
+class BoolTestMessageSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "76297a79f30e4d995b8f95c5fa6297fa"
-    MESSAGE_FORMAT = "int8 test;int8 vlaTest[?];optional int8 optTest;"
+    MESSAGE_VERSION = "c8efe94a9c0d815658c74de6f672939c"
+    MESSAGE_FORMAT = "bool test;bool vlaTest[?];optional bool optTest;"
 
     @staticmethod
-    def pack(value: "Int8TestMessage") -> "Packet":
+    def pack(value: "BoolTestMessage") -> "Packet":
         ret = Packet()
 
-        # test is of intrinsic type int8
-        ret.encode8(value.test)
+        # test is of intrinsic type bool
+        ret.encodeBoolean(value.test)
 
         # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encode8)
+        ret.encodeListShimmed(value.vlaTest, ret.encodeBoolean)
 
         # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encode8)
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeBoolean)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "Int8TestMessage":
-        ret = Int8TestMessage()
+    def unpack(packet: "Packet") -> "BoolTestMessage":
+        ret = BoolTestMessage()
 
-        # test is of intrinsic type int8
-        ret.test = packet.decode8()
+        # test is of intrinsic type bool
+        ret.test = packet.decodeBoolean()
 
         # vlaTest is an intrinsic VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decode8)
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeBoolean)
 
         # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decode8)
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeBoolean)
 
         return ret
 
 
 # Hack ourselves into the base class
-Int8TestMessage.photonStruct = Int8TestMessageSerde()
+BoolTestMessage.photonStruct = BoolTestMessageSerde()

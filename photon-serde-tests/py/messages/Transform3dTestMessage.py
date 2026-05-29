@@ -33,31 +33,43 @@ from dataclasses import dataclass
 from photonlib.packet import Packet
 from photonlib.targeting import *  # noqa
 
-from .{{ name }}Serde import {{ name }}Serde  # noqa
+from .Transform3dTestMessageSerde import Transform3dTestMessageSerde  # noqa
 
-{% for type in nested_wpilib_types -%}
-from {{ get_message_by_name(type).python_module }} import {{ type }}
-{%- if not loop.last %},{% endif -%}
-{%- endfor%}
+from wpimath.geometry import Transform3d
 
-{% for field in fields %}
-class _{{ name }}_{{ field.name }}_PLACEHOLDER:
+
+class _Transform3dTestMessage_test_PLACEHOLDER:
     __slots__ = ()
     def __repr__(self):
-        return f"<Placeholder for field '{{ field.name }}'>"
+        return f"<Placeholder for field 'test'>"
 
     def __eq__(self, other):
-        return isinstance(other, _{{ name }}_{{ field.name }}_PLACEHOLDER)
-{% endfor %}
-{% for field in fields -%}
-{{ name }}_{{ field.name }}_PLACEHOLDER = _{{ name }}_{{ field.name }}_PLACEHOLDER()
-{% endfor %}
+        return isinstance(other, _Transform3dTestMessage_test_PLACEHOLDER)
+
+class _Transform3dTestMessage_vlaTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'vlaTest'>"
+
+    def __eq__(self, other):
+        return isinstance(other, _Transform3dTestMessage_vlaTest_PLACEHOLDER)
+
+class _Transform3dTestMessage_optTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'optTest'>"
+
+    def __eq__(self, other):
+        return isinstance(other, _Transform3dTestMessage_optTest_PLACEHOLDER)
+
+Transform3dTestMessage_test_PLACEHOLDER = _Transform3dTestMessage_test_PLACEHOLDER()
+Transform3dTestMessage_vlaTest_PLACEHOLDER = _Transform3dTestMessage_vlaTest_PLACEHOLDER()
+Transform3dTestMessage_optTest_PLACEHOLDER = _Transform3dTestMessage_optTest_PLACEHOLDER()
+
 
 @dataclass(kw_only=True)
-class {{ name }}:
-    {% for field in fields -%}
-    {{ field.name }}: {{ field | get_python_qualified_name }} | _{{ name }}_{{ field.name }}_PLACEHOLDER = {{ name }}_{{ field.name }}_PLACEHOLDER
-    {%- if not loop.last %}
-    {% endif -%}
-{%- endfor %}
-    photonStruct: ClassVar[{{ name }}Serde]
+class Transform3dTestMessage:
+    test: Transform3d | _Transform3dTestMessage_test_PLACEHOLDER = Transform3dTestMessage_test_PLACEHOLDER
+    vlaTest: list[Transform3d] | _Transform3dTestMessage_vlaTest_PLACEHOLDER = Transform3dTestMessage_vlaTest_PLACEHOLDER
+    optTest: Optional[Transform3d] | _Transform3dTestMessage_optTest_PLACEHOLDER = Transform3dTestMessage_optTest_PLACEHOLDER
+    photonStruct: ClassVar[Transform3dTestMessageSerde]

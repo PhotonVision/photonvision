@@ -27,16 +27,49 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, ClassVar
 from dataclasses import dataclass
 
 from photonlib.packet import Packet
 from photonlib.targeting import *  # noqa
 
+from .Float64TestMessageSerde import Float64TestMessageSerde  # noqa
 
 
-@dataclass
+
+
+class _Float64TestMessage_test_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'test'>"
+
+    def __eq__(self, other):
+        return isinstance(other, _Float64TestMessage_test_PLACEHOLDER)
+
+class _Float64TestMessage_vlaTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'vlaTest'>"
+
+    def __eq__(self, other):
+        return isinstance(other, _Float64TestMessage_vlaTest_PLACEHOLDER)
+
+class _Float64TestMessage_optTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'optTest'>"
+
+    def __eq__(self, other):
+        return isinstance(other, _Float64TestMessage_optTest_PLACEHOLDER)
+
+Float64TestMessage_test_PLACEHOLDER = _Float64TestMessage_test_PLACEHOLDER()
+Float64TestMessage_vlaTest_PLACEHOLDER = _Float64TestMessage_vlaTest_PLACEHOLDER()
+Float64TestMessage_optTest_PLACEHOLDER = _Float64TestMessage_optTest_PLACEHOLDER()
+
+
+@dataclass(kw_only=True)
 class Float64TestMessage:
-    test: float
-    vlaTest: list[float]
-    optTest: Optional[float]
+    test: float | _Float64TestMessage_test_PLACEHOLDER = Float64TestMessage_test_PLACEHOLDER
+    vlaTest: list[float] | _Float64TestMessage_vlaTest_PLACEHOLDER = Float64TestMessage_vlaTest_PLACEHOLDER
+    optTest: Optional[float] | _Float64TestMessage_optTest_PLACEHOLDER = Float64TestMessage_optTest_PLACEHOLDER
+    photonStruct: ClassVar[Float64TestMessageSerde]

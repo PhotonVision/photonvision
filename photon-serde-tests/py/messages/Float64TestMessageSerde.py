@@ -36,43 +36,43 @@ from photonlib.targeting import *  # noqa
 
 
 if TYPE_CHECKING:
-    from ...targeting import Int16TestMessage  # noqa
+    from .Float64TestMessage import Float64TestMessage  # noqa
 
 
-class Int16TestMessageSerde:
+class Float64TestMessageSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "23e6ccab160b942600aae8e94a72778a"
-    MESSAGE_FORMAT = "int16 test;int16 vlaTest[?];optional int16 optTest;"
+    MESSAGE_VERSION = "bc96c1f7d9db9371269d0e4f4d4b4cb2"
+    MESSAGE_FORMAT = "float64 test;float64 vlaTest[?];optional float64 optTest;"
 
     @staticmethod
-    def pack(value: "Int16TestMessage") -> "Packet":
+    def pack(value: "Float64TestMessage") -> "Packet":
         ret = Packet()
 
-        # test is of intrinsic type int16
-        ret.encode16(value.test)
+        # test is of intrinsic type float64
+        ret.encodeDouble(value.test)
 
         # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encode16)
+        ret.encodeListShimmed(value.vlaTest, ret.encodeDouble)
 
         # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encode16)
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeDouble)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "Int16TestMessage":
-        ret = Int16TestMessage()
+    def unpack(packet: "Packet") -> "Float64TestMessage":
+        ret = Float64TestMessage()
 
-        # test is of intrinsic type int16
-        ret.test = packet.decode16()
+        # test is of intrinsic type float64
+        ret.test = packet.decodeDouble()
 
         # vlaTest is an intrinsic VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decode16)
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeDouble)
 
         # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decode16)
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeDouble)
 
         return ret
 
 
 # Hack ourselves into the base class
-Int16TestMessage.photonStruct = Int16TestMessageSerde()
+Float64TestMessage.photonStruct = Float64TestMessageSerde()

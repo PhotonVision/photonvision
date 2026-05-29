@@ -36,42 +36,43 @@ from photonlib.targeting import *  # noqa
 
 
 if TYPE_CHECKING:
-    from ...targeting import Transform3dTestMessage  # noqa
+    from .Int64TestMessage import Int64TestMessage  # noqa
 
 
-class Transform3dTestMessageSerde:
+class Int64TestMessageSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "37188f532d61c3b549080489012b4d07"
-    MESSAGE_FORMAT = "Transform3d test;Transform3d vlaTest[?];optional Transform3d optTest;"
+    MESSAGE_VERSION = "dd2e470b4d07bbcd208906c26a2ae37a"
+    MESSAGE_FORMAT = "int64 test;int64 vlaTest[?];optional int64 optTest;"
 
     @staticmethod
-    def pack(value: "Transform3dTestMessage") -> "Packet":
+    def pack(value: "Int64TestMessage") -> "Packet":
         ret = Packet()
 
-        # test is of shimmed type Transform3d
-        ret.encodeTransform(value.test)
+        # test is of intrinsic type int64
+        ret.encodeLong(value.test)
 
         # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encodeTransform)
+        ret.encodeListShimmed(value.vlaTest, ret.encodeLong)
 
         # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encodeTransform)
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeLong)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "Transform3dTestMessage":
-        ret = Transform3dTestMessage()
+    def unpack(packet: "Packet") -> "Int64TestMessage":
+        ret = Int64TestMessage()
 
-        ret.test = packet.decodeTransform()
+        # test is of intrinsic type int64
+        ret.test = packet.decodeLong()
 
-        # vlaTest is a shimmed VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decodeTransform)
+        # vlaTest is an intrinsic VLA!
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeLong)
 
         # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decodeTransform)
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeLong)
 
         return ret
 
 
 # Hack ourselves into the base class
-Transform3dTestMessage.photonStruct = Transform3dTestMessageSerde()
+Int64TestMessage.photonStruct = Int64TestMessageSerde()

@@ -27,16 +27,51 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING, Optional
-from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
 
 from photonlib.packet import Packet
 from photonlib.targeting import *  # noqa
 
 
 
-@dataclass
-class BoolTestMessage:
-    test: bool
-    vlaTest: list[bool]
-    optTest: Optional[bool]
+if TYPE_CHECKING:
+    from .Transform3dTestMessage import Transform3dTestMessage  # noqa
+
+
+class Transform3dTestMessageSerde:
+    # Message definition md5sum. See photon_packet.adoc for details
+    MESSAGE_VERSION = "37188f532d61c3b549080489012b4d07"
+    MESSAGE_FORMAT = "Transform3d test;Transform3d vlaTest[?];optional Transform3d optTest;"
+
+    @staticmethod
+    def pack(value: "Transform3dTestMessage") -> "Packet":
+        ret = Packet()
+
+        # test is of shimmed type Transform3d
+        ret.encodeTransform(value.test)
+
+        # vlaTest is a custom VLA!
+        ret.encodeListShimmed(value.vlaTest, ret.encodeTransform)
+
+        # optTest is optional! it better not be a VLA too
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeTransform)
+        return ret
+
+    @staticmethod
+    def unpack(packet: "Packet") -> "Transform3dTestMessage":
+        ret = Transform3dTestMessage()
+
+        ret.test = packet.decodeTransform()
+
+        # vlaTest is a shimmed VLA!
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeTransform)
+
+        # optTest is optional! it better not be a VLA too
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeTransform)
+
+        return ret
+
+
+# Hack ourselves into the base class
+Transform3dTestMessage.photonStruct = Transform3dTestMessageSerde()

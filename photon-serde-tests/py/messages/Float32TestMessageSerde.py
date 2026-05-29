@@ -36,43 +36,43 @@ from photonlib.targeting import *  # noqa
 
 
 if TYPE_CHECKING:
-    from ...targeting import Int32TestMessage  # noqa
+    from .Float32TestMessage import Float32TestMessage  # noqa
 
 
-class Int32TestMessageSerde:
+class Float32TestMessageSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "d8596149c4701e7b8912df238cd4ec66"
-    MESSAGE_FORMAT = "int32 test;int32 vlaTest[?];optional int32 optTest;"
+    MESSAGE_VERSION = "9fd9ed51ec69d6738ee24af43b2b9c7e"
+    MESSAGE_FORMAT = "float32 test;float32 vlaTest[?];optional float32 optTest;"
 
     @staticmethod
-    def pack(value: "Int32TestMessage") -> "Packet":
+    def pack(value: "Float32TestMessage") -> "Packet":
         ret = Packet()
 
-        # test is of intrinsic type int32
-        ret.encodeInt(value.test)
+        # test is of intrinsic type float32
+        ret.encodeFloat(value.test)
 
         # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encodeInt)
+        ret.encodeListShimmed(value.vlaTest, ret.encodeFloat)
 
         # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encodeInt)
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeFloat)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "Int32TestMessage":
-        ret = Int32TestMessage()
+    def unpack(packet: "Packet") -> "Float32TestMessage":
+        ret = Float32TestMessage()
 
-        # test is of intrinsic type int32
-        ret.test = packet.decodeInt()
+        # test is of intrinsic type float32
+        ret.test = packet.decodeFloat()
 
         # vlaTest is an intrinsic VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decodeInt)
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeFloat)
 
         # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decodeInt)
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeFloat)
 
         return ret
 
 
 # Hack ourselves into the base class
-Int32TestMessage.photonStruct = Int32TestMessageSerde()
+Float32TestMessage.photonStruct = Float32TestMessageSerde()

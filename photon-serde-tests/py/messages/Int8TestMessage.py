@@ -27,52 +27,49 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
+from typing import TYPE_CHECKING, Optional, ClassVar
+from dataclasses import dataclass
 
 from photonlib.packet import Packet
 from photonlib.targeting import *  # noqa
 
+from .Int8TestMessageSerde import Int8TestMessageSerde  # noqa
 
 
-if TYPE_CHECKING:
-    from ...targeting import Float32TestMessage  # noqa
 
 
-class Float32TestMessageSerde:
-    # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "9fd9ed51ec69d6738ee24af43b2b9c7e"
-    MESSAGE_FORMAT = "float32 test;float32 vlaTest[?];optional float32 optTest;"
+class _Int8TestMessage_test_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'test'>"
 
-    @staticmethod
-    def pack(value: "Float32TestMessage") -> "Packet":
-        ret = Packet()
+    def __eq__(self, other):
+        return isinstance(other, _Int8TestMessage_test_PLACEHOLDER)
 
-        # test is of intrinsic type float32
-        ret.encodeFloat(value.test)
+class _Int8TestMessage_vlaTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'vlaTest'>"
 
-        # vlaTest is a custom VLA!
-        ret.encodeListShimmed(value.vlaTest, ret.encodeFloat)
+    def __eq__(self, other):
+        return isinstance(other, _Int8TestMessage_vlaTest_PLACEHOLDER)
 
-        # optTest is optional! it better not be a VLA too
-        ret.encodeOptionalShimmed(value.optTest, ret.encodeFloat)
-        return ret
+class _Int8TestMessage_optTest_PLACEHOLDER:
+    __slots__ = ()
+    def __repr__(self):
+        return f"<Placeholder for field 'optTest'>"
 
-    @staticmethod
-    def unpack(packet: "Packet") -> "Float32TestMessage":
-        ret = Float32TestMessage()
+    def __eq__(self, other):
+        return isinstance(other, _Int8TestMessage_optTest_PLACEHOLDER)
 
-        # test is of intrinsic type float32
-        ret.test = packet.decodeFloat()
-
-        # vlaTest is an intrinsic VLA!
-        ret.vlaTest = packet.decodeListShimmed(packet.decodeFloat)
-
-        # optTest is optional! it better not be a VLA too
-        ret.optTest = packet.decodeOptionalShimmed(packet.decodeFloat)
-
-        return ret
+Int8TestMessage_test_PLACEHOLDER = _Int8TestMessage_test_PLACEHOLDER()
+Int8TestMessage_vlaTest_PLACEHOLDER = _Int8TestMessage_vlaTest_PLACEHOLDER()
+Int8TestMessage_optTest_PLACEHOLDER = _Int8TestMessage_optTest_PLACEHOLDER()
 
 
-# Hack ourselves into the base class
-Float32TestMessage.photonStruct = Float32TestMessageSerde()
+@dataclass(kw_only=True)
+class Int8TestMessage:
+    test: int | _Int8TestMessage_test_PLACEHOLDER = Int8TestMessage_test_PLACEHOLDER
+    vlaTest: list[int] | _Int8TestMessage_vlaTest_PLACEHOLDER = Int8TestMessage_vlaTest_PLACEHOLDER
+    optTest: Optional[int] | _Int8TestMessage_optTest_PLACEHOLDER = Int8TestMessage_optTest_PLACEHOLDER
+    photonStruct: ClassVar[Int8TestMessageSerde]
