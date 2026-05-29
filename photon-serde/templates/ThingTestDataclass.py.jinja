@@ -30,10 +30,23 @@
 from typing import TYPE_CHECKING, Optional, ClassVar
 from dataclasses import dataclass
 
-from photonlibpy.packet import Packet
 from photonlibpy.targeting import *  # noqa
 
-from .{{ name }}Serde import {{ name }}Serde  # noqa
+if TYPE_CHECKING:
+    from .{{ name }}Serde import {{ name }}Serde  # noqa
+{%- set ns = namespace(types=[]) -%}
+{%- for field in fields|unique(attribute="type")-%}
+    {%- set _ = ns.types.append(field.type) -%}
+{%- endfor -%}
+{%- for type in ns.types|sort%}
+{%- if not type | is_shimmed and not type | is_intrinsic %}
+{%- if type | is_test %}
+    from .{{ type }} import {{ type }}  # noqa
+{%- else %}
+    from ..targeting import {{ type }}  # noqa
+{% endif -%}
+{%- endif %}
+{%- endfor%}
 
 {% for type in nested_wpilib_types -%}
 from {{ get_message_by_name(type).python_module }} import {{ type }}
@@ -60,4 +73,4 @@ class {{ name }}:
     {%- if not loop.last %}
     {% endif -%}
 {%- endfor %}
-    photonStruct: ClassVar[{{ name }}Serde]
+    photonStruct: ClassVar["{{ name }}Serde"]

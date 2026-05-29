@@ -32,7 +32,7 @@ from photonlibpy.targeting import *
 from .messages import *
 
 {% for dep in python_imports -%}
-{{ dep }};
+{{ dep }}
 {% endfor %}
 
 def AutoSerdeTest(data) -> bool:

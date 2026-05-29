@@ -30,10 +30,10 @@
 from typing import TYPE_CHECKING, Optional, ClassVar
 from dataclasses import dataclass
 
-from photonlibpy.packet import Packet
 from photonlibpy.targeting import *  # noqa
 
-from .Transform3dTestMessageSerde import Transform3dTestMessageSerde  # noqa
+if TYPE_CHECKING:
+    from .Transform3dTestMessageSerde import Transform3dTestMessageSerde  # noqa
 
 from wpimath.geometry import Transform3d
 
@@ -72,4 +72,4 @@ class Transform3dTestMessage:
     test: Transform3d | _Transform3dTestMessage_test_PLACEHOLDER = Transform3dTestMessage_test_PLACEHOLDER
     vlaTest: list[Transform3d] | _Transform3dTestMessage_vlaTest_PLACEHOLDER = Transform3dTestMessage_vlaTest_PLACEHOLDER
     optTest: Optional[Transform3d] | _Transform3dTestMessage_optTest_PLACEHOLDER = Transform3dTestMessage_optTest_PLACEHOLDER
-    photonStruct: ClassVar[Transform3dTestMessageSerde]
+    photonStruct: ClassVar["Transform3dTestMessageSerde"]

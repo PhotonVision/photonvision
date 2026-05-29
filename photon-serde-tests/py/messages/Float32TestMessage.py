@@ -30,10 +30,10 @@
 from typing import TYPE_CHECKING, Optional, ClassVar
 from dataclasses import dataclass
 
-from photonlibpy.packet import Packet
 from photonlibpy.targeting import *  # noqa
 
-from .Float32TestMessageSerde import Float32TestMessageSerde  # noqa
+if TYPE_CHECKING:
+    from .Float32TestMessageSerde import Float32TestMessageSerde  # noqa
 
 
 
@@ -72,4 +72,4 @@ class Float32TestMessage:
     test: float | _Float32TestMessage_test_PLACEHOLDER = Float32TestMessage_test_PLACEHOLDER
     vlaTest: list[float] | _Float32TestMessage_vlaTest_PLACEHOLDER = Float32TestMessage_vlaTest_PLACEHOLDER
     optTest: Optional[float] | _Float32TestMessage_optTest_PLACEHOLDER = Float32TestMessage_optTest_PLACEHOLDER
-    photonStruct: ClassVar[Float32TestMessageSerde]
+    photonStruct: ClassVar["Float32TestMessageSerde"]

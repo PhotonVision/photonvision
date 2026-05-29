@@ -88,6 +88,14 @@ def get_shimmed_filter(message_db):
 
     return is_shimmed
 
+# Deal with test types
+def get_test_filter(message_db):
+    def is_test(message_name: str):
+        message = get_message_by_name(message_db, message_name)
+        return "test" in message and message["test"] == True
+
+    return is_test
+
 
 def get_cpp_qualified_name(
     message_db: List[MessageType], data_types, field: SerdeField
@@ -276,6 +284,7 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
 
     env.filters["is_intrinsic"] = is_intrinsic_type
     env.filters["is_shimmed"] = get_shimmed_filter(messages)
+    env.filters["is_test"] = lambda _x: False  # no test messages in this pass
 
     # add our custom types
     extended_data_types = data_types.copy()
@@ -404,6 +413,7 @@ def generate_tests(cpp_java_test_root, py_test_root, template_root):
 
     env.filters["is_intrinsic"] = is_intrinsic_type
     env.filters["is_shimmed"] = get_shimmed_filter(message_db)
+    env.filters["is_test"] = get_test_filter(message_db)
 
     # add our custom types
     extended_data_types = data_types.copy()

@@ -31,9 +31,9 @@ from photonlibpy.packet import Packet
 from photonlibpy.targeting import *
 from .messages import *
 
-from wpimath import Rotation3d;
-from wpimath import Translation3d;
-from wpimath import Transform3d;
+from wpimath import Rotation3d
+from wpimath import Translation3d
+from wpimath import Transform3d
 
 
 def AutoSerdeTest(data) -> bool:

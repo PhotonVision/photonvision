@@ -30,10 +30,10 @@
 from typing import TYPE_CHECKING, Optional, ClassVar
 from dataclasses import dataclass
 
-from photonlibpy.packet import Packet
 from photonlibpy.targeting import *  # noqa
 
-from .BoolTestMessageSerde import BoolTestMessageSerde  # noqa
+if TYPE_CHECKING:
+    from .BoolTestMessageSerde import BoolTestMessageSerde  # noqa
 
 
 
@@ -72,4 +72,4 @@ class BoolTestMessage:
     test: bool | _BoolTestMessage_test_PLACEHOLDER = BoolTestMessage_test_PLACEHOLDER
     vlaTest: list[bool] | _BoolTestMessage_vlaTest_PLACEHOLDER = BoolTestMessage_vlaTest_PLACEHOLDER
     optTest: Optional[bool] | _BoolTestMessage_optTest_PLACEHOLDER = BoolTestMessage_optTest_PLACEHOLDER
-    photonStruct: ClassVar[BoolTestMessageSerde]
+    photonStruct: ClassVar["BoolTestMessageSerde"]

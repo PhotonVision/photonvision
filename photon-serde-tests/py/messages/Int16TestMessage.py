@@ -30,10 +30,10 @@
 from typing import TYPE_CHECKING, Optional, ClassVar
 from dataclasses import dataclass
 
-from photonlibpy.packet import Packet
 from photonlibpy.targeting import *  # noqa
 
-from .Int16TestMessageSerde import Int16TestMessageSerde  # noqa
+if TYPE_CHECKING:
+    from .Int16TestMessageSerde import Int16TestMessageSerde  # noqa
 
 
 
@@ -72,4 +72,4 @@ class Int16TestMessage:
     test: int | _Int16TestMessage_test_PLACEHOLDER = Int16TestMessage_test_PLACEHOLDER
     vlaTest: list[int] | _Int16TestMessage_vlaTest_PLACEHOLDER = Int16TestMessage_vlaTest_PLACEHOLDER
     optTest: Optional[int] | _Int16TestMessage_optTest_PLACEHOLDER = Int16TestMessage_optTest_PLACEHOLDER
-    photonStruct: ClassVar[Int16TestMessageSerde]
+    photonStruct: ClassVar["Int16TestMessageSerde"]
