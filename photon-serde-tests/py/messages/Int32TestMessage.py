@@ -30,8 +30,8 @@
 from typing import TYPE_CHECKING, Optional, ClassVar
 from dataclasses import dataclass
 
-from photonlib.packet import Packet
-from photonlib.targeting import *  # noqa
+from photonlibpy.packet import Packet
+from photonlibpy.targeting import *  # noqa
 
 from .Int32TestMessageSerde import Int32TestMessageSerde  # noqa
 

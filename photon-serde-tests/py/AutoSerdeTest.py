@@ -27,8 +27,8 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from photonlib.packet import Packet
-from photonlib.targeting import *
+from photonlibpy.packet import Packet
+from photonlibpy.targeting import *
 from .messages import *
 
 from wpimath import Rotation3d;
