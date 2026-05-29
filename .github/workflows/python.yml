@@ -113,7 +113,7 @@ jobs:
 
       - name: Run PhotonSerde tests
         shell: bash
-        run: pytest --import-mode=importlib photon-serde-tests/py
+        run: pytest --import-mode=importlib photon-serde-tests/py/AutoSerdeTest.py
 
   build-python-examples:
     needs: build-py
