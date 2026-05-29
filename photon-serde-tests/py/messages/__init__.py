@@ -23,13 +23,21 @@
 #
 
 from .Int8TestMessage import Int8TestMessage
+from .Int8TestMessageSerde import Int8TestMessageSerde
 from .Int16TestMessage import Int16TestMessage
+from .Int16TestMessageSerde import Int16TestMessageSerde
 from .Int32TestMessage import Int32TestMessage
+from .Int32TestMessageSerde import Int32TestMessageSerde
 from .Int64TestMessage import Int64TestMessage
+from .Int64TestMessageSerde import Int64TestMessageSerde
 from .Float32TestMessage import Float32TestMessage
+from .Float32TestMessageSerde import Float32TestMessageSerde
 from .Float64TestMessage import Float64TestMessage
+from .Float64TestMessageSerde import Float64TestMessageSerde
 from .BoolTestMessage import BoolTestMessage
+from .BoolTestMessageSerde import BoolTestMessageSerde
 from .Transform3dTestMessage import Transform3dTestMessage
+from .Transform3dTestMessageSerde import Transform3dTestMessageSerde
 
 
 __all__ = (

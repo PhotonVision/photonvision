@@ -24,6 +24,7 @@
 
 {% for type in types -%}
 from .{{ type }} import {{ type }}
+from .{{ type }}Serde import {{ type }}Serde
 {% endfor%}
 
 __all__ = (
