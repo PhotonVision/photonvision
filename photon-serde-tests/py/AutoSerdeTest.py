@@ -47,17 +47,21 @@ def AutoSerdeTest(data) -> bool:
 def test_Int8Test():
     print("Running Int8Test...")
     
+    print("Test case default_test:")
     default_test = Int8TestMessage()
     assert AutoSerdeTest(default_test)
     
+    print("Test case optional_test:")
     optional_test = Int8TestMessage()
     optional_test.optTest = 3
     assert AutoSerdeTest(optional_test)
     
+    print("Test case vla_test:")
     vla_test = Int8TestMessage()
     vla_test.vlaTest = [1, 2, 3]
     assert AutoSerdeTest(vla_test)
     
+    print("Test case general_test:")
     general_test = Int8TestMessage()
     general_test.test = 42
     general_test.optTest = 7
@@ -68,17 +72,21 @@ def test_Int8Test():
 def test_Int16Test():
     print("Running Int16Test...")
     
+    print("Test case default_test:")
     default_test = Int16TestMessage()
     assert AutoSerdeTest(default_test)
     
+    print("Test case optional_test:")
     optional_test = Int16TestMessage()
     optional_test.optTest = 3
     assert AutoSerdeTest(optional_test)
     
+    print("Test case vla_test:")
     vla_test = Int16TestMessage()
     vla_test.vlaTest = [1, 2, 3]
     assert AutoSerdeTest(vla_test)
     
+    print("Test case general_test:")
     general_test = Int16TestMessage()
     general_test.test = 42
     general_test.optTest = 7
@@ -89,17 +97,21 @@ def test_Int16Test():
 def test_Int32Test():
     print("Running Int32Test...")
     
+    print("Test case default_test:")
     default_test = Int32TestMessage()
     assert AutoSerdeTest(default_test)
     
+    print("Test case optional_test:")
     optional_test = Int32TestMessage()
     optional_test.optTest = 3
     assert AutoSerdeTest(optional_test)
     
+    print("Test case vla_test:")
     vla_test = Int32TestMessage()
     vla_test.vlaTest = [1, 2, 3]
     assert AutoSerdeTest(vla_test)
     
+    print("Test case general_test:")
     general_test = Int32TestMessage()
     general_test.test = 42
     general_test.optTest = 7
@@ -110,17 +122,21 @@ def test_Int32Test():
 def test_Int64Test():
     print("Running Int64Test...")
     
+    print("Test case default_test:")
     default_test = Int64TestMessage()
     assert AutoSerdeTest(default_test)
     
+    print("Test case optional_test:")
     optional_test = Int64TestMessage()
     optional_test.optTest = 3
     assert AutoSerdeTest(optional_test)
     
+    print("Test case vla_test:")
     vla_test = Int64TestMessage()
     vla_test.vlaTest = [1, 2, 3]
     assert AutoSerdeTest(vla_test)
     
+    print("Test case general_test:")
     general_test = Int64TestMessage()
     general_test.test = 42
     general_test.optTest = 7
@@ -131,17 +147,21 @@ def test_Int64Test():
 def test_Float32Test():
     print("Running Float32Test...")
     
+    print("Test case default_test:")
     default_test = Float32TestMessage()
     assert AutoSerdeTest(default_test)
     
+    print("Test case optional_test:")
     optional_test = Float32TestMessage()
     optional_test.optTest = 3.0
     assert AutoSerdeTest(optional_test)
     
+    print("Test case vla_test:")
     vla_test = Float32TestMessage()
     vla_test.vlaTest = [1.0, 2.0, 3.0]
     assert AutoSerdeTest(vla_test)
     
+    print("Test case general_test:")
     general_test = Float32TestMessage()
     general_test.test = 42.0
     general_test.optTest = 7.0
@@ -152,17 +172,21 @@ def test_Float32Test():
 def test_Float64Test():
     print("Running Float64Test...")
     
+    print("Test case default_test:")
     default_test = Float64TestMessage()
     assert AutoSerdeTest(default_test)
     
+    print("Test case optional_test:")
     optional_test = Float64TestMessage()
     optional_test.optTest = 3.0
     assert AutoSerdeTest(optional_test)
     
+    print("Test case vla_test:")
     vla_test = Float64TestMessage()
     vla_test.vlaTest = [1.0, 2.0, 3.0]
     assert AutoSerdeTest(vla_test)
     
+    print("Test case general_test:")
     general_test = Float64TestMessage()
     general_test.test = 42.0
     general_test.optTest = 7.0
@@ -173,17 +197,21 @@ def test_Float64Test():
 def test_BoolTest():
     print("Running BoolTest...")
     
+    print("Test case default_test:")
     default_test = BoolTestMessage()
     assert AutoSerdeTest(default_test)
     
+    print("Test case optional_test:")
     optional_test = BoolTestMessage()
     optional_test.optTest = True
     assert AutoSerdeTest(optional_test)
     
+    print("Test case vla_test:")
     vla_test = BoolTestMessage()
     vla_test.vlaTest = [True, False, True]
     assert AutoSerdeTest(vla_test)
     
+    print("Test case general_test:")
     general_test = BoolTestMessage()
     general_test.test = False
     general_test.optTest = True
@@ -194,17 +222,21 @@ def test_BoolTest():
 def test_Transform3dTest():
     print("Running Transform3dTest...")
     
+    print("Test case default_test:")
     default_test = Transform3dTestMessage()
     assert AutoSerdeTest(default_test)
     
+    print("Test case optional_test:")
     optional_test = Transform3dTestMessage()
     optional_test.optTest = Transform3d(Translation3d(1.0, 2.0, 3.0), Rotation3d(0.1, 0.2, 0.3))
     assert AutoSerdeTest(optional_test)
     
+    print("Test case vla_test:")
     vla_test = Transform3dTestMessage()
     vla_test.vlaTest = [Transform3d(Translation3d(1.0, 2.0, 3.0), Rotation3d(0.1, 0.2, 0.3)), Transform3d(Translation3d(4.0, 5.0, 6.0), Rotation3d(0.4, 0.5, 0.6))]
     assert AutoSerdeTest(vla_test)
     
+    print("Test case general_test:")
     general_test = Transform3dTestMessage()
     general_test.test = Transform3d(Translation3d(7.0, 8.0, 9.0), Rotation3d(0.7, 0.8, 0.9))
     general_test.optTest = Transform3d(Translation3d(1.0, 2.0, 3.0), Rotation3d(0.1, 0.2, 0.3))

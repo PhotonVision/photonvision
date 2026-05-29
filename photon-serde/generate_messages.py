@@ -27,6 +27,12 @@ from typing import List, TypedDict, cast
 import yaml
 from jinja2 import Environment, FileSystemLoader
 
+PYTHON_INTRINSIC_DEFAULTS = {
+    "int": "0",
+    "float": "0.0",
+    "bool": "False",
+}
+
 
 class SerdeField(TypedDict):
     name: str
@@ -88,6 +94,7 @@ def get_shimmed_filter(message_db):
 
     return is_shimmed
 
+
 # Deal with test types
 def get_test_filter(message_db):
     def is_test(message_name: str):
@@ -139,6 +146,19 @@ def get_python_qualified_name(
         typestr = base_type
 
     return typestr
+
+
+def get_python_default_factory(
+    message_db: List[MessageType], data_types, field: SerdeField
+) -> str:
+    if "optional" in field and field["optional"] == True:
+        return "lambda: None"
+    if "vla" in field and field["vla"] == True:
+        return "list"
+    if is_intrinsic_type(field["type"]):
+        return f"lambda: {PYTHON_INTRINSIC_DEFAULTS[data_types[field["type"]]["python_type"]]}"
+    else:
+        return f"lambda: {field['type']}()"
 
 
 def get_message_by_name(message_db: List[MessageType], message_name: str):
@@ -318,6 +338,9 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
     env.filters["get_python_qualified_name"] = lambda field: get_python_qualified_name(
         messages, extended_data_types, field
     )
+    env.filters["get_python_default_factory"] = (
+        lambda field: get_python_default_factory(messages, extended_data_types, field)
+    )
 
     for message in messages:
         # don't generate shimmed types. Probably not necessa
@@ -460,6 +483,9 @@ def generate_tests(cpp_java_test_root, py_test_root, template_root):
 
     env.filters["get_python_qualified_name"] = lambda field: get_python_qualified_name(
         message_db, extended_data_types, field
+    )
+    env.filters["get_python_default_factory"] = (
+        lambda field: get_python_default_factory(message_db, extended_data_types, field)
     )
 
     for test_message in test_messages:

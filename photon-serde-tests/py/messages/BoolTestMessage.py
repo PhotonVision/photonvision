@@ -28,7 +28,7 @@
 ###############################################################################
 
 from typing import TYPE_CHECKING, Optional, ClassVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from photonlibpy.targeting import *  # noqa
 
@@ -37,39 +37,15 @@ if TYPE_CHECKING:
 
 
 
-
-class _BoolTestMessage_test_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'test'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _BoolTestMessage_test_PLACEHOLDER)
-
-class _BoolTestMessage_vlaTest_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'vlaTest'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _BoolTestMessage_vlaTest_PLACEHOLDER)
-
-class _BoolTestMessage_optTest_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'optTest'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _BoolTestMessage_optTest_PLACEHOLDER)
-
-BoolTestMessage_test_PLACEHOLDER = _BoolTestMessage_test_PLACEHOLDER()
-BoolTestMessage_vlaTest_PLACEHOLDER = _BoolTestMessage_vlaTest_PLACEHOLDER()
-BoolTestMessage_optTest_PLACEHOLDER = _BoolTestMessage_optTest_PLACEHOLDER()
-
-
 @dataclass(kw_only=True)
 class BoolTestMessage:
-    test: bool | _BoolTestMessage_test_PLACEHOLDER = BoolTestMessage_test_PLACEHOLDER
-    vlaTest: list[bool] | _BoolTestMessage_vlaTest_PLACEHOLDER = BoolTestMessage_vlaTest_PLACEHOLDER
-    optTest: Optional[bool] | _BoolTestMessage_optTest_PLACEHOLDER = BoolTestMessage_optTest_PLACEHOLDER
+    test: bool = field(
+        default_factory=lambda: False
+    )
+    vlaTest: list[bool] = field(
+        default_factory=list
+    )
+    optTest: Optional[bool] = field(
+        default_factory=lambda: None
+    )
     photonStruct: ClassVar["BoolTestMessageSerde"]

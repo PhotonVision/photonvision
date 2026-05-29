@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING
 {% if test %}
 from photonlibpy.packet import Packet
 from photonlibpy.targeting import *  # noqa
+from . import *
 {% else %}
 from ..packet import Packet
 from ..targeting import *  # noqa

@@ -28,48 +28,24 @@
 ###############################################################################
 
 from typing import TYPE_CHECKING, Optional, ClassVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from photonlibpy.targeting import *  # noqa
 
 if TYPE_CHECKING:
     from .Transform3dTestMessageSerde import Transform3dTestMessageSerde  # noqa
 
-from wpimath.geometry import Transform3d
-
-
-class _Transform3dTestMessage_test_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'test'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Transform3dTestMessage_test_PLACEHOLDER)
-
-class _Transform3dTestMessage_vlaTest_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'vlaTest'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Transform3dTestMessage_vlaTest_PLACEHOLDER)
-
-class _Transform3dTestMessage_optTest_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'optTest'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Transform3dTestMessage_optTest_PLACEHOLDER)
-
-Transform3dTestMessage_test_PLACEHOLDER = _Transform3dTestMessage_test_PLACEHOLDER()
-Transform3dTestMessage_vlaTest_PLACEHOLDER = _Transform3dTestMessage_vlaTest_PLACEHOLDER()
-Transform3dTestMessage_optTest_PLACEHOLDER = _Transform3dTestMessage_optTest_PLACEHOLDER()
-
+from wpimath import Transform3d
 
 @dataclass(kw_only=True)
 class Transform3dTestMessage:
-    test: Transform3d | _Transform3dTestMessage_test_PLACEHOLDER = Transform3dTestMessage_test_PLACEHOLDER
-    vlaTest: list[Transform3d] | _Transform3dTestMessage_vlaTest_PLACEHOLDER = Transform3dTestMessage_vlaTest_PLACEHOLDER
-    optTest: Optional[Transform3d] | _Transform3dTestMessage_optTest_PLACEHOLDER = Transform3dTestMessage_optTest_PLACEHOLDER
+    test: Transform3d = field(
+        default_factory=lambda: Transform3d()
+    )
+    vlaTest: list[Transform3d] = field(
+        default_factory=list
+    )
+    optTest: Optional[Transform3d] = field(
+        default_factory=lambda: None
+    )
     photonStruct: ClassVar["Transform3dTestMessageSerde"]

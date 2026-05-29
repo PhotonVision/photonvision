@@ -46,17 +46,21 @@ public class AutoSerdeTest {
     public void Int8Test() {
         System.out.println("Running Int8Test");
         
+        System.out.println("Test case default_test:");
         var default_test = new Int8TestMessage();
         assertTrue(testSerde(default_test));
         
+        System.out.println("Test case optional_test:");
         var optional_test = new Int8TestMessage();
         optional_test.optTest = Optional.of((byte) 3);
         assertTrue(testSerde(optional_test));
         
+        System.out.println("Test case vla_test:");
         var vla_test = new Int8TestMessage();
         vla_test.vlaTest = List.of((byte) 1, (byte) 2, (byte) 3);
         assertTrue(testSerde(vla_test));
         
+        System.out.println("Test case general_test:");
         var general_test = new Int8TestMessage();
         general_test.test = (byte) 42;
         general_test.optTest = Optional.of((byte) 7);
@@ -69,17 +73,21 @@ public class AutoSerdeTest {
     public void Int16Test() {
         System.out.println("Running Int16Test");
         
+        System.out.println("Test case default_test:");
         var default_test = new Int16TestMessage();
         assertTrue(testSerde(default_test));
         
+        System.out.println("Test case optional_test:");
         var optional_test = new Int16TestMessage();
         optional_test.optTest = Optional.of((short) 3);
         assertTrue(testSerde(optional_test));
         
+        System.out.println("Test case vla_test:");
         var vla_test = new Int16TestMessage();
         vla_test.vlaTest = List.of((short) 1, (short) 2, (short) 3);
         assertTrue(testSerde(vla_test));
         
+        System.out.println("Test case general_test:");
         var general_test = new Int16TestMessage();
         general_test.test = (short) 42;
         general_test.optTest = Optional.of((short) 7);
@@ -92,17 +100,21 @@ public class AutoSerdeTest {
     public void Int32Test() {
         System.out.println("Running Int32Test");
         
+        System.out.println("Test case default_test:");
         var default_test = new Int32TestMessage();
         assertTrue(testSerde(default_test));
         
+        System.out.println("Test case optional_test:");
         var optional_test = new Int32TestMessage();
         optional_test.optTest = Optional.of((int) 3);
         assertTrue(testSerde(optional_test));
         
+        System.out.println("Test case vla_test:");
         var vla_test = new Int32TestMessage();
         vla_test.vlaTest = List.of((int) 1, (int) 2, (int) 3);
         assertTrue(testSerde(vla_test));
         
+        System.out.println("Test case general_test:");
         var general_test = new Int32TestMessage();
         general_test.test = (int) 42;
         general_test.optTest = Optional.of((int) 7);
@@ -115,17 +127,21 @@ public class AutoSerdeTest {
     public void Int64Test() {
         System.out.println("Running Int64Test");
         
+        System.out.println("Test case default_test:");
         var default_test = new Int64TestMessage();
         assertTrue(testSerde(default_test));
         
+        System.out.println("Test case optional_test:");
         var optional_test = new Int64TestMessage();
         optional_test.optTest = Optional.of((long) 3);
         assertTrue(testSerde(optional_test));
         
+        System.out.println("Test case vla_test:");
         var vla_test = new Int64TestMessage();
         vla_test.vlaTest = List.of((long) 1, (long) 2, (long) 3);
         assertTrue(testSerde(vla_test));
         
+        System.out.println("Test case general_test:");
         var general_test = new Int64TestMessage();
         general_test.test = (long) 42;
         general_test.optTest = Optional.of((long) 7);
@@ -138,17 +154,21 @@ public class AutoSerdeTest {
     public void Float32Test() {
         System.out.println("Running Float32Test");
         
+        System.out.println("Test case default_test:");
         var default_test = new Float32TestMessage();
         assertTrue(testSerde(default_test));
         
+        System.out.println("Test case optional_test:");
         var optional_test = new Float32TestMessage();
         optional_test.optTest = Optional.of((float) 3.0);
         assertTrue(testSerde(optional_test));
         
+        System.out.println("Test case vla_test:");
         var vla_test = new Float32TestMessage();
         vla_test.vlaTest = List.of((float) 1.0, (float) 2.0, (float) 3.0);
         assertTrue(testSerde(vla_test));
         
+        System.out.println("Test case general_test:");
         var general_test = new Float32TestMessage();
         general_test.test = (float) 42.0;
         general_test.optTest = Optional.of((float) 7.0);
@@ -161,17 +181,21 @@ public class AutoSerdeTest {
     public void Float64Test() {
         System.out.println("Running Float64Test");
         
+        System.out.println("Test case default_test:");
         var default_test = new Float64TestMessage();
         assertTrue(testSerde(default_test));
         
+        System.out.println("Test case optional_test:");
         var optional_test = new Float64TestMessage();
         optional_test.optTest = Optional.of((double) 3.0);
         assertTrue(testSerde(optional_test));
         
+        System.out.println("Test case vla_test:");
         var vla_test = new Float64TestMessage();
         vla_test.vlaTest = List.of((double) 1.0, (double) 2.0, (double) 3.0);
         assertTrue(testSerde(vla_test));
         
+        System.out.println("Test case general_test:");
         var general_test = new Float64TestMessage();
         general_test.test = (double) 42.0;
         general_test.optTest = Optional.of((double) 7.0);
@@ -184,17 +208,21 @@ public class AutoSerdeTest {
     public void BoolTest() {
         System.out.println("Running BoolTest");
         
+        System.out.println("Test case default_test:");
         var default_test = new BoolTestMessage();
         assertTrue(testSerde(default_test));
         
+        System.out.println("Test case optional_test:");
         var optional_test = new BoolTestMessage();
         optional_test.optTest = Optional.of(true);
         assertTrue(testSerde(optional_test));
         
+        System.out.println("Test case vla_test:");
         var vla_test = new BoolTestMessage();
         vla_test.vlaTest = List.of(true, false, true);
         assertTrue(testSerde(vla_test));
         
+        System.out.println("Test case general_test:");
         var general_test = new BoolTestMessage();
         general_test.test = false;
         general_test.optTest = Optional.of(true);
@@ -207,17 +235,21 @@ public class AutoSerdeTest {
     public void Transform3dTest() {
         System.out.println("Running Transform3dTest");
         
+        System.out.println("Test case default_test:");
         var default_test = new Transform3dTestMessage();
         assertTrue(testSerde(default_test));
         
+        System.out.println("Test case optional_test:");
         var optional_test = new Transform3dTestMessage();
         optional_test.optTest = Optional.of(new Transform3d(new Translation3d(1.0, 2.0, 3.0), new Rotation3d(0.1, 0.2, 0.3)));
         assertTrue(testSerde(optional_test));
         
+        System.out.println("Test case vla_test:");
         var vla_test = new Transform3dTestMessage();
         vla_test.vlaTest = List.of(new Transform3d(new Translation3d(1.0, 2.0, 3.0), new Rotation3d(0.1, 0.2, 0.3)), new Transform3d(new Translation3d(4.0, 5.0, 6.0), new Rotation3d(0.4, 0.5, 0.6)));
         assertTrue(testSerde(vla_test));
         
+        System.out.println("Test case general_test:");
         var general_test = new Transform3dTestMessage();
         general_test.test = new Transform3d(new Translation3d(7.0, 8.0, 9.0), new Rotation3d(0.7, 0.8, 0.9));
         general_test.optTest = Optional.of(new Transform3d(new Translation3d(1.0, 2.0, 3.0), new Rotation3d(0.1, 0.2, 0.3)));

@@ -28,7 +28,7 @@
 ###############################################################################
 
 from typing import TYPE_CHECKING, Optional, ClassVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from photonlibpy.targeting import *  # noqa
 
@@ -37,39 +37,15 @@ if TYPE_CHECKING:
 
 
 
-
-class _Float32TestMessage_test_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'test'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Float32TestMessage_test_PLACEHOLDER)
-
-class _Float32TestMessage_vlaTest_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'vlaTest'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Float32TestMessage_vlaTest_PLACEHOLDER)
-
-class _Float32TestMessage_optTest_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'optTest'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Float32TestMessage_optTest_PLACEHOLDER)
-
-Float32TestMessage_test_PLACEHOLDER = _Float32TestMessage_test_PLACEHOLDER()
-Float32TestMessage_vlaTest_PLACEHOLDER = _Float32TestMessage_vlaTest_PLACEHOLDER()
-Float32TestMessage_optTest_PLACEHOLDER = _Float32TestMessage_optTest_PLACEHOLDER()
-
-
 @dataclass(kw_only=True)
 class Float32TestMessage:
-    test: float | _Float32TestMessage_test_PLACEHOLDER = Float32TestMessage_test_PLACEHOLDER
-    vlaTest: list[float] | _Float32TestMessage_vlaTest_PLACEHOLDER = Float32TestMessage_vlaTest_PLACEHOLDER
-    optTest: Optional[float] | _Float32TestMessage_optTest_PLACEHOLDER = Float32TestMessage_optTest_PLACEHOLDER
+    test: float = field(
+        default_factory=lambda: 0.0
+    )
+    vlaTest: list[float] = field(
+        default_factory=list
+    )
+    optTest: Optional[float] = field(
+        default_factory=lambda: None
+    )
     photonStruct: ClassVar["Float32TestMessageSerde"]

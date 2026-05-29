@@ -28,7 +28,7 @@
 ###############################################################################
 
 from typing import TYPE_CHECKING, Optional, ClassVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from photonlibpy.targeting import *  # noqa
 
@@ -37,39 +37,15 @@ if TYPE_CHECKING:
 
 
 
-
-class _Int64TestMessage_test_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'test'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Int64TestMessage_test_PLACEHOLDER)
-
-class _Int64TestMessage_vlaTest_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'vlaTest'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Int64TestMessage_vlaTest_PLACEHOLDER)
-
-class _Int64TestMessage_optTest_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field 'optTest'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _Int64TestMessage_optTest_PLACEHOLDER)
-
-Int64TestMessage_test_PLACEHOLDER = _Int64TestMessage_test_PLACEHOLDER()
-Int64TestMessage_vlaTest_PLACEHOLDER = _Int64TestMessage_vlaTest_PLACEHOLDER()
-Int64TestMessage_optTest_PLACEHOLDER = _Int64TestMessage_optTest_PLACEHOLDER()
-
-
 @dataclass(kw_only=True)
 class Int64TestMessage:
-    test: int | _Int64TestMessage_test_PLACEHOLDER = Int64TestMessage_test_PLACEHOLDER
-    vlaTest: list[int] | _Int64TestMessage_vlaTest_PLACEHOLDER = Int64TestMessage_vlaTest_PLACEHOLDER
-    optTest: Optional[int] | _Int64TestMessage_optTest_PLACEHOLDER = Int64TestMessage_optTest_PLACEHOLDER
+    test: int = field(
+        default_factory=lambda: 0
+    )
+    vlaTest: list[int] = field(
+        default_factory=list
+    )
+    optTest: Optional[int] = field(
+        default_factory=lambda: None
+    )
     photonStruct: ClassVar["Int64TestMessageSerde"]

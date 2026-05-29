@@ -28,7 +28,7 @@
 ###############################################################################
 
 from typing import TYPE_CHECKING, Optional, ClassVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from photonlibpy.targeting import *  # noqa
 
@@ -53,24 +53,14 @@ from {{ get_message_by_name(type).python_module }} import {{ type }}
 {%- if not loop.last %},{% endif -%}
 {%- endfor%}
 
-{% for field in fields %}
-class _{{ name }}_{{ field.name }}_PLACEHOLDER:
-    __slots__ = ()
-    def __repr__(self):
-        return f"<Placeholder for field '{{ field.name }}'>"
-
-    def __eq__(self, other):
-        return isinstance(other, _{{ name }}_{{ field.name }}_PLACEHOLDER)
-{% endfor %}
-{% for field in fields -%}
-{{ name }}_{{ field.name }}_PLACEHOLDER = _{{ name }}_{{ field.name }}_PLACEHOLDER()
-{% endfor %}
-
 @dataclass(kw_only=True)
 class {{ name }}:
     {% for field in fields -%}
-    {{ field.name }}: {{ field | get_python_qualified_name }} | _{{ name }}_{{ field.name }}_PLACEHOLDER = {{ name }}_{{ field.name }}_PLACEHOLDER
+    {{ field.name }}: {{ field | get_python_qualified_name }} = field(
+        default_factory={{ field | get_python_default_factory }}
+    )
     {%- if not loop.last %}
     {% endif -%}
 {%- endfor %}
     photonStruct: ClassVar["{{ name }}Serde"]
+
