@@ -78,55 +78,54 @@ jobs:
       - name: Run mypy type checking
         run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
-  # build-python-examples:
-  #   needs: build-py
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-24.04, windows-2022, macos-14]
-  #   runs-on: ${{ matrix.os }}
+  build-python-examples:
+    needs: build-py
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-14]
+    runs-on: ${{ matrix.os }}
 
-  #   steps:
+    steps:
 
-  #     - name: Checkout code
-  #       uses: actions/checkout@v6
-  #       with:
-  #         fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v6
-  #       with:
-  #         python-version: 3.14
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.14
 
-  #     - name: Install dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         python -m pip install mypy
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install mypy
 
-  #     - name: Download artifacts
-  #       uses: actions/download-artifact@v8
-  #       with:
-  #         name: dist
-  #         path: ./photon-lib/py/dist/
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: ./photon-lib/py/dist/
 
-  #     - name: Install PhotonLibPy package
-  #       working-directory: ./photon-lib/py
-  #       shell: bash
-  #       run: |
-  #           pip install --no-cache-dir dist/*.whl
+      - name: Install PhotonLibPy package
+        working-directory: ./photon-lib/py
+        shell: bash
+        run: |
+            pip install --no-cache-dir dist/*.whl
 
-  #     - name: Build Python examples
-  #       working-directory: photonlib-python-examples
-  #       shell: bash
-  #       run: |
-  #         for folder in */;
-  #         do
-  #           echo $folder
-  #           ./run.sh $folder
-  #         done
+      - name: Build Python examples
+        working-directory: photonlib-python-examples
+        shell: bash
+        run: |
+          for folder in */;
+          do
+            echo $folder
+            ./test.sh $folder
+          done
 
   deploy:
-    # TODO: BRING BACK PYTHON EXAMPLES
-    needs: [test-py]
+    needs: [test-py, build-python-examples]
     runs-on: ubuntu-24.04
     # Only upload on tags
     if: startsWith(github.ref, 'refs/tags/v')
