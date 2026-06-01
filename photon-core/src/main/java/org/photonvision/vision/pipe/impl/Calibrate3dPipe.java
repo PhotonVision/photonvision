@@ -309,35 +309,51 @@ public class Calibrate3dPipe
             List<Point3> outputOPoints = new ArrayList<Point3>();
             List<Point> outputIPoints = new ArrayList<Point>();
 
-            for (int imgPointIdx = 0; imgPointIdx < iPoints.length; imgPointIdx++) {
-                if (iPoints[imgPointIdx].x >= 0 && iPoints[imgPointIdx].y >= 0) {
-                    outputIPoints.add(iPoints[imgPointIdx]);
-                }
+            // check each object + image point for "validity"
+            if (iPoints.length != oPoints.length) {
+                throw new RuntimeException(
+                        "Mismatched number of object and image points for board! objPts: "
+                                + oPoints.length
+                                + ", imgPts: "
+                                + iPoints.length);
             }
-            for (int objPointIdx = 0; objPointIdx < oPoints.length; objPointIdx++) {
-                if (oPoints[objPointIdx].x >= 0
-                        && oPoints[objPointIdx].y >= 0
-                        && oPoints[objPointIdx].z >= 0) {
-                    outputOPoints.add(oPoints[objPointIdx]);
+            for (int pointIdx = 0; pointIdx < iPoints.length; pointIdx++) {
+                if (iPoints[pointIdx].x < 0
+                        || iPoints[pointIdx].y < 0
+                        || oPoints[pointIdx].x < 0
+                        || oPoints[pointIdx].y < 0
+                        || oPoints[pointIdx].z < 0) {
+                    // Discard
+                } else {
+                    // point is valid, keep it
+                    outputOPoints.add(oPoints[pointIdx]);
+                    outputIPoints.add(iPoints[pointIdx]);
                 }
             }
 
-            board.objectPoints.fromList(outputOPoints);
-            board.imagePoints.fromList(outputIPoints);
+            MatOfPoint3f filteredObjectPoints = new MatOfPoint3f();
+            MatOfPoint2f filteredImagePoints = new MatOfPoint2f();
+            filteredObjectPoints.fromList(outputOPoints);
+            filteredImagePoints.fromList(outputIPoints);
 
             Calib3d.solvePnP(
-                    board.objectPoints,
-                    board.imagePoints,
+                    filteredObjectPoints,
+                    filteredImagePoints,
                     cameraMatrixMat.getAsMatOfDouble(),
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
+
             rvecs.add(rvec);
             tvecs.add(tvec);
+
+            filteredObjectPoints.release();
+            filteredImagePoints.release();
         }
 
         List<MatOfPoint3f> objPoints = foundBoards.stream().map(it -> it.objectPoints).toList();
         List<MatOfPoint2f> imgPts = foundBoards.stream().map(it -> it.imagePoints).toList();
+
         List<BoardObservation> observations =
                 createObservations(
                         foundBoards,

@@ -305,7 +305,12 @@ public class CameraCalibrationCoefficients implements Releasable {
         int xylevelsIdx = 0;
         for (var board : observations) {
             if (board.locationInImageSpace.size() != board.cornersUsed.length) {
-                throw new RuntimeException("Length mismatch");
+                throw new RuntimeException(
+                        "Length mismatch! Got "
+                                + board.locationInImageSpace.size()
+                                + " corners but "
+                                + board.cornersUsed.length
+                                + " used flags");
             }
 
             var corners = board.locationInImageSpace;
