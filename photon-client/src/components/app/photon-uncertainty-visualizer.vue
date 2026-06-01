@@ -95,7 +95,7 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
     ],
 
     zmin: 0.0,
-    zMax: zMax,
+    zmax: zMax,
 
     contours: {
       coloring: "heatmap" as const,
