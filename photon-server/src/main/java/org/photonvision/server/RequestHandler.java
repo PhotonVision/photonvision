@@ -1051,7 +1051,8 @@ public class RequestHandler {
             return;
         }
 
-        ctx.json(calList);
+        ctx.contentType("application/json");
+        ctx.result(Jsonb.instance().toJson(calList));
         ctx.status(200);
     }
 
@@ -1205,9 +1206,9 @@ public class RequestHandler {
         }
 
         var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
-        ctx.contentType("application/zip");
+        ctx.contentType("application/json");
         ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        ctx.json(calList);
+        ctx.result(Jsonb.instance().toJson(calList));
 
         ctx.status(200);
     }
@@ -1246,7 +1247,8 @@ public class RequestHandler {
         }
 
         ctx.status(200);
-        ctx.json(snapshots);
+        ctx.contentType("application/json");
+        ctx.result(Jsonb.instance().toJson(snapshots));
     }
 
     public static void onCameraCalibImagesRequest(Context ctx) {
@@ -1285,7 +1287,8 @@ public class RequestHandler {
                 }
             }
 
-            ctx.json(snapshots);
+            ctx.contentType("application/json");
+            ctx.result(Jsonb.instance().toJson(snapshots));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("An error occurred while getting calib data");
