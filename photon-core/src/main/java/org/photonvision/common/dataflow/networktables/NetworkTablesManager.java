@@ -86,11 +86,11 @@ public class NetworkTablesManager {
 
     private NetworkTablesManager() {
         ntInstance.addLogger(
-                LogMessage.kInfo, LogMessage.kCritical, this::logNtMessage); // to hide error messages
+                LogMessage.INFO, LogMessage.CRITICAL, this::logNtMessage); // to hide error messages
         ntInstance.addConnectionListener(true, this::checkNtConnectState); // to hide error messages
 
         ntInstance.addListener(
-                m_fieldLayoutSubscriber, EnumSet.of(Kind.kValueAll), this::onFieldLayoutChanged);
+                m_fieldLayoutSubscriber, EnumSet.of(Kind.VALUE_ALL), this::onFieldLayoutChanged);
 
         ntDriverStation = new NTDriverStation(this.getNTInst());
 
@@ -127,16 +127,16 @@ public class NetworkTablesManager {
     private void logNtMessage(NetworkTableEvent event) {
         String levelmsg = "DEBUG";
         LogLevel pvlevel = LogLevel.DEBUG;
-        if (event.logMessage.level >= LogMessage.kCritical) {
+        if (event.logMessage.level >= LogMessage.CRITICAL) {
             pvlevel = LogLevel.ERROR;
             levelmsg = "CRITICAL";
-        } else if (event.logMessage.level >= LogMessage.kError) {
+        } else if (event.logMessage.level >= LogMessage.ERROR) {
             pvlevel = LogLevel.ERROR;
             levelmsg = "ERROR";
-        } else if (event.logMessage.level >= LogMessage.kWarning) {
+        } else if (event.logMessage.level >= LogMessage.WARNING) {
             pvlevel = LogLevel.WARN;
             levelmsg = "WARNING";
-        } else if (event.logMessage.level >= LogMessage.kInfo) {
+        } else if (event.logMessage.level >= LogMessage.INFO) {
             pvlevel = LogLevel.INFO;
             levelmsg = "INFO";
         }
@@ -157,16 +157,14 @@ public class NetworkTablesManager {
     }
 
     public void checkNtConnectState(NetworkTableEvent event) {
-        var isConnEvent = event.is(Kind.kConnected);
-        var isDisconnEvent = event.is(Kind.kDisconnected);
+        var isConnEvent = event.is(Kind.CONNECTED);
+        var isDisconnEvent = event.is(Kind.DISCONNECTED);
 
         if (isDisconnEvent) {
             var msg =
                     String.format(
                             "NT lost connection to %s:%d! (NT version %d). Will retry in background.",
-                            event.connInfo.remote_ip,
-                            event.connInfo.remote_port,
-                            event.connInfo.protocol_version);
+                            event.connInfo.remoteIp, event.connInfo.remotePort, event.connInfo.protocolVersion);
             logger.error(msg);
             HardwareManager.getInstance().setNTConnected(false);
 
@@ -175,9 +173,7 @@ public class NetworkTablesManager {
             var msg =
                     String.format(
                             "NT connected to %s:%d! (NT version %d)",
-                            event.connInfo.remote_ip,
-                            event.connInfo.remote_port,
-                            event.connInfo.protocol_version);
+                            event.connInfo.remoteIp, event.connInfo.remotePort, event.connInfo.protocolVersion);
             logger.info(msg);
             HardwareManager.getInstance().setNTConnected(true);
 
@@ -226,7 +222,7 @@ public class NetworkTablesManager {
         if (ntInstance.isConnected()) {
             var connections = ntInstance.getConnections();
             if (connections.length > 0) {
-                subMap.put("address", connections[0].remote_ip + ":" + connections[0].remote_port);
+                subMap.put("address", connections[0].remoteIp + ":" + connections[0].remotePort);
             }
             subMap.put("clients", connections.length);
         }
