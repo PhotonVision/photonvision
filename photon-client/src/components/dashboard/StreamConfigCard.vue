@@ -65,16 +65,18 @@ const streamDisplayModel = computed<string[]>({
         : ''
     ]"
   >
-    <div class="flex flex-wrap items-center text-sm">
-      <div class="w-full">
-        <p class="text-pv-on-surface pb-1">Processing Mode</p>
-        <pv-toggle-group v-model="processingModeModel" :items="processingModeItems" />
+    <div class="flex flex-1 flex-col justify-center gap-12">
+      <div class="flex flex-wrap items-center text-sm">
+        <div class="w-full">
+          <p class="text-pv-on-surface pb-1">Processing Mode</p>
+          <pv-toggle-group v-model="processingModeModel" :items="processingModeItems" />
+        </div>
       </div>
-    </div>
-    <div class="flex flex-wrap items-center pt-1 text-sm">
-      <div class="w-full pt-0">
-        <p class="text-pv-on-surface pb-1">Stream Display</p>
-        <pv-toggle-group v-model="streamDisplayModel" :items="streamDisplayItems" multiple />
+      <div class="flex flex-wrap items-center text-sm">
+        <div class="w-full">
+          <p class="text-pv-on-surface pb-1">Stream Display</p>
+          <pv-toggle-group v-model="streamDisplayModel" :items="streamDisplayItems" multiple />
+        </div>
       </div>
     </div>
   </pv-card>

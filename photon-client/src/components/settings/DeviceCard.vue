@@ -289,10 +289,10 @@ watch(metricsHistorySnapshot, () => {
 </script>
 
 <template>
-  <div class="flex flex-wrap gap-3 mb-3">
+  <div class="mb-3 flex flex-wrap gap-3">
     <!-- Device control card -->
     <div class="flex-1">
-      <pv-card class="h-full flex flex-col justify-between">
+      <pv-card class="flex h-full flex-col justify-between">
         <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Control</span>
         </div>
@@ -387,7 +387,7 @@ watch(metricsHistorySnapshot, () => {
 
     <!-- Device metrics card -->
     <div class="flex-1">
-      <pv-card class="h-full flex flex-col justify-between">
+      <pv-card class="flex h-full flex-col justify-between">
         <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Metrics</span>
         </div>
