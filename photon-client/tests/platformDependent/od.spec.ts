@@ -35,15 +35,20 @@ for (const platform of platforms) {
       await page.getByRole("textbox", { name: "Labels" }).fill(fakeLabels);
       await page.getByRole("spinbutton", { name: "Width" }).fill("640");
       await page.getByRole("spinbutton", { name: "Height" }).fill("640");
-      await page.getByTestId("import-version-select").click();
+      await page.getByRole("combobox", { name: "Model Version" }).click();
       await page.getByRole("option", { name: "YOLOv8" }).click();
 
-      const modelFile = platform.endsWith("RK3588_64") ? `${fakeModelName}.rknn` : `${fakeModelName}.tflite`;
+      const modelExtension = platform.endsWith("RK3588_64") ? "rknn" : "tflite";
+      const modelFile = `${fakeModelName}.${modelExtension}`;
       await page
-        .getByRole("button", { name: "Model File Model File" })
+        .locator(`input[type="file"][accept=".${modelExtension}"]`)
         .setInputFiles(path.join(testsDir, "tests/resources", modelFile));
 
+      const importResponse = page.waitForResponse(
+        (response) => response.url().includes("/api/objectdetection/import") && response.request().method() === "POST"
+      );
       await page.getByRole("button", { name: "Import Object Detection Model" }).click();
+      expect((await importResponse).ok()).toBeTruthy();
 
       await page.goto("/#/settings");
       const tableRow = page.getByTestId("model-table").locator("tr", { hasText: fakeModelName });
@@ -56,8 +61,12 @@ for (const platform of platforms) {
       const tableRow = page.getByTestId("model-table").locator("tr", { hasText: fakeModelName });
 
       await tableRow.getByRole("button", { name: "Rename Model" }).click();
-      await page.getByRole("textbox", { name: "New Name New Name" }).fill(newModelName);
+      await page.getByRole("textbox", { name: "New Name" }).fill(newModelName);
+      const renameResponse = page.waitForResponse(
+        (response) => response.url().includes("/api/objectdetection/rename") && response.request().method() === "POST"
+      );
       await page.getByRole("button", { name: "Rename", exact: true }).click();
+      expect((await renameResponse).ok()).toBeTruthy();
 
       await page.reload();
 
@@ -69,7 +78,11 @@ for (const platform of platforms) {
       const tableRow = page.getByTestId("model-table").locator("tr", { hasText: newModelName });
 
       await tableRow.getByRole("button", { name: "Delete Model" }).click();
+      const deleteResponse = page.waitForResponse(
+        (response) => response.url().includes("/api/objectdetection/delete") && response.request().method() === "POST"
+      );
       await page.getByRole("button", { name: "Delete model", exact: true }).click();
+      expect((await deleteResponse).ok()).toBeTruthy();
 
       await page.reload();
       const deletedRow = page.getByTestId("model-table").locator("tr", { hasText: newModelName });
