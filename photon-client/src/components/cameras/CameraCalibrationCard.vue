@@ -146,9 +146,9 @@ watchEffect(() => {
   useStateStore().calibrationData.videoFormatIndex = currentIndex;
   uniqueVideoResolutionIndex.value = currentIndex;
 });
-const dimensionUnit = ref<"in" | "mm">("mm");
-const squareSize = ref(25);
-const markerSize = ref(18);
+const dimensionUnit = ref<"in" | "mm">("in");
+const squareSizeIn = ref(1);
+const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.ChArUco);
@@ -158,9 +158,24 @@ const requestedVideoFormatIndex = ref(0);
 const paperType = ref<CalibrationPaperTypes>(CalibrationPaperTypes.Letter);
 const paperOrientation = ref<"portrait" | "landscape">("portrait");
 
-watch(dimensionUnit, (value, oldValue) => {
-  squareSize.value = length[oldValue](squareSize.value)[value].value;
-  markerSize.value = length[oldValue](markerSize.value)[value].value;
+const convertInchesToDisplay = (valueInInches: number) =>
+  dimensionUnit.value === "mm" ? valueInInches * MM_PER_INCH : valueInInches;
+
+const convertDisplayToInches = (displayValue: number) =>
+  dimensionUnit.value === "mm" ? displayValue / MM_PER_INCH : displayValue;
+
+const squareSize = computed({
+  get: () => convertInchesToDisplay(squareSizeIn.value),
+  set(value) {
+    squareSizeIn.value = convertDisplayToInches(value);
+  }
+});
+
+const markerSize = computed({
+  get: () => convertInchesToDisplay(markerSizeIn.value),
+  set(value) {
+    markerSizeIn.value = convertDisplayToInches(value);
+  }
 });
 
 const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
@@ -196,12 +211,9 @@ const downloadCalibBoard = async () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      // This branch is inaccessible
-      console.error("Chessboard generation is not supported");
-      return;
+      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
 
-    case CalibrationBoardTypes.ChArUco:
-      const markerSizeIn = length[dimensionUnit.value](markerSize.value).in.value;
+      const chessboardStartY = (paperHeight - patternHeight.value * squareSizeIn.value) / 2;
 
       const { arucoToSVGString } = await arucoMarker;
       // ChArUco boards place ArUco tags in reading order over a chessboard with a black square in the top left
@@ -209,28 +221,12 @@ const downloadCalibBoard = async () => {
       const squarePadding = (squareSizeIn - markerSizeIn) / 2;
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
         for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = chessboardStartX + squareX * squareSizeIn;
-          const yPos = chessboardStartY + squareY * squareSizeIn;
+          const xPos = chessboardStartX + squareX * squareSizeIn.value;
+          const yPos = chessboardStartY + squareY * squareSizeIn.value;
 
-          // Draw black squares on the even tiles and ArUco markers on the odd tiles
-          // Parity is even in the top left corner unless using the old pattern, which starts in the bottom left corner
-          if ((squareY + (useOldPattern.value ? patternHeight.value - 1 : 0)) % 2 === squareX % 2) {
-            doc.rect(xPos, yPos, squareSizeIn, squareSizeIn, "F");
-          } else {
-            await doc.svg(
-              new DOMParser()
-                .parseFromString(
-                  arucoToSVGString(markerIndex++, undefined, await arucoTagDictionaryFor(tagFamily.value)),
-                  "image/svg+xml"
-                )
-                .getElementsByTagName("svg")[0],
-              {
-                x: xPos + squarePadding,
-                y: yPos + squarePadding,
-                width: markerSizeIn,
-                height: markerSizeIn
-              }
-            );
+          // Only draw the odd squares to create the chessboard pattern
+          if (squareY % 2 !== squareX % 2) {
+            doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
           }
         }
       }
@@ -280,8 +276,8 @@ const isCalibrating = computed(
 
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
-    squareSizeMeters: length[dimensionUnit.value](squareSize.value).m.value,
-    markerSizeMeters: length[dimensionUnit.value](markerSize.value).m.value,
+    squareSizeMeters: squareSizeIn.value * 0.0254,
+    markerSizeMeters: markerSizeIn.value * 0.0254,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
@@ -604,7 +600,7 @@ const updateCameraBlueGain = (value: number) => {
           <div class="flex flex-wrap items-center justify-between gap-4 pb-5">
             <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'">
               Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-              {{ useStateStore().calibrationData.minimumImageCount }}
+              {{ minCount }}
             </pv-chip>
           </div>
           <pv-switch

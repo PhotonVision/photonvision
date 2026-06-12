@@ -2,8 +2,8 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings, PVCameraInfo } from "@/types/SettingTypes";
-import { axiosPost, getResolutionString, cameraInfoFor } from "@/lib/PhotonUtils";
+import { PlaceholderCameraSettings, type PVCameraInfo } from "@/types/SettingTypes";
+import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
 import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
@@ -125,9 +125,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       >
         <pv-card class="rounded-2xl">
           <div class="text-lg font-semibold wrap-break-word">
-            {{ cameraInfoFor(module.matchedCameraInfo).name }}
+            {{ module.matchedCameraInfo.name }}
           </div>
-          <div v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="text-sm">
+          <div v-if="!cameraConnected(module.matchedCameraInfo.uniquePath)" class="text-sm">
             Status: <span class="inactive-status">Disconnected</span>
           </div>
           <div v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch" class="text-sm">
@@ -322,15 +322,15 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <div v-for="(camera, index) in unmatchedCameras" :key="index" class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
         <pv-card class="rounded-2xl">
           <div class="text-lg font-semibold wrap-break-word">
-            <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
-            <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
-            <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
+            <span v-if="camera.type === 'PVUsbCameraInfo'">USB Camera:</span>
+            <span v-else-if="camera.type === 'PVCSICameraInfo'">CSI Camera:</span>
+            <span v-else-if="camera.type === 'PVFileCameraInfo'">File Camera:</span>
             <span v-else>Unknown Camera:</span>
-            &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
+            &nbsp;<span>{{ camera.name }}</span>
           </div>
           <div class="text-sm">Status: Unassigned</div>
           <div class="pt-3">
-            <span style="word-break: break-all">{{ cameraInfoFor(camera)?.path }}</span>
+            <span style="word-break: break-all">{{ camera.path }}</span>
           </div>
           <div class="pt-0">
             <div class="-mx-2 flex flex-wrap">
@@ -363,7 +363,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <pv-card v-if="viewingCamera[0] !== null" class="flex flex-col gap-3">
         <div class="flex items-center justify-between text-lg font-semibold">
           <span class="wrap-break-word">
-            {{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}
+            {{ viewingCamera[0].name }}
           </span>
           <pv-button variant="text" size="icon" :icon="IconClose" @click="setCameraView(null, null)" />
         </div>
