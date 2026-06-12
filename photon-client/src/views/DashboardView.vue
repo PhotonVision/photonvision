@@ -131,8 +131,8 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         <CamerasCard v-model="cameraViewType" />
       </div>
       <div class="flex w-full flex-col self-stretch pb-3 lg:w-1/3">
-        <CameraAndPipelineSelectCard />
-        <StreamConfigCard v-model="cameraViewType" />
+        <CameraAndPipelineSelectCard class="shrink-0" />
+        <StreamConfigCard v-model="cameraViewType" class="flex-1" />
       </div>
     </div>
     <ConfigOptions />
