@@ -267,8 +267,8 @@ public class NetworkUtils {
                 // Use NT client IP address to find the interface in use
                 if (!config.runNTServer) {
                     var conn = NetworkTableInstance.getDefault().getConnections();
-                    if (conn.length > 0 && !conn[0].remote_ip.equals("127.0.0.1")) {
-                        var addr = InetAddress.getByName(conn[0].remote_ip);
+                    if (conn.length > 0 && !conn[0].remoteIp.equals("127.0.0.1")) {
+                        var addr = InetAddress.getByName(conn[0].remoteIp);
                         return formatMacAddress(NetworkInterface.getByInetAddress(addr).getHardwareAddress());
                     }
                 }
