@@ -67,20 +67,20 @@ const performanceRecommendation = computed<string>(() => {
     </div>
     <hr class="w-full border-t border-white/10" />
     <div class="stream-viewer-container flex flex-1 flex-wrap items-center justify-between gap-2 p-2">
-      <div v-if="value?.includes(0)" class="stream-view flex-1">
+      <div v-if="value?.includes(0)" class="stream-view flex h-full flex-1 items-center justify-center">
         <photon-camera-stream
           id="input-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Raw"
-          style="width: 100%; height: auto"
+          style="width: 100%; height: auto; max-height: 100%"
         />
       </div>
-      <div v-if="value?.includes(1)" class="stream-view flex-1">
+      <div v-if="value?.includes(1)" class="stream-view flex h-full flex-1 items-center justify-center">
         <photon-camera-stream
           id="output-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Processed"
-          style="width: 100%; height: auto"
+          style="width: 100%; height: auto; max-height: 100%"
         />
       </div>
     </div>

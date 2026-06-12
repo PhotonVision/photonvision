@@ -11,11 +11,11 @@ const { solid, border } = useThemeColor(useStateStore().snackbarData.color);
   <ToastProvider>
     <ToastRoot
       v-model:open="useStateStore().snackbarData.show"
-      :style="{ backgroundColor: solid, border: `1px solid ${border}` }"
+      :style="{ backgroundColor: solid, border: `1px solid ${border}`, '--snackbar-solid': solid }"
       class="data-[state=open]:animate-slideIn data-[state=closed]:animate-hide data-[swipe=end]:animate-swipeOut grid grid-cols-[auto_max-content] items-center gap-x-4 rounded-lg border p-4 shadow-sm [grid-template-areas:'title_action'_'description_action'] data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=move]:translate-x-(--reka-toast-swipe-move-x)"
       :duration="useStateStore().snackbarData.timeout"
     >
-      <ToastTitle class="mb-1.25 text-sm font-medium [grid-area:title]" :style="{ color: `contrast-color(${solid})` }">
+      <ToastTitle class="snackbar-title mb-1.25 text-sm font-medium [grid-area:title]">
         {{ useStateStore().snackbarData.message }}
       </ToastTitle>
       <ToastDescription as-child>
@@ -33,3 +33,15 @@ const { solid, border } = useThemeColor(useStateStore().snackbarData.color);
     />
   </ToastProvider>
 </template>
+
+<style scoped>
+.snackbar-title {
+  color: oklch(from var(--snackbar-solid) round(1.21 - L) 0 0);
+}
+
+@supports (color: contrast-color(red)) {
+  .snackbar-title {
+    color: contrast-color(var(--snackbar-solid));
+  }
+}
+</style>

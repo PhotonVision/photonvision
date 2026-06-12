@@ -24,13 +24,13 @@
   --color-pv-logs-background: var(--pv-logs-background);
   --color-pv-sidebar: var(--pv-sidebar);
 
-  --color-pv-surface-text: contrast-color(var(--pv-surface));
+  --color-pv-surface-text: var(--pv-on-surface);
   --animate-progress: progress 1s infinite linear;
 }
 
 :root {
-  --pv-on-background: contrast-color(var(--pv-background));
-  --pv-on-surface: contrast-color(var(--pv-surface));
+  --pv-on-background: oklch(from var(--pv-background) round(1.21 - L) 0 0);
+  --pv-on-surface: oklch(from var(--pv-surface) round(1.21 - L) 0 0);
   --pv-accent: var(--pv-primary);
   --pv-error: var(--color-red-700);
   --pv-info: var(--color-blue-400);
@@ -40,6 +40,13 @@
   --pv-button-passive: var(--pv-secondary);
   --pv-logs-background: var(--color-slate-800);
   --pv-sidebar: var(--color-slate-700);
+}
+
+@supports (color: contrast-color(red)) {
+  :root {
+    --pv-on-background: contrast-color(var(--pv-background));
+    --pv-on-surface: contrast-color(var(--pv-surface));
+  }
 }
 
 :root[data-theme="dark"] {
