@@ -111,6 +111,7 @@ jobs:
         working-directory: photon-client
         run: |
           pnpm install --frozen-lockfile
+          pnpm run build
           pnpm type-check
   playwright-tests:
     name: "Playwright E2E tests"

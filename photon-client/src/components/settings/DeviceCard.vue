@@ -2,15 +2,19 @@
 import { inject, computed, ref, watch, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import MetricsChart from "./MetricsChart.vue";
-import { useTheme } from "vuetify";
 import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import { metricsHistorySnapshot } from "@/stores/settings/GeneralSettingsStore";
+import IconEye from "~icons/mdi/eye";
+import IconDownload from "~icons/mdi/download";
+import IconImport from "~icons/mdi/import";
+import IconExport from "~icons/mdi/export";
+import IconRestart from "~icons/mdi/restart";
+import IconUpload from "~icons/mdi/upload";
+import IconRestartAlert from "~icons/mdi/restart-alert";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
+import IconInformation from "~icons/mdi/information";
 
-const theme = useTheme();
+import { metricsHistorySnapshot } from "@/stores/settings/GeneralSettingsStore";
 
 const restartProgram = async () => {
   if (await axiosPost("/utils/restartProgram", "restart PhotonVision")) {
@@ -285,18 +289,18 @@ watch(metricsHistorySnapshot, () => {
 </script>
 
 <template>
-  <v-row no-gutters>
+  <div class="mb-3 flex flex-wrap gap-3">
     <!-- Device control card -->
-    <v-col class="pr-3">
-      <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
-        <v-card-title class="d-flex justify-space-between">
+    <div class="flex-1">
+      <pv-card class="flex h-full flex-col justify-between">
+        <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Control</span>
-        </v-card-title>
-        <v-card-text class="flex-0-0">
-          <v-table>
+        </div>
+        <div class="flex-0-0 pb-4">
+          <pv-table>
             <tbody>
               <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)" :key="itemIndex">
-                <td :key="itemIndex">
+                <td :key="itemIndex" class="text-gray-200">
                   {{ item.header }}
                 </td>
                 <td :key="itemIndex">
@@ -304,27 +308,17 @@ watch(metricsHistorySnapshot, () => {
                 </td>
               </tr>
             </tbody>
-          </v-table>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <v-row>
-            <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="useStateStore().showLogModal = true"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-eye </v-icon>
+          </pv-table>
+        </div>
+        <div class="flex-0-0 pt-0 pb-4">
+          <div class="flex flex-wrap">
+            <div class="flex-1 pr-3">
+              <pv-button variant="passive" :icon="IconEye" block @click="useStateStore().showLogModal = true">
                 <span class="open-label">View Logs</span>
-              </v-btn>
-            </v-col>
-            <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="openExportLogsPrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-download </v-icon>
+              </pv-button>
+            </div>
+            <div class="flex-1 pl-3">
+              <pv-button variant="passive" :icon="IconDownload" block @click="openExportLogsPrompt">
                 <span class="open-label">Download Logs</span>
 
                 <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -335,55 +329,35 @@ watch(metricsHistorySnapshot, () => {
                   download="photonvision-journalctl.txt"
                   target="_blank"
                 />
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <v-row>
-            <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="() => (showImportDialog = true)"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
+              </pv-button>
+            </div>
+          </div>
+        </div>
+        <div class="flex-0-0 pt-0 pb-4">
+          <div class="flex flex-wrap">
+            <div class="flex-1 pr-3">
+              <pv-button variant="passive" :icon="IconImport" block @click="() => (showImportDialog = true)">
                 <span class="open-label">Import Settings</span>
-              </v-btn>
-            </v-col>
-            <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="openExportSettingsPrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
+              </pv-button>
+            </div>
+            <div class="flex-1 pl-3">
+              <pv-button variant="passive" :icon="IconExport" block @click="openExportSettingsPrompt">
                 <span class="open-label">Export Settings</span>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <v-row>
-            <v-col cols="12" sm="6"
-              ><v-btn
-                color="buttonActive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="restartProgram"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-restart </v-icon>
+              </pv-button>
+            </div>
+          </div>
+        </div>
+        <div class="flex-0-0 pt-0 pb-4">
+          <div class="flex flex-wrap">
+            <div class="w-full pr-3 sm:w-1/2">
+              <pv-button variant="primary" :icon="IconRestart" block @click="restartProgram">
                 <span class="open-label">Restart Software</span>
-              </v-btn>
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="openOfflineUpdatePrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
+              </pv-button>
+            </div>
+            <div class="w-full pl-3 sm:w-1/2">
+              <pv-button variant="passive" :icon="IconUpload" block @click="openOfflineUpdatePrompt">
                 <span class="open-label">Offline Update</span>
-              </v-btn>
+              </pv-button>
               <input
                 ref="offlineUpdate"
                 type="file"
@@ -391,44 +365,34 @@ watch(metricsHistorySnapshot, () => {
                 style="display: none"
                 @change="handleOfflineUpdateRequest"
               />
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <v-row>
-            <v-col cols="12" sm="6">
-              <v-btn
-                color="buttonActive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="restartDevice"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-restart-alert </v-icon>
+            </div>
+          </div>
+        </div>
+        <div class="flex-0-0 pt-0 pb-4">
+          <div class="flex flex-wrap">
+            <div class="w-full pr-3 sm:w-1/2">
+              <pv-button variant="primary" :icon="IconRestartAlert" block @click="restartDevice">
                 <span class="open-label">Reboot Device</span>
-              </v-btn>
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-btn
-                color="error"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="() => (showFactoryReset = true)"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
+              </pv-button>
+            </div>
+            <div class="w-full pl-3 sm:w-1/2">
+              <pv-button variant="danger" :icon="IconTrashCanOutline" block @click="() => (showFactoryReset = true)">
                 <span class="open-icon"> Factory Reset </span>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-col>
+              </pv-button>
+            </div>
+          </div>
+        </div>
+      </pv-card>
+    </div>
 
     <!-- Device metrics card -->
-    <v-col>
-      <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
-        <v-card-title class="d-flex justify-space-between">
+    <div class="flex-1">
+      <pv-card class="flex h-full flex-col justify-between">
+        <div class="flex justify-between pb-2 text-lg font-semibold">
           <span>Device Metrics</span>
-        </v-card-title>
-        <v-card-text class="pt-0 flex-0-0 pb-2">
-          <div class="d-flex justify-space-between pb-3">
+        </div>
+        <div class="flex-0-0 pb-4">
+          <div class="flex justify-between pb-3">
             <span>CPU Usage</span>
             <span>{{ Math.round(cpuUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
@@ -437,9 +401,9 @@ watch(metricsHistorySnapshot, () => {
             <MetricsChart id="chart" :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" />
             <template #fallback> Loading... </template>
           </Suspense>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0 pb-2">
-          <div class="d-flex justify-space-between pb-3 pt-3">
+        </div>
+        <div class="flex-0-0 pb-4">
+          <div class="flex justify-between pt-3 pb-3">
             <span>CPU Memory Usage</span>
             <span>{{ Math.round(cpuMemoryUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
@@ -448,9 +412,9 @@ watch(metricsHistorySnapshot, () => {
             <MetricsChart id="chart" :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" />
             <template #fallback> Loading... </template>
           </Suspense>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0 pb-2">
-          <div class="d-flex justify-space-between pb-3 pt-3">
+        </div>
+        <div class="flex-0-0 pb-4">
+          <div class="flex justify-between pt-3 pb-3">
             <span>CPU Temperature</span>
             <span>{{ cpuTempData.at(-1)?.value === -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
@@ -459,14 +423,15 @@ watch(metricsHistorySnapshot, () => {
             <MetricsChart id="chart" :data="cpuTempData" type="temperature" color="red" />
             <template #fallback> Loading... </template>
           </Suspense>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <div class="d-flex justify-space-between pb-3 pt-3">
-            <tooltipped-label
+        </div>
+        <div class="flex-0-0 pb-4">
+          <div class="flex justify-between pt-3 pb-3">
+            <pv-tooltipped-label
               label="Network Usage"
-              icon="mdi-information"
+              :icon="IconInformation"
               location="top"
               tooltip="Measured rate for this coprocessor ONLY. This FMS limit is for ALL robot communication. If you are experiencing bandwidth issues while under this limit, check other sources."
+              class="text-base!"
             />
             <span
               >{{
@@ -480,10 +445,10 @@ watch(metricsHistorySnapshot, () => {
             <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="10" color="green" />
             <template #fallback> Loading... </template>
           </Suspense>
-        </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
+        </div>
+      </pv-card>
+    </div>
+  </div>
 
   <!-- Factory reset modal -->
   <pv-delete-modal
@@ -497,9 +462,9 @@ watch(metricsHistorySnapshot, () => {
   />
 
   <!-- Import settings modal -->
-  <v-dialog
+  <pv-dialog
     v-model="showImportDialog"
-    width="600"
+    :width="600"
     @update:modelValue="
       () => {
         importType = ImportType.AllSettings;
@@ -507,11 +472,11 @@ watch(metricsHistorySnapshot, () => {
       }
     "
   >
-    <v-card color="surface" dark>
-      <v-card-title class="pb-0">Import Settings</v-card-title>
-      <v-card-text>
+    <pv-card>
+      <div class="pb-0 text-lg font-semibold">Import Settings</div>
+      <div>
         Upload and apply previously saved or exported PhotonVision settings to this device
-        <div class="pa-5 pb-0">
+        <div class="pt-4">
           <pv-select
             v-model="importType"
             label="Type"
@@ -526,41 +491,41 @@ watch(metricsHistorySnapshot, () => {
             :select-cols="10"
             style="width: 100%"
           />
-          <v-file-input
+          <pv-file-input
             v-model="importFile"
             class="pb-5"
-            variant="underlined"
+            label="File"
             :disabled="importType === undefined"
-            :error-messages="importType === undefined ? 'Settings type not selected' : ''"
+            :error-message="importType === undefined ? 'Settings type not selected' : ''"
             :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
           />
-          <v-btn
-            color="primary"
+          <pv-button
+            variant="primary"
+            :icon="IconImport"
+            block
             :disabled="importFile === null"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="handleSettingsImport"
           >
-            <v-icon start class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import Settings</span>
-          </v-btn>
+          </pv-button>
         </div>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+      </div>
+    </pv-card>
+  </pv-dialog>
 
-  <v-dialog v-model="offlineUpdateDialog.show" :width="700" dark>
-    <v-card color="surface" flat>
-      <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
-      <v-card-text class="pt-0 pb-10px">
+  <pv-dialog v-model="offlineUpdateDialog.show" :width="700">
+    <pv-card>
+      <div class="text-center text-lg font-semibold">Offline Update</div>
+      <div class="pt-0 pb-3">
         <span> {{ offlineUpdateDialog.confirmString }} </span>
-      </v-card-text>
-      <v-card-text class="pt-10px">
-        <v-row class="align-center text-white">
-          <v-col cols="12">
-            <v-btn
-              color="buttonActive"
-              width="100%"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+      </div>
+      <div class="pt-3">
+        <div class="text-pv-on-surface flex flex-wrap items-center">
+          <div class="w-full">
+            <pv-button
+              variant="primary"
+              :icon="IconUpload"
+              block
               @click="
                 offlineUpdateDialog.show = false;
                 if (offlineUpdate?.files?.length) {
@@ -568,14 +533,13 @@ watch(metricsHistorySnapshot, () => {
                 }
               "
             >
-              <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
               <span class="open-label"> Confirm Update </span>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+            </pv-button>
+          </div>
+        </div>
+      </div>
+    </pv-card>
+  </pv-dialog>
 
   <a
     ref="exportSettings"
@@ -586,13 +550,7 @@ watch(metricsHistorySnapshot, () => {
   />
 </template>
 
-<style scoped lang="scss">
-.v-btn:not(.refresh) {
-  width: 100%;
-}
-.fill-height {
-  height: calc(100% - 12px) !important;
-}
+<style scoped>
 @media only screen and (max-width: 351px) {
   .open-icon {
     margin: 0 !important;

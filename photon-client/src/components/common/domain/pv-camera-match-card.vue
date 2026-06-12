@@ -20,7 +20,7 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
 
 <template>
   <div>
-    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <pv-table>
       <tbody>
         <tr>
           <th></th>
@@ -94,7 +94,7 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td>{{ current.otherPaths }}</td>
         </tr>
       </tbody>
-    </v-table>
+    </pv-table>
   </div>
 </template>
 

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
   type ActivePipelineSettings,
@@ -8,16 +7,11 @@ import {
   ContourTargetOrientation,
   ContourTargetOffsetPointEdge
 } from "@/types/PipelineTypes";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvSlider from "@/components/common/pv-slider.vue";
+
 import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import { useDisplay } from "vuetify";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
-
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 const isTagPipeline = computed(
   () =>
     useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
@@ -56,7 +50,8 @@ const offsetPoints = computed<MetricItem[]>(() => {
 const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
-const { mdAndDown } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
@@ -75,7 +70,7 @@ const interactiveCols = computed(() =>
       :step="1"
       :switch-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputMaximumTargets: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputMaximumTargets: value }, false)
       "
     />
     <pv-switch
@@ -91,7 +86,8 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       :disabled="!isTagPipeline"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
       "
     />
     <pv-switch
@@ -107,7 +103,9 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined &&
+          useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)
       "
     />
     <pv-select
@@ -123,7 +121,8 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
+        (value: ContourTargetOffsetPointEdge) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
       "
     />
     <pv-select
@@ -137,7 +136,8 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+        (value: ContourTargetOrientation) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
     <pv-select
@@ -151,7 +151,8 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
+        (value: RobotOffsetPointMode) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
       "
     />
     <table
@@ -175,76 +176,68 @@ const interactiveCols = computed(() =>
     </table>
     <div
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
-      class="d-flex align-center"
+      class="flex items-center"
     >
-      <v-card-text
+      <div
         v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Single"
-        class="d-flex pa-0 flex-wrap"
+        class="flex flex-wrap p-0"
       >
-        <v-col cols="6" class="pl-0">
-          <v-btn
-            size="small"
+        <div class="w-1/2 pl-0">
+          <pv-button
+            size="sm"
+            variant="primary"
             block
-            color="primary"
-            class="text-black"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
           >
             Take Point
-          </v-btn>
-        </v-col>
-        <v-col cols="6" class="pr-0">
-          <v-btn
-            size="small"
+          </pv-button>
+        </div>
+        <div class="w-1/2 pr-0">
+          <pv-button
+            size="sm"
+            variant="danger"
             block
-            color="error"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
           >
             Clear All Points
-          </v-btn>
-        </v-col>
-      </v-card-text>
-      <v-card-text
+          </pv-button>
+        </div>
+      </div>
+      <div
         v-else-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual"
-        class="d-flex pa-0 flex-wrap"
+        class="flex flex-wrap p-0"
       >
-        <v-col cols="6" lg="4" class="pl-0 pr-2">
-          <v-btn
-            size="small"
+        <div class="w-1/2 pr-2 pl-0 lg:w-1/3">
+          <pv-button
+            size="sm"
+            variant="primary"
             block
-            color="primary"
-            class="text-black"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
           >
             Take First Point
-          </v-btn>
-        </v-col>
-        <v-col cols="6" lg="4" class="pl-2 pr-0 pr-lg-2">
-          <v-btn
-            size="small"
+          </pv-button>
+        </div>
+        <div class="w-1/2 pr-0 pl-2 lg:w-1/3 lg:pr-2">
+          <pv-button
+            size="sm"
+            variant="primary"
             block
-            color="primary"
-            class="text-black"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
           >
             Take Second Point
-          </v-btn>
-        </v-col>
-        <v-col cols="12" lg="4" class="pl-0 pl-lg-2 pr-0">
-          <v-btn
-            size="small"
+          </pv-button>
+        </div>
+        <div class="w-full pr-0 pl-0 lg:w-1/3 lg:pl-2">
+          <pv-button
+            size="sm"
+            variant="danger"
             block
-            color="error"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
           >
             Clear All Points
-          </v-btn>
-        </v-col>
-      </v-card-text>
+          </pv-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -269,6 +262,6 @@ const interactiveCols = computed(() =>
 .metric-item-title {
   font-size: 18px;
   text-decoration: underline;
-  text-decoration-color: rgb(var(--v-theme-primary));
+  text-decoration-color: var(--color-pv-primary);
 }
 </style>

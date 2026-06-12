@@ -2,9 +2,10 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
+import IconFolder from "~icons/mdi/folder";
+import IconInformationOutline from "~icons/mdi/information-outline";
+import IconEye from "~icons/mdi/eye";
+import IconDownload from "~icons/mdi/download";
 
 interface SnapshotMetadata {
   snapshotName: string;
@@ -94,97 +95,81 @@ const expanded = ref([]);
 </script>
 
 <template>
-  <v-card color="surface" class="rounded-12">
-    <v-card-title>Camera Control</v-card-title>
-    <v-card-text class="pt-0">
-      <v-btn
-        color="buttonPassive"
-        :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-        @click="fetchSnapshots"
-      >
-        <v-icon start class="open-icon" size="large"> mdi-folder </v-icon>
+  <pv-card>
+    <div class="pb-2 text-base font-semibold">Camera Control</div>
+    <div class="pt-1">
+      <pv-button variant="passive" :icon="IconFolder" block @click="fetchSnapshots">
         <span class="open-label">Show Saved Snapshots</span>
-      </v-btn>
-    </v-card-text>
-    <v-dialog v-model="showSnapshotViewerDialog">
-      <v-card color="surface" flat>
-        <v-card-title> Saved Frame Snapshots </v-card-title>
-        <v-card-text v-if="imgData.length === 0" class="pt-0">
-          <v-alert
+      </pv-button>
+    </div>
+    <pv-dialog v-model="showSnapshotViewerDialog" :width="1500">
+      <pv-card>
+        <div class="pb-2 text-lg font-semibold">Saved Frame Snapshots</div>
+        <div v-if="imgData.length === 0" class="pt-0">
+          <pv-alert
             color="buttonPassive"
-            density="compact"
             text="There are currently no saved snapshots."
-            icon="mdi-information-outline"
-            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+            :icon="IconInformationOutline"
+            variant="tonal"
           />
-        </v-card-text>
-        <v-card-text v-else class="pt-0">
-          <v-alert
+        </div>
+        <div v-else class="pt-0">
+          <pv-alert
             closable
             color="buttonPassive"
-            density="compact"
             text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
-            icon="mdi-information-outline"
-            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+            :icon="IconInformationOutline"
+            variant="tonal"
+            class="mb-2"
           />
-          <v-data-table
+          <pv-data-table
             v-model:expanded="expanded"
-            :headers="[
-              { title: 'Snapshot Name', key: 'snapshotShortName', sortable: false },
-              { title: 'Camera Unique Name', key: 'cameraUniqueName' },
-              { title: 'Camera Nickname', key: 'cameraNickname' },
-              { title: 'Stream Type', key: 'streamType' },
-              { title: 'Time Created', key: 'timeCreated' },
-              { title: 'Actions', key: 'actions', sortable: false }
+            :columns="[
+              { header: 'Snapshot Name', accessorKey: 'snapshotShortName', enableSorting: false },
+              { header: 'Camera Unique Name', accessorKey: 'cameraUniqueName' },
+              { header: 'Camera Nickname', accessorKey: 'cameraNickname' },
+              { header: 'Stream Type', accessorKey: 'streamType' },
+              { header: 'Time Created', accessorKey: 'timeCreated' },
+              { header: 'Actions', accessorKey: 'actions', enableSorting: false }
             ]"
-            :items="imgData"
-            :group-by="[{ key: 'cameraUniqueName' }]"
-            class="elevation-0"
+            :data="imgData"
+            :grouping="['cameraUniqueName']"
             item-value="index"
             show-expand
           >
-            <template #item.data-table-expand="{ internalItem, toggleExpand }">
-              <v-btn
-                icon="mdi-eye"
-                class="text-none"
-                color="medium-emphasis"
-                size="small"
-                variant="text"
-                slim
-                @click="toggleExpand(internalItem)"
-              ></v-btn>
+            <template #item.data-table-expand="{ toggleExpand }">
+              <pv-button
+                size="icon"
+                variant="ghost"
+                :icon="IconEye"
+                class="text-pv-on-surface/70 hover:text-pv-on-surface"
+                @click="toggleExpand()"
+              />
             </template>
 
             <template #expanded-row="{ item, columns }">
               <td :colspan="columns.length">
                 <div style="display: flex; justify-content: center; width: 100%">
-                  <img :src="item.snapshotSrc" alt="snapshot-image" class="snapshot-preview pt-2 pb-2" />
+                  <img :src="(item as Snapshot).snapshotSrc" alt="snapshot-image" class="snapshot-preview pt-2 pb-2" />
                 </div>
               </td>
             </template>
-            <!-- eslint-disable-next-line vue/valid-v-slot-->
             <template #item.actions="{ item }">
               <div style="display: flex; justify-content: center">
-                <a :download="item.snapshotName" :href="item.snapshotSrc">
-                  <v-icon size="small"> mdi-download </v-icon>
+                <a :download="(item as Snapshot).snapshotName" :href="(item as Snapshot).snapshotSrc">
+                  <pv-icon size="small" :icon="IconDownload" />
                 </a>
               </div>
             </template>
-          </v-data-table>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-  </v-card>
+          </pv-data-table>
+        </div>
+      </pv-card>
+    </pv-dialog>
+  </pv-card>
 </template>
 
-<style scoped lang="scss">
-.v-divider {
-  border-color: white !important;
-}
-.v-btn {
-  width: 100%;
-}
-.v-table {
+<style scoped>
+.pv-table {
   text-align: center;
 
   th,
@@ -204,7 +189,7 @@ const expanded = ref([]);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--v-theme-accent));
+    background-color: var(--color-pv-accent);
     border-radius: 10px;
   }
 }
@@ -218,10 +203,12 @@ const expanded = ref([]);
     max-width: 100%;
   }
 }
+
 @media only screen and (max-width: 351px) {
   .open-icon {
     margin: 0 !important;
   }
+
   .open-label {
     display: none;
   }

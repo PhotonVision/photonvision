@@ -13,17 +13,14 @@ const logColorClass = computed<string>(() => {
     case LogLevel.INFO:
       return "text-light-blue";
     case LogLevel.DEBUG:
-      return "text-white";
+      return "text-pv-on-surface";
   }
   return "";
 });
 </script>
 
 <template>
-  <div :class="logColorClass">[{{ source.timestamp.toTimeString().split(" ")[0] }}] {{ source.message }}</div>
+  <div class="whitespace-pre-wrap" :class="logColorClass">
+    [{{ source.timestamp.toTimeString().split(" ")[0] }}] {{ source.message }}
+  </div>
 </template>
-<style scoped>
-div {
-  white-space: pre-wrap;
-}
-</style>

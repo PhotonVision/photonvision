@@ -1,23 +1,25 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType, type ArucoPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
-import PvSlider from "@/components/common/pv-slider.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
-import PvSelect from "@/components/common/pv-select.vue";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { useDisplay } from "vuetify";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
 const currentPipelineSettings = computed<ArucoPipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings as ArucoPipelineSettings
 );
-const { mdAndDown } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
+
+const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
+  Array.isArray(value) ? value : [value.first, value.second];
 </script>
 
 <template>
@@ -30,7 +32,9 @@ const interactiveCols = computed(() =>
         { value: AprilTagFamily.Family16h5, name: 'AprilTag 16h5 (6in)' }
       ]"
       :select-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
+      @update:modelValue="
+        (value: AprilTagFamily) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)
+      "
     />
     <pv-range-slider
       v-model="currentPipelineSettings.threshWinSizes"
@@ -41,7 +45,8 @@ const interactiveCols = computed(() =>
       :slider-cols="interactiveCols"
       :step="2"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshWinSizes: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ threshWinSizes: normalizeNumberPair(value) }, false)
       "
     />
     <pv-slider
@@ -53,7 +58,7 @@ const interactiveCols = computed(() =>
       :max="128"
       :step="1"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshStepSize: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshStepSize: value }, false)
       "
     />
     <pv-slider
@@ -65,7 +70,7 @@ const interactiveCols = computed(() =>
       :max="128"
       :step="1"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)
       "
     />
     <pv-switch
@@ -74,7 +79,9 @@ const interactiveCols = computed(() =>
       tooltip="Further refine the initial corners with subpixel accuracy."
       :switch-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined &&
+          useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)
       "
     />
     <pv-switch
@@ -83,7 +90,8 @@ const interactiveCols = computed(() =>
       tooltip="Display the first threshold step to the color stream."
       :switch-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)
       "
     />
   </div>

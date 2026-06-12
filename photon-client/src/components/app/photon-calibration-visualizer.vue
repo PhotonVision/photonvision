@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
+
+import { useTheme } from "@/composables/useTheme";
 import type {
   Scene as SceneType,
   PerspectiveCamera as PerspectiveCameraType,
@@ -28,7 +30,6 @@ const { TrackballControls } = await import("three/examples/jsm/controls/Trackbal
 import type { BoardObservation, CameraCalibrationResult } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useTheme } from "vuetify";
 import { createPerspectiveCamera } from "@/lib/ThreeUtils";
 
 const theme = useTheme();
@@ -207,20 +208,27 @@ onMounted(async () => {
 
   const canvas = document.getElementById("view");
   if (!canvas) return;
-  renderer = new WebGLRenderer({ canvas: canvas });
+  renderer = new WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
 
   // Add lights
   const ambientLight = new AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  if (theme.global.current.value.dark) scene.background = new Color(0x000000);
-  else scene.background = new Color(0xa9a9a9);
+  if (theme.isDark.value) scene.background = new Color(0x151515);
+  else scene.background = new Color(0x232c37);
 
   // Initialize a stable aspect ratio so subsequent resize events derive
   // height from width, avoiding layout feedback during continuous resizing
   try {
     const initWidth = Math.max(1, Math.floor(document.getElementById("container")?.clientWidth || 1));
-    const initHeight = Math.max(1, Math.floor(document.getElementById("container")?.clientHeight || 1));
+    const initHeight = Math.max(
+      1,
+      Math.floor(
+        (document.getElementById("container")?.clientHeight || 1) -
+          (document.querySelector(".buttons")?.clientHeight || 0)
+      )
+    );
     baseAspect = initWidth / Math.max(1, initHeight);
   } catch {
     baseAspect = undefined;
@@ -331,6 +339,14 @@ watchEffect(() => {
 });
 
 watch(
+  () => theme.isDark.value,
+  () => {
+    if (!scene) return;
+    scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
+  }
+);
+
+watch(
   () => [
     props.cameraUniqueName,
     props.resolution.width,
@@ -345,36 +361,22 @@ watch(
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%" class="d-flex flex-column">
-    <div class="d-flex flex-wrap pt-0 pb-2">
-      <v-col cols="12" md="6" class="pl-0">
-        <v-card-title class="pa-0">
-          {{ props.title }}
-        </v-card-title>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCamFirstPerson"
-        >
-          First Person
-        </v-btn>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCamThirdPerson"
-        >
-          Third Person
-        </v-btn>
-      </v-col>
+  <div style="width: 100%; height: 100%" class="flex flex-col">
+    <div class="flex flex-wrap items-center py-2">
+      <div class="flex-1 pl-0 text-base font-semibold">
+        {{ props.title }}
+      </div>
     </div>
     <div id="container" style="flex: 1 1 auto">
-      <canvas id="view" class="w-100 h-100" />
+      <canvas id="view" class="h-auto max-w-full rounded-xl border border-white/10" />
+      <div class="buttons flex gap-2 pt-2">
+        <div class="flex items-center">
+          <pv-button variant="primary" @click="resetCamFirstPerson"> First Person </pv-button>
+        </div>
+        <div class="flex items-center">
+          <pv-button variant="primary" @click="resetCamThirdPerson"> Third Person </pv-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

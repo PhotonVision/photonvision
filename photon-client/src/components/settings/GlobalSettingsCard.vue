@@ -1,17 +1,27 @@
 <script setup lang="ts">
+import IconPaletteOutline from "~icons/mdi/palette-outline";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
+import IconInformationOutline from "~icons/mdi/information-outline";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { computed, ref, watchEffect } from "vue";
-import PvInput from "@/components/common/pv-input.vue";
-import PvRadio from "@/components/common/pv-radio.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvSelect from "@/components/common/pv-select.vue";
+import { computed, reactive, ref, watchEffect } from "vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
 import { getThemeColor, setThemeColor, resetTheme } from "@/lib/ThemeManager";
 import { statusCheck } from "@/lib/PhotonUtils";
-
-const theme = useTheme();
+import type { Color } from "reka-ui";
+import {
+  ColorAreaArea,
+  ColorAreaRoot,
+  ColorAreaThumb,
+  ColorFieldInput,
+  ColorFieldRoot,
+  ColorSliderRoot,
+  ColorSliderThumb,
+  ColorSliderTrack,
+  ColorSwatch,
+  colorToString,
+  normalizeColor
+} from "reka-ui";
 
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
@@ -19,20 +29,52 @@ const resetTempSettingsStruct = () => {
   tempSettingsStruct.value = Object.assign({}, useSettingsStore().network);
 };
 
-const settingsValid = ref(true);
+const settingsValid = computed(() => {
+  const network = useSettingsStore().network;
+
+  const ntServerValid = network.runNTServer || isValidNetworkTablesIP(network.ntServerAddress);
+  const staticIpValid =
+    network.networkingDisabled ||
+    network.connectionType !== NetworkConnectionType.Static ||
+    !network.shouldManage ||
+    !network.canManage ||
+    isValidIPv4(network.staticIp);
+  const hostnameValid =
+    network.networkingDisabled || !network.shouldManage || !network.canManage || isValidHostname(network.hostname);
+
+  return ntServerValid && staticIpValid && hostnameValid;
+});
 
 const showThemeConfig = ref(false);
-const backgroundColor = ref("");
-const primaryColor = ref("");
-const secondaryColor = ref("");
-const surfaceColor = ref("");
+
+const themeColors = [
+  { label: "Background", key: "background" },
+  { label: "Surface", key: "surface" },
+  { label: "Primary", key: "primary" },
+  { label: "Secondary", key: "secondary" }
+] as const;
+
+const colorObjects = reactive<Record<string, Color>>({});
 
 const loadCurrentColors = () => {
-  backgroundColor.value = getThemeColor(theme, "background");
-  primaryColor.value = getThemeColor(theme, "primary");
-  secondaryColor.value = getThemeColor(theme, "secondary");
-  surfaceColor.value = getThemeColor(theme, "surface");
+  for (const { key } of themeColors) {
+    colorObjects[key] = normalizeColor(getThemeColor(key));
+  }
 };
+
+function handleColorUpdate(key: string, newColor: Color) {
+  colorObjects[key] = newColor;
+  setThemeColor(key as "background" | "surface" | "primary" | "secondary", colorToString(newColor, "hex"));
+}
+
+function handleHexUpdate(key: string, hex: string) {
+  colorObjects[key] = normalizeColor(hex);
+  setThemeColor(key as "background" | "surface" | "primary" | "secondary", hex);
+}
+
+function getHexColor(key: string): string {
+  return colorObjects[key] ? colorToString(colorObjects[key], "hex") : "#000000";
+}
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-99999 (5 digits)
@@ -165,11 +207,13 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card class="mb-3 rounded-12" color="surface">
-    <v-card-title style="display: flex; justify-content: space-between">
-      <span>Global Settings</span>
-      <v-btn
+  <pv-card class="mb-3">
+    <div class="flex items-center justify-between pb-2">
+      <div class="text-lg font-semibold">Global Settings</div>
+      <pv-button
         variant="text"
+        size="sm"
+        :icon="IconPaletteOutline"
         @click="
           () => {
             loadCurrentColors();
@@ -177,13 +221,12 @@ watchEffect(() => {
           }
         "
       >
-        <v-icon size="x-large">mdi-palette-outline</v-icon>
         Theme
-      </v-btn>
-    </v-card-title>
-    <div class="pa-5 pt-0">
-      <v-card-title class="pl-0 pt-0 pb-10px">Networking</v-card-title>
-      <v-form v-model="settingsValid">
+      </pv-button>
+    </div>
+    <div class="pt-0">
+      <div class="pb-3 text-base font-semibold">Networking</div>
+      <div>
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
           label="Team Number/NetworkTables Server Address"
@@ -192,18 +235,16 @@ watchEffect(() => {
           :disabled="tempSettingsStruct.runNTServer"
           :rules="[
             (v) =>
-              isValidNetworkTablesIP(v) ||
+              (typeof v === 'string' && isValidNetworkTablesIP(v)) ||
               'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname'
           ]"
         />
-        <v-alert
+        <pv-alert
           v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           class="pt-3 pb-3"
           color="error"
-          density="compact"
           text="The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect."
-          icon="mdi-alert-circle-outline"
-          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          :icon="IconAlertCircleOutline"
         />
         <pv-radio
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -224,7 +265,7 @@ watchEffect(() => {
           v-model="tempSettingsStruct.staticIp"
           :input-cols="12 - 4"
           label="Static IP"
-          :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
+          :rules="[(v) => (typeof v === 'string' && isValidIPv4(v)) || 'Invalid IPv4 address']"
           :disabled="
             !tempSettingsStruct.shouldManage ||
             !useSettingsStore().network.canManage ||
@@ -236,14 +277,14 @@ watchEffect(() => {
           v-model="tempSettingsStruct.hostname"
           label="Hostname"
           :input-cols="12 - 4"
-          :rules="[(v) => isValidHostname(v) || 'Invalid hostname']"
+          :rules="[(v) => (typeof v === 'string' && isValidHostname(v)) || 'Invalid hostname']"
           :disabled="
             !tempSettingsStruct.shouldManage ||
             !useSettingsStore().network.canManage ||
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-card-title class="pl-0 pt-3 pb-10px">Advanced Networking</v-card-title>
+        <div class="pt-3 pb-3 text-base font-semibold">Advanced Networking</div>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -265,7 +306,7 @@ watchEffect(() => {
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
         />
-        <v-alert
+        <pv-alert
           v-if="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
@@ -274,10 +315,8 @@ watchEffect(() => {
           "
           class="pt-3 pb-3"
           color="error"
-          density="compact"
           text="Cannot detect any wired connections! Send program logs to the developers for help."
-          icon="mdi-alert-circle-outline"
-          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          :icon="IconAlertCircleOutline"
         />
         <pv-switch
           v-model="tempSettingsStruct.runNTServer"
@@ -285,124 +324,128 @@ watchEffect(() => {
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
           :label-cols="4"
         />
-        <v-alert
+        <pv-alert
           v-if="tempSettingsStruct.runNTServer"
           color="buttonActive"
-          density="compact"
           text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
-          icon="mdi-information-outline"
-          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          :icon="IconInformationOutline"
         />
-        <v-card-title class="pl-0 pt-3 pb-10px">Miscellaneous</v-card-title>
+        <div class="pt-3 pb-3 text-base font-semibold">Miscellaneous</div>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
           :label-cols="4"
         />
-        <v-alert
+        <pv-alert
           v-if="tempSettingsStruct.shouldPublishProto"
           color="buttonActive"
-          density="compact"
           text="This mode is intended for debugging and may reduce performance; it should be off for field use."
-          icon="mdi-information-outline"
-          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          :icon="IconInformationOutline"
         />
-      </v-form>
-      <v-btn
-        color="primary"
+      </div>
+      <pv-button
+        variant="primary"
         class="mt-3"
-        :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-        style="color: black; width: 100%"
+        block
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"
       >
         Save
-      </v-btn>
+      </pv-button>
     </div>
-    <v-dialog v-model="showThemeConfig" width="800" dark>
-      <v-card color="surface" flat>
-        <v-card-title class="text-center">Theme Configuration</v-card-title>
-        <v-card-text class="pt-0 pb-10px">
-          <v-row>
-            <v-col class="text-center">
-              Background
-              <v-color-picker
-                v-model:model-value="backgroundColor"
-                class="ma-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                @update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
-              ></v-color-picker>
-            </v-col>
-            <v-col class="text-center">
-              Surface
-              <v-color-picker
-                v-model:model-value="surfaceColor"
-                class="ma-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                @update:model-value="(hex) => setThemeColor(theme, 'surface', hex)"
-              ></v-color-picker>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col class="text-center">
-              Primary
-              <v-color-picker
-                v-model:model-value="primaryColor"
-                class="ma-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                @update:model-value="(hex) => setThemeColor(theme, 'primary', hex)"
-              ></v-color-picker>
-            </v-col>
-            <v-col class="text-center">
-              Secondary
-              <v-color-picker
-                v-model:model-value="secondaryColor"
-                class="ma-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                @update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
-              ></v-color-picker>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-actions class="pa-5 pt-0">
-          <v-btn
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            color="buttonPassive"
-            class="text-black"
-            @click="showThemeConfig = false"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            color="buttonActive"
-            class="text-black"
+    <pv-dialog v-model="showThemeConfig" width="800">
+      <pv-card>
+        <div class="pb-3 text-center text-lg font-semibold">Theme Configuration</div>
+        <div class="pt-0 pb-3">
+          <div class="flex flex-wrap justify-center gap-4">
+            <div v-for="{ label, key } in themeColors" :key="key" class="flex w-45 flex-col items-center gap-2">
+              <div class="flex items-center gap-2">
+                <ColorSwatch
+                  :color="getHexColor(key)"
+                  class="h-5 w-5 rounded-sm border border-white/10"
+                  :style="{ backgroundColor: 'var(--reka-color-swatch-color)' }"
+                />
+                <span class="text-sm font-medium">{{ label }}</span>
+              </div>
+
+              <!-- 2D Color Area (Saturation/Lightness) -->
+              <ColorAreaRoot
+                v-slot="{ style }"
+                :model-value="colorObjects[key]"
+                color-space="hsl"
+                x-channel="saturation"
+                y-channel="lightness"
+                class="relative w-full"
+                @update:color="(c: Color) => handleColorUpdate(key, c)"
+              >
+                <ColorAreaArea class="relative h-30 w-full overflow-hidden rounded-md" :style="style">
+                  <ColorAreaThumb
+                    class="block h-4 w-4 cursor-pointer rounded-full border-2 border-white bg-white shadow-md"
+                  />
+                </ColorAreaArea>
+              </ColorAreaRoot>
+
+              <!-- Hue Slider -->
+              <ColorSliderRoot
+                :model-value="colorObjects[key]"
+                channel="hue"
+                color-space="hsl"
+                class="relative flex h-4 w-full items-center"
+                @update:color="(c: Color) => handleColorUpdate(key, c)"
+              >
+                <ColorSliderTrack class="relative h-2 flex-1 rounded-full">
+                  <div class="hue-gradient absolute inset-0 rounded-full" />
+                </ColorSliderTrack>
+                <ColorSliderThumb
+                  class="block h-4 w-4 cursor-pointer rounded-full border-2 border-white bg-white shadow-md"
+                />
+              </ColorSliderRoot>
+
+              <!-- Hex Input -->
+              <ColorFieldRoot
+                :model-value="getHexColor(key)"
+                class="w-full"
+                @update:model-value="(hex: string) => handleHexUpdate(key, hex)"
+              >
+                <ColorFieldInput
+                  class="w-full rounded-md border border-gray-600 bg-transparent px-2 py-1 text-center font-mono text-sm"
+                  placeholder="#000000"
+                />
+              </ColorFieldRoot>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap justify-end gap-3 pt-0">
+          <pv-button variant="passive" @click="showThemeConfig = false"> Close </pv-button>
+          <pv-button
+            variant="primary"
             @click="
               () => {
-                resetTheme(theme);
+                resetTheme();
                 loadCurrentColors();
               }
             "
           >
             Reset Default
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-card>
+          </pv-button>
+        </div>
+      </pv-card>
+    </pv-dialog>
+  </pv-card>
 </template>
 
-<style>
-.mt-10px {
-  margin-top: 10px !important;
+<style scoped>
+.hue-gradient {
+  background: linear-gradient(
+    to right,
+    #ff0000 0%,
+    #ffff00 17%,
+    #00ff00 33%,
+    #00ffff 50%,
+    #0000ff 67%,
+    #ff00ff 83%,
+    #ff0000 100%
+  );
 }
 </style>
