@@ -101,10 +101,15 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>
     </pv-alert>
-    <pv-alert v-if="fpsLimitWarningShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
-      <span
-        >{{ fpsLimitedCameras }} have an FPS limit set! This may cause performance issues. Check your logs for more
+    <pv-alert v-if="fpsLimitedCameras" class="mb-3" color="error" :icon="IconAlertCircleOutline">
+      <span>
+        {{ fpsLimitedCameras }} have an FPS limit set! This may cause performance issues. Check your logs for more
         information.
+      </span>
+    </pv-alert>
+    <pv-alert v-if="disabledCameras" class="mb-3" color="error" :icon="IconAlertCircleOutline">
+      <span>
+        {{ disabledCameras }} are disabled! This may cause performance issues. Check your logs for more information.
       </span>
     </pv-alert>
     <pv-alert v-if="conflictingCameraShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
