@@ -12,7 +12,7 @@ export interface ToggleItem<TValue extends string> {
 
 const model = defineModel<string[] | string>({ required: true });
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     items: ToggleItem<string>[];
     multiple?: boolean;
@@ -30,6 +30,11 @@ const normalizedModel = computed({
     model.value = value;
   }
 });
+
+const isSelected = (value: string) =>
+  Array.isArray(normalizedModel.value) ? normalizedModel.value.includes(value) : normalizedModel.value === value;
+
+const isSelectionLocked = (value: string) => !props.multiple && isSelected(value) || (props.multiple && Array.isArray(normalizedModel.value) && normalizedModel.value.length === 1 && isSelected(value));
 </script>
 
 <template>
@@ -45,7 +50,13 @@ const normalizedModel = computed({
       :key="item.value"
       :value="item.value"
       :disabled="disabled || item.disabled"
-      class="focus-visible:ring-pv-primary/50 data-[state=on]:border-pv-button-active data-[state=on]:bg-pv-button-active text-pv-on-surface/88 inline-flex min-h-11 w-full items-center justify-center gap-2 border border-white/12 bg-black/15 px-4 py-2 text-sm font-semibold shadow-sm transition outline-none first:rounded-t-xl last:rounded-b-xl hover:bg-white/6 focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-45 data-[state=on]:z-10 data-[state=on]:text-slate-950 sm:first:rounded-l-xl sm:first:rounded-tr-none sm:last:rounded-r-xl sm:last:rounded-bl-none"
+      :aria-current="isSelectionLocked(item.value) ? 'true' : undefined"
+      :class="[
+        'focus-visible:ring-pv-primary/50 data-[state=on]:border-pv-button-active data-[state=on]:bg-pv-button-active text-pv-on-surface/88 inline-flex min-h-11 w-full items-center justify-center gap-2 border border-white/12 bg-black/15 px-4 py-2 text-sm font-semibold shadow-sm transition outline-none first:rounded-t-xl last:rounded-b-xl hover:bg-white/6 focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-45 data-[state=on]:z-10 data-[state=on]:text-slate-950 sm:first:rounded-l-xl sm:first:rounded-tr-none sm:last:rounded-r-xl sm:last:rounded-bl-none',
+        isSelectionLocked(item.value)
+          ? 'cursor-not-allowed data-[state=on]:ring-1 data-[state=on]:ring-white/45 data-[state=on]:brightness-95 data-[state=on]:hover:bg-pv-button-active'
+          : 'enabled:cursor-pointer'
+      ]"
     >
       <component :is="item.icon" v-if="item.icon" class="mode-btn-icon size-5" aria-hidden="true" />
       <span class="mode-btn-label">{{ item.label }}</span>
