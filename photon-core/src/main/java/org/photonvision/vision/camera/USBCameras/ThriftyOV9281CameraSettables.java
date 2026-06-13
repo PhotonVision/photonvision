@@ -27,6 +27,11 @@ public class ThriftyOV9281CameraSettables extends GenericUSBCameraSettables {
 
     public ThriftyOV9281CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration, camera);
+    }
+    
+    @Override
+    protected void setUpExposureProperties() {
+        super.setUpExposureProperties();
 
         // Fix the exposure lower and upper limits
         // The minimum usable exposure is above the UI default of 20, so
