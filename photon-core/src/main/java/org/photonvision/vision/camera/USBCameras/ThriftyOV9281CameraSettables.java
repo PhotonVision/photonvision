@@ -17,23 +17,21 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.vision.camera.UsbCamera;
-import org.wpilib.vision.camera.VideoMode;
 
 public class ThriftyOV9281CameraSettables extends GenericUSBCameraSettables {
 
     public ThriftyOV9281CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration, camera);
     }
-    
+
     @Override
     protected void setUpExposureProperties() {
         super.setUpExposureProperties();
 
-        // Fix the exposure lower and upper limits
+        // Fix the exposure lower and upper limits.
         // The minimum usable exposure is above the UI default of 20, so
         // the user is expected to increase exposure until the camera can
         // pick up an image correctly.
@@ -48,16 +46,10 @@ public class ThriftyOV9281CameraSettables extends GenericUSBCameraSettables {
         // Filter out YUYV modes. The Sunplus SPCA2688 ISP's MJPEG encoder
         // breaks permanently if a YUYV↔MJPEG format switch occurs.
         // Only MJPEG modes (120fps) are usable; YUYV modes are 5-30fps anyway.
-        HashMap<Integer, VideoMode> mjpegOnly = new HashMap<>();
-        int newIdx = 0;
-        for (var entry : videoModes.entrySet()) {
-            if (entry.getValue().pixelFormat == PixelFormat.kMJPEG) {
-                mjpegOnly.put(newIdx++, entry.getValue());
-            }
-        }
-        if (!mjpegOnly.isEmpty()) {
-            videoModes = mjpegOnly;
-            logger.info("Filtered to " + mjpegOnly.size() + " MJPEG-only modes (YUYV removed)");
+        int originalSize = videoModes.size();
+        videoModes.removeIf(m -> m.pixelFormat != PixelFormat.MJPEG);
+        if (videoModes.size() < originalSize) {
+            logger.info("Filtered to " + videoModes.size() + " MJPEG-only modes (YUYV removed)");
         }
     }
 
