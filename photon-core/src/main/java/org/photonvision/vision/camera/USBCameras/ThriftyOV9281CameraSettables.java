@@ -25,15 +25,15 @@ import org.wpilib.vision.camera.VideoMode;
 
 public class ThriftyOV9281CameraSettables extends GenericUSBCameraSettables {
 
-    // The Sunplus SPCA2688 ISP only accepts these discrete exposure values.
-    // Any other value produces a completely black frame in MJPEG mode.
-    // Values are in V4L2 exposure_time_absolute units (100µs each).
-    private static final int[] DISCRETE_EXPOSURES = {
-        5, 10, 20, 39, 78, 156, 312, 625, 1250, 2500, 5000
-    };
-
     public ThriftyOV9281CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
         super(configuration, camera);
+
+        // Fix the exposure lower and upper limits
+        // The minimum usable exposure is above the UI default of 20, so
+        // the user is expected to increase exposure until the camera can
+        // pick up an image correctly.
+        this.minExposure = 1;
+        this.maxExposure = 2400;
     }
 
     @Override
@@ -57,17 +57,6 @@ public class ThriftyOV9281CameraSettables extends GenericUSBCameraSettables {
     }
 
     @Override
-    protected void setUpExposureProperties() {
-        autoExposureProp = findProperty("exposure_auto", "auto_exposure").orElse(null);
-        exposureAbsProp =
-                findProperty("raw_exposure_time_absolute", "raw_exposure_absolute").orElse(null);
-
-        // Expose the discrete range bounds to the PV UI slider.
-        this.minExposure = DISCRETE_EXPOSURES[0];
-        this.maxExposure = DISCRETE_EXPOSURES[DISCRETE_EXPOSURES.length - 1];
-    }
-
-    @Override
     public void setAllCamDefaults() {
         // Disable continuous autofocus BEFORE super tries to set focus_absolute
         softSet("focus_automatic_continuous", 0);
@@ -86,39 +75,5 @@ public class ThriftyOV9281CameraSettables extends GenericUSBCameraSettables {
         if (!cameraAutoExposure) {
             setExposureRaw(this.lastExposureRaw);
         }
-    }
-
-    @Override
-    public void setExposureRaw(double exposureRaw) {
-        if (exposureRaw >= 0.0 && exposureAbsProp != null) {
-            int snapped = snapToDiscreteExposure((int) Math.round(exposureRaw));
-            logger.debug(
-                    "ThriftyOV9281: Setting "
-                            + exposureAbsProp.getName()
-                            + " to "
-                            + snapped
-                            + " (requested "
-                            + exposureRaw
-                            + ")");
-            exposureAbsProp.set(snapped);
-            this.lastExposureRaw = snapped;
-        }
-    }
-
-    /**
-     * Snap a requested exposure value to the nearest valid discrete value. The Sunplus SPCA2688 ISP
-     * only responds to specific exposure values; any other value produces a completely black frame.
-     */
-    private static int snapToDiscreteExposure(int requested) {
-        int closest = DISCRETE_EXPOSURES[0];
-        int minDist = Math.abs(requested - closest);
-        for (int discrete : DISCRETE_EXPOSURES) {
-            int dist = Math.abs(requested - discrete);
-            if (dist < minDist) {
-                minDist = dist;
-                closest = discrete;
-            }
-        }
-        return closest;
     }
 }
