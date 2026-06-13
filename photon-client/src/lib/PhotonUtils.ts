@@ -1,5 +1,5 @@
 import { useStateStore } from "@/stores/StateStore";
-import type { PVCameraInfo, Resolution } from "@/types/SettingTypes";
+import type { Resolution } from "@/types/SettingTypes";
 import axios, { type AxiosRequestConfig } from "axios";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
@@ -108,24 +108,4 @@ export const axiosPost = async (
     }
     return false;
   }
-};
-
-type CameraInfoDetails = Partial<
-  NonNullable<PVCameraInfo["PVUsbCameraInfo"]> &
-    NonNullable<PVCameraInfo["PVCSICameraInfo"]> &
-    NonNullable<PVCameraInfo["PVFileCameraInfo"]>
->;
-
-export const cameraInfoFor = (camera: PVCameraInfo | null): CameraInfoDetails => {
-  if (!camera) return {};
-  if (camera.PVUsbCameraInfo) {
-    return camera.PVUsbCameraInfo;
-  }
-  if (camera.PVCSICameraInfo) {
-    return camera.PVCSICameraInfo;
-  }
-  if (camera.PVFileCameraInfo) {
-    return camera.PVFileCameraInfo;
-  }
-  return {};
 };

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from wpimath.geometry import Transform3d
+from wpimath import Transform3d
 
 from ..packet import Packet
 from .TargetCorner import TargetCorner

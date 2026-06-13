@@ -23,73 +23,73 @@ jobs:
 
   # build-examples:
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         - os: windows-2022
-  #           artifact-name: Win64
-  #         - os: macos-14
-  #           artifact-name: macOS
-  #         - os: ubuntu-24.04
-  #           artifact-name: Linux
+  #     strategy:
+  #       fail-fast: false
+  #       matrix:
+  #         include:
+  #           - os: windows-2022
+  #             artifact-name: Win64
+  #           - os: macos-14
+  #             artifact-name: macOS
+  #           - os: ubuntu-24.04
+  #             artifact-name: Linux
 
-  #   name: "Photonlib - Build Examples - ${{ matrix.os }}"
-  #   runs-on: ${{ matrix.os }}
-  #   needs: [build-photonlib-host, build-photonlib-docker]
+  #     name: "Photonlib - Build Examples - ${{ matrix.os }}"
+  #     runs-on: ${{ matrix.os }}
+  #     needs: [build-photonlib-host, build-photonlib-docker]
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v6
-  #       with:
-  #         fetch-depth: 0
-  #     - name: Fetch tags
-  #       run: git fetch --tags --force
-  #     - uses: actions/setup-java@v5
-  #       with:
-  #         java-version: 25
-  #         distribution: temurin
-  #     - name: Install SystemCore Toolchain
-  #       run: ./gradlew installSystemCoreToolchain
-  #     - name: Delete duplicate toolchains
-  #       run: |
-  #         find ~/.gradle/cache/ -name *bookworm* -exec rm -rf {} +
-  #         du -h . | sort -h
-  #       if: matrix.os == 'ubuntu-24.04'
-  #     # Download prebuilt photonlib artifacts
-  #     - uses: actions/download-artifact@v7
-  #       with:
-  #         name: maven-${{ matrix.artifact-name }}
-  #     - uses: actions/download-artifact@v7
-  #       with:
-  #         name: maven-Athena
-  #     - name: Move to maven local
-  #       run: |
-  #         mkdir -p ~/.m2/repository/
-  #         mv maven/org ~/.m2/repository/
-  #     - name: Copy vendordeps
-  #       shell: bash
-  #       run: |
-  #         for vendordep_folder in photonlib-*-examples/*/; do
-  #         # Remove trailing slash for cross-platform compatibility
-  #           vendordep_folder="${vendordep_folder%/}"
+  #     steps:
+  #       - name: Checkout code
+  #         uses: actions/checkout@v6
+  #         with:
+  #           fetch-depth: 0
+  #       - name: Fetch tags
+  #         run: git fetch --tags --force
+  #       - uses: actions/setup-java@v5
+  #         with:
+  #           java-version: 25
+  #           distribution: temurin
+  #       - name: Install SystemCore Toolchain
+  #         run: ./gradlew installSystemCoreToolchain
+  #       - name: Delete duplicate toolchains
+  #         run: |
+  #           find ~/.gradle/cache/ -name *bookworm* -exec rm -rf {} +
+  #           du -h . | sort -h
+  #         if: matrix.os == 'ubuntu-24.04'
+  #       # Download prebuilt photonlib artifacts
+  #       - uses: actions/download-artifact@v7
+  #         with:
+  #           name: maven-${{ matrix.artifact-name }}
+  #       - uses: actions/download-artifact@v7
+  #         with:
+  #           name: maven-SystemCore
+  #       - name: Move to maven local
+  #         run: |
+  #           mkdir -p ~/.m2/repository/
+  #           mv maven/org ~/.m2/repository/
+  #       - name: Copy vendordeps
+  #         shell: bash
+  #         run: |
+  #           for vendordep_folder in photonlib-*-examples/*/; do
+  #           # Remove trailing slash for cross-platform compatibility
+  #             vendordep_folder="${vendordep_folder%/}"
 
-  #           # Filter for projects only
-  #           if [ -e "$vendordep_folder/build.gradle" ]; then
-  #             mkdir -p "$vendordep_folder/vendordeps/"
-  #             cp vendordeps/photonlib-json-1.0.json "$vendordep_folder/vendordeps/"
-  #           fi
-  #         done
-  #     - name: Build Java examples
-  #       working-directory: photonlib-java-examples
-  #       run: |
-  #         ./gradlew build
-  #         ./gradlew clean
-  #     - name: Build C++ examples
-  #       working-directory: photonlib-cpp-examples
-  #       run: |
-  #         ./gradlew build
-  #         ./gradlew clean
+  #             # Filter for projects only
+  #             if [ -e "$vendordep_folder/build.gradle" ]; then
+  #               mkdir -p "$vendordep_folder/vendordeps/"
+  #               cp vendordeps/photonlib-json-1.0.json "$vendordep_folder/vendordeps/"
+  #             fi
+  #           done
+  #       - name: Build Java examples
+  #         working-directory: photonlib-java-examples
+  #         run: |
+  #           ./gradlew build
+  #           ./gradlew clean
+  #       - name: Build C++ examples
+  #         working-directory: photonlib-cpp-examples
+  #         run: |
+  #           ./gradlew build
+  #           ./gradlew clean
 
   typecheck-client:
     name: "Typecheck Client"
@@ -98,7 +98,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 10
       - name: Setup Node.js
@@ -144,7 +144,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          archive: false
+          name: "Playwright Report"
           path: photon-client/playwright-report/
           retention-days: 30
   build-gradle:
@@ -237,12 +237,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - os: windows-2022
-#            artifact-name: Win64
-          - os: macos-26
-            artifact-name: macOS
-          - os: ubuntu-24.04
-            artifact-name: Linux
+         - os: windows-2022
+           artifact-name: Win64
+         - os: macos-26
+           artifact-name: macOS
+         - os: ubuntu-24.04
+           artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -262,7 +262,7 @@ jobs:
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push' && github.repository_owner == 'photonvision' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v7
@@ -303,7 +303,7 @@ jobs:
         run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push' && github.repository_owner == 'photonvision' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
       - uses: actions/upload-artifact@v7
@@ -345,7 +345,7 @@ jobs:
         include:
           - os: ubuntu-24.04
             artifact-name: Linux
-            arch-override: linuxx64
+            arch-override: linuxx86-64
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             arch-override: linuxarm64
@@ -401,7 +401,7 @@ jobs:
             arch-override: macarm64
           - os: macos-latest
             artifact-name: macOS
-            arch-override: macx64
+            arch-override: macx86-64
 
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
@@ -416,8 +416,8 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact-name: Win64
-            arch-override: winx64
+            artifact-name: Win
+            arch-override: winx86-64
 
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
@@ -432,10 +432,10 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            artifact-name: photonvision-*-linuxx64.jar
+            artifact-name: photonvision-*-linuxx86-64.jar
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
-            artifact-name: photonvision-*-winx64.jar
+            artifact-name: photonvision-*-winx86-64.jar
           - os: macos-latest
             artifact-name: photonvision-*-macarm64.jar
           - os: ubuntu-24.04-arm

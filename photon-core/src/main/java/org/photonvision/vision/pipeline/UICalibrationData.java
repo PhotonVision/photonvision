@@ -17,13 +17,13 @@
 
 package org.photonvision.vision.pipeline;
 
+import io.avaje.jsonb.Json;
 import org.opencv.objdetect.Objdetect;
 
+@Json
 public class UICalibrationData {
     public int videoModeIndex;
     public int count;
-    public int minCount;
-    public boolean hasEnough;
     public double squareSizeIn;
     public int patternWidth;
     public int patternHeight;
@@ -37,8 +37,6 @@ public class UICalibrationData {
     public UICalibrationData(
             int count,
             int videoModeIndex,
-            int minCount,
-            boolean hasEnough,
             double squareSizeIn,
             double markerSizeIn,
             int patternWidth,
@@ -47,9 +45,7 @@ public class UICalibrationData {
             boolean useOldPattern,
             TagFamily tagFamily) {
         this.count = count;
-        this.minCount = minCount;
         this.videoModeIndex = videoModeIndex;
-        this.hasEnough = hasEnough;
         this.squareSizeIn = squareSizeIn;
         this.markerSizeIn = markerSizeIn;
         this.patternWidth = patternWidth;
@@ -59,11 +55,18 @@ public class UICalibrationData {
         this.tagFamily = tagFamily;
     }
 
+    @Json
     public enum BoardType {
         CHESSBOARD,
-        CHARUCOBOARD,
+        CHARUCOBOARD;
+
+        @Json.Value
+        int toValue() {
+            return ordinal();
+        }
     }
 
+    @Json
     public enum TagFamily {
         Dict_4X4_1000(Objdetect.DICT_4X4_1000),
         Dict_5X5_1000(Objdetect.DICT_5X5_1000),
@@ -81,6 +84,11 @@ public class UICalibrationData {
         private TagFamily(int value) {
             this.value = value;
         }
+
+        @Json.Value
+        int toValue() {
+            return ordinal();
+        }
     }
 
     @Override
@@ -90,10 +98,6 @@ public class UICalibrationData {
                 + videoModeIndex
                 + ", count="
                 + count
-                + ", minCount="
-                + minCount
-                + ", hasEnough="
-                + hasEnough
                 + ", squareSizeIn="
                 + squareSizeIn
                 + ", markerSizeIn="

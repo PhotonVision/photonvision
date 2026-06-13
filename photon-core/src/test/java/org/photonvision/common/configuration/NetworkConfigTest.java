@@ -20,8 +20,11 @@ package org.photonvision.common.configuration;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -30,26 +33,30 @@ import org.photonvision.common.util.TestUtils;
 public class NetworkConfigTest {
     @Test
     public void testSerialization() throws IOException {
-        var mapper = new ObjectMapper();
         var path = Path.of("netTest.json");
-        mapper.writeValue(path.toFile(), new NetworkConfig());
-        assertDoesNotThrow(() -> mapper.readValue(path.toFile(), NetworkConfig.class));
+        JsonType<NetworkConfig> jsonb = Jsonb.instance().type(NetworkConfig.class);
+        try (var outputStream = new FileOutputStream(path.toFile())) {
+            jsonb.toJson(new NetworkConfig(), outputStream);
+        }
+        try (var inputStream = new FileInputStream(path.toFile())) {
+            assertDoesNotThrow(() -> jsonb.fromJson(inputStream));
+        }
         new File("netTest.json").delete();
     }
 
     @Test
     public void testDeserializeTeamNumberOrNtServerAddress() {
         {
-            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-old-team-number");
+            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-team-number");
             var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
             configMgr.load();
             assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
         {
-            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-new-team-number");
+            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-ip-addr");
             var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
             configMgr.load();
-            assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
+            assertEquals("127.0.0.1", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
     }
 }

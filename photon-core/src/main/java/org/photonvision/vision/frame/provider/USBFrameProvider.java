@@ -91,7 +91,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                     cameraMode.height,
                     // hard-coded 3 channel
                     cameraMode.width * 3,
-                    PixelFormat.kBGR);
+                    PixelFormat.BGR);
 
             // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
             // Hal::initialize was called

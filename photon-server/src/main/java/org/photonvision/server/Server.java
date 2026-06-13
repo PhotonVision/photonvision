@@ -17,6 +17,7 @@
 
 package org.photonvision.server;
 
+import io.avaje.jsonb.javalin.JavalinJsonb;
 import io.javalin.Javalin;
 import io.javalin.plugin.bundled.CorsPlugin;
 import java.net.InetSocketAddress;
@@ -41,7 +42,7 @@ public class Server {
         }
 
         @Override
-        public void onDataChangeEvent(DataChangeEvent<?> event) {
+        public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
             if (event.propertyName.equals("restartServer")) {
                 Server.restart();
             }
@@ -103,6 +104,7 @@ public class Server {
                                                                     return "Got WebSockets binary message from host: " + host;
                                                                 }));
                                     });
+                            javalinConfig.jsonMapper(new JavalinJsonb());
                         });
 
         /* Web Socket Events for Data Exchange */

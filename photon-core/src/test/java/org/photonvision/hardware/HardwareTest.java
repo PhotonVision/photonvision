@@ -22,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.diozero.internal.provider.builtin.DefaultDeviceFactory;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.jsonb.Jsonb;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -68,8 +69,9 @@ public class HardwareTest {
         @BeforeEach
         void setup() throws IOException {
             System.out.println("Loading Hardware configs...");
-            hardwareConfig =
-                    new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
+            try (var stream = new FileInputStream(TestUtils.getHardwareConfigJson())) {
+                hardwareConfig = Jsonb.instance().type(HardwareConfig.class).fromJson(stream);
+            }
             deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
         }
 

@@ -17,13 +17,13 @@
 
 package org.photonvision.vision.camera;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@Json
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
@@ -100,19 +100,14 @@ public class QuirkyCamera {
                     CameraQuirk.Gain,
                     CameraQuirk.AwbRedBlueGain); // PiCam (using libcamera GPU Driver on raspberry pi)
 
-    @JsonProperty("baseName")
     public final String baseName;
 
-    @JsonProperty("usbVid")
     public final int usbVid;
 
-    @JsonProperty("usbPid")
     public final int usbPid;
 
-    @JsonProperty("displayName")
     public final String displayName;
 
-    @JsonProperty("quirks")
     public final Map<CameraQuirk, Boolean> quirks;
 
     /**
@@ -167,13 +162,12 @@ public class QuirkyCamera {
         }
     }
 
-    @JsonCreator
     public QuirkyCamera(
-            @JsonProperty("baseName") String baseName,
-            @JsonProperty("usbVid") int usbVid,
-            @JsonProperty("usbPid") int usbPid,
-            @JsonProperty("displayName") String displayName,
-            @JsonProperty("quirks") Map<CameraQuirk, Boolean> quirks) {
+            String baseName,
+            int usbVid,
+            int usbPid,
+            String displayName,
+            Map<CameraQuirk, Boolean> quirks) {
         this.baseName = baseName;
         this.usbPid = usbPid;
         this.usbVid = usbVid;

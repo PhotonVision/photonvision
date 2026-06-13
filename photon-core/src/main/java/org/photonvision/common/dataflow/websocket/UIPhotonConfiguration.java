@@ -17,6 +17,7 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import io.avaje.jsonb.Json;
 import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.LoadJNI;
@@ -31,6 +32,7 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
 
+@Json
 public class UIPhotonConfiguration {
     public List<UICameraConfiguration> cameraSettings;
     public UIProgramSettings settings;
@@ -59,7 +61,7 @@ public class UIPhotonConfiguration {
                                 // TODO add support for other types of GPU accel
                                 LoadJNI.hasLoaded(JNITypes.LIBCAMERA) ? "Zerocopy Libcamera Working" : "",
                                 LoadJNI.hasLoaded(JNITypes.MRCAL),
-                                c.neuralNetworkPropertyManager().getModels(),
+                                c.getNeuralNetworkProperties().getModels(),
                                 NeuralNetworkModelManager.getInstance().getSupportedBackends(),
                                 c.getHardwareConfig().deviceName.isEmpty()
                                         ? Platform.getHardwareModel()
