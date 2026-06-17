@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
-import org.opencv.core.MatOfDouble;
+import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.photonvision.jni.ConstrainedSolvepnpJni;
@@ -219,10 +219,8 @@ public class VisionEstimation {
         // Undistort
         {
             MatOfPoint2f temp = new MatOfPoint2f();
-            MatOfDouble cameraMatrixMat = new MatOfDouble();
-            MatOfDouble distCoeffsMat = new MatOfDouble();
-            OpenCVHelp.matrixToMat(cameraMatrix.getStorage()).assignTo(cameraMatrixMat);
-            OpenCVHelp.matrixToMat(distCoeffs.getStorage()).assignTo(distCoeffsMat);
+            Mat cameraMatrixMat = OpenCVHelp.matrixToMat(cameraMatrix.getStorage());
+            Mat distCoeffsMat = OpenCVHelp.matrixToMat(distCoeffs.getStorage());
 
             temp.fromArray(points);
             Calib3d.undistortImagePoints(temp, temp, cameraMatrixMat, distCoeffsMat);

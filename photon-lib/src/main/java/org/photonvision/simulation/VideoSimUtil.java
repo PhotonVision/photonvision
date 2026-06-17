@@ -274,10 +274,21 @@ public class VideoSimUtil {
                             new Point(tempCenter.x + xdiff, tempCenter.y + ydiff);
                         });
         // (make inside of tag completely white in mask)
-        Imgproc.fillConvexPoly(tempMask, new MatOfPoint(extremeCorners.toArray()), new Scalar(255));
+        var extremeCornersMat = new MatOfPoint(extremeCorners.toArray());
+        Imgproc.fillConvexPoly(tempMask, extremeCornersMat, new Scalar(255));
+        extremeCornersMat.release();
 
         // copy transformed tag onto result image
         tempROI.copyTo(destination.submat(boundingRect), tempMask);
+
+        tagPoints.release();
+        tagImageCorners.release();
+        dstPointMat.release();
+        perspecTrf.release();
+        extremeCorners.release();
+        scaledTagImage.release();
+        scaledDstPts.release();
+        tempROI.release();
     }
 
     /**
@@ -330,6 +341,7 @@ public class VideoSimUtil {
         } else {
             Imgproc.fillPoly(destination, List.of(dstPointsd), color, Imgproc.LINE_AA);
         }
+        dstPointsd.release();
     }
 
     /**
@@ -344,7 +356,9 @@ public class VideoSimUtil {
     public static void drawTagDetection(int id, Point[] dstPoints, Mat destination) {
         double thickness = getScaledThickness(1, destination);
         drawPoly(dstPoints, (int) thickness, new Scalar(0, 0, 255), true, destination);
-        var rect = Imgproc.boundingRect(new MatOfPoint(dstPoints));
+        var dstPointsMat = new MatOfPoint(dstPoints);
+        var rect = Imgproc.boundingRect(dstPointsMat);
+        dstPointsMat.release();
         var textPt = new Point(rect.x + rect.width, rect.y);
         textPt.x += thickness;
         textPt.y += thickness;

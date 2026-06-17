@@ -145,6 +145,7 @@ public class ArucoPoseEstimatorPipe
         rvec.release();
         tvec.release();
         reprojectionErrors.release();
+        objectPoints.release();
     }
 
     // object vertices defined by tag size

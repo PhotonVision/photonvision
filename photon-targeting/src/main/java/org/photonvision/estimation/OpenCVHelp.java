@@ -518,26 +518,23 @@ public final class OpenCVHelp {
             Matrix<N8, N1> distCoeffs,
             List<Translation3d> modelTrls,
             Point[] imagePoints) {
-        // solvepnp inputs
-        MatOfPoint3f objectMat = new MatOfPoint3f();
+        // IPPE_SQUARE expects our corners in a specific order
+        modelTrls = reorderCircular(modelTrls, true, -1);
+        imagePoints = reorderCircular(Arrays.asList(imagePoints), true, -1).toArray(Point[]::new);
+
+        // translate to OpenCV classes
+        MatOfPoint3f objectMat = translationToTvec(modelTrls.toArray(new Translation3d[0]));
         MatOfPoint2f imageMat = new MatOfPoint2f();
-        MatOfDouble cameraMatrixMat = new MatOfDouble();
-        MatOfDouble distCoeffsMat = new MatOfDouble();
+        imageMat.fromArray(imagePoints);
+        Mat cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
+        Mat distCoeffsMat = matrixToMat(distCoeffs.getStorage());
         var rvecs = new ArrayList<Mat>();
         var tvecs = new ArrayList<Mat>();
         Mat rvec = Mat.zeros(3, 1, CvType.CV_32F);
         Mat tvec = Mat.zeros(3, 1, CvType.CV_32F);
         Mat reprojectionError = Mat.zeros(2, 1, CvType.CV_32F);
-        try {
-            // IPPE_SQUARE expects our corners in a specific order
-            modelTrls = reorderCircular(modelTrls, true, -1);
-            imagePoints = reorderCircular(Arrays.asList(imagePoints), true, -1).toArray(Point[]::new);
-            // translate to OpenCV classes
-            translationToTvec(modelTrls.toArray(new Translation3d[0])).assignTo(objectMat);
-            imageMat.fromArray(imagePoints);
-            matrixToMat(cameraMatrix.getStorage()).assignTo(cameraMatrixMat);
-            matrixToMat(distCoeffs.getStorage()).assignTo(distCoeffsMat);
 
+        try {
             float[] errors = new float[2];
             Transform3d best = null;
             Transform3d alt = null;
@@ -626,17 +623,18 @@ public final class OpenCVHelp {
             Matrix<N8, N1> distCoeffs,
             List<Translation3d> objectTrls,
             Point[] imagePoints) {
+        // translate to OpenCV classes
+        MatOfPoint3f objectMat = translationToTvec(objectTrls.toArray(new Translation3d[0]));
+        MatOfPoint2f imageMat = new MatOfPoint2f(imagePoints);
+        Mat cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
+        Mat distCoeffsMat = matrixToMat(distCoeffs.getStorage());
+        var rvecs = new ArrayList<Mat>();
+        var tvecs = new ArrayList<Mat>();
+        Mat rvec = Mat.zeros(3, 1, CvType.CV_32F);
+        Mat tvec = Mat.zeros(3, 1, CvType.CV_32F);
+        Mat reprojectionError = new Mat();
+
         try {
-            // translate to OpenCV classes
-            MatOfPoint3f objectMat = translationToTvec(objectTrls.toArray(new Translation3d[0]));
-            MatOfPoint2f imageMat = new MatOfPoint2f(imagePoints);
-            Mat cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
-            Mat distCoeffsMat = matrixToMat(distCoeffs.getStorage());
-            var rvecs = new ArrayList<Mat>();
-            var tvecs = new ArrayList<Mat>();
-            Mat rvec = Mat.zeros(3, 1, CvType.CV_32F);
-            Mat tvec = Mat.zeros(3, 1, CvType.CV_32F);
-            Mat reprojectionError = new Mat();
             // calc rvec/tvec from image points
             Calib3d.solvePnPGeneric(
                     objectMat,
@@ -656,6 +654,15 @@ public final class OpenCVHelp {
             // convert to wpilib coordinates
             var best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
 
+            // check if solvePnP failed with NaN results
+            if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
+
+            return Optional.of(new PnpResult(best, error[0]));
+        } catch (Exception e) {
+            System.err.println("SolvePNP_SQPNP failed!");
+            e.printStackTrace();
+            return Optional.empty();
+        } finally {
             // release our Mats from native memory
             objectMat.release();
             imageMat.release();
@@ -666,15 +673,6 @@ public final class OpenCVHelp {
             rvec.release();
             tvec.release();
             reprojectionError.release();
-
-            // check if solvePnP failed with NaN results
-            if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
-
-            return Optional.of(new PnpResult(best, error[0]));
-        } catch (Exception e) {
-            System.err.println("SolvePNP_SQPNP failed!");
-            e.printStackTrace();
-            return Optional.empty();
         }
     }
 }

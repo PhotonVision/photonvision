@@ -162,14 +162,21 @@ public class TargetCalculationsTest {
                 new MatOfPoint3f(new Point3(-targetTrl.getY(), -targetTrl.getZ(), targetTrl.getX()));
         var imagePoints = new MatOfPoint2f();
         // Project translation into camera image
+        var rvec = new MatOfDouble(0, 0, 0);
+        var tvec = new MatOfDouble(0, 0, 0);
         Calib3d.projectPoints(
                 objectPoints,
-                new MatOfDouble(0, 0, 0),
-                new MatOfDouble(0, 0, 0),
+                rvec,
+                tvec,
                 testCameraCal.getCameraIntrinsicsMat(),
                 testCameraCal.getDistCoeffsMat(),
                 imagePoints);
         var point = imagePoints.toArray()[0];
+
+        objectPoints.release();
+        imagePoints.release();
+        rvec.release();
+        tvec.release();
 
         // need point within FOV to be valid
         assertTrue(Math.abs(point.x) >= 0);
@@ -288,6 +295,8 @@ public class TargetCalculationsTest {
         // Assert result
         result = TargetCalculations.calculateSkew(isLandscape, minAreaRect);
         assertEquals(-70, result, 0.01);
+
+        mat2f.release();
     }
 
     @Test

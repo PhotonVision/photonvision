@@ -38,6 +38,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 
@@ -45,7 +46,8 @@ public class Calibrate3dPipe
         extends CVPipe<
                 Calibrate3dPipe.CalibrationInput,
                 CameraCalibrationCoefficients,
-                Calibrate3dPipe.CalibratePipeParams> {
+                Calibrate3dPipe.CalibratePipeParams>
+        implements Releasable {
     public static class CalibrationInput {
         final List<FindBoardCornersPipe.FindBoardCornersPipeResult> observations;
         final FrameStaticProperties imageProps;
@@ -187,6 +189,8 @@ public class Calibrate3dPipe
         } catch (Exception e) {
             logger.error("Calibration failed!", e);
             e.printStackTrace();
+            cameraMatrix.release();
+            distortionCoefficients.release();
             return null;
         }
 
@@ -386,9 +390,12 @@ public class Calibrate3dPipe
             List<Point> i_imgPts = imgPts.get(snapshotId).toList();
 
             if (i_objPtsNative.rows() != i_imgPts.size()) {
+                var rows = i_objPtsNative.rows();
+                i_objPtsNative.release();
+                jac_temp.release();
                 throw new RuntimeException(
                         "Objpts size ("
-                                + i_objPtsNative.rows()
+                                + rows
                                 + ") != imgpts size ("
                                 + i_imgPts.size()
                                 + ") for snapshot "
@@ -439,6 +446,7 @@ public class Calibrate3dPipe
             // Calculate reprojection error for each point
             var reprojectionError = new ArrayList<Point>();
             var img_pts_reprojected_list = img_pts_reprojected.toList();
+            img_pts_reprojected.release();
             for (int j = 0; j < img_pts_reprojected_list.size(); j++) {
                 // Outliers are not part of the calibration, so don't calculate error for them
                 if (!cornersUsed.get(snapshotId)[j]) {
@@ -451,6 +459,8 @@ public class Calibrate3dPipe
 
                 // Sanity check -- negative corners make no sense here
                 if (!(measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0)) {
+                    i_objPtsNative.release();
+                    jac_temp.release();
                     throw new RuntimeException(
                             "Negative corner in reprojection error calc! Measured: "
                                     + measured
@@ -481,6 +491,8 @@ public class Calibrate3dPipe
                             cornersUsed.get(snapshotId),
                             snapshotName,
                             image_path));
+
+            i_objPtsNative.release();
         }
         jac_temp.release();
 
@@ -529,5 +541,12 @@ public class Calibrate3dPipe
             this.squareSize = squareSize;
             this.useMrCal = usemrcal;
         }
+    }
+
+    @Override
+    public void release() {
+        stdDeviationsIntrinsics.release();
+        stdDeviationsExtrinsics.release();
+        perViewErrors.release();
     }
 }

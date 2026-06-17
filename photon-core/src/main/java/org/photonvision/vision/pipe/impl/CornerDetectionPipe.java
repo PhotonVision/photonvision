@@ -21,6 +21,7 @@ import java.util.*;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -30,9 +31,8 @@ import org.photonvision.vision.target.TrackedTarget;
  */
 public class CornerDetectionPipe
         extends CVPipe<
-                List<TrackedTarget>,
-                List<TrackedTarget>,
-                CornerDetectionPipe.CornerDetectionPipeParameters> {
+                List<TrackedTarget>, List<TrackedTarget>, CornerDetectionPipe.CornerDetectionPipeParameters>
+        implements Releasable {
     Comparator<Point> leftRightComparator = Comparator.comparingDouble(point -> point.x);
     Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
     MatOfPoint2f polyOutput = new MatOfPoint2f();
@@ -171,6 +171,11 @@ public class CornerDetectionPipe
         var bl = leftList.get(leftList.size() - 1);
         var br = rightList.get(rightList.size() - 1);
         return List.of(bl, br, tr, tl);
+    }
+
+    @Override
+    public void release() {
+        polyOutput.release();
     }
 
     /**

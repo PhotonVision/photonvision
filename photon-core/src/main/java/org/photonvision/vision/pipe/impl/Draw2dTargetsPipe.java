@@ -28,12 +28,14 @@ import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.ContourShape;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.math.util.Pair;
 
 public class Draw2dTargetsPipe
-        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
+        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams>
+        implements Releasable {
     MatOfPoint tempMat = new MatOfPoint();
     private static final Logger logger = new Logger(Draw2dTargetsPipe.class, LogGroup.General);
 
@@ -115,6 +117,7 @@ public class Draw2dTargetsPipe
                             maximumBoxColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 }
+                contour.release();
 
                 if (params.showShape) {
                     divideMat(target.m_mainContour.mat, tempMat);
@@ -210,6 +213,11 @@ public class Draw2dTargetsPipe
     private void dividePoint(Point p) {
         p.x = p.x / (double) params.divisor.value;
         p.y = p.y / (double) params.divisor.value;
+    }
+
+    @Override
+    public void release() {
+        tempMat.release();
     }
 
     public static class Draw2dTargetsParams {
