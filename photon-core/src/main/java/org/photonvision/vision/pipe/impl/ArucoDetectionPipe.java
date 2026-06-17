@@ -29,12 +29,10 @@ import org.opencv.objdetect.Objdetect;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
-        extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams>
-        implements Releasable {
+        extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
     // ArucoDetector wrapper class
     private final PhotonArucoDetector photonDetector = new PhotonArucoDetector();
 
@@ -42,6 +40,8 @@ public class ArucoDetectionPipe
     private static final double kRefineWindowImageRatio = 0.004;
     // Ratio multiplied with max marker diagonal length and added to refinement window size
     private static final double kRefineWindowMarkerRatio = 0.03;
+
+    private final MatOfPoint2f cornersMat = new MatOfPoint2f();
 
     @Override
     protected List<ArucoDetectionResult> process(CVMat in) {
@@ -78,12 +78,11 @@ public class ArucoDetectionPipe
                 // dont do refinement on small markers
                 if (halfWindowLength < 4) continue;
                 var halfWindowSize = new Size(halfWindowLength, halfWindowLength);
-                var ptsMat = new MatOfPoint2f(cornerPoints);
+                cornersMat.fromArray(cornerPoints);
                 var criteria =
                         new TermCriteria(3, params.refinementMaxIterations, params.refinementMinErrorPx);
-                Imgproc.cornerSubPix(imgMat, ptsMat, halfWindowSize, new Size(-1, -1), criteria);
-                cornerPoints = ptsMat.toArray();
-                ptsMat.release();
+                Imgproc.cornerSubPix(imgMat, cornersMat, halfWindowSize, new Size(-1, -1), criteria);
+                cornerPoints = cornersMat.toArray();
                 for (int i = 0; i < cornerPoints.length; i++) {
                     var pt = cornerPoints[i];
                     xCorners[i] = pt.x;
@@ -138,5 +137,6 @@ public class ArucoDetectionPipe
     @Override
     public void release() {
         photonDetector.release();
+        cornersMat.release();
     }
 }

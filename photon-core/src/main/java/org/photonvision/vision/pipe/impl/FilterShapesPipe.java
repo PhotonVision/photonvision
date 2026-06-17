@@ -57,6 +57,9 @@ public class FilterShapesPipe
                 || shape.contour.getPerimeter() < params.minPeri();
     }
 
+    @Override
+    public void release() {}
+
     public static record FilterShapesPipeParams(
             ContourShape desiredShape,
             double minArea,

@@ -38,8 +38,7 @@ public class FindBoardCornersPipe
         extends CVPipe<
                 Pair<Mat, Mat>,
                 FindBoardCornersPipe.FindBoardCornersPipeResult,
-                FindBoardCornersPipe.FindCornersPipeParams>
-        implements Releasable {
+                FindBoardCornersPipe.FindCornersPipeParams> {
     private static final Logger logger =
             new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 

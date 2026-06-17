@@ -21,6 +21,7 @@ import java.util.List;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
@@ -30,7 +31,7 @@ import org.wpilib.math.util.Pair;
  * This is a "fake" pipeline that is just used to move identical pipe sets out of real pipelines. It
  * shall not get its settings saved, nor shall it be managed by PipelineManager
  */
-public class OutputStreamPipeline {
+public class OutputStreamPipeline implements Releasable {
     private final OutputMatPipe outputMatPipe = new OutputMatPipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
     private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
@@ -233,5 +234,21 @@ public class OutputStreamPipeline {
                 fps, // Unused but here just in case
                 targetsToDraw,
                 inputAndOutputFrame);
+    }
+
+    @Override
+    public void release() {
+        outputMatPipe.release();
+        draw2dCrosshairPipe.release();
+        draw2dTargetsPipe.release();
+        draw3dTargetsPipe.release();
+        draw2dAprilTagsPipe.release();
+        draw3dAprilTagsPipe.release();
+        drawCalibrationPipe.release();
+
+        draw2dArucoPipe.release();
+        draw3dArucoPipe.release();
+        calculateFPSPipe.release();
+        resizeImagePipe.release();
     }
 }

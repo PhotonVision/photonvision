@@ -36,7 +36,23 @@ import org.wpilib.math.util.Pair;
 
 public class Draw3dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {
+    MatOfPoint boundingRect = new MatOfPoint();
+    MatOfPoint2f projectedMat = new MatOfPoint2f();
+    MatOfPoint contourMat = new MatOfPoint();
     Logger logger = new Logger(Draw3dTargetsPipe.class, LogGroup.VisionModule);
+
+    // OpenCV expects coordinates in EDN, but we want to visualize in NWU
+    // NWU | EDN
+    // X: Z
+    // Y: -X
+    // Z: -Y
+    final double AXIS_LEN = 0.2;
+    MatOfPoint3f axesMat =
+            new MatOfPoint3f(
+                    new Point3(0, 0, 0),
+                    new Point3(0, 0, AXIS_LEN), // x-axis
+                    new Point3(-AXIS_LEN, 0, 0), // y-axis
+                    new Point3(0, -AXIS_LEN, 0)); // z-axis
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
@@ -50,34 +66,29 @@ public class Draw3dTargetsPipe
         for (var target : in.getSecond()) {
             // draw convex hull
             if (params.shouldDrawHull(target)) {
-                var pointMat = new MatOfPoint();
-                divideMat2f(target.m_mainContour.getConvexHull(), pointMat);
-                if (pointMat.size().empty()) {
+                divideMat2f(target.m_mainContour.getConvexHull(), contourMat);
+                if (contourMat.size().empty()) {
                     logger.error("Convex hull is empty?");
                     logger.debug(
                             "Orig. Convex Hull: " + target.m_mainContour.getConvexHull().size().toString());
                     continue;
                 }
                 Imgproc.drawContours(
-                        in.getFirst(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.green), 1);
+                        in.getFirst(), List.of(contourMat), -1, ColorHelper.colorToScalar(Color.green), 1);
 
                 // draw approximate polygon
                 var poly = target.getApproximateBoundingPolygon();
                 if (poly != null) {
-                    divideMat2f(poly, pointMat);
+                    divideMat2f(poly, contourMat);
                     Imgproc.drawContours(
-                            in.getFirst(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.blue), 2);
+                            in.getFirst(), List.of(contourMat), -1, ColorHelper.colorToScalar(Color.blue), 2);
                 }
-                pointMat.release();
             }
 
             // Draw floor and top
             if (target.getCameraRelativeRvec() != null
                     && target.getCameraRelativeTvec() != null
                     && params.shouldDrawBox) {
-                var tempMat = new MatOfPoint2f();
-
-                var jac = new Mat();
                 var bottomModel = params.targetModel.getVisualizationBoxBottom();
                 var topModel = params.targetModel.getVisualizationBoxTop();
 
@@ -87,19 +98,18 @@ public class Draw3dTargetsPipe
                         target.getCameraRelativeTvec(),
                         params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
                         params.cameraCalibrationCoefficients.getDistCoeffsMat(),
-                        tempMat,
-                        jac);
+                        projectedMat);
+
+                var bottomPoints = projectedMat.toList();
 
                 if (params.redistortPoints) {
                     // Distort the points, so they match the image they're being overlaid on
-                    tempMat.fromList(
+                    bottomPoints =
                             OpenCVHelp.distortPoints(
-                                    tempMat.toList(),
+                                    bottomPoints,
                                     params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
-                                    params.cameraCalibrationCoefficients.getDistCoeffsMat()));
+                                    params.cameraCalibrationCoefficients.getDistCoeffsMat());
                 }
-
-                var bottomPoints = tempMat.toList();
 
                 Calib3d.projectPoints(
                         topModel,
@@ -107,18 +117,18 @@ public class Draw3dTargetsPipe
                         target.getCameraRelativeTvec(),
                         params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
                         params.cameraCalibrationCoefficients.getDistCoeffsMat(),
-                        tempMat,
-                        jac);
+                        projectedMat);
+
+                var topPoints = projectedMat.toList();
 
                 if (params.redistortPoints) {
                     // Distort the points, so they match the image they're being overlaid on
-                    tempMat.fromList(
+                    topPoints =
                             OpenCVHelp.distortPoints(
-                                    tempMat.toList(),
+                                    topPoints,
                                     params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
-                                    params.cameraCalibrationCoefficients.getDistCoeffsMat()));
+                                    params.cameraCalibrationCoefficients.getDistCoeffsMat());
                 }
-                var topPoints = tempMat.toList();
 
                 dividePointList(bottomPoints);
                 dividePointList(topPoints);
@@ -134,34 +144,19 @@ public class Draw3dTargetsPipe
                 }
 
                 // Draw X, Y and Z axis
-                MatOfPoint3f pointMat = new MatOfPoint3f();
-                // OpenCV expects coordinates in EDN, but we want to visualize in NWU
-                // NWU | EDN
-                // X: Z
-                // Y: -X
-                // Z: -Y
-                final double AXIS_LEN = 0.2;
-                var list =
-                        List.of(
-                                new Point3(0, 0, 0),
-                                new Point3(0, 0, AXIS_LEN), // x-axis
-                                new Point3(-AXIS_LEN, 0, 0), // y-axis
-                                new Point3(0, -AXIS_LEN, 0)); // z-axis
-                pointMat.fromList(list);
 
                 // The detected target's rvec and tvec perform a rotation-translation transformation which
                 // converts points in the target's coordinate system to the camera's. This means applying
                 // the transformation to the target point (0,0,0) for example would give the target's center
                 // relative to the camera.
                 Calib3d.projectPoints(
-                        pointMat,
+                        axesMat,
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
                         params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
                         params.cameraCalibrationCoefficients.getDistCoeffsMat(),
-                        tempMat,
-                        jac);
-                var axisPoints = tempMat.toList();
+                        projectedMat);
+                var axisPoints = projectedMat.toList();
                 dividePointList(axisPoints);
 
                 // XYZ is RGB
@@ -205,10 +200,6 @@ public class Draw3dTargetsPipe
                             ColorHelper.colorToScalar(Color.orange),
                             3);
                 }
-
-                tempMat.release();
-                jac.release();
-                pointMat.release();
             }
 
             // draw corners
@@ -249,6 +240,14 @@ public class Draw3dTargetsPipe
             p.x = p.x / (double) params.divisor.value;
             p.y = p.y / (double) params.divisor.value;
         }
+    }
+
+    @Override
+    public void release() {
+        boundingRect.release();
+        projectedMat.release();
+        contourMat.release();
+        axesMat.release();
     }
 
     public static class Draw3dContoursParams {

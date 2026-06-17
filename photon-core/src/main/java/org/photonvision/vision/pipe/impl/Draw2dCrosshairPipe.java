@@ -84,6 +84,9 @@ public class Draw2dCrosshairPipe
         return null;
     }
 
+    @Override
+    public void release() {}
+
     public static record Draw2dCrosshairParams(
             boolean shouldDraw,
             RobotOffsetPointMode robotOffsetPointMode,

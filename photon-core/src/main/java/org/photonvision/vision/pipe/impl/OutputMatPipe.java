@@ -29,5 +29,8 @@ public class OutputMatPipe extends MutatingPipe<Mat, OutputMatPipe.OutputMatPara
         return null;
     }
 
+    @Override
+    public void release() {}
+
     public static class OutputMatParams {}
 }

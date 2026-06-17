@@ -110,6 +110,7 @@ public class PhotonArucoDetector implements Releasable {
         }
 
         ids.release();
+        cornerMats.clear();
 
         // sort tags by ID
         Arrays.sort(results, Comparator.comparingInt(ArucoDetectionResult::getId));
