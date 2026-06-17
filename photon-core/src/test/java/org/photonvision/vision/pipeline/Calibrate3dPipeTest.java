@@ -46,6 +46,7 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.wpilib.math.util.Units;
 
 public class Calibrate3dPipeTest {
@@ -216,48 +217,48 @@ public class Calibrate3dPipeTest {
 
         assertTrue(directoryListing.length >= 12);
 
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
-        calibration3dPipeline.getSettings().boardType = boardType;
-        calibration3dPipeline.getSettings().markerSize = markerSize;
-        calibration3dPipeline.getSettings().tagFamily = tagFamily;
-        calibration3dPipeline.getSettings().resolution = imgRes;
-        calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
-        calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
-        calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
-        calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
-        calibration3dPipeline.getSettings().useMrCal = useMrCal;
-        calibration3dPipeline.getSettings().useOldPattern = useOldPattern;
+        CameraCalibrationCoefficients cal;
+        try (Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline()) {
+            calibration3dPipeline.getSettings().boardType = boardType;
+            calibration3dPipeline.getSettings().markerSize = markerSize;
+            calibration3dPipeline.getSettings().tagFamily = tagFamily;
+            calibration3dPipeline.getSettings().resolution = imgRes;
+            calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
+            calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
+            calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
+            calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
+            calibration3dPipeline.getSettings().useMrCal = useMrCal;
+            calibration3dPipeline.getSettings().useOldPattern = useOldPattern;
 
-        for (var file : directoryListing) {
-            if (file.isFile()) {
-                calibration3dPipeline.takeSnapshot();
-                var frame =
-                        new Frame(
-                                0,
-                                new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                new CVMat(),
-                                FrameThresholdType.NONE,
-                                new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
-                var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
-
-                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(),
-                // file.getName(),
-                // 1);
-                output.release();
-                frame.release();
+            for (var file : directoryListing) {
+                if (file.isFile()) {
+                    calibration3dPipeline.takeSnapshot();
+                    var frame =
+                            new Frame(
+                                    0,
+                                    new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                    new CVMat(),
+                                    FrameThresholdType.NONE,
+                                    new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
+                    try (CVPipelineResult output =
+                            calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera)) {
+                        TestUtils.showImage(
+                                output.inputAndOutputFrame.processedImage.getMat(), file.getName(), 1);
+                    }
+                }
             }
+
+            assertTrue(
+                    calibration3dPipeline.foundCornersList.stream()
+                            .map(it -> it.imagePoints)
+                            .allMatch(it -> it.width() > 0 && it.height() > 0));
+
+            cal =
+                    calibration3dPipeline.tryCalibration(
+                            ConfigManager.getInstance()
+                                    .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
+            calibration3dPipeline.finishCalibration();
         }
-
-        assertTrue(
-                calibration3dPipeline.foundCornersList.stream()
-                        .map(it -> it.imagePoints)
-                        .allMatch(it -> it.width() > 0 && it.height() > 0));
-
-        var cal =
-                calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
-        calibration3dPipeline.finishCalibration();
 
         // visuallyDebugDistortion(directoryListing, imgRes, cal );
 
