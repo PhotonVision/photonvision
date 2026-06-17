@@ -83,6 +83,7 @@ public class ArucoDetectionPipe
                         new TermCriteria(3, params.refinementMaxIterations, params.refinementMinErrorPx);
                 Imgproc.cornerSubPix(imgMat, ptsMat, halfWindowSize, new Size(-1, -1), criteria);
                 cornerPoints = ptsMat.toArray();
+                ptsMat.release();
                 for (int i = 0; i < cornerPoints.length; i++) {
                     var pt = cornerPoints[i];
                     xCorners[i] = pt.x;

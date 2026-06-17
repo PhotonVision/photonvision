@@ -126,11 +126,13 @@ public class TrackedTarget implements Releasable {
                     bestPose.getTranslation().getY(),
                     bestPose.getTranslation().getZ());
             setCameraRelativeTvec(tvec);
+            tvec.release();
 
             // Opencv expects a 3d vector with norm = angle and direction = axis
             var rvec = new Mat(3, 1, CvType.CV_64FC1);
             MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
             setCameraRelativeRvec(rvec);
+            rvec.release();
         }
 
         double[] corners = tagDetection.getCorners();
@@ -236,10 +238,12 @@ public class TrackedTarget implements Releasable {
                     bestPose.getTranslation().getY(),
                     bestPose.getTranslation().getZ());
             setCameraRelativeTvec(tvec);
+            tvec.release();
 
             var rvec = new Mat(3, 1, CvType.CV_64FC1);
             MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
             setCameraRelativeRvec(rvec);
+            rvec.release();
         }
     }
 
@@ -344,6 +348,7 @@ public class TrackedTarget implements Releasable {
 
         if (m_cameraRelativeTvec != null) m_cameraRelativeTvec.release();
         if (m_cameraRelativeRvec != null) m_cameraRelativeRvec.release();
+        if (m_approximateBoundingPolygon != null) m_approximateBoundingPolygon.release();
     }
 
     public void setTargetCorners(List<Point> targetCorners) {

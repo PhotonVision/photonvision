@@ -38,7 +38,8 @@ public class FindBoardCornersPipe
         extends CVPipe<
                 Pair<Mat, Mat>,
                 FindBoardCornersPipe.FindBoardCornersPipeResult,
-                FindBoardCornersPipe.FindCornersPipeParams> {
+                FindBoardCornersPipe.FindCornersPipeParams>
+        implements Releasable {
     private static final Logger logger =
             new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 
@@ -104,7 +105,9 @@ public class FindBoardCornersPipe
                 for (int widthIdx = 0; widthIdx < patternSize.width; widthIdx++) {
                     double boardYCoord = heightIdx * params.gridSize();
                     double boardXCoord = widthIdx * params.gridSize();
-                    objectPoints.push_back(new MatOfPoint3f(new Point3(boardXCoord, boardYCoord, 0.0)));
+                    var objectPoint = new MatOfPoint3f(new Point3(boardXCoord, boardYCoord, 0.0));
+                    objectPoints.push_back(objectPoint);
+                    objectPoint.release();
                 }
             }
         } else if (params.type() == UICalibrationData.BoardType.CHARUCOBOARD) {
@@ -387,6 +390,14 @@ public class FindBoardCornersPipe
         }
 
         return new FindBoardCornersPipeResult(inFrame.size(), objPts, outBoardCorners, outLevels);
+    }
+
+    @Override
+    public void release() {
+        objectPoints.release();
+        boardCorners.release();
+        smallerInFrame.release();
+        smallerBoardCorners.release();
     }
 
     public static record FindCornersPipeParams(

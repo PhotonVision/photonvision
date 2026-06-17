@@ -22,9 +22,11 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
-public class FocusPipe extends CVPipe<Mat, FocusPipe.FocusResult, FocusPipe.FocusParams> {
+public class FocusPipe extends CVPipe<Mat, FocusPipe.FocusResult, FocusPipe.FocusParams>
+        implements Releasable {
     // cache these
     MatOfDouble mean = new MatOfDouble();
     MatOfDouble stddev = new MatOfDouble();
@@ -40,6 +42,12 @@ public class FocusPipe extends CVPipe<Mat, FocusPipe.FocusResult, FocusPipe.Focu
         var variance = sd * sd;
 
         return new FocusResult(outputMat, variance);
+    }
+
+    @Override
+    public void release() {
+        mean.release();
+        stddev.release();
     }
 
     public static class FocusResult {

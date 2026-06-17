@@ -36,8 +36,10 @@ public class FindContoursPipe
         }
         m_foundContours.clear();
 
+        var hierarchy = new Mat();
         Imgproc.findContours(
-                in, m_foundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_KCOS);
+                in, m_foundContours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_KCOS);
+        hierarchy.release();
 
         return m_foundContours.stream().map(Contour::new).toList();
     }
