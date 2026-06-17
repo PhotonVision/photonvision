@@ -28,6 +28,13 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculations {
+    static MatOfPoint2f targetPoint = new MatOfPoint2f();
+
+    static {
+        Thread targetPointShutdownThread = new Thread(targetPoint::release);
+        Runtime.getRuntime().addShutdownHook(targetPointShutdownThread);
+    }
+
     /**
      * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
      * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
@@ -51,18 +58,17 @@ public class TargetCalculations {
             CameraCalibrationCoefficients cameraCal) {
         if (cameraCal != null) {
             // undistort
-            MatOfPoint2f temp = new MatOfPoint2f(new Point(targetCenterX, targetCenterY));
+            targetPoint.fromArray(new Point(targetCenterX, targetCenterY));
             // Tighten up termination criteria
             var termCriteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, 30, 1e-6);
             Calib3d.undistortImagePoints(
-                    temp,
-                    temp,
+                    targetPoint,
+                    targetPoint,
                     cameraCal.getCameraIntrinsicsMat(),
                     cameraCal.getDistCoeffsMat(),
                     termCriteria);
             float buff[] = new float[2];
-            temp.get(0, 0, buff);
-            temp.release();
+            targetPoint.get(0, 0, buff);
 
             // if outside of the imager, convergence fails, or really really bad user camera cal,
             // undistort will fail by giving us nans. at some point we should log this failure

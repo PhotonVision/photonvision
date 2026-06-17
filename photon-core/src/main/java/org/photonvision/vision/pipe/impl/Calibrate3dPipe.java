@@ -38,7 +38,6 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
-import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 
@@ -46,8 +45,7 @@ public class Calibrate3dPipe
         extends CVPipe<
                 Calibrate3dPipe.CalibrationInput,
                 CameraCalibrationCoefficients,
-                Calibrate3dPipe.CalibratePipeParams>
-        implements Releasable {
+                Calibrate3dPipe.CalibratePipeParams> {
     public static class CalibrationInput {
         final List<FindBoardCornersPipe.FindBoardCornersPipeResult> observations;
         final FrameStaticProperties imageProps;

@@ -68,6 +68,9 @@ public class FindPolygonPipe
         return corners;
     }
 
+    @Override
+    public void release() {}
+
     /**
      * @param accuracyPercentage Accuracy percentage, 0-100
      */

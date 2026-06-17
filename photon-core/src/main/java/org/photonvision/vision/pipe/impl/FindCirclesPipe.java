@@ -25,13 +25,11 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
-import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.wpilib.math.util.Pair;
 
 public class FindCirclesPipe
-        extends CVPipe<Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams>
-        implements Releasable {
+        extends CVPipe<Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams> {
     // Output vector of found circles. Each vector is encoded as 3 or 4 element floating-point vector
     // (x,y,radius) or (x,y,radius,votes) .
     private final Mat circles = new Mat();

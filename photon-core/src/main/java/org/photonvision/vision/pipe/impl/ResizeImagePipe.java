@@ -39,5 +39,8 @@ public class ResizeImagePipe extends MutatingPipe<Mat, ResizeImagePipe.ResizeIma
         return null;
     }
 
+    @Override
+    public void release() {}
+
     public static record ResizeImageParams(FrameDivisor divisor) {}
 }

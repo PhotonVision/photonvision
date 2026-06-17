@@ -414,16 +414,14 @@ public final class OpenCVHelp {
      */
     public static Point[] undistortPoints(
             Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs, Point[] points) {
-        var distMat = new MatOfPoint2f(points);
-        var undistMat = new MatOfPoint2f();
+        var pointsMat = new MatOfPoint2f(points);
         var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
         var distCoeffsMat = matrixToMat(distCoeffs.getStorage());
 
-        Calib3d.undistortImagePoints(distMat, undistMat, cameraMatrixMat, distCoeffsMat);
-        var undistPoints = undistMat.toArray();
+        Calib3d.undistortImagePoints(pointsMat, pointsMat, cameraMatrixMat, distCoeffsMat);
+        var undistPoints = pointsMat.toArray();
 
-        distMat.release();
-        undistMat.release();
+        pointsMat.release();
         cameraMatrixMat.release();
         distCoeffsMat.release();
 

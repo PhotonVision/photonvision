@@ -26,7 +26,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
@@ -36,8 +35,7 @@ import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.linalg.VecBuilder;
 
 public class SolvePNPPipe
-        extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPPipe.SolvePNPPipeParams>
-        implements Releasable {
+        extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPPipe.SolvePNPPipeParams> {
     private static final Logger logger = new Logger(SolvePNPPipe.class, LogGroup.VisionModule);
 
     private final MatOfPoint2f imagePoints = new MatOfPoint2f();

@@ -23,9 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.ejml.simple.SimpleMatrix;
-import org.opencv.calib3d.Calib3d;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.photonvision.jni.ConstrainedSolvepnpJni;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -217,19 +214,7 @@ public class VisionEstimation {
         Point[] points = OpenCVHelp.cornersToPoints(corners);
 
         // Undistort
-        {
-            MatOfPoint2f temp = new MatOfPoint2f();
-            Mat cameraMatrixMat = OpenCVHelp.matrixToMat(cameraMatrix.getStorage());
-            Mat distCoeffsMat = OpenCVHelp.matrixToMat(distCoeffs.getStorage());
-
-            temp.fromArray(points);
-            Calib3d.undistortImagePoints(temp, temp, cameraMatrixMat, distCoeffsMat);
-            points = temp.toArray();
-
-            temp.release();
-            cameraMatrixMat.release();
-            distCoeffsMat.release();
-        }
+        points = OpenCVHelp.undistortPoints(cameraMatrix, distCoeffs, points);
 
         // Rotate from wpilib to opencv camera CS
         var robot2cameraBase =

@@ -72,6 +72,10 @@ public class VideoSimUtil {
         }
 
         kTag36h11MarkerPts = get36h11MarkerPts();
+
+        var videoSimShutdownThread =
+                new Thread(() -> kTag36h11Images.forEach((i, image) -> image.release()));
+        Runtime.getRuntime().addShutdownHook(videoSimShutdownThread);
     }
 
     private VideoSimUtil() {}
@@ -175,6 +179,7 @@ public class VideoSimUtil {
         // check extreme image corners after transform to check if we need to expand bounding rect
         var extremeCorners = new MatOfPoint2f();
         Core.perspectiveTransform(tagImageCorners, extremeCorners, perspecTrf);
+        perspecTrf.release();
         // dilate ROI to fit full tag
         boundingRect = Imgproc.boundingRect(extremeCorners);
 
@@ -242,6 +247,7 @@ public class VideoSimUtil {
         // the destination image encapsulated by boundingRect
         Mat tempROI = new Mat();
         Imgproc.warpPerspective(scaledTagImage, tempROI, perspecTrf, boundingRect.size(), warpStrategy);
+        perspecTrf.release();
 
         // downscale ROI with interpolation if supersampling
         if (supersampling > 1) {
@@ -284,11 +290,11 @@ public class VideoSimUtil {
         tagPoints.release();
         tagImageCorners.release();
         dstPointMat.release();
-        perspecTrf.release();
         extremeCorners.release();
         scaledTagImage.release();
         scaledDstPts.release();
         tempROI.release();
+        tempMask.release();
     }
 
     /**
