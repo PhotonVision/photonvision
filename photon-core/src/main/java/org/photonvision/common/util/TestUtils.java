@@ -19,7 +19,6 @@ package org.photonvision.common.util;
 
 import io.avaje.json.JsonException;
 import io.avaje.jsonb.Jsonb;
-import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -377,13 +376,10 @@ public class TestUtils {
     private static final int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
-        if (frame.empty()) return;
-        try {
-            HighGui.imshow(title, frame);
-            HighGui.waitKey(timeoutMs);
-            HighGui.destroyAllWindows();
-        } catch (HeadlessException ignored) {
-        }
+        if (frame.empty() || Boolean.getBoolean("java.awt.headless")) return;
+        HighGui.imshow(title, frame);
+        HighGui.waitKey(timeoutMs);
+        HighGui.destroyAllWindows();
     }
 
     public static void showImage(Mat frame, int timeoutMs) {
