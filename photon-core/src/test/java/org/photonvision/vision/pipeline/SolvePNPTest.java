@@ -27,9 +27,7 @@ import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
-import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.pipe.impl.HSVPipe;
@@ -196,21 +194,6 @@ public class SolvePNPTest {
         assertTrue(zAxis.rotateBy(expectedRot).getDistance(zAxis.rotateBy(pose.getRotation())) < 0.1);
     }
 
-    private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {
-        var pipeline = new ReflectivePipeline();
-        pipeline.settings = settings;
-
-        while (true) {
-            CVPipelineResult pipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-            TestUtils.printTestResultsWithLocation(pipelineResult);
-            int preRelease = CVMat.getMatCount();
-            pipelineResult.release();
-            int postRelease = CVMat.getMatCount();
-
-            System.out.printf("Pre: %d, Post: %d\n", preRelease, postRelease);
-        }
-    }
-
     // used to run VisualVM for profiling, which won't run on unit tests.
     public static void main(String[] args) {
         LoadJNI.loadLibraries();
@@ -227,6 +210,6 @@ public class SolvePNPTest {
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 
-        continuouslyRunPipeline(frameProvider.get(), settings);
+        TestUtils.continuouslyRunPipeline(frameProvider, settings);
     }
 }
