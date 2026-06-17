@@ -34,6 +34,7 @@ import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.util.Units;
 
@@ -81,45 +82,51 @@ public class SolvePNPTest {
 
     @Test
     public void test2019() {
-        var pipeline = new ReflectivePipeline();
+        Transform3d pose;
+        try (var pipeline = new ReflectivePipeline()) {
+            pipeline.getSettings().hsvHue.set(60, 100);
+            pipeline.getSettings().hsvSaturation.set(100, 255);
+            pipeline.getSettings().hsvValue.set(190, 255);
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
+            pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
+            pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+            pipeline.getSettings().targetModel = TargetModel.k2019DualTarget;
 
-        pipeline.getSettings().hsvHue.set(60, 100);
-        pipeline.getSettings().hsvSaturation.set(100, 255);
-        pipeline.getSettings().hsvValue.set(190, 255);
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
-        pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.k2019DualTarget;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
+                            TestUtils.WPI2019Image.FOV,
+                            TestUtils.get2019LifeCamCoeffs(false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                var hsvParams =
+                        new HSVPipe.HSVParams(
+                                pipeline.getSettings().hsvHue,
+                                pipeline.getSettings().hsvSaturation,
+                                pipeline.getSettings().hsvValue,
+                                pipeline.getSettings().hueInverted);
+                frameProvider.requestHsvSettings(hsvParams);
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
-                        TestUtils.WPI2019Image.FOV,
-                        TestUtils.get2019LifeCamCoeffs(false));
+                try (CVPipelineResult pipelineResult =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera); ) {
+                    TestUtils.printTestResultsWithLocation(pipelineResult);
 
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
-        var hsvParams =
-                new HSVPipe.HSVParams(
-                        pipeline.getSettings().hsvHue,
-                        pipeline.getSettings().hsvSaturation,
-                        pipeline.getSettings().hsvValue,
-                        pipeline.getSettings().hueInverted);
-        frameProvider.requestHsvSettings(hsvParams);
+                    // Draw on input
+                    var outputPipe = new OutputStreamPipeline();
+                    outputPipe.process(
+                            pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResultsWithLocation(pipelineResult);
+                    TestUtils.showImage(
+                            pipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                            "Pipeline output",
+                            999999);
 
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        outputPipe.process(
-                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                    pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+                }
+            }
+        }
 
-        TestUtils.showImage(
-                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
-
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         // these numbers are not *accurate*, but they are known and expected
         var expectedTrl = new Translation3d(1.1, -0.05, -0.05);
         assertTrue(
@@ -137,44 +144,50 @@ public class SolvePNPTest {
 
     @Test
     public void test2020() {
-        var pipeline = new ReflectivePipeline();
+        Transform3d pose;
+        try (var pipeline = new ReflectivePipeline()) {
+            pipeline.getSettings().hsvHue.set(60, 100);
+            pipeline.getSettings().hsvSaturation.set(100, 255);
+            pipeline.getSettings().hsvValue.set(60, 255);
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+            pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+            pipeline.getSettings().targetModel = TargetModel.k2020HighGoalOuter;
 
-        pipeline.getSettings().hsvHue.set(60, 100);
-        pipeline.getSettings().hsvSaturation.set(100, 255);
-        pipeline.getSettings().hsvValue.set(60, 255);
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.k2020HighGoalOuter;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.get2020LifeCamCoeffs(false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                var hsvParams =
+                        new HSVPipe.HSVParams(
+                                pipeline.getSettings().hsvHue,
+                                pipeline.getSettings().hsvSaturation,
+                                pipeline.getSettings().hsvValue,
+                                pipeline.getSettings().hueInverted);
+                frameProvider.requestHsvSettings(hsvParams);
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.get2020LifeCamCoeffs(false));
+                try (CVPipelineResult pipelineResult =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    TestUtils.printTestResultsWithLocation(pipelineResult);
 
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
-        var hsvParams =
-                new HSVPipe.HSVParams(
-                        pipeline.getSettings().hsvHue,
-                        pipeline.getSettings().hsvSaturation,
-                        pipeline.getSettings().hsvValue,
-                        pipeline.getSettings().hueInverted);
-        frameProvider.requestHsvSettings(hsvParams);
+                    // Draw on input
+                    var outputPipe = new OutputStreamPipeline();
+                    outputPipe.process(
+                            pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResultsWithLocation(pipelineResult);
+                    TestUtils.showImage(
+                            pipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                            "Pipeline output",
+                            999999);
 
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        outputPipe.process(
-                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                    pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+                }
+            }
+        }
 
-        TestUtils.showImage(
-                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
-
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         // these numbers are not *accurate*, but they are known and expected
         var expectedTrl =
                 new Translation3d(
@@ -197,10 +210,6 @@ public class SolvePNPTest {
     // used to run VisualVM for profiling, which won't run on unit tests.
     public static void main(String[] args) {
         LoadJNI.loadLibraries();
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();
         settings.hsvHue.set(60, 100);
@@ -210,6 +219,11 @@ public class SolvePNPTest {
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 
-        TestUtils.continuouslyRunPipeline(frameProvider, settings);
+        try (var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV)) {
+            TestUtils.continuouslyRunPipeline(frameProvider, settings);
+        }
     }
 }

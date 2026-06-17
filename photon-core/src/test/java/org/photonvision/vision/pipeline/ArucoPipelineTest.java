@@ -19,8 +19,10 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opencv.core.Point;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
@@ -29,6 +31,7 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation3d;
 
 public class ArucoPipelineTest {
@@ -40,40 +43,46 @@ public class ArucoPipelineTest {
 
     @Test
     public void testApriltagFacingCamera() {
-        var pipeline = new ArucoPipeline();
+        List<Point> corners;
+        Transform3d pose;
+        try (var pipeline = new ArucoPipeline();
+                var frameProvider =
+                        new FileFrameProvider(
+                                TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                                TestUtils.WPI2020Image.FOV,
+                                TestUtils.get2020LifeCamCoeffs(false)); ) {
+            pipeline.getSettings().inputShouldShow = true;
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+            pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+            pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
 
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.get2020LifeCamCoeffs(false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+            try (CVPipelineResult pipelineResult =
+                    pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                TestUtils.printTestResultsWithLocation(pipelineResult);
 
-        CVPipelineResult pipelineResult;
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResultsWithLocation(pipelineResult);
+                // Draw on input
+                var outputPipe = new OutputStreamPipeline();
+                var ret =
+                        outputPipe.process(
+                                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        var ret =
-                outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                TestUtils.showImage(
+                        ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-        TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
-
-        // these numbers are not *accurate*, but they are known and expected
-        var target = pipelineResult.targets.get(0);
+                // these numbers are not *accurate*, but they are known and expected
+                try (var target = pipelineResult.targets.get(0)) {
+                    corners = target.getTargetCorners();
+                    pose = target.getBestCameraToTarget3d();
+                }
+            }
+        }
 
         // Test corner order
-        var corners = target.getTargetCorners();
         assertEquals(260, corners.get(0).x, 10);
         assertEquals(245, corners.get(0).y, 10);
         assertEquals(315, corners.get(1).x, 10);
@@ -83,7 +92,6 @@ public class ArucoPipelineTest {
         assertEquals(260, corners.get(3).x, 10);
         assertEquals(190, corners.get(3).y, 10);
 
-        var pose = target.getBestCameraToTarget3d();
         // Test pose estimate translation
         assertEquals(2, pose.getTranslation().getX(), 0.2);
         assertEquals(0.1, pose.getTranslation().getY(), 0.2);

@@ -34,70 +34,72 @@ public class ReflectivePipelineTest {
     @Test
     public void test2019() {
         LoadJNI.loadLibraries();
-        var pipeline = new ReflectivePipeline();
-        pipeline.getSettings().hsvHue.set(60, 100);
-        pipeline.getSettings().hsvSaturation.set(100, 255);
-        pipeline.getSettings().hsvValue.set(190, 255);
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputMaximumTargets = 20;
-        pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
-        pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
+        try (var pipeline = new ReflectivePipeline();
+                var frameProvider =
+                        new FileFrameProvider(
+                                TestUtils.getWPIImagePath(
+                                        TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                                TestUtils.WPI2019Image.FOV); ) {
+            pipeline.getSettings().hsvHue.set(60, 100);
+            pipeline.getSettings().hsvSaturation.set(100, 255);
+            pipeline.getSettings().hsvValue.set(190, 255);
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().outputMaximumTargets = 20;
+            pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
+            pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
-        var hsvParams =
-                new HSVPipe.HSVParams(
-                        pipeline.getSettings().hsvHue,
-                        pipeline.getSettings().hsvSaturation,
-                        pipeline.getSettings().hsvValue,
-                        pipeline.getSettings().hueInverted);
-        frameProvider.requestHsvSettings(hsvParams);
+            frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+            var hsvParams =
+                    new HSVPipe.HSVParams(
+                            pipeline.getSettings().hsvHue,
+                            pipeline.getSettings().hsvSaturation,
+                            pipeline.getSettings().hsvValue,
+                            pipeline.getSettings().hueInverted);
+            frameProvider.requestHsvSettings(hsvParams);
 
-        TestUtils.showImage(frameProvider.get().colorImage.getMat(), "Pipeline input", 1);
+            try (var frame = frameProvider.get()) {
+                TestUtils.showImage(frame.colorImage.getMat(), "Pipeline input", 1);
+            }
 
-        CVPipelineResult pipelineResult;
+            try (CVPipelineResult pipelineResult =
+                    pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera); ) {
+                TestUtils.printTestResults(pipelineResult);
 
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResults(pipelineResult);
+                assertTrue(pipelineResult.hasTargets());
+                assertEquals(2, pipelineResult.targets.size(), "Target count wrong!");
 
-        assertTrue(pipelineResult.hasTargets());
-        assertEquals(2, pipelineResult.targets.size(), "Target count wrong!");
-
-        TestUtils.showImage(pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output");
+                TestUtils.showImage(
+                        pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output");
+            }
+        }
     }
 
     @Test
     public void test2020() {
         LoadJNI.loadLibraries();
-        var pipeline = new ReflectivePipeline();
+        try (var pipeline = new ReflectivePipeline();
+                var frameProvider =
+                        new FileFrameProvider(
+                                TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false),
+                                TestUtils.WPI2020Image.FOV); ) {
+            pipeline.getSettings().hsvHue.set(60, 100);
+            pipeline.getSettings().hsvSaturation.set(200, 255);
+            pipeline.getSettings().hsvValue.set(200, 255);
+            pipeline.getSettings().outputShouldDraw = true;
 
-        pipeline.getSettings().hsvHue.set(60, 100);
-        pipeline.getSettings().hsvSaturation.set(200, 255);
-        pipeline.getSettings().hsvValue.set(200, 255);
-        pipeline.getSettings().outputShouldDraw = true;
+            try (CVPipelineResult pipelineResult =
+                    pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera); ) {
+                TestUtils.printTestResults(pipelineResult);
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false),
-                        TestUtils.WPI2020Image.FOV);
-
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResults(pipelineResult);
-
-        TestUtils.showImage(
-                pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output");
+                TestUtils.showImage(
+                        pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output");
+            }
+        }
     }
 
     // used to run VisualVM for profiling. It won't run on unit tests.
     public static void main(String[] args) {
         LoadJNI.loadLibraries();
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();
         settings.hsvHue.set(60, 100);
@@ -108,6 +110,11 @@ public class ReflectivePipelineTest {
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 
-        TestUtils.continuouslyRunPipeline(frameProvider, settings);
+        try (var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV); ) {
+            TestUtils.continuouslyRunPipeline(frameProvider, settings);
+        }
     }
 }
