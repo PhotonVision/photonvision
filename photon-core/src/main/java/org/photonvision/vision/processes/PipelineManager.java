@@ -32,7 +32,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
-public class PipelineManager {
+public class PipelineManager implements AutoCloseable {
     private static final Logger logger = new Logger(PipelineManager.class, LogGroup.VisionModule);
 
     public static final int DRIVERMODE_INDEX = -1;
@@ -518,5 +518,13 @@ public class PipelineManager {
         setPipelineInternal(idx);
         reassignIndexes();
         recreateUserPipeline();
+    }
+
+    @Override
+    public void close() {
+        calibration3dPipeline.release();
+        focusPipeline.release();
+        driverModePipeline.release();
+        currentUserPipeline.release();
     }
 }
