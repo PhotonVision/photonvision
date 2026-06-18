@@ -5,7 +5,7 @@ import { ARUCO_5X5_1000 } from "aruco-marker/dictionaries/aruco_5x5_1000";
 import { ARUCO_6X6_1000 } from "aruco-marker/dictionaries/aruco_6x6_1000";
 import { ARUCO_7X7_1000 } from "aruco-marker/dictionaries/aruco_7x7_1000";
 import axios, { type AxiosRequestConfig } from "axios";
-import { inches, Measure, milli, meters } from "safe-units";
+import { length } from "@adam-rocska/units-and-measurement/length";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
@@ -148,18 +148,18 @@ export const arucoTagDictionaryFor = (tagFamily: CalibrationTagFamilies) => {
 export const paperDimensionsFor = (paperType: CalibrationPaperTypes) => {
   switch (paperType) {
     case CalibrationPaperTypes.Letter:
-      return [Measure.of(8.5, inches), Measure.of(11, inches)];
+      return [length.in(8.5), length.in(11)];
     case CalibrationPaperTypes.Legal:
-      return [Measure.of(8.5, inches), Measure.of(14, inches)];
+      return [length.in(8.5), length.in(14)];
     case CalibrationPaperTypes.Tabloid:
-      return [Measure.of(11, inches), Measure.of(17, inches)];
+      return [length.in(11), length.in(17)];
     case CalibrationPaperTypes.A4:
-      return [Measure.of(210, milli(meters)), Measure.of(297, milli(meters))];
+      return [length.mm(210), length.mm(297)];
     case CalibrationPaperTypes.A3:
-      return [Measure.of(297, milli(meters)), Measure.of(420, milli(meters))];
+      return [length.mm(297), length.mm(420)];
     case CalibrationPaperTypes.A2:
-      return [Measure.of(420, milli(meters)), Measure.of(594, milli(meters))];
+      return [length.mm(420), length.mm(594)];
     default:
-      return [Measure.of(0, milli(meters)), Measure.of(0, milli(meters))];
+      return [length.mm(0), length.mm(0)];
   }
 };

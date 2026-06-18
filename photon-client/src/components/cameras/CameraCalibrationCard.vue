@@ -25,7 +25,6 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import { inches } from "safe-units";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf").then(async (jspdf) => {
@@ -179,8 +178,8 @@ const downloadCalibBoard = async () => {
 
   const paperDimensions = paperDimensionsFor(paperType.value);
 
-  const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].valueIn(inches);
-  const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].valueIn(inches);
+  const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].in.value;
+  const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].in.value;
 
   const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
   const chessboardStartY = (paperHeight - patternHeight.value * squareSizeIn.value) / 2;
@@ -505,10 +504,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                   CalibrationPaperTypes.A4,
                   CalibrationPaperTypes.A3,
                   CalibrationPaperTypes.A2
-                ].map((paperType) => ({
-                  value: paperType,
-                  name: `${CalibrationPaperTypes[paperType]} (${paperDimensionsFor(paperType)[0]} x ${paperDimensionsFor(paperType)[1]})`
-                }))
+                ].map((paperType) => {
+                  const dimensions = paperDimensionsFor(paperType);
+                  return {
+                    value: paperType,
+                    name: `${CalibrationPaperTypes[paperType]} (${dimensions[0].value} ${dimensions[0].unit} x ${dimensions[1].value} ${dimensions[1].unit})`
+                  };
+                })
               "
               :select-cols="8"
             />
