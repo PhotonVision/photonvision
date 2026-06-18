@@ -3,21 +3,29 @@ import { computed, ref, watchEffect } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
-import CharucoImage from "@/assets/images/ChArUco_Marker8x8.png";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
+import {
+  arucoTagDictionaryFor,
+  arucoTagFamilyNameFor,
+  getResolutionString,
+  resolutionsAreEqual
+} from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
-const jspdf = import("jspdf");
+const jspdf = import("jspdf").then(async (jspdf) => {
+  await import("svg2pdf.js");
+  return jspdf;
+});
+const arucoMarker = import("aruco-marker");
 
 const theme = useTheme();
 const MM_PER_INCH = 25.4;
@@ -159,12 +167,11 @@ const downloadCalibBoard = async () => {
   const paperWidth = 8.5;
   const paperHeight = 11.0;
 
+  const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
+  const chessboardStartY = (paperHeight - patternWidth.value * squareSizeIn.value) / 2;
+
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
-
-      const chessboardStartY = (paperHeight - patternWidth.value * squareSizeIn.value) / 2;
-
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
         for (let squareX = 0; squareX < patternWidth.value; squareX++) {
           const xPos = chessboardStartX + squareX * squareSizeIn.value;
@@ -176,19 +183,54 @@ const downloadCalibBoard = async () => {
           }
         }
       }
-      doc.text(`${patternWidth.value} x ${patternHeight.value} | ${squareSizeIn.value}in`, paperWidth - 1, 1.0, {
-        maxWidth: (paperWidth - 2.0) / 2,
-        align: "right"
-      });
+      doc.text(
+        `${patternWidth.value} x ${patternHeight.value} | ${squareSize.value}${dimensionUnit.value}`,
+        paperWidth - 1,
+        1.0,
+        {
+          maxWidth: (paperWidth - 2.0) / 2,
+          align: "right"
+        }
+      );
       break;
 
     case CalibrationBoardTypes.ChArUco:
-      // Add pregenerated ChArUco
-      const charucoImage = new Image();
-      charucoImage.src = CharucoImage;
-      doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
+      const { arucoToSVGString } = await arucoMarker;
+      // ChArUco boards place ArUco tags in reading order over a chessboard with a black square in the bottom left
+      let markerIndex = 0;
+      const squarePadding = (squareSizeIn.value - markerSizeIn.value) / 2;
+      for (let squareY = 0; squareY < patternHeight.value; squareY++) {
+        for (let squareX = 0; squareX < patternWidth.value; squareX++) {
+          const xPos = chessboardStartX + squareX * squareSizeIn.value;
+          const yPos = chessboardStartY + squareY * squareSizeIn.value;
 
-      doc.text("8 x 8 | 1in & 0.75in", paperWidth - 1, 1.0, { maxWidth: (paperWidth - 2.0) / 2, align: "right" });
+          // Draw black squares on the odd tiles and ArUco markers on the even tiles, relative to the bottom left corner
+          if ((patternHeight.value - squareY) % 2 !== squareX % 2) {
+            doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
+          } else {
+            await doc.svg(
+              new DOMParser()
+                .parseFromString(
+                  arucoToSVGString(markerIndex++, undefined, arucoTagDictionaryFor(tagFamily.value)),
+                  "image/svg+xml"
+                )
+                .getElementsByTagName("svg")[0],
+              {
+                x: xPos + squarePadding,
+                y: yPos + squarePadding,
+                width: markerSizeIn.value,
+                height: markerSizeIn.value
+              }
+            );
+          }
+        }
+      }
+      doc.text(
+        `${patternWidth.value} x ${patternHeight.value} | ${arucoTagFamilyNameFor(tagFamily.value)}\n${squareSize.value}${dimensionUnit.value} squares | ${markerSize.value}${dimensionUnit.value} markers`,
+        paperWidth - 1,
+        1.0,
+        { maxWidth: (paperWidth - 2.0) / 2, align: "right" }
+      );
 
       break;
   }
@@ -196,14 +238,19 @@ const downloadCalibBoard = async () => {
   // Draw ruler pattern
   const lineStartX = 1.0;
   const lineEndX = paperWidth - lineStartX;
-  const lineY = paperHeight - 1.0;
+  const lineY = paperHeight - 0.75;
 
   doc.setLineWidth(0.01);
   doc.line(lineStartX, lineY, lineEndX, lineY);
 
   for (let tickX = lineStartX; tickX <= lineEndX; tickX++) {
     doc.line(tickX, lineY, tickX, lineY + 0.25);
-    doc.text(`${tickX - 1}${tickX - 1 === 0 ? " in" : ""}`, tickX + 0.1, lineY + 0.25);
+    doc.text(`${tickX - 1}${tickX - 1 === 0 ? " in" : ""}`, tickX + 0.1, lineY + 0.2);
+  }
+
+  for (let tickX = lineStartX; tickX <= lineEndX; tickX += (1 / MM_PER_INCH) * 20) {
+    doc.line(tickX, lineY, tickX, lineY - 0.25);
+    doc.text(`${Math.round((tickX - 1) * MM_PER_INCH)}${tickX - 1 === 0 ? " mm" : ""}`, tickX + 0.1, lineY - 0.05);
   }
 
   // Add branding
@@ -384,12 +431,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Tag Family"
               tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
-              :items="[
-                { value: CalibrationTagFamilies.Dict_4X4_1000, name: 'Dict_4X4_1000' },
-                { value: CalibrationTagFamilies.Dict_5X5_1000, name: 'Dict_5X5_1000' },
-                { value: CalibrationTagFamilies.Dict_6X6_1000, name: 'Dict_6X6_1000' },
-                { value: CalibrationTagFamilies.Dict_7X7_1000, name: 'Dict_7X7_1000' }
-              ]"
+              :items="
+                [
+                  CalibrationTagFamilies.Dict_4X4_1000,
+                  CalibrationTagFamilies.Dict_5X5_1000,
+                  CalibrationTagFamilies.Dict_6X6_1000,
+                  CalibrationTagFamilies.Dict_7X7_1000
+                ].map((family) => ({ value: family, name: arucoTagFamilyNameFor(family) }))
+              "
               :disabled="isCalibrating"
             />
             <pv-select
