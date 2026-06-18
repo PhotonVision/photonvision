@@ -452,3 +452,12 @@ export enum RobotOffsetType {
   DualFirst = 2,
   DualSecond = 3
 }
+
+export enum CalibrationPaperTypes {
+  Letter,
+  Legal,
+  Tabloid,
+  A4,
+  A3,
+  A2
+}

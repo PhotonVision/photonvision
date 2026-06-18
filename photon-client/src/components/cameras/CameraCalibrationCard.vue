@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from "@/types/SettingTypes";
+import {
+  CalibrationBoardTypes,
+  CalibrationPaperTypes,
+  CalibrationTagFamilies,
+  type VideoFormat
+} from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { useStateStore } from "@/stores/StateStore";
@@ -13,6 +18,7 @@ import {
   arucoTagDictionaryFor,
   arucoTagFamilyNameFor,
   getResolutionString,
+  paperDimensionsFor,
   resolutionsAreEqual
 } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
@@ -126,6 +132,8 @@ const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.ChArUco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
+const paperType = ref<CalibrationPaperTypes>(CalibrationPaperTypes.Letter);
+const paperOrientation = ref<"portrait" | "landscape">("portrait");
 
 const convertInchesToDisplay = (valueInInches: number) =>
   dimensionUnit.value === "mm" ? valueInInches * MM_PER_INCH : valueInInches;
@@ -157,18 +165,24 @@ const tooManyPoints = computed(
 const downloadCalibBoard = async () => {
   const { jsPDF } = await jspdf;
   const { font } = await PromptRegular;
-  const doc = new jsPDF({ unit: "in", format: "letter" });
+  const doc = new jsPDF({
+    unit: "in",
+    format: CalibrationPaperTypes[paperType.value],
+    orientation: paperOrientation.value
+  });
 
   doc.addFileToVFS("Prompt-Regular.tff", font);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
   doc.setFont("Prompt-Regular");
   doc.setFontSize(12);
 
-  const paperWidth = 8.5;
-  const paperHeight = 11.0;
+  const paperDimensions = paperDimensionsFor(paperType.value);
+
+  const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].toNumber("in");
+  const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].toNumber("in");
 
   const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
-  const chessboardStartY = (paperHeight - patternWidth.value * squareSizeIn.value) / 2;
+  const chessboardStartY = (paperHeight - patternHeight.value * squareSizeIn.value) / 2;
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
@@ -476,6 +490,35 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :disabled="isCalibrating"
               tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
               :label-cols="4"
+            />
+            <pv-select
+              v-model="paperType"
+              label="Paper Type"
+              tooltip="Size of paper used when exporting a calibration board."
+              :items="
+                [
+                  CalibrationPaperTypes.Letter,
+                  CalibrationPaperTypes.Legal,
+                  CalibrationPaperTypes.Tabloid,
+                  CalibrationPaperTypes.A4,
+                  CalibrationPaperTypes.A3,
+                  CalibrationPaperTypes.A2
+                ].map((paperType) => ({
+                  value: paperType,
+                  name: `${CalibrationPaperTypes[paperType]} (${paperDimensionsFor(paperType)[0]} x ${paperDimensionsFor(paperType)[1]})`
+                }))
+              "
+              :select-cols="8"
+            />
+            <pv-select
+              v-model="paperOrientation"
+              label="Paper Orientation"
+              tooltip="Orientation of paper used when exporting a calibration board."
+              :items="[
+                { value: 'landscape', name: 'Landscape' },
+                { value: 'portrait', name: 'Portrait' }
+              ]"
+              :select-cols="8"
             />
           </v-form>
         </div>
