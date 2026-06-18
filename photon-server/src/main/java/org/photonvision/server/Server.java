@@ -17,6 +17,7 @@
 
 package org.photonvision.server;
 
+import io.avaje.jsonb.javalin.JavalinJsonb;
 import io.javalin.Javalin;
 import io.javalin.plugin.bundled.CorsPlugin;
 import java.net.InetSocketAddress;
@@ -103,6 +104,7 @@ public class Server {
                                                                     return "Got WebSockets binary message from host: " + host;
                                                                 }));
                                     });
+                            javalinConfig.jsonMapper(new JavalinJsonb());
                         });
 
         /* Web Socket Events for Data Exchange */
