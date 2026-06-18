@@ -1,5 +1,9 @@
 import { useStateStore } from "@/stores/StateStore";
-import type { Resolution } from "@/types/SettingTypes";
+import { CalibrationTagFamilies, type Resolution } from "@/types/SettingTypes";
+import { ARUCO_4X4_1000 } from "aruco-marker/dictionaries/aruco_4x4_1000";
+import { ARUCO_5X5_1000 } from "aruco-marker/dictionaries/aruco_5x5_1000";
+import { ARUCO_6X6_1000 } from "aruco-marker/dictionaries/aruco_6x6_1000";
+import { ARUCO_7X7_1000 } from "aruco-marker/dictionaries/aruco_7x7_1000";
 import axios, { type AxiosRequestConfig } from "axios";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
@@ -107,5 +111,35 @@ export const axiosPost = async (
       });
     }
     return false;
+  }
+};
+
+export const arucoTagFamilyNameFor = (tagFamily: CalibrationTagFamilies) => {
+  switch (tagFamily) {
+    case CalibrationTagFamilies.Dict_4X4_1000:
+      return "ArUco 4x4 1000";
+    case CalibrationTagFamilies.Dict_5X5_1000:
+      return "ArUco 5x5 1000";
+    case CalibrationTagFamilies.Dict_6X6_1000:
+      return "ArUco 6x6 1000";
+    case CalibrationTagFamilies.Dict_7X7_1000:
+      return "ArUco 7x7 1000";
+    default:
+      return "ArUco Original";
+  }
+};
+
+export const arucoTagDictionaryFor = (tagFamily: CalibrationTagFamilies) => {
+  switch (tagFamily) {
+    case CalibrationTagFamilies.Dict_4X4_1000:
+      return ARUCO_4X4_1000;
+    case CalibrationTagFamilies.Dict_5X5_1000:
+      return ARUCO_5X5_1000;
+    case CalibrationTagFamilies.Dict_6X6_1000:
+      return ARUCO_6X6_1000;
+    case CalibrationTagFamilies.Dict_7X7_1000:
+      return ARUCO_7X7_1000;
+    default:
+      return undefined;
   }
 };
