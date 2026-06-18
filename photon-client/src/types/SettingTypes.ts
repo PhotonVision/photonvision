@@ -436,7 +436,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
 
 export enum CalibrationBoardTypes {
   Chessboard = 0,
-  Charuco = 1
+  ChArUco = 1
 }
 
 export enum CalibrationTagFamilies {
