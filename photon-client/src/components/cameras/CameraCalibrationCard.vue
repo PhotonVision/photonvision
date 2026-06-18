@@ -180,7 +180,7 @@ const downloadCalibBoard = async () => {
       const markerSizeIn = length[dimensionUnit.value](markerSize.value).in.value;
 
       const { arucoToSVGString } = await arucoMarker;
-      // ChArUco boards place ArUco tags in reading order over a chessboard with a black square in the bottom left
+      // ChArUco boards place ArUco tags in reading order over a chessboard with a black square in the top left
       let markerIndex = 0;
       const squarePadding = (squareSizeIn - markerSizeIn) / 2;
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
@@ -188,8 +188,9 @@ const downloadCalibBoard = async () => {
           const xPos = chessboardStartX + squareX * squareSizeIn;
           const yPos = chessboardStartY + squareY * squareSizeIn;
 
-          // Draw black squares on the odd tiles and ArUco markers on the even tiles, relative to the bottom left corner
-          if ((patternHeight.value - squareY) % 2 !== squareX % 2) {
+          // Draw black squares on the even tiles and ArUco markers on the odd tiles
+          // Parity is even in the top left corner unless using the old pattern, which starts in the bottom left corner
+          if ((squareY + (useOldPattern.value ? patternHeight.value - 1 : 0)) % 2 === squareX % 2) {
             doc.rect(xPos, yPos, squareSizeIn, squareSizeIn, "F");
           } else {
             await doc.svg(
