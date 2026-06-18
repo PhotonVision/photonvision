@@ -114,7 +114,7 @@ const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
-const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
+const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.ChArUco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
@@ -182,7 +182,7 @@ const downloadCalibBoard = async () => {
       });
       break;
 
-    case CalibrationBoardTypes.Charuco:
+    case CalibrationBoardTypes.ChArUco:
       // Add pregenerated ChArUco
       const charucoImage = new Image();
       charucoImage.src = CharucoImage;
@@ -352,13 +352,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Calibration board pattern to use"
               :select-cols="8"
               :items="[
-                { value: CalibrationBoardTypes.Charuco, name: 'ChArUco' },
+                { value: CalibrationBoardTypes.ChArUco, name: 'ChArUco' },
                 { value: CalibrationBoardTypes.Chessboard, name: 'Chessboard' }
               ]"
               :disabled="isCalibrating"
             />
             <v-alert
-              v-if="boardType !== CalibrationBoardTypes.Charuco"
+              v-if="boardType !== CalibrationBoardTypes.ChArUco"
               closable
               density="compact"
               variant="tonal"
@@ -368,7 +368,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
             />
             <pv-select
-              v-if="boardType !== CalibrationBoardTypes.Charuco"
+              v-if="boardType !== CalibrationBoardTypes.ChArUco"
               v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
               label="Decimation"
               tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
@@ -379,7 +379,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               "
             />
             <pv-select
-              v-if="boardType === CalibrationBoardTypes.Charuco"
+              v-if="boardType === CalibrationBoardTypes.ChArUco"
               v-model="tagFamily"
               label="Tag Family"
               tooltip="Dictionary of ArUco markers on the ChArUco board"
@@ -413,7 +413,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :step="dimensionStep"
             />
             <pv-number-input
-              v-if="boardType === CalibrationBoardTypes.Charuco"
+              v-if="boardType === CalibrationBoardTypes.ChArUco"
               v-model="markerSize"
               :label="`Marker Size (${dimensionUnit})`"
               :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
@@ -439,7 +439,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :label-cols="4"
             />
             <pv-switch
-              v-if="boardType === CalibrationBoardTypes.Charuco"
+              v-if="boardType === CalibrationBoardTypes.ChArUco"
               v-model="useOldPattern"
               label="Old OpenCV Pattern"
               :disabled="isCalibrating"
