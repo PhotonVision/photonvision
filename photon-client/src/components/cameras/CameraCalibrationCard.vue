@@ -201,8 +201,9 @@ const downloadCalibBoard = async () => {
           const xPos = chessboardStartX + squareX * squareSizeIn.value;
           const yPos = chessboardStartY + squareY * squareSizeIn.value;
 
-          // Draw black squares on the odd tiles and ArUco markers on the even tiles, relative to the bottom left corner
-          if ((patternHeight.value - squareY) % 2 !== squareX % 2) {
+          // Draw black squares on the even tiles and ArUco markers on the odd tiles
+          // Parity is even in the top left corner unless using the old pattern, which starts in the bottom left corner
+          if ((squareY + (useOldPattern.value ? patternHeight.value - 1 : 0)) % 2 === squareX % 2) {
             doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
           } else {
             await doc.svg(
