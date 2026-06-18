@@ -208,7 +208,7 @@ const downloadCalibBoard = async () => {
             await doc.svg(
               new DOMParser()
                 .parseFromString(
-                  arucoToSVGString(markerIndex++, undefined, arucoTagDictionaryFor(tagFamily.value)),
+                  arucoToSVGString(markerIndex++, undefined, await arucoTagDictionaryFor(tagFamily.value)),
                   "image/svg+xml"
                 )
                 .getElementsByTagName("svg")[0],
