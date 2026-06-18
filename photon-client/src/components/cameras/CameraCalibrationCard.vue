@@ -172,27 +172,9 @@ const downloadCalibBoard = async () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      for (let squareY = 0; squareY < patternHeight.value; squareY++) {
-        for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = chessboardStartX + squareX * squareSizeIn.value;
-          const yPos = chessboardStartY + squareY * squareSizeIn.value;
-
-          // Only draw the odd squares to create the chessboard pattern
-          if (squareY % 2 !== squareX % 2) {
-            doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
-          }
-        }
-      }
-      doc.text(
-        `${patternWidth.value} x ${patternHeight.value} | ${squareSize.value}${dimensionUnit.value}`,
-        paperWidth - 1,
-        1.0,
-        {
-          maxWidth: (paperWidth - 2.0) / 2,
-          align: "right"
-        }
-      );
-      break;
+      // This branch is inaccessible
+      console.error("Chessboard generation is not supported");
+      return;
 
     case CalibrationBoardTypes.ChArUco:
       const { arucoToSVGString } = await arucoMarker;
@@ -616,7 +598,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             size="small"
             block
             :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            :disabled="!settingsValid"
+            :disabled="!settingsValid || boardType === CalibrationBoardTypes.Chessboard"
             @click="downloadCalibBoard"
           >
             <v-icon start class="calib-btn-icon" size="large"> mdi-download </v-icon>
