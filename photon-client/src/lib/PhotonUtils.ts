@@ -1,10 +1,11 @@
 import { useStateStore } from "@/stores/StateStore";
-import { CalibrationTagFamilies, type Resolution } from "@/types/SettingTypes";
+import { CalibrationPaperTypes, CalibrationTagFamilies, type Resolution } from "@/types/SettingTypes";
 import { ARUCO_4X4_1000 } from "aruco-marker/dictionaries/aruco_4x4_1000";
 import { ARUCO_5X5_1000 } from "aruco-marker/dictionaries/aruco_5x5_1000";
 import { ARUCO_6X6_1000 } from "aruco-marker/dictionaries/aruco_6x6_1000";
 import { ARUCO_7X7_1000 } from "aruco-marker/dictionaries/aruco_7x7_1000";
 import axios, { type AxiosRequestConfig } from "axios";
+import { length } from "@adam-rocska/units-and-measurement/length";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
@@ -141,5 +142,24 @@ export const arucoTagDictionaryFor = (tagFamily: CalibrationTagFamilies) => {
       return ARUCO_7X7_1000;
     default:
       return undefined;
+  }
+};
+
+export const paperDimensionsFor = (paperType: CalibrationPaperTypes) => {
+  switch (paperType) {
+    case CalibrationPaperTypes.Letter:
+      return [length.in(8.5), length.in(11)];
+    case CalibrationPaperTypes.Legal:
+      return [length.in(8.5), length.in(14)];
+    case CalibrationPaperTypes.Tabloid:
+      return [length.in(11), length.in(17)];
+    case CalibrationPaperTypes.A4:
+      return [length.mm(210), length.mm(297)];
+    case CalibrationPaperTypes.A3:
+      return [length.mm(297), length.mm(420)];
+    case CalibrationPaperTypes.A2:
+      return [length.mm(420), length.mm(594)];
+    default:
+      return [length.mm(0), length.mm(0)];
   }
 };
