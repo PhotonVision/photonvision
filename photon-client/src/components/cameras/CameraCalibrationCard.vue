@@ -25,6 +25,7 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import { inches } from "safe-units";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf").then(async (jspdf) => {
@@ -178,8 +179,8 @@ const downloadCalibBoard = async () => {
 
   const paperDimensions = paperDimensionsFor(paperType.value);
 
-  const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].toNumber("in");
-  const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].toNumber("in");
+  const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].valueIn(inches);
+  const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].valueIn(inches);
 
   const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
   const chessboardStartY = (paperHeight - patternHeight.value * squareSizeIn.value) / 2;
