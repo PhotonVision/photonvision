@@ -123,7 +123,7 @@ export const arucoTagFamilyNameFor = (tagFamily: CalibrationTagFamilies) => {
     case CalibrationTagFamilies.Dict_6X6_1000:
       return "ArUco 6x6 1000";
     case CalibrationTagFamilies.Dict_7X7_1000:
-      return "ArUco 7X7 1000";
+      return "ArUco 7x7 1000";
     default:
       return "ArUco Original";
   }
