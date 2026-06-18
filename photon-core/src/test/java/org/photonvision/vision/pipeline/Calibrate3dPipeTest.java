@@ -253,6 +253,13 @@ public class Calibrate3dPipeTest {
                             .map(it -> it.imagePoints)
                             .allMatch(it -> it.width() > 0 && it.height() > 0));
 
+            assertTrue(
+                    calibration3dPipeline.foundCornersList.stream()
+                            .allMatch(
+                                    it ->
+                                            it.imagePoints.width() == it.objectPoints.width()
+                                                    && it.imagePoints.height() == it.objectPoints.height()));
+
             cal =
                     calibration3dPipeline.tryCalibration(
                             ConfigManager.getInstance()
