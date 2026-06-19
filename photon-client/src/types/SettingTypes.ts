@@ -459,5 +459,6 @@ export enum CalibrationPaperTypes {
   Tabloid,
   A4,
   A3,
-  A2
+  A2,
+  Adaptive
 }
