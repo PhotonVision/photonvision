@@ -21,13 +21,16 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@adam-rocska/units-and-measurement": "^1.2.0",
     "@fontsource/prompt": "^5.2.6",
     "@mdi/font": "^7.4.47",
     "@msgpack/msgpack": "^3.1.2",
+    "aruco-marker": "github:thatcomputerguy0101/aruco-marker#update-and-dictionaries",
     "axios": "^1.11.0",
     "echarts": "^6.0.0",
     "jspdf": "^3.0.1",
     "pinia": "^3.0.2",
+    "svg2pdf.js": "^2.7.0",
     "three": "^0.178.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.1",
@@ -40,7 +43,6 @@
     "@types/node": "^24.0.0",
     "@types/three": "^0.178.0",
     "@vitejs/plugin-vue": "^6.0.6",
-    "vue-tsc": "^3.2.5",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.5.0",
     "@vue/tsconfig": "^0.7.0",
@@ -50,6 +52,7 @@
     "sass": "^1.89.2",
     "typescript": "^5.8.3",
     "vite": "^8.0.10",
-    "vite-plugin-vuetify": "^2.1.1"
+    "vite-plugin-vuetify": "^2.1.1",
+    "vue-tsc": "^3.2.5"
   }
 }
