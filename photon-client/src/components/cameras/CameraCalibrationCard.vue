@@ -25,7 +25,7 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import { length } from "@adam-rocska/units-and-measurement/length";
+import { length, type Length } from "@adam-rocska/units-and-measurement/length";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf").then(async (jspdf) => {
@@ -142,6 +142,13 @@ watch(dimensionUnit, (value, oldValue) => {
 
 const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
 
+const adaptivePaperDimensions = (): [Length, Length] => {
+  return [
+    length[dimensionUnit.value](squareSize.value * patternWidth.value + 1),
+    length[dimensionUnit.value](squareSize.value * patternHeight.value + 3)
+  ];
+};
+
 // Emperical testing - with stack size limit of 1MB, we can handle at -least- 700k points
 const tooManyPoints = computed(
   () => useStateStore().calibrationData.imageCount * patternWidth.value * patternHeight.value > 700000
@@ -150,10 +157,23 @@ const tooManyPoints = computed(
 const downloadCalibBoard = async () => {
   const { jsPDF } = await jspdf;
   const { font } = await PromptRegular;
+
+  const paperDimensions =
+    paperType.value === CalibrationPaperTypes.Adaptive
+      ? adaptivePaperDimensions()
+      : paperDimensionsFor(paperType.value);
+
   const doc = new jsPDF({
     unit: "in",
-    format: CalibrationPaperTypes[paperType.value],
-    orientation: paperOrientation.value
+    ...(paperType.value === CalibrationPaperTypes.Adaptive
+      ? {
+          format: paperDimensions.map((dim) => dim.in.value),
+          orientation: paperDimensions[0].value < paperDimensions[1].value ? "p" : "l"
+        }
+      : {
+          format: CalibrationPaperTypes[paperType.value],
+          orientation: paperOrientation.value
+        })
   });
 
   doc.addFileToVFS("Prompt-Regular.tff", font);
@@ -161,10 +181,8 @@ const downloadCalibBoard = async () => {
   doc.setFont("Prompt-Regular");
   doc.setFontSize(12);
 
-  const paperDimensions = paperDimensionsFor(paperType.value);
-
-  const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].toNumber("in");
-  const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].toNumber("in");
+  const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].in.value;
+  const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].in.value;
 
   const squareSizeIn = length[dimensionUnit.value](squareSize.value).in.value;
   const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn) / 2;
@@ -492,17 +510,25 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                   CalibrationPaperTypes.Tabloid,
                   CalibrationPaperTypes.A4,
                   CalibrationPaperTypes.A3,
-                  CalibrationPaperTypes.A2
-                ].map((paperType) => ({
-                  value: paperType,
-                  name: `${CalibrationPaperTypes[paperType]} (${paperDimensionsFor(paperType)[0]} x ${paperDimensionsFor(paperType)[1]})`
-                }))
+                  CalibrationPaperTypes.A2,
+                  CalibrationPaperTypes.Adaptive
+                ].map((paperType) => {
+                  const dimensions =
+                    paperType === CalibrationPaperTypes.Adaptive
+                      ? adaptivePaperDimensions()
+                      : paperDimensionsFor(paperType);
+                  return {
+                    value: paperType,
+                    name: `${CalibrationPaperTypes[paperType]} (${dimensions[0].value} ${dimensions[0].unit} x ${dimensions[1].value} ${dimensions[1].unit})`
+                  };
+                })
               "
               :select-cols="8"
             />
             <pv-select
               v-model="paperOrientation"
               label="Paper Orientation"
+              :disabled="paperType === CalibrationPaperTypes.Adaptive"
               tooltip="Orientation of paper used when exporting a calibration board."
               :items="[
                 { value: 'landscape', name: 'Landscape' },
