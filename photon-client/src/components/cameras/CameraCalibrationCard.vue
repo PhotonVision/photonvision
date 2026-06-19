@@ -489,7 +489,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               v-model="useOldPattern"
               label="Old OpenCV Pattern"
               :disabled="isCalibrating"
-              tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
+              tooltip="If enabled, Photon will use the old OpenCV pattern for calibration (the top left square is a marker)."
               :label-cols="4"
             />
             <pv-select
