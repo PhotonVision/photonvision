@@ -89,13 +89,8 @@ public enum TargetModel implements Releasable {
     @Json.Ignore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
     @Json.Ignore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
-    private List<Point3> realWorldCoordinatesArray;
-    private double boxHeight;
-
     TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
         this.realWorldTargetCoordinates = realWorldTargetCoordinates;
-        this.realWorldCoordinatesArray = realWorldTargetCoordinates.toList();
-        this.boxHeight = boxHeight;
 
         var bottomList = realWorldTargetCoordinates.toList();
         var topList = new ArrayList<Point3>();
@@ -109,22 +104,6 @@ public enum TargetModel implements Releasable {
 
     TargetModel(List<Point3> realWorldCoordinatesArray, double boxHeight) {
         this(listToMat(realWorldCoordinatesArray), boxHeight);
-    }
-
-    public List<Point3> getRealWorldCoordinatesArray() {
-        return this.realWorldCoordinatesArray;
-    }
-
-    public double getBoxHeight() {
-        return boxHeight;
-    }
-
-    public void setRealWorldCoordinatesArray(List<Point3> realWorldCoordinatesArray) {
-        this.realWorldCoordinatesArray = realWorldCoordinatesArray;
-    }
-
-    public void setBoxHeight(double boxHeight) {
-        this.boxHeight = boxHeight;
     }
 
     private static MatOfPoint3f listToMat(List<Point3> points) {
