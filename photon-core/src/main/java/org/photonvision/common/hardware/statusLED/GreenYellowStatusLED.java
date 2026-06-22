@@ -40,7 +40,8 @@ public class GreenYellowStatusLED implements StatusLED {
             NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
         if (statusLedPins.size() != 2) {
             logger.warn(
-                    pinErrorTemplate.formatted(2, "Green and Yellow status LEDs", statusLedPins.size()));
+                    flexiblePinErrorTemplate.formatted(
+                            2, "Green and Yellow status LEDs", statusLedPins.size()));
         }
         // fill unassigned pins with -1 to disable
         if (statusLedPins.size() < 2) {
