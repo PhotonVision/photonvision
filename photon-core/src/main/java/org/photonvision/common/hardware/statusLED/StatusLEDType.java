@@ -17,7 +17,11 @@
 
 package org.photonvision.common.hardware.statusLED;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public enum StatusLEDType {
     RGB,
-    GreenYellow;
+    GreenYellow,
+    @JsonAlias({"DotStar", "APA102", "SK9822"})
+    SPI;
 }

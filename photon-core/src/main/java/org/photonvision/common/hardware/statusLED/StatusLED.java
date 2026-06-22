@@ -23,8 +23,10 @@ import java.util.function.Supplier;
 import org.photonvision.common.hardware.PhotonStatus;
 
 public interface StatusLED extends AutoCloseable {
-    static final String pinErrorTemplate =
+    static final String flexiblePinErrorTemplate =
             "Expected %d pins for %s, but found %n pins; unassigned pins will be skipped, extra pins will be ignored";
+    static final String strictPinErrorTemplate =
+            "Requires %d pins for %s, but found %n pins; status LEDs will not work";
 
     public void setStatus(PhotonStatus status);
 
@@ -37,6 +39,7 @@ public interface StatusLED extends AutoCloseable {
             case RGB -> new RGBStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh);
             case GreenYellow ->
                     new GreenYellowStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh);
+            case SPI -> new SPIStatusLED(lazyDeviceFactory.get(), statusLedPins);
         };
     }
 }

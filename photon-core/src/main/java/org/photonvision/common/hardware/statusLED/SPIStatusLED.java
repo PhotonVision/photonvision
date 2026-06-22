@@ -17,53 +17,39 @@
 
 package org.photonvision.common.hardware.statusLED;
 
-import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
-import java.util.Collections;
+import com.diozero.ws281xj.PixelColour;
+import com.diozero.ws281xj.apa102.Apa102LedDriver;
 import java.util.List;
 import org.photonvision.common.hardware.PhotonStatus;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 
-/** Basic RGB LED with individual control over each pin */
-public class RGBStatusLED implements StatusLED {
-    private final Logger logger = new Logger(RGBStatusLED.class, LogGroup.General);
+public class SPIStatusLED implements StatusLED {
+    private final Logger logger = new Logger(SPIStatusLED.class, LogGroup.General);
 
-    public final LED redLED;
-    public final LED greenLED;
-    public final LED blueLED;
+    Apa102LedDriver statusLed;
     protected int blinkCounter;
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
-    public RGBStatusLED(
-            NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
-        if (statusLedPins.size() != 3) {
-            logger.warn(flexiblePinErrorTemplate.formatted(3, "a RGB status LED", statusLedPins.size()));
-        }
-        // fill unassigned pins with -1 to disable
-        if (statusLedPins.size() < 3) {
-            statusLedPins.addAll(Collections.nCopies(statusLedPins.size() - 3, -1));
+    public SPIStatusLED(NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins) {
+        if (statusLedPins.size() != 2) {
+            logger.error(
+                    strictPinErrorTemplate.formatted(
+                            2, "a SPI (DotStar/APA102/SK9822) status LED", statusLedPins.size()));
         }
 
-        // Outputs are active-low for a common-anode RGB LED
-        redLED = new LED(deviceFactory, statusLedPins.get(0), activeHigh, false);
-        greenLED = new LED(deviceFactory, statusLedPins.get(1), activeHigh, false);
-        blueLED = new LED(deviceFactory, statusLedPins.get(2), activeHigh, false);
+        statusLed = new Apa102LedDriver(statusLedPins.get(0), statusLedPins.get(1), 2_000_000, 1, 0x1F);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
     }
 
-    protected void setRGB(boolean r, boolean g, boolean b) {
-        redLED.setOn(r);
-        greenLED.setOn(g);
-        blueLED.setOn(b);
-    }
-
     @Override
     public void setStatus(PhotonStatus status) {
-        this.status = status;
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setStatus'");
     }
 
     protected void updateLED() {
@@ -72,19 +58,19 @@ public class RGBStatusLED implements StatusLED {
         switch (status) {
             case NT_CONNECTED_TARGETS_VISIBLE ->
                     // Blue
-                    setRGB(false, false, true);
+                    statusLed.setPixelColour(0, PixelColour.BLUE);
             case NT_CONNECTED_TARGETS_MISSING ->
                     // Blinking Green
-                    setRGB(false, blink, false);
+                    statusLed.setPixelColour(0, blink ? PixelColour.GREEN : 0);
             case NT_DISCONNECTED_TARGETS_VISIBLE ->
                     // Blinking Blue
-                    setRGB(false, false, blink);
+                    statusLed.setPixelColour(0, blink ? PixelColour.BLUE : 0);
             case NT_DISCONNECTED_TARGETS_MISSING ->
                     // Blinking Yellow
-                    setRGB(blink, blink, false);
+                    statusLed.setPixelColour(0, blink ? PixelColour.YELLOW : 0);
             case GENERIC_ERROR ->
                     // Blinking Red
-                    setRGB(blink, false, false);
+                    statusLed.setPixelColour(0, blink ? PixelColour.RED : 0);
         }
 
         blinkCounter++;
@@ -92,9 +78,7 @@ public class RGBStatusLED implements StatusLED {
     }
 
     @Override
-    public void close() {
-        redLED.close();
-        greenLED.close();
-        blueLED.close();
+    public void close() throws Exception {
+        statusLed.close();
     }
 }
