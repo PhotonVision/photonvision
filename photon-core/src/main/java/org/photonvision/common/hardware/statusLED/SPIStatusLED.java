@@ -41,7 +41,13 @@ public class SPIStatusLED implements StatusLED {
                             2, "a SPI (DotStar/APA102/SK9822) status LED", statusLedPins.size()));
         }
 
-        statusLed = new Apa102LedDriver(statusLedPins.get(0), statusLedPins.get(1), 2_000_000, 1, 0x1F);
+        statusLed =
+                new Apa102LedDriver(
+                        statusLedPins.get(0),
+                        statusLedPins.get(1),
+                        2_000_000,
+                        1,
+                        0x04); // Brightness goes up to 0x1F
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
     }
