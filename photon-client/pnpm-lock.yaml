@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@adam-rocska/units-and-measurement':
+        specifier: ^1.2.0
+        version: 1.2.0
       '@fontsource/prompt':
         specifier: ^5.2.6
         version: 5.2.6
@@ -98,6 +101,10 @@ importers:
         version: 3.2.5(typescript@5.8.3)
 
 packages:
+
+  '@adam-rocska/units-and-measurement@1.2.0':
+    resolution: {integrity: sha512-mBnZ8/STbztVec+Mz9DH932z0gny52SebtSJ/y3n+IVtuF7KqbtQ3t1u1lpFSkLFU1msaNGzFgqsW7Emj0lrXA==}
+    engines: {node: '>=20.0.0'}
 
   '@babel/helper-string-parser@7.27.1':
     resolution: {integrity: sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA==}
@@ -1539,6 +1546,8 @@ packages:
     resolution: {integrity: sha512-41dFXEEXuJpNecuUQq6JlbybmnHaqqpGlbH1yxnA5V9MMP4SbohSVZsJIwz+zdjQXSSlR1Vc34EgH1zxyTDvhg==}
 
 snapshots:
+
+  '@adam-rocska/units-and-measurement@1.2.0': {}
 
   '@babel/helper-string-parser@7.27.1': {}
 
