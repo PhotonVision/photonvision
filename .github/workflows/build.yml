@@ -415,7 +415,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2022
             artifact-name: Win
             arch-override: winx86-64
 
@@ -434,7 +434,7 @@ jobs:
           - os: ubuntu-24.04
             artifact-name: photonvision-*-linuxx86-64.jar
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
-          - os: windows-latest
+          - os: windows-2022
             artifact-name: photonvision-*-winx86-64.jar
           - os: macos-latest
             artifact-name: photonvision-*-macarm64.jar
@@ -474,11 +474,11 @@ jobs:
           fi
           echo "=== Second run ==="
           java -jar ${{ matrix.extraOpts }} *.jar --smoketest
-        if: ${{ (matrix.os) != 'windows-latest' }}
+        if: ${{ (matrix.os) != 'windows-2022' }}
       - run: |
           ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
           ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
-        if: ${{ (matrix.os) == 'windows-latest' }}
+        if: ${{ (matrix.os) == 'windows-2022' }}
 
   build-image:
     needs: [build-package-linux]
