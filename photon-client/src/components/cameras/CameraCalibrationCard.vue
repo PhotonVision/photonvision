@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -15,12 +15,12 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import { length } from "@adam-rocska/units-and-measurement/length";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
 
 const theme = useTheme();
-const MM_PER_INCH = 25.4;
 
 const settingsValid = ref(true);
 
@@ -110,8 +110,8 @@ watchEffect(() => {
   uniqueVideoResolutionIndex.value = currentIndex;
 });
 const dimensionUnit = ref<"in" | "mm">("in");
-const squareSizeIn = ref(1);
-const markerSizeIn = ref(0.75);
+const squareSize = ref(30);
+const markerSize = ref(22);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
@@ -119,24 +119,9 @@ const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
 
-const convertInchesToDisplay = (valueInInches: number) =>
-  dimensionUnit.value === "mm" ? valueInInches * MM_PER_INCH : valueInInches;
-
-const convertDisplayToInches = (displayValue: number) =>
-  dimensionUnit.value === "mm" ? displayValue / MM_PER_INCH : displayValue;
-
-const squareSize = computed({
-  get: () => convertInchesToDisplay(squareSizeIn.value),
-  set(value) {
-    squareSizeIn.value = convertDisplayToInches(value);
-  }
-});
-
-const markerSize = computed({
-  get: () => convertInchesToDisplay(markerSizeIn.value),
-  set(value) {
-    markerSizeIn.value = convertDisplayToInches(value);
-  }
+watch(dimensionUnit, (value, oldValue) => {
+  squareSize.value = length[oldValue](squareSize.value)[value].value;
+  markerSize.value = length[oldValue](markerSize.value)[value].value;
 });
 
 const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
@@ -161,25 +146,31 @@ const downloadCalibBoard = async () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
+      const squareSizeIn = length[dimensionUnit.value](squareSize.value).in.value;
+      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn) / 2;
 
-      const chessboardStartY = (paperHeight - patternWidth.value * squareSizeIn.value) / 2;
+      const chessboardStartY = (paperHeight - patternHeight.value * squareSizeIn) / 2;
 
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
         for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = chessboardStartX + squareX * squareSizeIn.value;
-          const yPos = chessboardStartY + squareY * squareSizeIn.value;
+          const xPos = chessboardStartX + squareX * squareSizeIn;
+          const yPos = chessboardStartY + squareY * squareSizeIn;
 
           // Only draw the odd squares to create the chessboard pattern
           if (squareY % 2 !== squareX % 2) {
-            doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
+            doc.rect(xPos, yPos, squareSizeIn, squareSizeIn, "F");
           }
         }
       }
-      doc.text(`${patternWidth.value} x ${patternHeight.value} | ${squareSizeIn.value}in`, paperWidth - 1, 1.0, {
-        maxWidth: (paperWidth - 2.0) / 2,
-        align: "right"
-      });
+      doc.text(
+        `${patternWidth.value} x ${patternHeight.value} | ${squareSize.value}${dimensionUnit.value}`,
+        paperWidth - 1,
+        1.0,
+        {
+          maxWidth: (paperWidth - 2.0) / 2,
+          align: "right"
+        }
+      );
       break;
 
     case CalibrationBoardTypes.Charuco:
@@ -220,8 +211,8 @@ const isCalibrating = computed(
 
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
-    squareSizeIn: squareSizeIn.value,
-    markerSizeIn: markerSizeIn.value,
+    squareSizeMeters: length[dimensionUnit.value](squareSize.value).m.value,
+    markerSizeMeters: length[dimensionUnit.value](markerSize.value).m.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
