@@ -55,7 +55,6 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.math.util.Units;
 import org.wpilib.vision.camera.CameraServerJNI;
 import org.wpilib.vision.camera.VideoException;
 
@@ -391,8 +390,8 @@ public class VisionModule {
                         + data.videoModeIndex
                         + " and settings "
                         + data);
-        settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
-        settings.markerSize = Units.inchesToMeters(data.markerSizeIn);
+        settings.gridSize = data.squareSizeMeters;
+        settings.markerSize = data.markerSizeMeters;
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
