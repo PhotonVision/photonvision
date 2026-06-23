@@ -280,10 +280,10 @@ public class NeuralNetworkModelManager {
      *
      * <p>If this method returns `Optional.of(..)` then the model should be safe to load.
      *
-     * @param modelUID the unique identifier of the model to retrieve
+     * @param modelPath the unique identifier of the model to retrieve
      * @return an Optional containing the model if found, or an empty Optional if not found
      */
-    public Optional<Model> getModel(Path modelUID) {
+    public Optional<Model> getModel(Path modelPath) {
         if (models == null) {
             return Optional.empty();
         }
@@ -292,7 +292,7 @@ public class NeuralNetworkModelManager {
         for (Family backend : supportedBackends) {
             if (models.containsKey(backend)) {
                 Optional<Model> model =
-                        models.get(backend).stream().filter(m -> m.getPath().equals(modelUID)).findFirst();
+                        models.get(backend).stream().filter(m -> m.getPath().equals(modelPath)).findFirst();
                 if (model.isPresent()) {
                     return model;
                 }
