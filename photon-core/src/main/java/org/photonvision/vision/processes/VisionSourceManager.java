@@ -67,11 +67,6 @@ public class VisionSourceManager implements AutoCloseable {
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
-
-        {
-            Thread vsmShutdownThread = new Thread(INSTANCE::close);
-            Runtime.getRuntime().addShutdownHook(vsmShutdownThread);
-        }
     }
 
     public static VisionSourceManager getInstance() {
