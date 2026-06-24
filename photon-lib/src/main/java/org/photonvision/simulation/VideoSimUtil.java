@@ -281,7 +281,9 @@ public class VideoSimUtil {
         extremeCornersMat.release();
 
         // copy transformed tag onto result image
-        tempROI.copyTo(destination.submat(boundingRect), tempMask);
+        var destROI = destination.submat(boundingRect);
+        tempROI.copyTo(destROI, tempMask);
+        destROI.release();
 
         tagPoints.release();
         tagImageCorners.release();

@@ -254,6 +254,6 @@ public class VisionRunner implements AutoCloseable {
 
     @Override
     public void close() {
-        frameSupplier.close();
+        stopProcess();
     }
 }
