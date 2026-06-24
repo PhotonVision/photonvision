@@ -35,6 +35,7 @@ import org.photonvision.mrcal.MrCalJNI;
 import org.photonvision.mrcal.MrCalJNI.MrCalResult;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients.OptimizationInputs;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -130,13 +131,13 @@ public class Calibrate3dPipe
     }
 
     protected CameraCalibrationCoefficients calibrateOpenCV(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in,
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> foundBoards,
             double fxGuess,
             double fyGuess,
             Path imageSavePath) {
-        List<MatOfPoint3f> objPointsIn = in.stream().map(it -> it.objectPoints).toList();
-        List<MatOfPoint2f> imgPointsIn = in.stream().map(it -> it.imagePoints).toList();
-        List<MatOfFloat> levelsArr = in.stream().map(it -> it.levels).toList();
+        List<MatOfPoint3f> objPointsIn = foundBoards.stream().map(it -> it.objectPoints).toList();
+        List<MatOfPoint2f> imgPointsIn = foundBoards.stream().map(it -> it.imagePoints).toList();
+        List<MatOfFloat> levelsArr = foundBoards.stream().map(it -> it.levels).toList();
 
         if (objPointsIn.size() != imgPointsIn.size() || objPointsIn.size() != levelsArr.size()) {
             logger.error("objpts.size != imgpts.size");
@@ -146,12 +147,16 @@ public class Calibrate3dPipe
         // And delete rows depending on the level -- otherwise, level has no impact for opencv
         List<MatOfPoint3f> objPoints = new ArrayList<>();
         List<MatOfPoint2f> imgPoints = new ArrayList<>();
-        for (int i = 0; i < objPointsIn.size(); i++) {
+        for (int boardIdx = 0; boardIdx < objPointsIn.size(); boardIdx++) {
             MatOfPoint3f objPtsOut = new MatOfPoint3f();
             MatOfPoint2f imgPtsOut = new MatOfPoint2f();
 
             deleteIgnoredPoints(
-                    objPointsIn.get(i), imgPointsIn.get(i), levelsArr.get(i), objPtsOut, imgPtsOut);
+                    objPointsIn.get(boardIdx),
+                    imgPointsIn.get(boardIdx),
+                    levelsArr.get(boardIdx),
+                    objPtsOut,
+                    imgPtsOut);
 
             objPoints.add(objPtsOut);
             imgPoints.add(imgPtsOut);
@@ -163,8 +168,8 @@ public class Calibrate3dPipe
         List<Mat> tvecs = new ArrayList<>();
 
         // initial camera matrix guess
-        double cx = (in.get(0).size.width / 2.0) - 0.5;
-        double cy = (in.get(0).size.height / 2.0) - 0.5;
+        double cx = (foundBoards.get(0).size.width / 2.0) - 0.5;
+        double cy = (foundBoards.get(0).size.height / 2.0) - 0.5;
         cameraMatrix.put(0, 0, new double[] {fxGuess, 0, cx, 0, fyGuess, cy, 0, 0, 1});
 
         try {
@@ -175,7 +180,7 @@ public class Calibrate3dPipe
             Calib3d.calibrateCameraExtended(
                     objPoints.stream().map(it -> (Mat) it).toList(),
                     imgPoints.stream().map(it -> (Mat) it).toList(),
-                    new Size(in.get(0).size.width, in.get(0).size.height),
+                    new Size(foundBoards.get(0).size.width, foundBoards.get(0).size.height),
                     cameraMatrix,
                     distortionCoefficients,
                     rvecs,
@@ -206,7 +211,7 @@ public class Calibrate3dPipe
 
         var observations =
                 createObservations(
-                        in,
+                        foundBoards,
                         cameraMatrix,
                         distortionCoefficients,
                         rvecs,
@@ -225,28 +230,30 @@ public class Calibrate3dPipe
         imgPoints.forEach(Mat::release);
 
         return new CameraCalibrationCoefficients(
-                in.get(0).size,
+                foundBoards.get(0).size,
                 cameraMatrixMat,
                 distortionCoefficientsMat,
                 new double[0],
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
                 params.squareSize,
-                CameraLensModel.LENSMODEL_OPENCV);
+                CameraLensModel.LENSMODEL_OPENCV,
+                null);
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in,
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> foundBoards,
             double fxGuess,
             double fyGuess,
             Path imageSavePath) {
         List<MatOfPoint2f> corner_locations =
-                in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).toList();
+                foundBoards.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).toList();
 
-        List<MatOfFloat> levels = in.stream().map(it -> it.levels).map(MatOfFloat::new).toList();
+        List<MatOfFloat> levels =
+                foundBoards.stream().map(it -> it.levels).map(MatOfFloat::new).toList();
 
-        int imageWidth = (int) in.get(0).size.width;
-        int imageHeight = (int) in.get(0).size.height;
+        int imageWidth = (int) foundBoards.get(0).size.width;
+        int imageHeight = (int) foundBoards.get(0).size.height;
 
         MrCalResult result =
                 MrCalJNI.calibrateCamera(
@@ -289,49 +296,67 @@ public class Calibrate3dPipe
         // ones our code used to produce. To preserve consistency, continue to redo this math
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
-        for (var o : in) {
+        for (var board : foundBoards) {
             var rvec = new Mat();
             var tvec = new Mat();
 
             // If the calibration points contain points that are negative then we need to exclude them,
             // they are considered points that we dont want to use in calibration/solvepnp. These points
             // are required prior to this to allow mrcal to work.
-            Point3[] oPoints = o.objectPoints.toArray();
-            Point[] iPoints = o.imagePoints.toArray();
+            Point3[] oPoints = board.objectPoints.toArray();
+            Point[] iPoints = board.imagePoints.toArray();
 
             List<Point3> outputOPoints = new ArrayList<Point3>();
             List<Point> outputIPoints = new ArrayList<Point>();
 
-            for (int i = 0; i < iPoints.length; i++) {
-                if (iPoints[i].x >= 0 && iPoints[i].y >= 0) {
-                    outputIPoints.add(iPoints[i]);
-                }
+            // check each object + image point for "validity"
+            if (iPoints.length != oPoints.length) {
+                throw new RuntimeException(
+                        "Mismatched number of object and image points for board! objPts: "
+                                + oPoints.length
+                                + ", imgPts: "
+                                + iPoints.length);
             }
-            for (int i = 0; i < oPoints.length; i++) {
-                if (oPoints[i].x >= 0 && oPoints[i].y >= 0 && oPoints[i].z >= 0) {
-                    outputOPoints.add(oPoints[i]);
+            for (int pointIdx = 0; pointIdx < iPoints.length; pointIdx++) {
+                if (iPoints[pointIdx].x < 0
+                        || iPoints[pointIdx].y < 0
+                        || oPoints[pointIdx].x < 0
+                        || oPoints[pointIdx].y < 0
+                        || oPoints[pointIdx].z < 0) {
+                    // Discard
+                } else {
+                    // point is valid, keep it
+                    outputOPoints.add(oPoints[pointIdx]);
+                    outputIPoints.add(iPoints[pointIdx]);
                 }
             }
 
-            o.objectPoints.fromList(outputOPoints);
-            o.imagePoints.fromList(outputIPoints);
+            MatOfPoint3f filteredObjectPoints = new MatOfPoint3f();
+            MatOfPoint2f filteredImagePoints = new MatOfPoint2f();
+            filteredObjectPoints.fromList(outputOPoints);
+            filteredImagePoints.fromList(outputIPoints);
 
             Calib3d.solvePnP(
-                    o.objectPoints,
-                    o.imagePoints,
+                    filteredObjectPoints,
+                    filteredImagePoints,
                     cameraMatrixMat.getAsMatOfDouble(),
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
+
             rvecs.add(rvec);
             tvecs.add(tvec);
+
+            filteredObjectPoints.release();
+            filteredImagePoints.release();
         }
 
-        List<MatOfPoint3f> objPoints = in.stream().map(it -> it.objectPoints).toList();
-        List<MatOfPoint2f> imgPts = in.stream().map(it -> it.imagePoints).toList();
+        List<MatOfPoint3f> objPoints = foundBoards.stream().map(it -> it.objectPoints).toList();
+        List<MatOfPoint2f> imgPts = foundBoards.stream().map(it -> it.imagePoints).toList();
+
         List<BoardObservation> observations =
                 createObservations(
-                        in,
+                        foundBoards,
                         cameraMatrixMat.getAsMatOfDouble(),
                         distortionCoefficientsMat.getAsMatOfDouble(),
                         rvecs,
@@ -346,18 +371,21 @@ public class Calibrate3dPipe
         tvecs.forEach(Mat::release);
 
         return new CameraCalibrationCoefficients(
-                in.get(0).size,
+                foundBoards.get(0).size,
                 cameraMatrixMat,
                 distortionCoefficientsMat,
                 new double[] {result.warp_x, result.warp_y},
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
                 params.squareSize,
-                CameraLensModel.LENSMODEL_OPENCV);
+                CameraLensModel.LENSMODEL_OPENCV,
+                // If we only saved rvecs/tvecs (in our BoardObservations), it will break mrcal uncertainty
+                // calculation -- mrcal needs the optimization state vector at the solution. So save both
+                new OptimizationInputs(result.optimizedPoses));
     }
 
     private List<BoardObservation> createObservations(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in,
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> foundBoards,
             Mat cameraMatrix_,
             MatOfDouble distortionCoefficients_,
             List<Mat> rvecs,
@@ -439,15 +467,15 @@ public class Calibrate3dPipe
             // Calculate reprojection error for each point
             var reprojectionError = new ArrayList<Point>();
             var img_pts_reprojected_list = img_pts_reprojected.toList();
-            for (int j = 0; j < img_pts_reprojected_list.size(); j++) {
+            for (int imgPointIdx = 0; imgPointIdx < img_pts_reprojected_list.size(); imgPointIdx++) {
                 // Outliers are not part of the calibration, so don't calculate error for them
-                if (!cornersUsed.get(snapshotId)[j]) {
+                if (!cornersUsed.get(snapshotId)[imgPointIdx]) {
                     continue;
                 }
 
                 // error = (measured - expected)
-                var measured = img_pts_reprojected_list.get(j);
-                var expected = i_imgPts.get(j);
+                var measured = img_pts_reprojected_list.get(imgPointIdx);
+                var expected = i_imgPts.get(imgPointIdx);
 
                 // Sanity check -- negative corners make no sense here
                 if (!(measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0)) {
@@ -464,7 +492,7 @@ public class Calibrate3dPipe
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(snapshotId), tvecs.get(snapshotId));
 
-            var inputImage = in.get(snapshotId).inputImage;
+            var inputImage = foundBoards.get(snapshotId).inputImage;
             Path image_path = null;
             String snapshotName = "img" + snapshotId + ".png";
             if (inputImage != null) {
@@ -501,11 +529,11 @@ public class Calibrate3dPipe
         var objPtsOut = new ArrayList<Point3>();
         var imgPtsOut = new ArrayList<Point>();
 
-        for (int i = 0; i < levels.length; i++) {
-            if (levels[i] >= 0) {
+        for (int cornerIdx = 0; cornerIdx < levels.length; cornerIdx++) {
+            if (levels[cornerIdx] >= 0) {
                 // point survives
-                objPtsOut.add(objPtsIn[i]);
-                imgPtsOut.add(imgPtsIn[i]);
+                objPtsOut.add(objPtsIn[cornerIdx]);
+                imgPtsOut.add(imgPtsIn[cornerIdx]);
             }
         }
 
