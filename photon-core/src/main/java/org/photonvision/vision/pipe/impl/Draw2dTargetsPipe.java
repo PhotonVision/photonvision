@@ -35,7 +35,6 @@ import org.wpilib.math.util.Pair;
 public class Draw2dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
     MatOfPoint boundingRect = new MatOfPoint();
-    MatOfPoint2f boundingPoly = new MatOfPoint2f();
     MatOfPoint contourMat = new MatOfPoint();
     private static final Logger logger = new Logger(Draw2dTargetsPipe.class, LogGroup.General);
 
@@ -88,13 +87,13 @@ public class Draw2dTargetsPipe
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 } else {
                     // draw approximate polygon
-                    boundingPoly = target.getApproximateBoundingPolygon();
+                    var poly = target.getApproximateBoundingPolygon();
 
                     // fall back on the shape's approx poly dp
-                    if (boundingPoly == null && target.getShape() != null)
-                        boundingPoly = target.getShape().getContour().getApproxPolyDp();
-                    if (boundingPoly != null) {
-                        divideMat(boundingPoly, contourMat);
+                    if (poly == null && target.getShape() != null)
+                        poly = target.getShape().getContour().getApproxPolyDp();
+                    if (poly != null) {
+                        divideMat(poly, contourMat);
                         Imgproc.drawContours(
                                 in.getFirst(),
                                 List.of(contourMat),
@@ -213,7 +212,6 @@ public class Draw2dTargetsPipe
     @Override
     public void release() {
         boundingRect.release();
-        boundingPoly.release();
         contourMat.release();
     }
 

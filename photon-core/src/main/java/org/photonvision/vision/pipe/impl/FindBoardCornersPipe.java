@@ -20,8 +20,6 @@ package org.photonvision.vision.pipe.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.IntStream;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -116,21 +114,16 @@ public class FindBoardCornersPipe
         switch (params.type()) {
             case CHESSBOARD:
                 if (objectPointsTemplate.isEmpty()) {
-                    var objectPointsList =
-                            IntStream.range(0, (int) patternSize.height)
-                                    .mapToObj(
-                                            heightIdx ->
-                                                    IntStream.range(0, (int) patternSize.height)
-                                                            .mapToObj(
-                                                                    widthIdx -> {
-                                                                        double boardYCoord = heightIdx * params.gridSize();
-                                                                        double boardXCoord = widthIdx * params.gridSize();
-                                                                        return new Point3(boardXCoord, boardYCoord, 0.0);
-                                                                    }))
-                                    .flatMap(Function.identity())
-                                    .toList();
-                    objectPointsTemplate = Optional.of(new MatOfPoint3f());
-                    objectPointsTemplate.get().fromList(objectPointsList);
+                    var objectPoints = new Point3[(int) patternSize.height * (int) patternSize.width];
+                    int i = 0;
+                    for (int heightIdx = 0; heightIdx < patternSize.height; heightIdx++) {
+                        for (int widthIdx = 0; widthIdx < patternSize.width; widthIdx++) {
+                            double boardYCoord = heightIdx * params.gridSize();
+                            double boardXCoord = widthIdx * params.gridSize();
+                            objectPoints[i++] = new Point3(boardXCoord, boardYCoord, 0.0);
+                        }
+                    }
+                    objectPointsTemplate = Optional.of(new MatOfPoint3f(objectPoints));
                 }
             case CHARUCOBOARD:
                 // Since ChArUco boards support partial observations, object points can't be cached

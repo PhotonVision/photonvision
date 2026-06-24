@@ -126,92 +126,88 @@ public class Calibrate3dPipe
             List<FindBoardCornersPipe.FindBoardCornersPipeResult> observationCorners,
             FrameStaticProperties imageProps,
             Path imageSavePath) {
+        // The observation levels are ignored since they are never used to skip points with the
+        // current detectors. If this changes, the relevant points should be filtered out so they are
+        // not processed.
+
+        Mat cameraMatrix = new Mat(3, 3, CvType.CV_64F);
+        MatOfDouble distortionCoefficients = new MatOfDouble();
+        List<Mat> rvecs = new ArrayList<>();
+        List<Mat> tvecs = new ArrayList<>();
+
+        // initial camera matrix guess
+        double cx = (observationCorners.get(0).size.width / 2.0) - 0.5;
+        double cy = (observationCorners.get(0).size.height / 2.0) - 0.5;
+        cameraMatrix.put(
+                0,
+                0,
+                new double[] {
+                    imageProps.horizontalFocalLength, 0, cx, 0, imageProps.verticalFocalLength, cy, 0, 0, 1
+                });
+
         try {
-            // The observation levels are ignored since they are never used to skip points with the
-            // current detectors. If this changes, the relevant points should be filtered out so they are
-            // not processed.
+            // FindBoardCorners pipe outputs all the image points, object points, and frames to
+            // calculate imageSize from, other parameters are output Mats
 
-            Mat cameraMatrix = new Mat(3, 3, CvType.CV_64F);
-            MatOfDouble distortionCoefficients = new MatOfDouble();
-            List<Mat> rvecs = new ArrayList<>();
-            List<Mat> tvecs = new ArrayList<>();
+            Calib3d.calibrateCameraExtended(
+                    observationCorners.stream().map(it -> (Mat) it.objectPoints).toList(),
+                    observationCorners.stream().map(it -> (Mat) it.imagePoints).toList(),
+                    new Size(observationCorners.get(0).size.width, observationCorners.get(0).size.height),
+                    cameraMatrix,
+                    distortionCoefficients,
+                    rvecs,
+                    tvecs,
+                    stdDeviationsIntrinsics,
+                    stdDeviationsExtrinsics,
+                    perViewErrors,
+                    Calib3d.CALIB_USE_LU + Calib3d.CALIB_USE_INTRINSIC_GUESS);
+        } catch (Exception e) {
+            logger.error("Calibration failed!", e);
+            e.printStackTrace();
+            cameraMatrix.release();
+            distortionCoefficients.release();
+            return null;
+        }
 
-            // initial camera matrix guess
-            double cx = (observationCorners.get(0).size.width / 2.0) - 0.5;
-            double cy = (observationCorners.get(0).size.height / 2.0) - 0.5;
-            cameraMatrix.put(
-                    0,
-                    0,
-                    new double[] {
-                        imageProps.horizontalFocalLength, 0, cx, 0, imageProps.verticalFocalLength, cy, 0, 0, 1
-                    });
+        JsonMatOfDouble cameraMatrixMat = JsonMatOfDouble.fromMat(cameraMatrix);
+        JsonMatOfDouble distortionCoefficientsMat = JsonMatOfDouble.fromMat(distortionCoefficients);
 
-            try {
-                // FindBoardCorners pipe outputs all the image points, object points, and frames to
-                // calculate imageSize from, other parameters are output Mats
+        // Opencv is lame, so we can only assume all points are inliers
+        var inliners =
+                observationCorners.stream()
+                        .map(
+                                it -> {
+                                    var array = new boolean[it.objectPoints.rows() * it.objectPoints.cols()];
+                                    Arrays.fill(array, true);
+                                    return array;
+                                })
+                        .toList();
 
-                Calib3d.calibrateCameraExtended(
-                        observationCorners.stream().map(it -> (Mat) it.objectPoints).toList(),
-                        observationCorners.stream().map(it -> (Mat) it.imagePoints).toList(),
-                        new Size(observationCorners.get(0).size.width, observationCorners.get(0).size.height),
+        var observations =
+                createObservations(
+                        observationCorners,
                         cameraMatrix,
                         distortionCoefficients,
                         rvecs,
                         tvecs,
-                        stdDeviationsIntrinsics,
-                        stdDeviationsExtrinsics,
-                        perViewErrors,
-                        Calib3d.CALIB_USE_LU + Calib3d.CALIB_USE_INTRINSIC_GUESS);
-            } catch (Exception e) {
-                logger.error("Calibration failed!", e);
-                e.printStackTrace();
-                cameraMatrix.release();
-                distortionCoefficients.release();
-                return null;
-            }
+                        inliners,
+                        new double[] {0, 0},
+                        imageSavePath);
 
-            JsonMatOfDouble cameraMatrixMat = JsonMatOfDouble.fromMat(cameraMatrix);
-            JsonMatOfDouble distortionCoefficientsMat = JsonMatOfDouble.fromMat(distortionCoefficients);
+        cameraMatrix.release();
+        distortionCoefficients.release();
+        rvecs.forEach(Mat::release);
+        tvecs.forEach(Mat::release);
 
-            // Opencv is lame, so we can only assume all points are inliers
-            var inliners =
-                    observationCorners.stream()
-                            .map(
-                                    it -> {
-                                        var array = new boolean[it.objectPoints.rows() * it.objectPoints.cols()];
-                                        Arrays.fill(array, true);
-                                        return array;
-                                    })
-                            .toList();
-
-            var observations =
-                    createObservations(
-                            observationCorners,
-                            cameraMatrix,
-                            distortionCoefficients,
-                            rvecs,
-                            tvecs,
-                            inliners,
-                            new double[] {0, 0},
-                            imageSavePath);
-
-            cameraMatrix.release();
-            distortionCoefficients.release();
-            rvecs.forEach(Mat::release);
-            tvecs.forEach(Mat::release);
-
-            return new CameraCalibrationCoefficients(
-                    observationCorners.get(0).size,
-                    cameraMatrixMat,
-                    distortionCoefficientsMat,
-                    new double[0],
-                    observations,
-                    new Size(params.boardWidth, params.boardHeight),
-                    params.squareSize,
-                    CameraLensModel.LENSMODEL_OPENCV);
-        } finally {
-            observationCorners.forEach(observation -> observation.release());
-        }
+        return new CameraCalibrationCoefficients(
+                observationCorners.get(0).size,
+                cameraMatrixMat,
+                distortionCoefficientsMat,
+                new double[0],
+                observations,
+                new Size(params.boardWidth, params.boardHeight),
+                params.squareSize,
+                CameraLensModel.LENSMODEL_OPENCV);
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
