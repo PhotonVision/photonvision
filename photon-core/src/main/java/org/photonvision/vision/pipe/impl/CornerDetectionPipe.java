@@ -173,6 +173,11 @@ public class CornerDetectionPipe
         return List.of(bl, br, tr, tl);
     }
 
+    @Override
+    public void release() {
+        polyOutput.release();
+    }
+
     /**
      * @param accuracyPercentage Represents how "accurate" our approximate polygon must be.
      */

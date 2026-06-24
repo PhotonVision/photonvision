@@ -107,6 +107,11 @@ public class FindCirclesPipe
         return output;
     }
 
+    @Override
+    public void release() {
+        circles.release();
+    }
+
     /**
      * @param allowableThreshold When finding the corresponding contour, this is used to see how close
      *     a center should be to a contour for it to be considered THAT contour. Should be increased

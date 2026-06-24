@@ -22,7 +22,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
-public class VisionModuleManager {
+public class VisionModuleManager implements AutoCloseable {
     private final Logger logger = new Logger(VisionModuleManager.class, LogGroup.VisionModule);
 
     private final List<VisionModule> visionModules = new ArrayList<>();
@@ -78,5 +78,10 @@ public class VisionModuleManager {
         }
 
         return idx;
+    }
+
+    @Override
+    public void close() {
+        visionModules.forEach(VisionModule::close);
     }
 }

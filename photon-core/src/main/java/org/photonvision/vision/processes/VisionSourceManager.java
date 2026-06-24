@@ -60,7 +60,7 @@ import org.wpilib.vision.camera.UsbCamera;
  *
  * <p>We now require user interaction for pretty much every operation this undertakes.
  */
-public class VisionSourceManager {
+public class VisionSourceManager implements AutoCloseable {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
 
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
@@ -519,5 +519,10 @@ public class VisionSourceManager {
 
     public List<VisionModule> getVisionModules() {
         return vmm.getModules();
+    }
+
+    @Override
+    public void close() {
+        vmm.close();
     }
 }

@@ -40,7 +40,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
 @SuppressWarnings("rawtypes")
-public class VisionRunner {
+public class VisionRunner implements AutoCloseable {
     private final Logger logger;
     private final Thread visionProcessThread;
     private final FrameProvider frameSupplier;
@@ -250,5 +250,10 @@ public class VisionRunner {
                 loopCount++;
             }
         }
+    }
+
+    @Override
+    public void close() {
+        stopProcess();
     }
 }

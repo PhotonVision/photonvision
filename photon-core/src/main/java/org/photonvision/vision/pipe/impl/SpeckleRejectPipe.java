@@ -53,5 +53,8 @@ public class SpeckleRejectPipe
         return m_despeckledContours;
     }
 
+    @Override
+    public void release() {}
+
     public static record SpeckleRejectParams(double minPercentOfAvg) {}
 }

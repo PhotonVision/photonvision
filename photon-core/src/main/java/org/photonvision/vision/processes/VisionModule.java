@@ -64,7 +64,7 @@ import org.wpilib.vision.camera.VideoException;
  * <p>VisionModule has a pipeline manager, vision runner, and data providers. The data providers
  * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
  */
-public class VisionModule {
+public class VisionModule implements AutoCloseable {
     private final Logger logger;
     protected final PipelineManager pipelineManager;
     protected final VisionSource visionSource;
@@ -763,5 +763,13 @@ public class VisionModule {
 
     public CameraConfiguration getCameraConfiguration() {
         return this.visionSource.cameraConfiguration;
+    }
+
+    @Override
+    public void close() {
+        pipelineManager.close();
+        visionSource.close();
+        visionRunner.close();
+        lastPipelineResultBestTarget.close();
     }
 }

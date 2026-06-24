@@ -42,6 +42,12 @@ public class FocusPipe extends CVPipe<Mat, FocusPipe.FocusResult, FocusPipe.Focu
         return new FocusResult(outputMat, variance);
     }
 
+    @Override
+    public void release() {
+        mean.release();
+        stddev.release();
+    }
+
     public static class FocusResult {
         public final Mat frame;
         public final double variance;
