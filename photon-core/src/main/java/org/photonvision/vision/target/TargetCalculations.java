@@ -30,11 +30,6 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 public class TargetCalculations {
     static MatOfPoint2f targetPoint = new MatOfPoint2f();
 
-    static {
-        Thread targetPointShutdownThread = new Thread(targetPoint::release);
-        Runtime.getRuntime().addShutdownHook(targetPointShutdownThread);
-    }
-
     /**
      * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
      * to account for perspective distortion. Yaw is positive right, and pitch is positive up.

@@ -107,14 +107,6 @@ public class StaticFrames {
                 LOST_MAT, "Camera", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
         Imgproc.putText(
                 LOST_MAT, "Lost", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
-
-        Thread staticFrameShutdownThread =
-                new Thread(
-                        () -> {
-                            LOST_MAT.release();
-                            EMPTY_MAT.release();
-                        });
-        Runtime.getRuntime().addShutdownHook(staticFrameShutdownThread);
     }
 
     public StaticFrames() {}

@@ -72,10 +72,6 @@ public class VideoSimUtil {
         }
 
         kTag36h11MarkerPts = get36h11MarkerPts();
-
-        var videoSimShutdownThread =
-                new Thread(() -> kTag36h11Images.forEach((i, image) -> image.release()));
-        Runtime.getRuntime().addShutdownHook(videoSimShutdownThread);
     }
 
     private VideoSimUtil() {}
