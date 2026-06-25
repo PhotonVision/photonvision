@@ -1,0 +1,25 @@
+#!/bin/sh
+PACKAGE_NAME="photon-sc-app"
+
+echo "Stopping socket activation for $PACKAGE_NAME"
+
+if systemctl stop $PACKAGE_NAME.socket 2>/dev/null; then
+    echo "Socket stopped"
+else
+    echo "Socket was not running"
+fi
+
+if systemctl stop $PACKAGE_NAME.service 2>/dev/null; then
+    echo "Service stopped"
+else
+    echo "Service was not running"
+fi
+
+if systemctl disable $PACKAGE_NAME.socket 2>/dev/null; then
+    echo "Socket disabled"
+else
+    echo " Socket was not enabled"
+fi
+
+echo "Socket activation stopped and disabled"
+exit 0

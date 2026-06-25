@@ -1,0 +1,42 @@
+#!/bin/sh
+PACKAGE_NAME="photon-sc-app"
+
+echo "Setting up socket activation for $PACKAGE_NAME"
+
+# Stop any existing instances (cleanup from previous versions)
+systemctl stop $PACKAGE_NAME.service 2>/dev/null || true
+systemctl stop $PACKAGE_NAME.socket 2>/dev/null || true
+systemctl disable $PACKAGE_NAME.service 2>/dev/null || true
+systemctl daemon-reload
+
+# Enable ONLY the socket unit
+if systemctl enable $PACKAGE_NAME.socket; then
+    echo "Socket unit enabled successfully"
+else
+    echo "Failed to enable socket unit"
+    exit 1
+fi
+
+# Start listening
+if systemctl start $PACKAGE_NAME.socket; then
+    echo "Socket started successfully"
+else
+    echo "Failed to start socket"
+    systemctl status $PACKAGE_NAME.socket --no-pager
+    exit 1
+fi
+
+# Verify
+sleep 1
+
+if systemctl is-active --quiet $PACKAGE_NAME.socket; then
+    echo "Socket activation configured successfully."
+else
+    echo "Socket failed to activate"
+    echo "Debug info:"
+    systemctl status $PACKAGE_NAME.socket --no-pager || true
+    journalctl -u $PACKAGE_NAME.socket --no-pager -n 10 || true
+    exit 1
+fi
+
+exit 0
