@@ -28,8 +28,6 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculations {
-    static ThreadLocal<MatOfPoint2f> targetPoint = ThreadLocal.withInitial(MatOfPoint2f::new);
-
     /**
      * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
      * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
@@ -53,24 +51,28 @@ public class TargetCalculations {
             CameraCalibrationCoefficients cameraCal) {
         if (cameraCal != null) {
             // undistort
-            targetPoint.get().fromArray(new Point(targetCenterX, targetCenterY));
-            // Tighten up termination criteria
-            var termCriteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, 30, 1e-6);
-            Calib3d.undistortImagePoints(
-                    targetPoint.get(),
-                    targetPoint.get(),
-                    cameraCal.getCameraIntrinsicsMat(),
-                    cameraCal.getDistCoeffsMat(),
-                    termCriteria);
-            float buff[] = new float[2];
-            targetPoint.get().get(0, 0, buff);
+            MatOfPoint2f targetPoint = new MatOfPoint2f(new Point(targetCenterX, targetCenterY));
+            try {
+                // Tighten up termination criteria
+                var termCriteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, 30, 1e-6);
+                Calib3d.undistortImagePoints(
+                        targetPoint,
+                        targetPoint,
+                        cameraCal.getCameraIntrinsicsMat(),
+                        cameraCal.getDistCoeffsMat(),
+                        termCriteria);
+                float[] buff = new float[2];
+                targetPoint.get(0, 0, buff);
 
-            // if outside of the imager, convergence fails, or really really bad user camera cal,
-            // undistort will fail by giving us nans. at some point we should log this failure
-            // if we can't undistort, don't change the center location
-            if (Float.isFinite(buff[0]) && Float.isFinite(buff[1])) {
-                targetCenterX = buff[0];
-                targetCenterY = buff[1];
+                // if outside of the imager, convergence fails, or really really bad user camera cal,
+                // undistort will fail by giving us nans. at some point we should log this failure
+                // if we can't undistort, don't change the center location
+                if (Float.isFinite(buff[0]) && Float.isFinite(buff[1])) {
+                    targetCenterX = buff[0];
+                    targetCenterY = buff[1];
+                }
+            } finally {
+                targetPoint.release();
             }
         }
 
