@@ -57,7 +57,10 @@ def discover_all(
     if enable_mdns:
         try:
             mdns_results = discover_mdns()
-            logger.info(f"mDNS discovery found {len(mdns_results)} candidates")
+            if mdns_results:
+                logger.info(f"mDNS discovery found {len(mdns_results)} candidates")
+            else:
+                logger.debug("mDNS discovery found no candidates")
             all_candidates.update(mdns_results)
         except Exception as e:
             logger.error(f"mDNS discovery error: {e}")
@@ -66,7 +69,10 @@ def discover_all(
     if enable_network_scan:
         try:
             network_results = discover_network_scan(team_number)
-            logger.info(f"Network scan found {len(network_results)} candidates")
+            if network_results:
+                logger.info(f"Network scan found {len(network_results)} candidates")
+            else:
+                logger.debug("Network scan found no candidates")
             all_candidates.update(network_results)
         except Exception as e:
             logger.error(f"Network scan error: {e}")
@@ -76,7 +82,10 @@ def discover_all(
     if enable_port_check and all_candidates:
         try:
             verified = verify_port_5800(all_candidates)
-            logger.info(f"Port verification found {len(verified)} active dashboards")
+            if verified:
+                logger.info(f"Port verification found {len(verified)} active dashboards")
+            else:
+                logger.debug("Port verification found no accessible dashboards")
             # After port check, only keep verified IPs
             all_candidates = verified
         except Exception as e:
@@ -86,14 +95,17 @@ def discover_all(
     if enable_networktables:
         try:
             nt_results = discover_networktables(ntables_server)
-            logger.info(f"NetworkTables discovery found {len(nt_results)} candidates")
+            if nt_results:
+                logger.info(f"NetworkTables discovery found {len(nt_results)} candidates")
+            else:
+                logger.debug("NetworkTables discovery found no candidates")
             all_candidates.update(nt_results)
         except Exception as e:
             logger.error(f"NetworkTables discovery error: {e}")
 
     # Convert IPs to tab entries and sort for consistency
     if not all_candidates:
-        logger.info("No PhotonVision dashboards discovered")
+        logger.debug("No PhotonVision dashboards discovered")
         return []
 
     # Sort IPs for consistent ordering

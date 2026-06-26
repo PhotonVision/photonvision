@@ -50,8 +50,20 @@ def discover_networktables(
 
     try:
         instance = NetworkTableInstance.getDefault()
-        instance.setServerTeam(5800)  # Typical PhotonVision port
-        instance.startClient4("PhotonVisionDiscovery")
+        
+        # Attempt to start client using available API
+        # Try modern ntcore API first, fall back to legacy
+        try:
+            # Modern ntcore 4.x+ API
+            instance.startClient4(ntables_server)
+        except (AttributeError, TypeError):
+            try:
+                # Fallback: ntcore 3.x API
+                instance.startClient(ntables_server)
+            except (AttributeError, TypeError):
+                # Last resort: default client with no arguments
+                logger.debug("Using default NetworkTables client connection")
+                instance.startClient()
 
         # Try to read photonvision topic entries
         discovered: Set[str] = set()
@@ -69,10 +81,14 @@ def discover_networktables(
                 # Look for entries that contain IP addresses
                 # Common patterns: ips, addresses, instances, etc.
                 for key in ["ips", "addresses", "instances", "servers"]:
-                    value = table.getStringArray(key, [])
-                    if value:
-                        discovered.update(value)
-                        logger.info(f"NetworkTables found IPs under /{key}: {value}")
+                    try:
+                        value = table.getStringArray(key, [])
+                        if value:
+                            discovered.update(value)
+                            logger.info(f"NetworkTables found IPs under /{key}: {value}")
+                    except Exception:
+                        # Key not found or wrong type, continue
+                        pass
         except Exception as e:
             logger.debug(f"Error querying /photonvision table: {e}")
 
@@ -80,5 +96,5 @@ def discover_networktables(
         return discovered
 
     except Exception as e:
-        logger.error(f"NetworkTables discovery failed: {e}")
+        logger.debug(f"NetworkTables discovery error: {e}")
         return set()
