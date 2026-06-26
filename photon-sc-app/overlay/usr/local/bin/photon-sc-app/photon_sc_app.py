@@ -19,16 +19,34 @@ Key Features:
 import argparse
 import http.server
 import json
+import logging
 import os
 import signal
 import socket
 import socketserver
 import sys
+import threading
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
+
+from discovery.aggregator import discover_all
+from discovery.cache import DiscoveryCache
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Global flag to track deployment mode (True for systemd, False for local)
 SOCKET_ACTIVATED: bool = False
+
+# Global team number for network discovery (set by main())
+TEAM_NUMBER: Optional[int] = None
+
+# Global discovery cache (initialized in main(), shared between request handlers)
+DISCOVERY_CACHE: Optional[DiscoveryCache] = None
 
 
 class ServiceHandler(http.server.SimpleHTTPRequestHandler):
@@ -87,14 +105,24 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
         """Return list of available tabs as JSON.
 
         The frontend fetches this on startup and refresh to populate the tab bar.
-        Tab format: {"title": "Display Name", "url": "https://..."}
+        Discovered tabs are served from the background discovery cache, which
+        periodically updates the list of available PhotonVision dashboards using:
+        1. mDNS (photonvision.local hostname)
+        2. Network scanning (10.TE.AM.0/24 for team network)
+        3. Port 5800 verification
+        4. NetworkTables client discovery
 
-        TODO: Make this configurable from a file or database.
+        Tab format: {"title": "Display Name", "url": "http://..."}
+
+        Returns an empty list if no dashboards are discovered, allowing the
+        frontend to display a "No dashboards available" message gracefully.
         """
-        tabs: list[Dict[str, str]] = [
-            {"title": "Example", "url": "https://example.com"},
-            {"title": "Docs", "url": "https://docs.photonvision.org"},
-        ]
+        # Return cached results from background discovery thread
+        if DISCOVERY_CACHE is not None:
+            tabs: List[Dict[str, str]] = DISCOVERY_CACHE.get_tabs()
+        else:
+            # Fallback if cache not initialized (should not happen in normal operation)
+            tabs = []
 
         self.send_response(200)
         self.send_header("Content-type", "application/json")
@@ -114,9 +142,14 @@ class SocketActivatedService:
     - Better integration with systemd security features and resource limits
     """
 
-    def __init__(self) -> None:
-        """Initialize the socket-activated service."""
+    def __init__(self, discovery_cache: Optional[DiscoveryCache] = None) -> None:
+        """Initialize the socket-activated service.
+
+        Args:
+            discovery_cache: Optional DiscoveryCache for background discovery.
+        """
         self.httpd: Optional[socketserver.ThreadingTCPServer] = None
+        self.discovery_cache = discovery_cache
 
     def get_systemd_socket(self) -> socket.socket:
         """Retrieve and validate the socket passed by systemd.
@@ -165,6 +198,10 @@ class SocketActivatedService:
         - daemon_threads=True: Allows quick shutdown (threads don't block exit)
         - poll_interval=0.5: Checks signals frequently for responsive Ctrl-C
         """
+        # Start background discovery if available
+        if self.discovery_cache:
+            self.discovery_cache.start()
+
         server_socket = self.get_systemd_socket()
 
         # Create threaded server WITHOUT calling bind() or listen()
@@ -181,6 +218,10 @@ class SocketActivatedService:
 
     def stop(self) -> None:
         """Cleanly shut down the server and release resources."""
+        # Stop background discovery
+        if self.discovery_cache:
+            self.discovery_cache.stop()
+
         if self.httpd:
             self.httpd.shutdown()
             self.httpd.server_close()
@@ -214,16 +255,23 @@ class LocalService:
     Default: localhost:8080 (customizable via --host and --port arguments)
     """
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 8080) -> None:
+    def __init__(
+        self,
+        host: str = "127.0.0.1",
+        port: int = 8080,
+        discovery_cache: Optional[DiscoveryCache] = None,
+    ) -> None:
         """Initialize the local service.
 
         Args:
             host: Hostname to bind to. Defaults to '127.0.0.1'.
             port: Port to bind to. Defaults to 8080.
+            discovery_cache: Optional DiscoveryCache for background discovery.
         """
         self.httpd: Optional[http.server.ThreadingHTTPServer] = None
         self.host = host
         self.port = port
+        self.discovery_cache = discovery_cache
 
     def start(self) -> None:
         """Start the HTTP server on the specified host:port.
@@ -234,6 +282,10 @@ class LocalService:
         - allow_reuse_address=True: Allows quick restart without TIME_WAIT
         - poll_interval=0.5: Responsive to Ctrl-C and other signals
         """
+        # Start background discovery if available
+        if self.discovery_cache:
+            self.discovery_cache.start()
+
         self.httpd = http.server.ThreadingHTTPServer(
             (self.host, self.port), ServiceHandler
         )
@@ -245,6 +297,10 @@ class LocalService:
 
     def stop(self) -> None:
         """Cleanly shut down the server and release resources."""
+        # Stop background discovery
+        if self.discovery_cache:
+            self.discovery_cache.stop()
+
         if self.httpd:
             self.httpd.shutdown()
             self.httpd.server_close()
@@ -262,7 +318,18 @@ def main() -> None:
     2. Local development (--local flag):
        - Direct TCP server on localhost
        - Customizable host/port via --host and --port
+
+    Discovery Strategy:
+    The service automatically discovers PhotonVision dashboards via a background
+    thread running multiple strategies on different intervals:
+    - Fast strategies (mDNS, port checks): Default 10 seconds
+    - Slow strategies (network scan, NetworkTables): Default 60 seconds
+
+    Use --team to enable network scanning for your FRC team number.
+    Use --discovery-fast-interval and --discovery-slow-interval to tune timing.
     """
+    global TEAM_NUMBER, DISCOVERY_CACHE
+
     parser = argparse.ArgumentParser(description="Photon SC App service")
     parser.add_argument(
         "--local",
@@ -277,21 +344,69 @@ def main() -> None:
     parser.add_argument(
         "--port", type=int, default=8080, help="Local port when running in local mode"
     )
+    parser.add_argument(
+        "--team",
+        type=int,
+        default=None,
+        help="FRC team number for network discovery (e.g., 5123)",
+    )
+    parser.add_argument(
+        "--discovery-fast-interval",
+        type=float,
+        default=10.0,
+        help="Seconds between fast discovery cycles (mDNS, port checks). Default: 10s",
+    )
+    parser.add_argument(
+        "--discovery-slow-interval",
+        type=float,
+        default=60.0,
+        help="Seconds between slow discovery cycles (network scan, NetworkTables). Default: 60s",
+    )
+    parser.add_argument(
+        "--discovery-disable-fast",
+        action="store_true",
+        help="Disable fast discovery strategies (mDNS, port checks)",
+    )
+    parser.add_argument(
+        "--discovery-disable-slow",
+        action="store_true",
+        help="Disable slow discovery strategies (network scan, NetworkTables)",
+    )
     args = parser.parse_args()
+
+    # Set team number for discovery
+    TEAM_NUMBER = args.team
+    if TEAM_NUMBER:
+        logger.info(f"Network discovery enabled for team {TEAM_NUMBER}")
+
+    # Create and start discovery cache
+    DISCOVERY_CACHE = DiscoveryCache(
+        team_number=TEAM_NUMBER,
+        fast_interval=args.discovery_fast_interval,
+        slow_interval=args.discovery_slow_interval,
+        enable_fast=not args.discovery_disable_fast,
+        enable_slow=not args.discovery_disable_slow,
+    )
 
     # Select deployment mode based on --local flag
     if not args.local:
         # Production: systemd socket activation
         if not os.environ.get("LISTEN_PID") or not os.environ.get("LISTEN_FDS"):
-            print(
-                "ERROR: Must be started by systemd socket activation or use --local "
+            logger.error(
+                "Must be started by systemd socket activation or use --local "
                 "for development mode"
             )
             sys.exit(1)
-        service: SocketActivatedService | LocalService = SocketActivatedService()
+        service: SocketActivatedService | LocalService = SocketActivatedService(
+            discovery_cache=DISCOVERY_CACHE
+        )
     else:
         # Development: local server
-        service = LocalService(host=args.host, port=args.port)
+        service = LocalService(
+            host=args.host,
+            port=args.port,
+            discovery_cache=DISCOVERY_CACHE,
+        )
 
     # Register signal handlers for clean shutdown
     signal.signal(signal.SIGINT, signal_handler)  # Ctrl-C
@@ -302,7 +417,7 @@ def main() -> None:
     except (KeyboardInterrupt, SystemExit):
         # Ensure cleanup happens on any exit (Ctrl-C, signal, etc.)
         service.stop()
-        print("Server stopped.")
+        logger.info("Server stopped.")
 
 
 if __name__ == "__main__":

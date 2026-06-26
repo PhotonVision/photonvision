@@ -39,7 +39,7 @@ async function fetchTabs() {
     if (tabs.length > 0) {
       setActiveTab(0);
     } else {
-      tabList.innerHTML = '<div class="empty-state">No tabs available</div>';
+      tabList.innerHTML = '<div class="empty-state">No clients found</div>';
       tabFrame.src = 'about:blank';
     }
   } catch (error) {
