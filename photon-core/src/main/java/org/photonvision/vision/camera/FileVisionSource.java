@@ -119,6 +119,9 @@ public class FileVisionSource extends VisionSource {
         @Override
         public void setExposureRaw(double exposureRaw) {}
 
+        @Override
+        public void setSaturation(double saturation) {}
+
         public void setAutoExposure(boolean cameraAutoExposure) {}
 
         @Override
@@ -149,6 +152,16 @@ public class FileVisionSource extends VisionSource {
 
         @Override
         public double getMaxExposureRaw() {
+            return 100f;
+        }
+
+        @Override
+        public double getMinSaturation() {
+            return 1f;
+        }
+
+        @Override
+        public double getMaxSaturation() {
             return 100f;
         }
 
