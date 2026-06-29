@@ -55,12 +55,13 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
+import org.photonvision.tflite.TFLiteJNI.TFLiteSource;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.objects.ObjectDetector;
 import org.photonvision.vision.objects.RknnModel;
-import org.photonvision.vision.objects.RubikModel;
+import org.photonvision.vision.objects.TFLiteModel;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -679,7 +680,7 @@ public class RequestHandler {
                 try {
                     objDetector =
                             switch (family) {
-                                case RUBIK -> new RubikModel(modelProperties).load();
+                                case RUBIK -> new TFLiteModel(modelProperties, TFLiteSource.RUBIK).load();
                                 case RKNN -> new RknnModel(modelProperties).load();
                             };
                 } catch (RuntimeException e) {
