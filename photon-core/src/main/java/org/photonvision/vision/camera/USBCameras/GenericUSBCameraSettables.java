@@ -254,7 +254,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public void setSaturation(double saturation) {
         if (saturation >= 0.0) {
             try {
-                int propVal = (int) MathUtil.clamp(saturation, minSaturation, maxSaturation);
+                int propVal = (int) Math.clamp(saturation, minSaturation, maxSaturation);
 
                 logger.debug(
                         "Setting property "

@@ -116,6 +116,9 @@ export interface PipelineSettings {
   cameraExposureRaw: number;
   cameraMinExposureRaw: number;
   cameraMaxExposureRaw: number;
+  cameraSaturation: number;
+  cameraMinSaturation: number;
+  cameraMaxSaturation: number;
   offsetSinglePoint: { x: number; y: number };
   cameraBrightness: number;
   offsetDualPointAArea: number;
@@ -199,6 +202,9 @@ export const DefaultPipelineSettings: Omit<
   cameraWhiteBalanceTemp: 4000,
   cameraMinExposureRaw: 1,
   cameraMaxExposureRaw: 2,
+  cameraSaturation: 50,
+  cameraMinSaturation: 0,
+  cameraMaxSaturation: 100,
   crosshair: true,
   blockForFrames: true
 };
@@ -217,7 +223,6 @@ export const DefaultReflectivePipelineSettings: ReflectivePipelineSettings = {
   ledMode: true,
   outputMaximumTargets: 20,
   cameraExposureRaw: 6,
-  cameraSaturation: 0,
   pipelineType: PipelineType.Reflective,
 
   contourFilterRangeY: 2,
