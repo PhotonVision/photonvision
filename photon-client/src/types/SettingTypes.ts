@@ -255,6 +255,9 @@ export interface UiCameraConfiguration {
   minExposureRaw: number;
   maxExposureRaw: number;
 
+  minSaturation: number;
+  maxSaturation: number;
+
   minWhiteBalanceTemp: number;
   maxWhiteBalanceTemp: number;
 
