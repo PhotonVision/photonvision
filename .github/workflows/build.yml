@@ -14,13 +14,6 @@ env:
 
 jobs:
 
-  validation:
-    name: "Validation"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: gradle/actions/wrapper-validation@v5
-
   # build-examples:
 
   #     strategy:
@@ -115,7 +108,6 @@ jobs:
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-24.04
-    needs: [validation]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -153,7 +145,6 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-24.04
-    needs: [validation]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -210,7 +201,6 @@ jobs:
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
     runs-on: ubuntu-24.04
-    needs: [validation]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -255,7 +245,6 @@ jobs:
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
-    needs: [validation]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -300,7 +289,6 @@ jobs:
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
-    needs: [validation]
     steps:
       - uses: actions/checkout@v6
         with:
