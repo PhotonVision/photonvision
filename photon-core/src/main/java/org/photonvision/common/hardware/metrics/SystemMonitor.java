@@ -22,6 +22,8 @@ import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.ConfigManager;
@@ -83,7 +85,7 @@ public class SystemMonitor {
 
     // Set this to true to enable logging the contents of the DeviceMetrics class that is sent to NT
     // and the UI.
-    public boolean writeMetricsToLog = false;
+    public boolean writeMetricsToLog = true;
 
     private final String taskName = "SystemMonitorPublisher";
     private final double minimumDeltaTime = 0.250; // seconds
@@ -223,7 +225,9 @@ public class SystemMonitor {
         sb.append(String.format("System Uptime: %.0f, ", metrics.uptime()));
         sb.append(String.format("CPU Usage: %.2f%%, ", metrics.cpuUtil()));
         sb.append(String.format("CPU Temperature: %.2f °C, ", metrics.cpuTemp()));
-        sb.append(String.format("NPU Usage: %s, ", Arrays.toString(metrics.npuUsage())));
+        if (!metrics.npuUsage().isEmpty()) {
+            sb.append(String.format("NPU Usage: %s, ", metrics.npuUsage().toString()));
+        }
         sb.append(String.format("Used Disk: %.2f%%, ", metrics.diskUtilPct()));
         sb.append(String.format("Usable Disk Space: %.0f MiB, ", metrics.diskUsableSpace() / mebi));
         sb.append(String.format("Memory: %.0f / %.0f MiB, ", metrics.ramUtil(), metrics.ramMem()));
@@ -430,10 +434,10 @@ public class SystemMonitor {
      * Returns the npu usage, if available. Platforms with NPUs will need to override this method to
      * return a useful value.
      *
-     * @return the NPU usage or an empty array if not available.
+     * @return the NPU usage or an empty map if not available.
      */
-    public double[] getNpuUsage() {
-        return new double[0];
+    public Map<String, Double> getNpuUsage() {
+        return new HashMap<>();
     }
 
     /**
@@ -518,7 +522,7 @@ public class SystemMonitor {
         total += timeIt(sb, () -> String.format("System Uptime: %d", getUptime()));
         total += timeIt(sb, () -> String.format("CPU Usage: %.2f%%", getCpuUsage()));
         total += timeIt(sb, () -> String.format("CPU Temperature: %.2f °C", getCpuTemperature()));
-        total += timeIt(sb, () -> String.format("NPU Usage: %s", Arrays.toString(getNpuUsage())));
+        total += timeIt(sb, () -> String.format("NPU Usage: %s", getNpuUsage().toString()));
         total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", getUsedDiskPct()));
         total +=
                 timeIt(
