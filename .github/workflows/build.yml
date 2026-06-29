@@ -131,13 +131,14 @@ jobs:
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
           node-version: 24
-      - name: Setup tests
-        working-directory: photon-client
-        run: |
-          pnpm install
-          pnpm test-setup
-      - name: Prebuild Gradle
-        run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
+      - parallel:
+          - name: Setup tests
+            working-directory: photon-client
+            run: |
+              pnpm install
+              pnpm test-setup
+          - name: Prebuild Gradle
+            run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Run Playwright tests
         working-directory: photon-client
         run: pnpm test
