@@ -123,6 +123,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - uses: pnpm/action-setup@v5
         with:
           version: 11
@@ -162,6 +165,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - uses: pnpm/action-setup@v5
         with:
           version: 11
@@ -214,6 +220,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       # grab all tags
       - run: git fetch --tags --force
@@ -255,6 +264,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - run: git fetch --tags --force
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
@@ -296,6 +308,9 @@ jobs:
       - name: Config Git
         run: |
           git config --global --add safe.directory /__w/photonvision/photonvision
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
         run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
@@ -361,6 +376,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - uses: pnpm/action-setup@v5
         with:
           version: 11
