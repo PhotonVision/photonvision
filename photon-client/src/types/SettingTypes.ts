@@ -422,6 +422,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   isCSICamera: false,
   minExposureRaw: 1,
   maxExposureRaw: 100,
+  minSaturation: 0,
+  maxSaturation: 100,
   minWhiteBalanceTemp: 2000,
   maxWhiteBalanceTemp: 10000,
   matchedCameraInfo: {

@@ -217,6 +217,7 @@ export const DefaultReflectivePipelineSettings: ReflectivePipelineSettings = {
   ledMode: true,
   outputMaximumTargets: 20,
   cameraExposureRaw: 6,
+  cameraSaturation: 0,
   pipelineType: PipelineType.Reflective,
 
   contourFilterRangeY: 2,

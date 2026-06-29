@@ -50,8 +50,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     protected double minExposure = 1;
     protected double maxExposure = 80000;
 
-    protected double minSaturation = 1;
-    protected double maxSaturation = 80000; // TODO is this sane?
+    protected double minSaturation = 0;
+    protected double maxSaturation = 100;
 
     protected double minWhiteBalanceTemp = 1;
     protected double maxWhiteBalanceTemp = 4000;
