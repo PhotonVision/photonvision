@@ -28,9 +28,14 @@ package org.photonvision.struct;
 
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.utils.PacketUtils;
 
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
+
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
@@ -53,20 +58,19 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, PhotonPipelineMetadata value) {
         // field sequenceID is of intrinsic type int64
-        packet.encode((long) value.sequenceID);
+        packet.encode(value.sequenceID);
 
         // field captureTimestampMicros is of intrinsic type int64
-        packet.encode((long) value.captureTimestampMicros);
+        packet.encode(value.captureTimestampMicros);
 
         // field publishTimestampMicros is of intrinsic type int64
-        packet.encode((long) value.publishTimestampMicros);
+        packet.encode(value.publishTimestampMicros);
 
         // field timeSinceLastPong is of intrinsic type int64
-        packet.encode((long) value.timeSinceLastPong);
+        packet.encode(value.timeSinceLastPong);
     }
 
     @Override

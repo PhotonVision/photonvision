@@ -78,6 +78,43 @@ jobs:
       - name: Run mypy type checking
         run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
+  test-photonserde-py:
+    needs: build-py
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.14
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest mypy
+          pip install -r photon-serde-tests/requirements.txt
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: ./photon-lib/py/dist/
+
+      - name: Install PhotonLibPy package
+        working-directory: ./photon-lib/py
+        shell: bash
+        run: |
+            pip install --no-cache-dir dist/*.whl
+
+      - name: Run PhotonSerde tests
+        shell: bash
+        run: python -m pytest --import-mode=importlib photon-serde-tests/py/AutoSerdeTest.py
+
   build-python-examples:
     needs: build-py
     strategy:

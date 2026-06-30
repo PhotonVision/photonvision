@@ -32,6 +32,63 @@ public class PacketUtils {
     public static final int POSE2D_BYTE_SIZE = TRANSLATION2D_BYTE_SIZE + ROTATION2D_BYTE_SIZE;
     public static final int POSE3D_BYTE_SIZE = TRANSLATION3D_BYTE_SIZE + ROTATION3D_BYTE_SIZE;
 
+    // Kinda scuffed, this is so that datatype functions have the same signature as other shims
+    public static void packByte(Packet packet, byte data) {
+        packet.encode(data);
+    }
+
+    public static byte unpackByte(Packet packet) {
+        return packet.decodeByte();
+    }
+
+    public static void packShort(Packet packet, short data) {
+        packet.encode(data);
+    }
+
+    public static short unpackShort(Packet packet) {
+        return packet.decodeShort();
+    }
+
+    public static void packInt(Packet packet, int data) {
+        packet.encode(data);
+    }
+
+    public static int unpackInt(Packet packet) {
+        return packet.decodeInt();
+    }
+
+    public static void packLong(Packet packet, long data) {
+        packet.encode(data);
+    }
+
+    public static long unpackLong(Packet packet) {
+        return packet.decodeLong();
+    }
+
+    public static void packFloat(Packet packet, float data) {
+        packet.encode(data);
+    }
+
+    public static float unpackFloat(Packet packet) {
+        return packet.decodeFloat();
+    }
+
+    public static void packDouble(Packet packet, double data) {
+        packet.encode(data);
+    }
+
+    public static double unpackDouble(Packet packet) {
+        return packet.decodeDouble();
+    }
+
+    public static void packBoolean(Packet packet, boolean data) {
+        packet.encode(data);
+    }
+
+    public static boolean unpackBoolean(Packet packet) {
+        return packet.decodeBoolean();
+    }
+
     public static void packRotation2d(Packet packet, Rotation2d rotation) {
         packet.encode(rotation.getRadians());
     }

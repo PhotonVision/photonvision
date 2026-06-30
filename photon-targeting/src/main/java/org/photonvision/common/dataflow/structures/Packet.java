@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
 
 /** A packet that holds byte-packed data to be sent over NetworkTables. */
@@ -181,6 +183,23 @@ public class Packet {
     }
 
     /**
+     * Encodes the long into the packet.
+     *
+     * @param src The long to encode.
+     */
+    public void encode(long src) {
+        ensureCapacity(8);
+        packetData[writePos++] = (byte) src;
+        packetData[writePos++] = (byte) ((src >> 8) & 0xff);
+        packetData[writePos++] = (byte) ((src >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((src >> 24) & 0xff);
+        packetData[writePos++] = (byte) ((src >> 32) & 0xff);
+        packetData[writePos++] = (byte) ((src >> 40) & 0xff);
+        packetData[writePos++] = (byte) ((src >> 48) & 0xff);
+        packetData[writePos++] = (byte) ((src >> 56) & 0xff);
+    }
+
+    /**
      * Encodes the float into the packet.
      *
      * @param src The float to encode.
@@ -192,23 +211,6 @@ public class Packet {
         packetData[writePos++] = (byte) ((data >> 8) & 0xff);
         packetData[writePos++] = (byte) ((data >> 16) & 0xff);
         packetData[writePos++] = (byte) ((data >> 24) & 0xff);
-    }
-
-    /**
-     * Encodes the double into the packet.
-     *
-     * @param data The double to encode.
-     */
-    public void encode(long data) {
-        ensureCapacity(8);
-        packetData[writePos++] = (byte) (data & 0xff);
-        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 32) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 40) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 48) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 56) & 0xff);
     }
 
     /**
@@ -239,7 +241,11 @@ public class Packet {
         packetData[writePos++] = src ? (byte) 1 : (byte) 0;
     }
 
-    public void encode(List<Short> data) {
+    public <T extends PhotonStructSerializable<T>> void encode(T data) {
+        data.getSerde().pack(this, data);
+    }
+
+    public <T> void encodeListImpl(List<T> data, BiConsumer<Packet, T> encoder) {
         byte size = (byte) data.size();
         if (data.size() > Byte.MAX_VALUE) {
             throw new RuntimeException("Array too long! Got " + size);
@@ -249,12 +255,15 @@ public class Packet {
         encode(size);
 
         for (var f : data) {
-            encode(f);
+            encoder.accept(this, f);
         }
     }
 
-    public <T extends PhotonStructSerializable<T>> void encode(T data) {
-        data.getSerde().pack(this, data);
+    public <T> void encodeOptionalImpl(Optional<T> data, BiConsumer<Packet, T> encoder) {
+        encode(data.isPresent());
+        if (data.isPresent()) {
+            encoder.accept(this, data.get());
+        }
     }
 
     /**
@@ -265,24 +274,40 @@ public class Packet {
      * @param data
      */
     public <T extends PhotonStructSerializable<T>> void encodeList(List<T> data) {
-        byte size = (byte) data.size();
-        if (data.size() > Byte.MAX_VALUE) {
-            throw new RuntimeException("Array too long! Got " + size);
+        // Hack
+        BiConsumer<Packet, T> encoder;
+        if (data.size() < 1) {
+            encoder =
+                    (packet, value) -> {
+                        ;
+                    };
+        } else {
+            encoder = data.get(0).getSerde()::pack;
         }
 
-        // length byte
-        encode(size);
-
-        for (var f : data) {
-            f.getSerde().pack(this, f);
-        }
+        encodeListImpl(data, encoder);
     }
 
+    /**
+     * Encode an optional serializable struct. Lists are stored as [uint8 length, [length many] data
+     * structs]
+     *
+     * @param <T> the class this optional will be packing
+     * @param data
+     */
     public <T extends PhotonStructSerializable<T>> void encodeOptional(Optional<T> data) {
-        encode(data.isPresent());
+        // Hack
+        BiConsumer<Packet, T> encoder;
         if (data.isPresent()) {
-            data.get().getSerde().pack(this, data.get());
+            encoder =
+                    (packet, value) -> {
+                        ;
+                    };
+        } else {
+            encoder = data.get().getSerde()::pack;
         }
+
+        encodeOptionalImpl(data, encoder);
     }
 
     /**
@@ -295,6 +320,18 @@ public class Packet {
             return '\0';
         }
         return packetData[readPos++];
+    }
+
+    /**
+     * Returns a decoded short from the packet
+     *
+     * @return A decoded short from the packet
+     */
+    public short decodeShort() {
+        if (packetData.length < readPos + 1) {
+            return 0;
+        }
+        return (short) ((0xff & packetData[readPos++]) | (0xff & packetData[readPos++]) << 8);
     }
 
     /**
@@ -330,6 +367,24 @@ public class Packet {
     }
 
     /**
+     * Returns a decoded float from the packet.
+     *
+     * @return A decoded float from the packet.
+     */
+    public float decodeFloat() {
+        if (packetData.length < (readPos + 3)) {
+            return 0;
+        }
+
+        int data =
+                ((0xff & packetData[readPos++]
+                        | (0xff & packetData[readPos++]) << 8
+                        | (0xff & packetData[readPos++]) << 16
+                        | (0xff & packetData[readPos++]) << 24));
+        return Float.intBitsToFloat(data);
+    }
+
+    /**
      * Returns a decoded double from the packet.
      *
      * @return A decoded double from the packet.
@@ -352,24 +407,6 @@ public class Packet {
     }
 
     /**
-     * Returns a decoded float from the packet.
-     *
-     * @return A decoded float from the packet.
-     */
-    public float decodeFloat() {
-        if (packetData.length < (readPos + 3)) {
-            return 0;
-        }
-
-        int data =
-                ((0xff & packetData[readPos++]
-                        | (0xff & packetData[readPos++]) << 8
-                        | (0xff & packetData[readPos++]) << 16
-                        | (0xff & packetData[readPos++]) << 24));
-        return Float.intBitsToFloat(data);
-    }
-
-    /**
      * Returns a decoded boolean from the packet.
      *
      * @return A decoded boolean from the packet.
@@ -381,25 +418,29 @@ public class Packet {
         return packetData[readPos++] == 1;
     }
 
-    public void encode(double[] data) {
-        for (double d : data) {
-            encode(d);
-        }
+    public <T extends PhotonStructSerializable<T>> T decode(PhotonStructSerializable<T> t) {
+        return t.getSerde().unpack(this);
     }
 
-    public double[] decodeDoubleArray(int len) {
-        double[] ret = new double[len];
-        for (int i = 0; i < len; i++) {
-            ret[i] = decodeDouble();
+    public <T> List<T> decodeListImpl(Function<Packet, T> decoder) {
+        byte length = decodeByte();
+
+        var ret = new ArrayList<T>();
+        ret.ensureCapacity(length);
+
+        for (int i = 0; i < length; i++) {
+            ret.add(decoder.apply(this));
         }
+
         return ret;
     }
 
-    public short decodeShort() {
-        if (packetData.length < readPos + 1) {
-            return 0;
+    public <T> Optional<T> decodeOptionalImpl(Function<Packet, T> decoder) {
+        var present = decodeBoolean();
+        if (present) {
+            return Optional.of(decoder.apply(this));
         }
-        return (short) ((0xff & packetData[readPos++]) | (0xff & packetData[readPos++]) << 8);
+        return Optional.empty();
     }
 
     /**
@@ -410,40 +451,10 @@ public class Packet {
      * @param serde
      */
     public <T extends PhotonStructSerializable<T>> List<T> decodeList(PacketSerde<T> serde) {
-        byte length = decodeByte();
-
-        var ret = new ArrayList<T>();
-        ret.ensureCapacity(length);
-
-        for (int i = 0; i < length; i++) {
-            ret.add(serde.unpack(this));
-        }
-
-        return ret;
+        return decodeListImpl(serde::unpack);
     }
 
     public <T extends PhotonStructSerializable<T>> Optional<T> decodeOptional(PacketSerde<T> serde) {
-        var present = decodeBoolean();
-        if (present) {
-            return Optional.of(serde.unpack(this));
-        }
-        return Optional.empty();
-    }
-
-    public List<Short> decodeShortList() {
-        byte length = decodeByte();
-
-        var ret = new ArrayList<Short>();
-        ret.ensureCapacity(length);
-
-        for (int i = 0; i < length; i++) {
-            ret.add(decodeShort());
-        }
-
-        return ret;
-    }
-
-    public <T extends PhotonStructSerializable<T>> T decode(PhotonStructSerializable<T> t) {
-        return t.getSerde().unpack(this);
+        return decodeOptionalImpl(serde::unpack);
     }
 }
