@@ -1,0 +1,30 @@
+enums:
+  LEDMode:
+classes:
+  photon::PhotonCamera:
+    attributes:
+      test:
+      testResult:
+    methods:
+      PhotonCamera:
+        overloads:
+          wpi::nt::NetworkTableInstance, const std::string_view:
+          const std::string_view:
+      GetAllUnreadResults:
+      GetLatestResult:
+      SetDriverMode:
+      GetDriverMode:
+      SetFPSLimit:
+      GetFPSLimit:
+      TakeInputSnapshot:
+      TakeOutputSnapshot:
+      SetPipelineIndex:
+      GetPipelineIndex:
+      GetLEDMode:
+      SetLEDMode:
+      GetCameraName:
+      IsConnected:
+      GetCameraMatrix:
+      GetDistCoeffs:
+      SetVersionCheckEnabled:
+      GetCameraTable:

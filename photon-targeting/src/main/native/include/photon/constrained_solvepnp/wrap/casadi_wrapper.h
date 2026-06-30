@@ -48,6 +48,6 @@ wpi::util::expected<RobotStateMat, slp::ExitStatus> do_optimization(
     Eigen::Matrix<casadi_real, 4, Eigen::Dynamic, Eigen::ColMajor> field2points,
     Eigen::Matrix<casadi_real, 2, Eigen::Dynamic, Eigen::ColMajor>
         point_observations,
-    double gyroθ, double gyroErrorScaleFac);
+    double gyro_theta, double gyroErrorScaleFac);
 
 }  // namespace constrained_solvepnp

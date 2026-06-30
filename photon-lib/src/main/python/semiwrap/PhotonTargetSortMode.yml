@@ -1,0 +1,8 @@
+classes:
+  photon::PhotonTargetSortMode::Smallest:
+  photon::PhotonTargetSortMode::Largest:
+  photon::PhotonTargetSortMode::Highest:
+  photon::PhotonTargetSortMode::Lowest:
+  photon::PhotonTargetSortMode::RightMost:
+  photon::PhotonTargetSortMode::LeftMost:
+  photon::PhotonTargetSortMode::CenterMost:
