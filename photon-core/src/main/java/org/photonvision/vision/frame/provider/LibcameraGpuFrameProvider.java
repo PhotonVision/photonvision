@@ -85,6 +85,7 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
             var now = LibCameraJNI.getLibcameraTimestamp();
             var capture = LibCameraJNI.getFrameCaptureTime(p_ptr);
+            var exposureUs = LibCameraJNI.getFrameExposureTimeUs(p_ptr);
             var latency = (now - capture);
 
             LibCameraJNI.releasePair(p_ptr);
@@ -92,12 +93,19 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
             // Know frame is good -- increment sequence
             ++sequenceID;
 
+            // libcamera's SensorTimestamp marks start-of-exposure. The scene the
+            // detector integrates over spans [SOE, SOE+exposure], so mid-exposure
+            // is the closest single-instant approximation. When the driver
+            // returns 0, ExposureTime metadata was unavailable for this frame
+            // and we leave the timestamp uncorrected.
+            long midExposureCorrectionNs = exposureUs > 0 ? (exposureUs * 1000L) / 2L : 0L;
+
             return new Frame(
                     sequenceID,
                     colorMat,
                     processedMat,
                     type,
-                    MathUtils.wpiNanoTime() - latency,
+                    MathUtils.wpiNanoTime() - latency + midExposureCorrectionNs,
                     settables.getFrameStaticProperties().rotate(settables.getRotation()));
         }
     }
