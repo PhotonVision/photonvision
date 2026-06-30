@@ -25,11 +25,9 @@ import signal
 import socket
 import socketserver
 import sys
-import threading
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from discovery.aggregator import discover_all
 from discovery.cache import DiscoveryCache
 
 # Configure logging

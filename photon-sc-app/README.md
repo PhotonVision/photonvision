@@ -79,3 +79,50 @@ The backend finds PhotonVision coprocessors by running four parallel strategies 
 ### Production deployment
 
 Production uses systemd socket activation (port 9002). Only the `.socket` unit is enabled — the service starts on-demand when a connection arrives, then stays running. The `postinst` script in the IPK handles enabling and starting the socket unit automatically.
+
+## NetworkTables structure (reference)
+
+Confirmed by inspecting the actual PV source code (`NetworkTablesManager.java`, `NTTopicSet.java`, `NTDataPublisher.java`, `PhotonCamera.java`).
+
+Each PV coprocessor publishes camera data under `/photonvision/{CAMERA_NAME}/`. A subtable is a valid PV camera **if and only if** it has a `rawBytes` entry. This is the same detection logic `PhotonCamera.java` uses on the robot side.
+
+**Key topics per camera:**
+
+| Topic | Type | Purpose |
+|-------|------|---------|
+| `rawBytes` | raw | Primary pipeline result packet (type `"photonstruct:PhotonPipelineResult:{UUID}"`) |
+| `heartbeat` | int64 | Increments each frame — used to detect connectivity |
+| `pipelineIndexState` / `pipelineIndexRequest` | int64 | Active pipeline index (bidirectional) |
+| `driverMode` / `driverModeRequest` | bool | Driver mode toggle (bidirectional) |
+| `latencyMillis` | double | Pipeline latency |
+| `fps` | double | Frames per second |
+| `hasTarget` | bool | Whether the current frame has a target |
+| `targetPitch`, `targetYaw`, `targetArea`, `targetSkew` | double | Best target scalar values |
+| `cameraIntrinsics` | double[] (9) | Camera calibration matrix |
+| `cameraDistortion` | double[] (up to 8) | Camera distortion coefficients |
+
+**Coprocessor metadata** (published once at startup):
+
+| Topic | Type |
+|-------|------|
+| `/photonvision/coprocessors/{MAC}/hostname` | string |
+| `/photonvision/coprocessors/{MAC}/cameraNames` | string[] |
+| `/photonvision/version` | string |
+| `/photonvision/buildDate` | string |
+
+**System metrics** (published each cycle):
+
+| Topic | Type |
+|-------|------|
+| `/photonvision//metrics/{HOSTNAME}` | protobuf `DeviceMetrics` (includes `ipAddress`) |
+
+NT discovery connects to the roboRIO's NT server (port 1735, identified by team number), enumerates subtables under `/photonvision/`, confirms each by checking for `rawBytes`, reads coprocessor hostnames from the metadata, and resolves them to IPs via mDNS.
+
+## Roadmap / TODO
+
+- [x] **Implement proper NetworkTables table layout.** Rewrote `networktables_discovery.py` to connect to the roboRIO NT server, enumerate subtables under `/photonvision/`, validate cameras by checking for `rawBytes` (same logic as `PhotonCamera.java`), read coprocessor hostnames from `/photonvision/coprocessors/{MAC}/hostname`, and resolve via mDNS.
+- [ ] **Test on a real SystemCore.** Validate the IPK installs, socket activates, discovery finds coprocessors, and the web UI renders correctly.
+- [ ] **Prefer mDNS hostnames over raw IPs.** When mDNS resolves a coprocessor, use its hostname (e.g., `http://photonvision.local:5800`) in the tab URL instead of its IP. Fall back to IP when mDNS is unavailable. This keeps tabs working if the coprocessor's DHCP lease changes.
+- [ ] **Expose rich coprocessor info in the UI.** Show metadata alongside each tab — hostname, camera count, pipeline name, version, connection quality — without cluttering the tab bar. Options: tooltip on tab hover, a subtitle row below the tab bar, or a collapsible sidebar.
+- [ ] **Test error conditions.** Validate behavior when: ping sweep succeeds but port 5800 is unreachable; NT is unavailable; a previously discovered coprocessor goes offline; mDNS resolves intermittently; the team network has non-PV hosts on port 5800. Ensure the UI degrades gracefully (shows empty state, re-attempts discovery, doesn't cache stale entries that fail to load).
+- [ ] **Check "likely a PV coprocessor" NT client IPs.** Cross-reference IPs from NT `/photonvision` entries with mDNS and port-scan results. Build a confidence score so the UI can prefer verified PV instances over speculative ones.
