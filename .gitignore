@@ -150,6 +150,13 @@ dist-ssr
 components.d.ts
 photon-server/src/main/resources/web/index.html
 
+# photon-sc-app IPK build artifacts
+photon-sc-app/build/
+photon-sc-app/*.ipk
+
+# NT4 persist files
+photon-sc-app/*.json
+
 # Playwright
 photon-client/test-results/
 photon-client/playwright-report/
