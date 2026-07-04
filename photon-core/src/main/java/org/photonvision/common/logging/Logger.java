@@ -72,7 +72,14 @@ public class Logger {
     private static final SimpleDateFormat simpleDateFormat =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private static final List<Pair<String, LogLevel>> uiBacklog = new ArrayList<>();
+    /**
+     * Maximum number of log messages to buffer for the UI before a websocket client connects. On
+     * headless robots the UI may never connect, so the backlog must be bounded; when full, the oldest
+     * entries are dropped.
+     */
+    private static final int MAX_UI_BACKLOG_SIZE = 500;
+
+    private static final ArrayDeque<Pair<String, LogLevel>> uiBacklog = new ArrayDeque<>();
     private static boolean connected = false;
 
     private final String className;
@@ -184,7 +191,10 @@ public class Logger {
         }
         if (!connected) {
             synchronized (uiBacklog) {
-                uiBacklog.add(Pair.of(format(message, level, group, clazz, false), level));
+                if (uiBacklog.size() >= MAX_UI_BACKLOG_SIZE) {
+                    uiBacklog.removeFirst();
+                }
+                uiBacklog.addLast(Pair.of(format(message, level, group, clazz, false), level));
             }
         }
     }
