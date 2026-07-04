@@ -118,10 +118,8 @@ public class TFLiteObjectDetector implements ObjectDetector {
     @Override
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
         if (!isValid()) {
-            logger.error(
-                    "Detector is not initialized, and so it can't be released! Model: "
-                            + model.modelFile.getName());
-            return null;
+            logger.error("Detector is not initialized! Model: " + model.modelFile.getName());
+            return List.of();
         }
 
         // Resize the frame to the input size of the model
