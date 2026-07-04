@@ -378,12 +378,10 @@ public class RequestHandler {
             ctx.result("Successfully saved general settings");
             logger.info("Successfully saved general settings");
         } catch (IllegalStateException | JsonException e) {
-            // If the settings can't be parsed, use the default network settings
-            config = new NetworkConfig();
-
             ctx.status(400);
             ctx.result("The provided general settings were malformed");
             logger.error("The provided general settings were malformed", e);
+            return;
         }
 
         ConfigManager.getInstance().setNetworkSettings(config);
