@@ -152,7 +152,7 @@ public class HardwareManager {
                         hardwareConfig.setGPIOCommand,
                         hardwareConfig.setPWMCommand,
                         hardwareConfig.setPWMFrequencyCommand,
-                        hardwareConfig.setPWMFrequencyCommand);
+                        hardwareConfig.releaseGPIOCommand);
         CustomDeviceFactory deviceFactory = new CustomDeviceFactory(adapter);
         BoardPinInfo pinInfo = deviceFactory.getBoardPinInfo();
 

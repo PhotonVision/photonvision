@@ -114,11 +114,15 @@ public class HardwareConfig {
      * @return True if any gpio command has been configured to be non-empty, false otherwise
      */
     public final boolean hasGPIOCommandsConfigured() {
-        return getGPIOCommand != ""
-                || setGPIOCommand != ""
-                || setPWMCommand != ""
-                || setPWMFrequencyCommand != ""
-                || releaseGPIOCommand != "";
+        return isNonEmpty(getGPIOCommand)
+                || isNonEmpty(setGPIOCommand)
+                || isNonEmpty(setPWMCommand)
+                || isNonEmpty(setPWMFrequencyCommand)
+                || isNonEmpty(releaseGPIOCommand);
+    }
+
+    private static boolean isNonEmpty(String s) {
+        return s != null && !s.isEmpty();
     }
 
     @Override
