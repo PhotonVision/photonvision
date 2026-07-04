@@ -612,13 +612,58 @@ jobs:
           commands: java -jar *.jar --smoketest --platform=${{ matrix.plat_override }}
 
   matrix-checker:
-    # This job always runs last to set the overall result based on the matrix jobs. If any matrix job failed, this job will fail.
-    # This makes it so that we don't need to add each matrix job individually to CI checks.
+    # This job is the single required status check for branch protection and the
+    # overall pass/fail signal for a run. It needs every terminal job in the
+    # workflow graph, so a failure anywhere fails this check:
+    #   - Intermediate jobs (validation, build-offline-docs, build-photonlib-host,
+    #     build-photonlib-docker, build-package-*) are covered transitively: when
+    #     one of them fails, GitHub marks its dependents as 'skipped', so any
+    #     needed job that is 'skipped' (or 'cancelled') must be treated as a
+    #     failure here, not ignored.
+    #   - 'release' is the one exception: its own `if:` only lets it run on
+    #     pushes to main or v* tags of PhotonVision/photonvision, so a skipped
+    #     'release' is only an error when that condition holds (handled in the
+    #     check script below).
+    # The job name is referenced by branch protection - do not rename it.
     runs-on: ubuntu-latest
-    needs: [build-image]
+    needs:
+      - build-gradle
+      - playwright-tests
+      - build-photonlib-vendorjson
+      - combine
+      - build-image
+      - run-smoketest-native
+      - release
     if: always()
     steps:
-      - run: ${{!contains(needs.*.result, 'failure')}}
+      - name: Check required job results
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          # 'release' only runs on pushes to main or v* tags in the upstream
+          # repo (mirrors the release job's own `if:`); everywhere else a
+          # skipped 'release' is expected and must not fail the gate.
+          release_required=false
+          if [ "$GITHUB_REPOSITORY" = "PhotonVision/photonvision" ]; then
+            case "$GITHUB_REF" in
+              refs/heads/main|refs/tags/v*) release_required=true ;;
+            esac
+          fi
+
+          echo "Needed job results:"
+          echo "$NEEDS_JSON" | jq -r 'to_entries[] | "  \(.key): \(.value.result)"'
+
+          failed=0
+          while IFS=$'\t' read -r job result; do
+            if [ "$job" = "release" ] && [ "$result" = "skipped" ] && [ "$release_required" = "false" ]; then
+              continue
+            fi
+            if [ "$result" != "success" ]; then
+              echo "::error::Required job '$job' did not succeed (result: $result)"
+              failed=1
+            fi
+          done < <(echo "$NEEDS_JSON" | jq -r 'to_entries[] | [.key, .value.result] | @tsv')
+          exit "$failed"
 
   release:
     # Require smoketest-native so that if those fail, we don't release broken artifacts
