@@ -93,7 +93,7 @@ public class PhotonCamera implements AutoCloseable {
         pipelineIndexState.close();
         ledModeRequest.close();
         ledModeState.close();
-        pipelineIndexRequest.close();
+        heartbeatSubscriber.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
         topicNameSubscriber.close();
