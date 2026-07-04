@@ -204,7 +204,7 @@ public class PhotonCameraSim implements AutoCloseable {
             double minTargetAreaPercent,
             double maxSightRangeMeters,
             AprilTagFieldLayout tagLayout) {
-        this(camera, prop);
+        this(camera, prop, tagLayout);
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
     }

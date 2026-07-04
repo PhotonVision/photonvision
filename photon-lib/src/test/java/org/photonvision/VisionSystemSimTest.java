@@ -46,6 +46,7 @@ import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -580,6 +581,39 @@ class VisionSystemSimTest {
         assertEquals(1, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
         assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
+    }
+
+    @Test
+    public void testConstructorTagLayoutIsUsed() {
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera(inst, "camera");
+        var prop = new SimCameraProperties();
+        prop.setCalibration(640, 480, Rotation2d.fromDegrees(90));
+
+        // Tag IDs deliberately absent from the default field layout, so multitag estimation
+        // can only succeed if the layout passed to the constructor is actually used.
+        List<AprilTag> tagList = new ArrayList<>();
+        tagList.add(new AprilTag(90, new Pose3d(12, 3, 1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new AprilTag(91, new Pose3d(12, 1, -1, new Rotation3d(0, 0, Math.PI))));
+        AprilTagFieldLayout layout =
+                new AprilTagFieldLayout(tagList, Units.feetToMeters(54.0), Units.feetToMeters(27.0));
+
+        var cameraSim = new PhotonCameraSim(camera, prop, 0.001, 60.0, layout);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+
+        visionSysSim.addVisionTargets(
+                new VisionTargetSim(tagList.get(0).pose, TargetModel.kAprilTag36h11, 90),
+                new VisionTargetSim(tagList.get(1).pose, TargetModel.kAprilTag36h11, 91));
+
+        visionSysSim.update(new Pose2d(5, 1, Rotation2d.fromDegrees(5)));
+        var result = waitForSequenceNumber(camera, 1);
+
+        assertTrue(result.hasTargets());
+        var multitagResult = result.getMultiTagResult();
+        assertTrue(
+                multitagResult.isPresent(),
+                "Multitag estimation should use the custom layout passed to the constructor");
+        assertEquals(List.of((short) 90, (short) 91), multitagResult.get().fiducialIDsUsed);
     }
 
     @Test
