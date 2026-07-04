@@ -109,8 +109,8 @@ public class Main {
                 isTestMode = true;
                 logger.info("Running in test mode - Cameras will not be used");
 
-                if (cmd.hasOption("path")) {
-                    Path p = Path.of(System.getProperty("PATH_PREFIX", "") + cmd.getOptionValue("path"));
+                if (cmd.hasOption("folder")) {
+                    Path p = Path.of(System.getProperty("PATH_PREFIX", "") + cmd.getOptionValue("folder"));
                     logger.info("Loading from Path " + p.toAbsolutePath().toString());
                     testModeFolder = p;
                 }
@@ -226,15 +226,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
-        Logger.setLevel(LogGroup.Camera, logLevel);
-        Logger.setLevel(LogGroup.WebServer, logLevel);
-        Logger.setLevel(LogGroup.VisionModule, logLevel);
-        Logger.setLevel(LogGroup.Data, logLevel);
-        Logger.setLevel(LogGroup.Config, logLevel);
-        Logger.setLevel(LogGroup.General, logLevel);
-        logger.info("Logging initialized in debug mode.");
-
         System.setProperty("jsonb.disableAdapterSpi", "true");
 
         logger.info(
@@ -257,6 +248,16 @@ public class Main {
         } catch (ParseException e) {
             logger.error("Failed to parse command-line options!", e);
         }
+
+        // Level must be set after handleArgs so that -d/--debug is honored
+        var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
+        Logger.setLevel(LogGroup.Camera, logLevel);
+        Logger.setLevel(LogGroup.WebServer, logLevel);
+        Logger.setLevel(LogGroup.VisionModule, logLevel);
+        Logger.setLevel(LogGroup.Data, logLevel);
+        Logger.setLevel(LogGroup.Config, logLevel);
+        Logger.setLevel(LogGroup.General, logLevel);
+        logger.info("Logging initialized in debug mode.");
 
         // We don't want to trigger an exit in test mode or smoke test. This is
         // specifically for MacOS.
@@ -352,6 +353,10 @@ public class Main {
         } else {
             if (testModeFolder == null) {
                 addTestModeSources();
+            } else {
+                logger.warn(
+                        "Folder-based test mode (-f/--folder) currently registers no camera sources; ignoring "
+                                + testModeFolder);
             }
         }
 
