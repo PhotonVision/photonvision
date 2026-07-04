@@ -134,22 +134,22 @@ export const useSettingsStore = defineStore("settings", {
     }
   },
   actions: {
-    updateMetricsFromWebsocket(data: Required<MetricData>) {
+    updateMetricsFromWebsocket(data: MetricData) {
       this.metrics = {
-        cpuTemp: data.cpuTemp || undefined,
-        cpuUtil: data.cpuUtil || undefined,
-        cpuThr: data.cpuThr || undefined,
-        ramMem: data.ramMem || undefined,
-        ramUtil: data.ramUtil || undefined,
-        gpuMem: data.gpuMem || undefined,
-        gpuMemUtil: data.gpuMemUtil || undefined,
-        diskUtilPct: data.diskUtilPct || undefined,
-        diskUsableSpace: data.diskUsableSpace || undefined,
-        npuUsage: data.npuUsage || undefined,
-        ipAddress: data.ipAddress || undefined,
-        uptime: data.uptime || undefined,
-        sentBitRate: data.sentBitRate || undefined,
-        recvBitRate: data.recvBitRate || undefined
+        cpuTemp: data.cpuTemp ?? undefined,
+        cpuUtil: data.cpuUtil ?? undefined,
+        cpuThr: data.cpuThr ?? undefined,
+        ramMem: data.ramMem ?? undefined,
+        ramUtil: data.ramUtil ?? undefined,
+        gpuMem: data.gpuMem ?? undefined,
+        gpuMemUtil: data.gpuMemUtil ?? undefined,
+        diskUtilPct: data.diskUtilPct ?? undefined,
+        diskUsableSpace: data.diskUsableSpace ?? undefined,
+        npuUsage: data.npuUsage ?? undefined,
+        ipAddress: data.ipAddress ?? undefined,
+        uptime: data.uptime ?? undefined,
+        sentBitRate: data.sentBitRate ?? undefined,
+        recvBitRate: data.recvBitRate ?? undefined
       };
       if (metricsHistoryBuffer.update({ time: Date.now(), metrics: this.metrics })) {
         metricsHistorySnapshot.value = metricsHistoryBuffer.getHistory();
