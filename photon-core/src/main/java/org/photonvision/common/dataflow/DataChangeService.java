@@ -17,6 +17,8 @@
 
 package org.photonvision.common.dataflow;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -30,20 +32,15 @@ public class DataChangeService {
     private static final Logger logger = new Logger(DataChangeService.class, LogGroup.WebServer);
 
     public static class SubscriberHandle {
-        private final int[] idxs;
+        private final List<DataChangeSubscriber> subs;
 
-        private SubscriberHandle(int[] idxs) {
-            this.idxs = idxs;
-        }
-
-        private SubscriberHandle(int idx) {
-            this.idxs = new int[] {idx};
+        private SubscriberHandle(List<DataChangeSubscriber> subs) {
+            this.subs = subs;
         }
 
         public void stop() {
-            for (int idx : idxs) {
-                if (idx < 0) continue;
-                getInstance().subscribers.set(idx, null);
+            for (var sub : subs) {
+                getInstance().subscribers.remove(sub);
             }
         }
     }
@@ -79,7 +76,6 @@ public class DataChangeService {
             try {
                 var taken = eventQueue.take();
                 for (var sub : subscribers) {
-                    if (sub == null) continue;
                     if (sub.wantedSources.contains(taken.sourceType)
                             && sub.wantedDestinations.contains(taken.destType)) {
                         sub.onDataChangeEvent(taken);
@@ -95,7 +91,7 @@ public class DataChangeService {
     public SubscriberHandle addSubscriber(DataChangeSubscriber subscriber) {
         if (!subscribers.addIfAbsent(subscriber)) {
             logger.warn("Attempted to add already added subscriber!");
-            return new SubscriberHandle(-1);
+            return new SubscriberHandle(List.of());
         } else {
             logger.debug(
                     () -> {
@@ -110,16 +106,16 @@ public class DataChangeService {
 
                         return "Added subscriber - " + "Sources: " + sources + ", Destinations: " + dests;
                     });
-            return new SubscriberHandle(subscribers.size() - 1);
+            return new SubscriberHandle(List.of(subscriber));
         }
     }
 
     public SubscriberHandle addSubscribers(DataChangeSubscriber... subs) {
-        int[] idxs = new int[subs.length];
-        for (int i = 0; i < subs.length; i++) {
-            idxs[i] = addSubscriber(subs[i]).idxs[0];
+        var added = new ArrayList<DataChangeSubscriber>();
+        for (var sub : subs) {
+            added.addAll(addSubscriber(sub).subs);
         }
-        return new SubscriberHandle(idxs);
+        return new SubscriberHandle(added);
     }
 
     public void publishEvent(DataChangeEvent event) {
