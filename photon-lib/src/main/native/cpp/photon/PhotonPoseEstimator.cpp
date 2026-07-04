@@ -302,7 +302,9 @@ PhotonPoseEstimator::EstimateCoprocMultiTagPose(
   const auto field2camera = cameraResult.MultiTagResult()->estimatedPose.best;
 
   const auto fieldToRobot =
-      wpi::math::Pose3d() + field2camera + m_robotToCamera.Inverse();
+      (wpi::math::Pose3d() + field2camera)  // field-to-camera
+          .RelativeTo(aprilTags.GetOrigin())
+          .TransformBy(m_robotToCamera.Inverse());  // field-to-robot
   return photon::EstimatedRobotPose(fieldToRobot, cameraResult.GetTimestamp(),
                                     cameraResult.GetTargets(),
                                     MULTI_TAG_PNP_ON_COPROCESSOR);
