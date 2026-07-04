@@ -230,27 +230,24 @@ public class SqlConfigProvider extends ConfigProvider {
     @Override
     public boolean saveToDisk() {
         logger.debug("Saving to disk");
-        var conn = createConn();
-        if (conn == null) return false;
 
-        synchronized (m_mutex) {
-            if (config == null) {
-                logger.error("Config null! Cannot save");
-                return false;
+        try (var conn = createConn()) {
+            if (conn == null) return false;
+
+            synchronized (m_mutex) {
+                if (config == null) {
+                    logger.error("Config null! Cannot save");
+                    return false;
+                }
+
+                saveCameras(conn);
+                saveGlobal(conn);
+                tryCommit(conn);
             }
-
-            saveCameras(conn);
-            saveGlobal(conn);
-            tryCommit(conn);
-
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                // TODO, does the file still save if the SQL connection isn't closed correctly?
-                // If so,
-                // return false here.
-                logger.error("SQL Err closing connection while saving to disk: ", e);
-            }
+        } catch (SQLException e) {
+            // Any save/commit/close failure is only logged -- we still return true below,
+            // so a partial write can look successful. TODO: return false on failure.
+            logger.error("SQL error while saving to disk: ", e);
         }
 
         logger.info("Settings saved!");
@@ -366,17 +363,20 @@ public class SqlConfigProvider extends ConfigProvider {
     private void saveCameras(Connection conn) {
         try {
             // Delete all cameras we don't need anymore
+            var uniqueNames = List.copyOf(config.getCameraConfigurations().keySet());
             String deleteExtraCamsString =
                     String.format(
                             "DELETE FROM %s WHERE %s not in (%s)",
                             Tables.CAMERAS,
                             Columns.CAM_UNIQUE_NAME,
-                            config.getCameraConfigurations().keySet().stream()
-                                    .map(it -> "\"" + it + "\"")
-                                    .collect(Collectors.joining(", ")));
+                            uniqueNames.stream().map(it -> "?").collect(Collectors.joining(", ")));
 
-            var stmt = conn.createStatement();
-            stmt.executeUpdate(deleteExtraCamsString);
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteExtraCamsString)) {
+                for (int i = 0; i < uniqueNames.size(); i++) {
+                    deleteStmt.setString(i + 1, uniqueNames.get(i));
+                }
+                deleteStmt.executeUpdate();
+            }
 
             // Replace this camera's row with the new settings
             var sqlString =
