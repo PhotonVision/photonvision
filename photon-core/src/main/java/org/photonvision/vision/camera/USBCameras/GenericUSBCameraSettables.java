@@ -278,7 +278,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                 logger.error("Got a null video mode! Doing nothing...");
                 return;
             }
-            if (camera.setVideoMode(videoMode)) logger.debug("Failed to set video mode!");
+            if (!camera.setVideoMode(videoMode)) logger.warn("Failed to set video mode!");
         } catch (Exception e) {
             logger.error("Failed to set video mode!", e);
         }
