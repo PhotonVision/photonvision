@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.function.LongSupplier;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
@@ -38,7 +37,6 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.vision.frame.provider.MetadataSidecarReader;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.networktables.NetworkTablesJNI;
 
 /**
  * Streams pipeline results to an ND-JSON file for offline consumption (e.g. AdvantageKit replay).
@@ -49,8 +47,11 @@ import org.wpilib.networktables.NetworkTablesJNI;
  *
  * <p>Timestamps inside the embedded packet are shifted by {@code tssOffsetAtRecordNs} so the
  * deserialized result matches what {@code NTDataPublisher} would have published live during the
- * original recording. The header records the same offset so consumers that prefer the raw {@code
- * capture_ns} field can apply it themselves.
+ * original recording. The embedded publish timestamp is derived entirely in the recorded timebase:
+ * the shifted capture timestamp plus this result's pipeline processing latency, so publish −
+ * capture always equals the processing latency and never mixes record-run and replay-run clocks.
+ * The header records the same offset so consumers that prefer the raw {@code capture_ns} field can
+ * apply it themselves.
  *
  * <p>Not thread-safe. Exactly one VisionRunner thread should call {@link
  * #accept(CVPipelineResult)}.
@@ -128,7 +129,6 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
     private final Optional<OffsetSnapshot> offsetSnapshot;
     private final Optional<FrameWindow> frameWindow;
     private final long offsetUs;
-    private final LongSupplier nowMicrosSupplier;
     private BufferedWriter writer;
     private volatile boolean closed;
     private long droppedOutOfWindow;
@@ -141,28 +141,8 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             Optional<OffsetSnapshot> offsetSnapshot,
             Optional<FrameWindow> frameWindow)
             throws IOException {
-        this(
-                outputFile,
-                cameraUniqueName,
-                recordingName,
-                settings,
-                offsetSnapshot,
-                frameWindow,
-                NetworkTablesJNI::now);
-    }
-
-    JsonResultExporter(
-            Path outputFile,
-            String cameraUniqueName,
-            String recordingName,
-            CVPipelineSettings settings,
-            Optional<OffsetSnapshot> offsetSnapshot,
-            Optional<FrameWindow> frameWindow,
-            LongSupplier nowMicrosSupplier)
-            throws IOException {
         this.offsetSnapshot = offsetSnapshot;
         this.frameWindow = frameWindow;
-        this.nowMicrosSupplier = nowMicrosSupplier;
         this.offsetUs = offsetSnapshot.map(s -> s.tssOffsetAtRecordNs() / 1000L).orElse(0L);
 
         Files.createDirectories(outputFile.getParent());
@@ -229,16 +209,18 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             // Mirror NTDataPublisher.accept (NTDataPublisher.java:200-215): build a wire-format
             // PhotonPipelineResult by adding the TSS offset to the local capture / publish
             // timestamps. We use the *record-time* offset so the deserialized result matches what
-            // AKit captured live during the original match. timeSinceLastPong is not preserved
-            // per-frame; emit 0.
+            // AKit captured live during the original match. The publish timestamp stays in the
+            // recorded timebase too — shifted capture plus this result's processing latency —
+            // rather than sampling the replay run's clock, so publish − capture is never
+            // cross-epoch. timeSinceLastPong is not preserved per-frame; emit 0.
             long captureMicros = MathUtils.nanosToMicros(captureNs);
-            long nowMicros = nowMicrosSupplier.getAsLong();
+            long processingMicros = MathUtils.nanosToMicros((long) result.processingNanos);
 
             var photonResult =
                     new PhotonPipelineResult(
                             result.sequenceID,
                             captureMicros + offsetUs,
-                            nowMicros + offsetUs,
+                            captureMicros + processingMicros + offsetUs,
                             0L,
                             TrackedTarget.simpleFromTrackedTargets(result.targets),
                             result.multiTagResult);

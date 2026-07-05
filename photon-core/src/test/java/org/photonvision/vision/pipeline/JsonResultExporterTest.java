@@ -48,11 +48,12 @@ import org.wpilib.math.geometry.Translation3d;
 
 /**
  * Verifies the JsonResultExporter's file shape and lossless round-trip through PhotonLib's packet
- * codec. Uses the package-private clock-injection constructor so the test doesn't depend on
- * NetworkTablesJNI or wall time.
+ * codec. Every embedded timestamp is derived from the result itself (shifted capture + processing
+ * latency in the recorded timebase), so the exporter is deterministic with no clock dependency.
  */
 public class JsonResultExporterTest {
-    private static final long FIXED_NOW_MICROS = 999_888_777L;
+    private static final double PROCESSING_NANOS = 1_000_000.0;
+    private static final long PROCESSING_MICROS = 1_000L;
     private static final ObjectMapper JSON = new ObjectMapper();
 
     @BeforeAll
@@ -67,7 +68,7 @@ public class JsonResultExporterTest {
 
     private static CVPipelineResult cvResult(
             long seq, long captureNs, Optional<MultiTargetPNPResult> multitag) {
-        var result = new CVPipelineResult(seq, 1_000_000.0, 30.0, List.of(), multitag);
+        var result = new CVPipelineResult(seq, PROCESSING_NANOS, 30.0, List.of(), multitag);
         result.setImageCaptureTimestampNanos(captureNs);
         return result;
     }
@@ -88,8 +89,7 @@ public class JsonResultExporterTest {
                         "rec-1",
                         settings,
                         Optional.<OffsetSnapshot>empty(),
-                        Optional.<FrameWindow>empty(),
-                        () -> FIXED_NOW_MICROS)
+                        Optional.<FrameWindow>empty())
                 .close();
 
         List<String> lines = Files.readAllLines(out);
@@ -111,13 +111,7 @@ public class JsonResultExporterTest {
         var snap = Optional.of(new OffsetSnapshot(true, 5_000_000L));
 
         new JsonResultExporter(
-                        out,
-                        "cam",
-                        "rec",
-                        new AprilTagPipelineSettings(),
-                        snap,
-                        Optional.<FrameWindow>empty(),
-                        () -> FIXED_NOW_MICROS)
+                        out, "cam", "rec", new AprilTagPipelineSettings(), snap, Optional.<FrameWindow>empty())
                 .close();
 
         JsonNode header = JSON.readTree(Files.readAllLines(out).get(0));
@@ -138,8 +132,7 @@ public class JsonResultExporterTest {
                         "rec",
                         new AprilTagPipelineSettings(),
                         Optional.<OffsetSnapshot>empty(),
-                        Optional.<FrameWindow>empty(),
-                        () -> FIXED_NOW_MICROS)) {
+                        Optional.<FrameWindow>empty())) {
             exporter.accept(cvResult(seq, captureNs));
         }
 
@@ -153,7 +146,10 @@ public class JsonResultExporterTest {
         // UNKNOWN snapshot => offset is 0, so packet captureMicros == captureNs/1000.
         assertEquals(seq, roundTripped.metadata.sequenceID);
         assertEquals(123_000_000L, roundTripped.metadata.captureTimestampMicros);
-        assertEquals(FIXED_NOW_MICROS, roundTripped.metadata.publishTimestampMicros);
+        assertEquals(
+                PROCESSING_MICROS,
+                roundTripped.metadata.publishTimestampMicros - roundTripped.metadata.captureTimestampMicros,
+                "publish − capture must equal the result's processing latency in the recorded timebase");
         assertFalse(roundTripped.hasTargets());
         assertTrue(roundTripped.multitagResult.isEmpty());
     }
@@ -176,8 +172,7 @@ public class JsonResultExporterTest {
                         "rec",
                         new AprilTagPipelineSettings(),
                         Optional.<OffsetSnapshot>empty(),
-                        Optional.<FrameWindow>empty(),
-                        () -> FIXED_NOW_MICROS)) {
+                        Optional.<FrameWindow>empty())) {
             exporter.accept(cvResult(7L, 50_000_000_000L, multitag));
         }
 
@@ -201,8 +196,7 @@ public class JsonResultExporterTest {
                         "rec",
                         new AprilTagPipelineSettings(),
                         snap,
-                        Optional.<FrameWindow>empty(),
-                        () -> FIXED_NOW_MICROS)) {
+                        Optional.<FrameWindow>empty())) {
             exporter.accept(cvResult(1L, captureNs));
         }
 
@@ -210,10 +204,11 @@ public class JsonResultExporterTest {
         // Outer capture_ns field is the raw recorded value (unchanged).
         assertEquals(captureNs, line.get("capture_ns").asLong());
 
-        // Embedded packet timestamps ARE shifted by the recorded offset.
+        // Embedded packet timestamps ARE shifted by the recorded offset; publish stays in the
+        // recorded timebase (shifted capture + processing latency).
         PhotonPipelineResult rt = decodePacketLine(line);
         assertEquals(200_000_000L + 4_000L, rt.metadata.captureTimestampMicros);
-        assertEquals(FIXED_NOW_MICROS + 4_000L, rt.metadata.publishTimestampMicros);
+        assertEquals(200_000_000L + 4_000L + PROCESSING_MICROS, rt.metadata.publishTimestampMicros);
     }
 
     @Test
@@ -235,8 +230,7 @@ public class JsonResultExporterTest {
                                 "rec",
                                 settingsA,
                                 Optional.<OffsetSnapshot>empty(),
-                                Optional.<FrameWindow>empty(),
-                                () -> FIXED_NOW_MICROS);
+                                Optional.<FrameWindow>empty());
                 var b =
                         new JsonResultExporter(
                                 fileB,
@@ -244,8 +238,7 @@ public class JsonResultExporterTest {
                                 "rec",
                                 settingsB,
                                 Optional.<OffsetSnapshot>empty(),
-                                Optional.<FrameWindow>empty(),
-                                () -> FIXED_NOW_MICROS)) {
+                                Optional.<FrameWindow>empty())) {
             a.accept(cvResult(0L, 1_000_000L));
             b.accept(cvResult(0L, 2_000_000L));
         }
@@ -267,8 +260,7 @@ public class JsonResultExporterTest {
                         "rec",
                         new AprilTagPipelineSettings(),
                         Optional.<OffsetSnapshot>empty(),
-                        Optional.<FrameWindow>empty(),
-                        () -> FIXED_NOW_MICROS);
+                        Optional.<FrameWindow>empty());
         for (int i = 0; i < 10; i++) {
             exporter.accept(cvResult(i, 1_000_000L + i));
         }
@@ -299,8 +291,7 @@ public class JsonResultExporterTest {
                         "rec",
                         new AprilTagPipelineSettings(),
                         Optional.<OffsetSnapshot>empty(),
-                        window,
-                        () -> FIXED_NOW_MICROS)) {
+                        window)) {
             exporter.accept(cvResult(0L, 50_000_000_000L)); // pre-window — dropped (NT4 snapshot case)
             exporter.accept(cvResult(1L, 100_000_000_000L)); // boundary low — kept
             exporter.accept(cvResult(2L, 150_000_000_000L)); // inside — kept

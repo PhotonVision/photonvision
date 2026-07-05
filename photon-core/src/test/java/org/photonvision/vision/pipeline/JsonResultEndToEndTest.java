@@ -56,7 +56,8 @@ import org.wpilib.math.geometry.Translation3d;
  *
  * <ol>
  *   <li>No tuning change ⇒ same {@code capture_ns} sequence in JSON as in the recording's
- *       metadata.jsonl, byte-for-byte deterministic given a fixed publish clock.
+ *       metadata.jsonl, byte-for-byte deterministic (every embedded timestamp derives from the
+ *       result itself, never from the replay run's clock).
  *   <li>Tuning change ⇒ same {@code capture_ns} sequence but different result payloads + a
  *       different output filename (per-pipeline-hash isolation).
  * </ol>
@@ -72,7 +73,8 @@ public class JsonResultEndToEndTest {
         2_000_000_000L, 2_033_333_333L, 2_066_666_666L, 2_100_000_000L
     };
     private static final long TSS_OFFSET_NS = 12_345_000L; // ~12 ms offset
-    private static final long FIXED_PUBLISH_MICROS = 555_000_000L;
+    private static final double PROCESSING_NANOS = 1_000_000.0;
+    private static final long PROCESSING_MICROS = 1_000L;
     private static final ObjectMapper JSON = new ObjectMapper();
 
     @BeforeAll
@@ -129,8 +131,7 @@ public class JsonResultEndToEndTest {
         var settingsX = new AprilTagPipelineSettings();
         Path fileX = recordingDir.resolve("results").resolve("X.jsonl");
         try (var exporter =
-                new JsonResultExporter(
-                        fileX, "cam", "rec", settingsX, snapshot, frameWindow, () -> FIXED_PUBLISH_MICROS)) {
+                new JsonResultExporter(fileX, "cam", "rec", settingsX, snapshot, frameWindow)) {
             for (int i = 0; i < CAPTURE_NS.length; i++) {
                 exporter.accept(buildResult(i, replayedCaptureNs.get(i), Optional.empty()));
             }
@@ -149,8 +150,7 @@ public class JsonResultEndToEndTest {
                                 List.of((short) 1, (short) 2)));
         Path fileY = recordingDir.resolve("results").resolve("Y.jsonl");
         try (var exporter =
-                new JsonResultExporter(
-                        fileY, "cam", "rec", settingsY, snapshot, frameWindow, () -> FIXED_PUBLISH_MICROS)) {
+                new JsonResultExporter(fileY, "cam", "rec", settingsY, snapshot, frameWindow)) {
             for (int i = 0; i < CAPTURE_NS.length; i++) {
                 exporter.accept(buildResult(i, replayedCaptureNs.get(i), multitag));
             }
@@ -192,24 +192,22 @@ public class JsonResultEndToEndTest {
             assertFalse(resultX.getMultiTagResult().isPresent(), "pass X carried no multitag payload");
             assertTrue(resultY.getMultiTagResult().isPresent(), "pass Y carried a multitag payload");
 
-            // Embedded packet capture timestamp is TSS-shifted: captureNs/1000 + offsetUs.
+            // Embedded packet capture timestamp is TSS-shifted: captureNs/1000 + offsetUs. The
+            // publish timestamp is the shifted capture plus the result's processing latency.
             long expectedCaptureMicros = CAPTURE_NS[i - 1] / 1_000L + TSS_OFFSET_NS / 1_000L;
             assertEquals(expectedCaptureMicros, resultX.metadata.captureTimestampMicros);
             assertEquals(expectedCaptureMicros, resultY.metadata.captureTimestampMicros);
+            assertEquals(
+                    expectedCaptureMicros + PROCESSING_MICROS, resultX.metadata.publishTimestampMicros);
+            assertEquals(
+                    expectedCaptureMicros + PROCESSING_MICROS, resultY.metadata.publishTimestampMicros);
         }
 
-        // Re-export pass A under the same fixed clock + inputs ⇒ byte-identical file. The
-        // determinism property AKit consumers rely on for re-runnable replays.
+        // Re-export pass A with identical inputs ⇒ byte-identical file. The determinism
+        // property AKit consumers rely on for re-runnable replays.
         Path fileXReplay = tempDir.resolve("X-replay.jsonl");
         try (var exporter =
-                new JsonResultExporter(
-                        fileXReplay,
-                        "cam",
-                        "rec",
-                        settingsX,
-                        snapshot,
-                        frameWindow,
-                        () -> FIXED_PUBLISH_MICROS)) {
+                new JsonResultExporter(fileXReplay, "cam", "rec", settingsX, snapshot, frameWindow)) {
             for (int i = 0; i < CAPTURE_NS.length; i++) {
                 exporter.accept(buildResult(i, replayedCaptureNs.get(i), Optional.empty()));
             }
@@ -224,7 +222,7 @@ public class JsonResultEndToEndTest {
 
     private static CVPipelineResult buildResult(
             int seq, long captureNs, Optional<MultiTargetPNPResult> multitag) {
-        var r = new CVPipelineResult(seq, 1_000_000.0, 30.0, List.of(), multitag);
+        var r = new CVPipelineResult(seq, PROCESSING_NANOS, 30.0, List.of(), multitag);
         r.setImageCaptureTimestampNanos(captureNs);
         return r;
     }
