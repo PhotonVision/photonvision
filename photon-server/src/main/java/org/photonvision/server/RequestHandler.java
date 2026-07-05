@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -1422,6 +1423,23 @@ public class RequestHandler {
         }
     }
 
+    /**
+     * Stream a temp zip file to the client as an attachment. ctx.result(InputStream) is written
+     * asynchronously, so the handler must neither close the stream nor delete the file itself —
+     * DELETE_ON_CLOSE removes the temp zip once Jetty closes the stream after the response body has
+     * been written. {@code downloadName} (without extension) is sanitized here, so callers may pass
+     * raw user input.
+     */
+    private static void sendZipDownload(Context ctx, File zip, String downloadName)
+            throws IOException {
+        ctx.contentType("application/zip");
+        ctx.header(
+                "Content-Disposition",
+                "attachment; filename=\"" + sanitizeForFilename(downloadName) + ".zip\"");
+        ctx.result(Files.newInputStream(zip.toPath(), StandardOpenOption.DELETE_ON_CLOSE));
+        ctx.status(200);
+    }
+
     public static void onExportIndividualRecordingRequest(Context ctx) {
         logger.info("Exporting Individual Recording");
 
@@ -1464,43 +1482,24 @@ public class RequestHandler {
                 return;
             }
 
+            // Browsers honour Content-Disposition over the client-side <a download>
+            // attribute, so the server filename wins. Use the camera's user-set nickname
+            // (falling back to the uniqueName UUID for orphaned recordings whose source
+            // camera has been deleted).
+            String nickname =
+                    java.util.Optional.ofNullable(
+                                    ConfigManager.getInstance()
+                                            .getConfig()
+                                            .getCameraConfigurations()
+                                            .get(cameraUniqueName))
+                            .map(c -> c.nickname)
+                            .filter(s -> s != null && !s.isBlank())
+                            .orElse(cameraUniqueName);
+
             File recordingZip = FrameRecorder.export(recordingDir);
-            try {
-                // Read the zip bytes upfront. ctx.result(InputStream) is async — using
-                // try-with-resources on the FileInputStream closes it before Jetty finishes
-                // writing the response body, surfacing as "Stream Closed" client-side.
-                byte[] bytes = java.nio.file.Files.readAllBytes(recordingZip.toPath());
-                logger.info("Uploading individual recording with size " + bytes.length);
+            logger.info("Uploading individual recording with size " + recordingZip.length());
 
-                ctx.contentType("application/zip");
-                // Browsers honour Content-Disposition over the client-side <a download>
-                // attribute, so the server filename wins. Use the camera's user-set nickname
-                // (falling back to the uniqueName UUID for orphaned recordings whose source
-                // camera has been deleted).
-                String nickname =
-                        java.util.Optional.ofNullable(
-                                        ConfigManager.getInstance()
-                                                .getConfig()
-                                                .getCameraConfigurations()
-                                                .get(cameraUniqueName))
-                                .map(c -> c.nickname)
-                                .filter(s -> s != null && !s.isBlank())
-                                .orElse(cameraUniqueName);
-                ctx.header(
-                        "Content-Disposition",
-                        "attachment; filename=\""
-                                + sanitizeForFilename(nickname)
-                                + "_"
-                                + recordingName
-                                + ".zip\"");
-
-                ctx.result(bytes);
-                ctx.status(200);
-            } finally {
-                if (recordingZip.exists()) {
-                    recordingZip.delete();
-                }
-            }
+            sendZipDownload(ctx, recordingZip, nickname + "_" + recordingName);
         } catch (Exception e) {
             logger.error("Unable to export individual recording archive", e);
             ctx.status(500);
@@ -1533,23 +1532,17 @@ public class RequestHandler {
                 return;
             }
 
-            File cameraRecordingZip = FrameRecorder.exportCamera(cameraDir);
-
-            try (FileInputStream stream = new FileInputStream(cameraRecordingZip)) {
-                logger.info("Uploading camera recordings with size " + stream.available());
-
-                ctx.contentType("application/zip");
-                ctx.header(
-                        "Content-Disposition",
-                        "attachment; filename=\"" + cameraUniqueName + "_recordings.zip\"");
-
-                ctx.result(stream);
-                ctx.status(200);
-            } finally {
-                if (cameraRecordingZip.exists()) {
-                    cameraRecordingZip.delete();
-                }
+            File cameraRecordingZip;
+            try {
+                cameraRecordingZip = FrameRecorder.exportCamera(cameraDir);
+            } catch (IllegalStateException e) {
+                ctx.status(404).result("No recordings found for camera " + cameraUniqueName);
+                return;
             }
+
+            logger.info("Uploading camera recordings with size " + cameraRecordingZip.length());
+
+            sendZipDownload(ctx, cameraRecordingZip, cameraUniqueName + "_recordings");
         } catch (Exception e) {
             logger.error("Unable to export camera recordings archive", e);
             ctx.status(500);
@@ -1562,22 +1555,9 @@ public class RequestHandler {
 
         try {
             File allRecordingsZip = FrameRecorder.exportAll();
+            logger.info("Uploading all recordings with size " + allRecordingsZip.length());
 
-            try (FileInputStream stream = new FileInputStream(allRecordingsZip)) {
-                logger.info("Uploading all recordings with size " + stream.available());
-
-                ctx.contentType("application/zip");
-                ctx.header(
-                        "Content-Disposition",
-                        "attachment; filename=\"" + "photonvision-recordings-export.zip\"");
-
-                ctx.result(stream);
-                ctx.status(200);
-            } finally {
-                if (allRecordingsZip.exists()) {
-                    allRecordingsZip.delete();
-                }
-            }
+            sendZipDownload(ctx, allRecordingsZip, "photonvision-recordings-export");
         } catch (Exception e) {
             logger.error("Unable to export archive of all recordings", e);
             ctx.status(500);
