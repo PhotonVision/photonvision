@@ -62,7 +62,7 @@ public class FrameRecorderIntegrationTest {
         FrameRecorder recorder =
                 new FrameRecorder(outDir, Long.MAX_VALUE, FrameRecorder.TssSample.INACTIVE);
         try {
-            assertTrue(recorder.startRecording(), "startRecording() should succeed first call");
+            recorder.startRecording();
 
             long baseNs = 1_000_000_000L; // pretend wall-clock origin
             for (int i = 0; i < FRAME_COUNT; i++) {

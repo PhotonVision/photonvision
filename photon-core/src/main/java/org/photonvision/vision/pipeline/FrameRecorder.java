@@ -241,21 +241,12 @@ public class FrameRecorder implements Releasable {
     }
 
     /** Start recording. Frames offered after this point will be written to {@code frames/}. */
-    public boolean startRecording() {
-        if (recording.get()) {
-            return false;
-        }
-
+    public void startRecording() {
         recording.set(true);
-        return true;
     }
 
     /** Stop recording. Frames already in the queue are still flushed by the writer thread. */
     public void stopRecording() {
-        if (!recording.get()) {
-            return;
-        }
-
         recording.set(false);
     }
 
@@ -421,8 +412,6 @@ public class FrameRecorder implements Releasable {
         } catch (java.io.IOException e) {
             logger.warn("Failed to close metadata sidecar: " + e.getMessage());
         }
-
-        jpegWriteParams.release();
     }
 
     /**
