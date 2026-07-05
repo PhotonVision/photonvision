@@ -52,9 +52,7 @@ public class FrameRecorderTssSnapshotTest {
         Files.createDirectories(outDir);
         var sample = new TssSample(true, 4_500_000L);
 
-        var recorder =
-                new FrameRecorder(
-                        outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
+        var recorder = new FrameRecorder(outDir, Long.MAX_VALUE, sample);
         try {
             // Snapshot is written in the constructor — no need to startRecording / record frames.
         } finally {
@@ -73,9 +71,7 @@ public class FrameRecorderTssSnapshotTest {
         Path outDir = tempDir.resolve("rec");
         Files.createDirectories(outDir);
 
-        var recorder =
-                new FrameRecorder(
-                        outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, TssSample.INACTIVE);
+        var recorder = new FrameRecorder(outDir, Long.MAX_VALUE, TssSample.INACTIVE);
         try {
             // No frames needed: writeTssSnapshot runs in the constructor.
         } finally {
@@ -93,9 +89,7 @@ public class FrameRecorderTssSnapshotTest {
         Files.createDirectories(outDir);
         var sample = new TssSample(true, 7_200_000L);
 
-        var recorder =
-                new FrameRecorder(
-                        outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
+        var recorder = new FrameRecorder(outDir, Long.MAX_VALUE, sample);
         recorder.release();
 
         var snap = JsonResultExporter.readSnapshot(outDir);

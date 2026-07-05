@@ -19,7 +19,6 @@ package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
-import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HardwareConfig {
@@ -44,8 +43,6 @@ public class HardwareConfig {
     public final String restartHardwareCommand;
     public final double vendorFOV; // -1 for unmanaged
 
-    public final RecordingStrategy recordingStrategy;
-
     public HardwareConfig(
             String deviceName,
             ArrayList<Integer> ledPins,
@@ -60,8 +57,7 @@ public class HardwareConfig {
             String setPWMFrequencyCommand,
             String releaseGPIOCommand,
             String restartHardwareCommand,
-            double vendorFOV,
-            RecordingStrategy recordingStrategy) {
+            double vendorFOV) {
         this.deviceName = deviceName;
         this.ledPins = ledPins;
         this.ledsCanDim = ledsCanDim;
@@ -76,7 +72,6 @@ public class HardwareConfig {
         this.releaseGPIOCommand = releaseGPIOCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
-        this.recordingStrategy = recordingStrategy;
     }
 
     public HardwareConfig() {
@@ -94,7 +89,6 @@ public class HardwareConfig {
         releaseGPIOCommand = "";
         restartHardwareCommand = "";
         vendorFOV = -1;
-        recordingStrategy = RecordingStrategy.SNAPSHOTS;
     }
 
     /**
@@ -145,8 +139,6 @@ public class HardwareConfig {
                 + restartHardwareCommand
                 + ", vendorFOV="
                 + vendorFOV
-                + ", recordingStrategy="
-                + recordingStrategy
                 + "]";
     }
 }

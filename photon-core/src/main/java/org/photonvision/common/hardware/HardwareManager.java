@@ -36,7 +36,6 @@ import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
 import org.wpilib.networktables.IntegerPublisher;
 import org.wpilib.networktables.IntegerSubscriber;
 
@@ -249,9 +248,5 @@ public class HardwareManager {
             }
         }
         statusLED.setStatus(status);
-    }
-
-    public RecordingStrategy getRecordingStrategy() {
-        return hardwareConfig.recordingStrategy;
     }
 }

@@ -15,8 +15,6 @@ export interface GeneralSettings {
   supportedBackends: string[];
   conflictingHostname: boolean;
   conflictingCameras: string;
-  recordingStrategy: string;
-  supportedRecordingStrategies: string[];
 }
 
 export interface ObjectDetectionModelProperties {

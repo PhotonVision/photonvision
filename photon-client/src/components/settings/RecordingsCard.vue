@@ -7,7 +7,6 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useReplayStatus, type ActiveReplay } from "@/composables/useReplayStatus";
 import type { UiCameraConfiguration } from "@/types/SettingTypes";
 
@@ -164,12 +163,6 @@ const downloadAllRecordings = () => {
   <v-card class="mb-3" color="surface">
     <v-card-title>Recordings</v-card-title>
     <div class="pa-5 pt-0">
-      <pv-select
-        v-model="useSettingsStore().general.recordingStrategy"
-        label="Recording Strategy"
-        :items="useSettingsStore().general.supportedRecordingStrategies"
-        @update:modelValue="(args) => useSettingsStore().setRecordingStrategy(String(args ?? ''))"
-      />
       <div v-if="camerasWithRecordings.length > 0">
         <v-row>
           <v-col cols="12" sm="6">

@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +29,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.metrics.SystemMonitor;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -63,12 +61,6 @@ public class FrameRecorder implements Releasable {
     private final AtomicBoolean recording;
     private final AtomicBoolean shutdown;
     private long sequenceCounter = 0;
-
-    public enum RecordingStrategy {
-        SNAPSHOTS
-    }
-
-    public final RecordingStrategy strat;
 
     private Logger logger;
 
@@ -120,20 +112,15 @@ public class FrameRecorder implements Releasable {
     }
 
     public FrameRecorder(Path outputPath) {
-        this(
-                outputPath,
-                HardwareManager.getInstance().getRecordingStrategy(),
-                SystemMonitor.getInstance().getUsableDiskSpace(),
-                sampleTssNow());
+        this(outputPath, SystemMonitor.getInstance().getUsableDiskSpace(), sampleTssNow());
     }
 
     // Package-private DI constructor: lets tests build a recorder without bringing up the
-    // HardwareManager / SystemMonitor singletons (which transitively require photontargetingJNI
-    // via NetworkTablesManager → TimeSyncClient). Pass TssSample.INACTIVE when not exercising the
+    // SystemMonitor singleton (which transitively requires photontargetingJNI via
+    // NetworkTablesManager → TimeSyncClient). Pass TssSample.INACTIVE when not exercising the
     // tss.json hand-off.
-    FrameRecorder(Path outputPath, RecordingStrategy strat, long availableSpace, TssSample tss) {
+    FrameRecorder(Path outputPath, long availableSpace, TssSample tss) {
         this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
-        this.strat = strat;
 
         if (availableSpace < MIN_DISK_SPACE_BYTES) {
             logger.error(
@@ -176,10 +163,7 @@ public class FrameRecorder implements Releasable {
         this.shutdown = new AtomicBoolean(false);
 
         // Start the writer thread
-        switch (strat) {
-            case SNAPSHOTS -> this.writerThread = new Thread(this::videoLoop, "FrameRecorder-Video");
-            default -> throw new IllegalArgumentException("Unsupported Recording Strategy: " + strat);
-        }
+        this.writerThread = new Thread(this::videoLoop, "FrameRecorder-Video");
         this.writerThread.setDaemon(true);
         this.writerThread.start();
     }
@@ -429,9 +413,5 @@ public class FrameRecorder implements Releasable {
             ZipUtil.pack(recordingsRoot.toFile(), zip);
         }
         return zip;
-    }
-
-    public static List<RecordingStrategy> getSupportedStrategies() {
-        return List.of(RecordingStrategy.SNAPSHOTS);
     }
 }

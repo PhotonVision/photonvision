@@ -88,9 +88,7 @@ public class JsonResultEndToEndTest {
         Files.createDirectories(recordingDir);
         var tss = new FrameRecorder.TssSample(true, TSS_OFFSET_NS);
 
-        FrameRecorder recorder =
-                new FrameRecorder(
-                        recordingDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, tss);
+        FrameRecorder recorder = new FrameRecorder(recordingDir, Long.MAX_VALUE, tss);
         try {
             assertTrue(recorder.startRecording());
             for (int i = 0; i < CAPTURE_NS.length; i++) {

@@ -32,9 +32,7 @@ public class UIGeneralSettings {
             String hardwarePlatform,
             String wpilibArch,
             boolean conflictingHostname,
-            String conflictingCameras,
-            String recordingStrategy,
-            List<String> supportedRecordingStrategies) {
+            String conflictingCameras) {
         this.version = version;
         this.imageVersion = imageVersion;
         this.gpuAcceleration = gpuAcceleration;
@@ -46,8 +44,6 @@ public class UIGeneralSettings {
         this.wpilibArch = wpilibArch;
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras;
-        this.recordingStrategy = recordingStrategy;
-        this.supportedRecordingStrategies = supportedRecordingStrategies;
     }
 
     public String version;
@@ -61,6 +57,4 @@ public class UIGeneralSettings {
     public String wpilibArch;
     public boolean conflictingHostname;
     public String conflictingCameras;
-    public String recordingStrategy;
-    public List<String> supportedRecordingStrategies;
 }
