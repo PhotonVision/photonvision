@@ -353,7 +353,7 @@ public class PhotonCamera implements AutoCloseable {
      *
      * @return Whether the camera is recording.
      */
-    public boolean isRecording() {
+    public boolean getRecording() {
         return recordingSubscriber.get();
     }
 
