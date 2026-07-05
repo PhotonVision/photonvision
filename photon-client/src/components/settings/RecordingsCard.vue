@@ -25,22 +25,26 @@ const theme = useTheme();
 
 const address = inject<string>("backendHost");
 
-// Initialize selected recordings for each camera. The computed below seeds an entry for
+// Initialize selected recordings for each camera. The watch below seeds an entry for
 // every camera with at least one recording before the table renders, so the lookup at v-model
 // time is always a valid string — declaring undefined-in-value just produced a v-model type
 // mismatch against pv-select's `T extends string | number`.
 const selectedRecordings = ref<Record<string, string>>({});
 
-const camerasWithRecordings = computed(() => {
-  const cameras = useCameraSettingsStore().camerasWithRecordings;
-  // Initialize selectedRecordings for any new cameras
-  cameras.forEach((camera) => {
-    if (!(camera.uniqueName in selectedRecordings.value) && camera.recordings.length > 0) {
-      selectedRecordings.value[camera.uniqueName] = camera.recordings[0];
-    }
-  });
-  return cameras;
-});
+const camerasWithRecordings = computed(() => useCameraSettingsStore().camerasWithRecordings);
+
+// Initialize selectedRecordings for any new cameras
+watch(
+  camerasWithRecordings,
+  (cameras) => {
+    cameras.forEach((camera) => {
+      if (!(camera.uniqueName in selectedRecordings.value) && camera.recordings.length > 0) {
+        selectedRecordings.value[camera.uniqueName] = camera.recordings[0];
+      }
+    });
+  },
+  { immediate: true }
+);
 
 const { active: activeReplays } = useReplayStatus();
 const isReplayingHere = (cameraUniqueName: string) =>
@@ -94,6 +98,10 @@ const triggerDownload = (href: string) => {
 };
 
 const previousActive = ref<ActiveReplay[]>([]);
+const replaySessionKey = (entry: ActiveReplay) => `${entry.cameraUniqueName}::${entry.recordingName}`;
+// Sessions whose results were already auto-downloaded; a camera reappearing in
+// the active list starts a fresh session, so its key is cleared.
+const downloadedReplaySessions = new Set<string>();
 watch(
   activeReplays,
   (current) => {
@@ -101,8 +109,12 @@ watch(
       (prev) => !current.some((c) => c.cameraUniqueName === prev.cameraUniqueName)
     );
     previousActive.value = [...current];
+    current.forEach((entry) => downloadedReplaySessions.delete(replaySessionKey(entry)));
     if (!autoDownloadResults.value) return;
     for (const entry of ended) {
+      const key = replaySessionKey(entry);
+      if (downloadedReplaySessions.has(key)) continue;
+      downloadedReplaySessions.add(key);
       void (async () => {
         const list = await fetchResults(entry.cameraUniqueName, entry.recordingName);
         if (list.length === 0) return;
@@ -406,7 +418,7 @@ const downloadAllRecordings = () => {
     title="Clear All Recordings"
     description="This will permanently delete all recordings from all cameras. This action cannot be undone."
     delete-text="Delete Recordings"
-    :backup="() => downloadAllRecordings()"
+    :on-backup="downloadAllRecordings"
     @confirm="nukeRecordings"
   />
 
