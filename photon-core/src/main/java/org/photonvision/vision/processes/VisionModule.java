@@ -66,7 +66,6 @@ import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.math.util.Units;
 import org.wpilib.vision.camera.CameraServerJNI;
 import org.wpilib.vision.camera.VideoException;
-import org.wpilib.vision.camera.VideoMode;
 
 /**
  * This is the God Class
@@ -282,24 +281,6 @@ public class VisionModule {
             }
         }
         return recordings;
-    }
-
-    /**
-     * Calculate the disk space needed for a 5-minute recording based on current settings
-     *
-     * @return space needed in megabytes
-     */
-    public int recordingSpaceNeeded() {
-        VideoMode videoMode = visionSource.getSettables().getCurrentVideoMode();
-
-        int frames = videoMode.fps * 60 * 5;
-
-        // Assume 1 byte per pixel for color image
-        int colorImageSize = videoMode.width * videoMode.height;
-
-        int totalBytes = frames * (colorImageSize);
-
-        return totalBytes / (1024 * 1024);
     }
 
     private class StreamRunnable extends Thread {

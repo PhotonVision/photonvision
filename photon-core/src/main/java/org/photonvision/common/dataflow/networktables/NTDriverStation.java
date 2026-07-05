@@ -134,65 +134,6 @@ public class NTDriverStation {
         return message;
     }
 
-    /**
-     * Compares two match data strings and returns a negative, 0, or a postive if the first is less
-     * than, equal to, or greater than the second.
-     *
-     * @param first
-     * @param second
-     * @return a negative, 0, or a positive if the first is less than, equal to, or greater than the
-     *     second
-     */
-    public static int compareMatchData(String first, String second) {
-        String[] firstParts = first.split(", ");
-        String[] secondParts = second.split(", ");
-
-        String firstMatchInfo = firstParts[1].split(" ")[1];
-        String secondMatchInfo = secondParts[1].split(" ")[1];
-
-        String firstType = firstMatchInfo.substring(0, 1);
-        String secondType = secondMatchInfo.substring(0, 1);
-
-        int firstCmp;
-        int secondCmp;
-        switch (firstType) {
-            case "P" -> firstCmp = 1;
-            case "Q" -> firstCmp = 2;
-            case "E" -> firstCmp = 3;
-            default -> firstCmp = 0;
-        }
-        switch (secondType) {
-            case "P" -> secondCmp = 1;
-            case "Q" -> secondCmp = 2;
-            case "E" -> secondCmp = 3;
-            default -> secondCmp = 0;
-        }
-
-        if (Integer.compare(firstCmp, secondCmp) != 0) {
-            return Integer.compare(firstCmp, secondCmp);
-        }
-
-        int comp;
-
-        try {
-            // same type, compare match numbers
-            int firstMatchNumber = Integer.parseInt(firstMatchInfo.substring(1));
-            int secondMatchNumber = Integer.parseInt(secondMatchInfo.substring(1));
-            if (Integer.compare(firstMatchNumber, secondMatchNumber) != 0) {
-                return Integer.compare(firstMatchNumber, secondMatchNumber);
-            }
-            // same match number, compare replay numbers
-            int firstReplay = Integer.parseInt(firstParts[2].split(" ")[1]);
-            int secondReplay = Integer.parseInt(secondParts[2].split(" ")[1]);
-            comp = Integer.compare(firstReplay, secondReplay);
-        } catch (NumberFormatException e) {
-            // if we can't parse numbers, just say they're equal
-            return 0;
-        }
-
-        return comp;
-    }
-
     // Copied from
     // https://github.com/wpilibsuite/allwpilib/blob/07192285f65321a2f7363227a2216f09b715252d/hal/src/main/java/org/wpilib/hardware/hal/DriverStationJNI.java#L123C1-L140C4
     // TODO: upstream!

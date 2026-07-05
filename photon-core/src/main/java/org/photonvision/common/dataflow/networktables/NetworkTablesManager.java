@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -36,18 +35,14 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
-import org.photonvision.vision.processes.VisionModule;
-import org.photonvision.vision.processes.VisionSourceManager;
 import org.wpilib.driverstation.Alert;
 import org.wpilib.driverstation.Alert.Level;
-import org.wpilib.networktables.IntegerSubscriber;
 import org.wpilib.networktables.LogMessage;
 import org.wpilib.networktables.MultiSubscriber;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableEvent;
 import org.wpilib.networktables.NetworkTableEvent.Kind;
 import org.wpilib.networktables.NetworkTableInstance;
-import org.wpilib.networktables.StringArraySubscriber;
 import org.wpilib.networktables.StringSubscriber;
 import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
@@ -84,12 +79,6 @@ public class NetworkTablesManager {
     private StringSubscriber m_fieldLayoutSubscriber =
             kRootTable.getStringTopic(kFieldLayoutName).subscribe("");
 
-    private StringArraySubscriber m_recordingCamerasSubscriber =
-            kRootTable.getStringArrayTopic("reserveRecordingSpace").subscribe(new String[0]);
-
-    private IntegerSubscriber m_reserveSubscriber =
-            kRootTable.getIntegerTopic("reserveRecordingSpace").subscribe(0);
-
     private final TimeSyncManager m_timeSync = new TimeSyncManager(kRootTable);
 
     NTDriverStation ntDriverStation;
@@ -101,9 +90,6 @@ public class NetworkTablesManager {
 
         ntInstance.addListener(
                 m_fieldLayoutSubscriber, EnumSet.of(Kind.kValueAll), this::onFieldLayoutChanged);
-
-        ntInstance.addListener(
-                m_reserveSubscriber, EnumSet.of(Kind.kValueAll), this::onReserveRecordingSpaceChanged);
 
         ntDriverStation = new NTDriverStation(this.getNTInst());
 
@@ -234,22 +220,6 @@ public class NetworkTablesManager {
         } catch (IOException e) {
             logger.error("Error deserializing atfl!");
             logger.error(atfl_json);
-        }
-    }
-
-    private void onReserveRecordingSpaceChanged(NetworkTableEvent event) {
-        List<String> cameraNames = List.of(m_recordingCamerasSubscriber.get());
-
-        if (HardwareManager.getInstance()
-                .reserveRecordingSpace(
-                        VisionSourceManager.getInstance().getVisionModules().stream()
-                                .filter(v -> cameraNames.contains(v.getCameraConfiguration().nickname))
-                                .toList()
-                                .toArray(new VisionModule[0]))) {
-            m_reserveSubscriber.getTopic().publish().set(0);
-        } else {
-            logger.warn("Failed to reserve recording space for cameras: " + cameraNames);
-            m_reserveSubscriber.getTopic().publish().set(1);
         }
     }
 
