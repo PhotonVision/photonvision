@@ -53,6 +53,7 @@ public class VisionRunner {
     private final List<Runnable> runnableList = new ArrayList<Runnable>();
     private final QuirkyCamera cameraQuirks;
     private final Supplier<Integer> fpsLimitSupplier;
+    private final Supplier<Boolean> enabledSupplier;
 
     private long loopCount;
 
@@ -64,6 +65,11 @@ public class VisionRunner {
      *     runner picks up provider swaps (e.g. for replay) atomically.
      * @param pipelineSupplier The supplier of the current pipeline.
      * @param pipelineResultConsumer The consumer of the latest result.
+     * @param cameraQuirks
+     * @param changeSubscriber The subscriber to setting changes for this VisionRunner, so it can
+     *     update its settings when they change.
+     * @param fpsLimitSupplier
+     * @param enabledSupplier
      */
     public VisionRunner(
             Supplier<FrameProvider> frameSupplier,
@@ -71,13 +77,15 @@ public class VisionRunner {
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
             VisionModuleChangeSubscriber changeSubscriber,
-            Supplier<Integer> fpsLimitSupplier) {
+            Supplier<Integer> fpsLimitSupplier,
+            Supplier<Boolean> enabledSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
+        this.enabledSupplier = enabledSupplier;
 
         var initialProvider =
                 Objects.requireNonNull(
@@ -136,6 +144,28 @@ public class VisionRunner {
         }
 
         return future;
+    }
+
+    /**
+     * Waits until the next time this VisionRunner should run its pipeline, based on current FPS limit
+     */
+    private void waitUntilNextTick(long start) {
+        int fpsLimit = fpsLimitSupplier.get();
+
+        if (fpsLimit > 0) {
+            long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
+
+            if (sleepTime > 0) {
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                }
+            }
+            return;
+        } else {
+            // Fall through to no limit
+            return;
+        }
     }
 
     private void update() {
@@ -206,11 +236,23 @@ public class VisionRunner {
                 frame.release();
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
             } else if (pipeline == pipelineSupplier.get()) {
+                if (!enabledSupplier.get()) {
+                    // If we are skipping processing due to the camera being disabled, we still want to send a
+                    // result with the new frame and settings, just with a null pipeline result
+                    pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+                    frame.release();
+                    continue;
+                }
+
                 // If the pipeline has changed while we are getting our frame we should scrap
                 // that frame it may result in incorrect frame settings like hsv values
 
                 // There's no guarantee the processing type change will occur this tick, so
                 // pipelines should check themselves
+
+                // If we have an FPS limit, check if it's 0, in which case we skip processing and just send
+                // a blank frame, otherwise we sleep until the next tick
+                waitUntilNextTick(start);
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
                     pipelineResultConsumer.accept(pipelineResult);
@@ -218,18 +260,6 @@ public class VisionRunner {
                     logger.error("Exception on loop " + loopCount, ex);
                 }
                 loopCount++;
-            }
-            int fpsLimit = fpsLimitSupplier.get();
-            if (fpsLimit > 0) {
-                long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
-
-                if (sleepTime > 0) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                }
             }
         }
     }

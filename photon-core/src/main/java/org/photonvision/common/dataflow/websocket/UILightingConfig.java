@@ -17,6 +17,9 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import io.avaje.jsonb.Json;
+
+@Json
 public class UILightingConfig {
     public UILightingConfig(int brightness, boolean supported) {
         this.brightness = brightness;

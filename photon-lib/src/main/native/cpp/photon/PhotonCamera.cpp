@@ -46,51 +46,6 @@
 static constexpr wpi::units::second_t WARN_DEBOUNCE_SEC = 5_s;
 static constexpr wpi::units::second_t HEARTBEAT_DEBOUNCE_SEC = 500_ms;
 
-inline void verifyDependencies() {
-  if (!(std::string_view{cv::getVersionString()} ==
-        std::string_view{photon::PhotonVersion::opencvTargetVersion})) {
-    std::string bfw =
-        "\n\n\n\n\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>                                          \n"
-        ">>> You are running an incompatible version  \n"
-        ">>> of PhotonVision !                        \n"
-        ">>>                                          \n"
-        ">>> PhotonLib ";
-    bfw += photon::PhotonVersion::versionString;
-    bfw += " is built for OpenCV ";
-    bfw += photon::PhotonVersion::opencvTargetVersion;
-    bfw +=
-        "\n"
-        ">>> but you are using OpenCV ";
-    bfw += cv::getVersionString();
-    bfw +=
-        "\n>>>                                          \n"
-        ">>> This is neither tested nor supported.    \n"
-        ">>> You MUST update WPILib, PhotonLib, or both.\n"
-        ">>> Check `./gradlew dependencies` and ensure\n"
-        ">>> all mentions of OpenCV match the version \n"
-        ">>> that PhotonLib was built for. If you find a"
-        ">>> a mismatched version in a dependency, you\n"
-        ">>> must take steps to update the version of \n"
-        ">>> OpenCV used in that dependency. If you do\n"
-        ">>> not control that dependency and an updated\n"
-        ">>> version is not available, contact the    \n"
-        ">>> developers of that dependency.           \n"
-        ">>>                                          \n"
-        ">>> Your code will now crash.                \n"
-        ">>> We hope your day gets better.            \n"
-        ">>>                                          \n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-
-    WPILIB_ReportWarning(bfw);
-    WPILIB_ReportError(wpi::err::Error, bfw);
-    throw new std::runtime_error(std::string{bfw});
-  }
-}
-
 // bit of a hack -- start a TimeSync server on port 5810 (hard-coded). We want
 // to avoid calling this from static initialization
 static void InitTspServer() {
@@ -157,6 +112,8 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       fpsLimitSubscriber(rootTable->GetIntegerTopic("fpsLimit").Subscribe(-1)),
       fpsLimitPublisher(
           rootTable->GetIntegerTopic("fpsLimitRequest").Publish()),
+      enabledSubscriber(rootTable->GetBooleanTopic("enabled").Subscribe(true)),
+      enabledPublisher(rootTable->GetBooleanTopic("enabledRequest").Publish()),
       recordingSubscriber(
           rootTable->GetBooleanTopic("recording").Subscribe(false)),
       recordingPublisher(
@@ -171,7 +128,6 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
                           "' is disconnected.",
                       wpi::Alert::Level::MEDIUM),
       timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::MEDIUM) {
-  verifyDependencies();
   InstanceCount++;
   HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
 
@@ -197,7 +153,7 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
 
   // Fill the packet with latest data and populate result.
   wpi::units::microsecond_t now =
-      wpi::units::microsecond_t(wpi::RobotController::GetFPGATime());
+      wpi::units::microsecond_t(wpi::RobotController::GetMonotonicTime());
   const auto value = rawBytesEntry.Get();
   if (!value.size()) return PhotonPipelineResult{};
 
@@ -267,9 +223,9 @@ void PhotonCamera::CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result) {
     timesyncAlert.SetText(warningText);
     timesyncAlert.Set(true);
 
-    if (wpi::Timer::GetFPGATimestamp() <
+    if (wpi::Timer::GetMonotonicTimestamp() >
         (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
-      prevTimeSyncWarnTime = wpi::Timer::GetFPGATimestamp();
+      prevTimeSyncWarnTime = wpi::Timer::GetMonotonicTimestamp();
 
       WPILIB_ReportWarning(
           warningText +
@@ -301,6 +257,10 @@ void PhotonCamera::SetFPSLimit(int fpsLimit) {
   fpsLimitPublisher.Set(fpsLimit);
 }
 
+bool PhotonCamera::GetEnabled() const { return enabledSubscriber.Get(); }
+
+void PhotonCamera::SetEnabled(bool enabled) { enabledPublisher.Set(enabled); }
+
 void PhotonCamera::TakeInputSnapshot() {
   inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1);
 }
@@ -329,7 +289,7 @@ const std::string_view PhotonCamera::GetCameraName() const {
 
 bool PhotonCamera::IsConnected() {
   auto currentHeartbeat = heartbeatSubscriber.Get();
-  auto now = wpi::Timer::GetFPGATimestamp();
+  auto now = wpi::Timer::GetMonotonicTimestamp();
 
   if (currentHeartbeat < 0) {
     // we have never heard from the camera
@@ -377,10 +337,10 @@ void PhotonCamera::VerifyVersion() {
     return;
   }
 
-  if ((wpi::Timer::GetFPGATimestamp() - lastVersionCheckTime) <
+  if ((wpi::Timer::GetMonotonicTimestamp() - lastVersionCheckTime) <
       VERSION_CHECK_INTERVAL)
     return;
-  this->lastVersionCheckTime = wpi::Timer::GetFPGATimestamp();
+  this->lastVersionCheckTime = wpi::Timer::GetMonotonicTimestamp();
 
   const std::string& versionString = versionEntry.Get("");
   if (versionString.empty()) {

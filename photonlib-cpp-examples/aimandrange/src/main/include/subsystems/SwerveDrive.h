@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <frc/simulation/OnboardIMUSim.h>
 #include <wpi/hardware/imu/OnboardIMU.hpp>
 #include <wpi/math/estimator/SwerveDrivePoseEstimator.hpp>
 #include <wpi/math/kinematics/wpi/math/kinematics/SwerveDriveKinematics.hpppp>
@@ -73,8 +74,7 @@ class SwerveDrive {
   wpi::math::SwerveDrivePoseEstimator<4> poseEstimator;
   wpi::math::ChassisSpeeds targetChassisSpeeds{};
 
-  // TODO(Jade) onboard imu doesn't have sim yet
-  //  wpi::sim::ADXRS450_GyroSim gyroSim;
+  wpi::sim::OnboardIMUSim gyroSim;
   SwerveDriveSim swerveDriveSim;
   wpi::units::ampere_t totalCurrentDraw{0};
 };

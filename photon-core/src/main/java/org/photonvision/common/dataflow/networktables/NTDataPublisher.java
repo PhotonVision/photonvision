@@ -70,6 +70,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private IntegerPublisher replayProgressTotalFramesPublisher;
     private StringPublisher replayProgressRecordingNamePublisher;
 
+    NTDataChangeListener isEnabledListener;
+    private final Consumer<Boolean> isEnabledConsumer;
+    private final BooleanSupplier enabledSupplier;
+
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
@@ -79,7 +83,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             BooleanSupplier recordingSupplier,
             Consumer<Boolean> recordingConsumer,
             Supplier<Integer> fpsLimitSupplier,
-            Consumer<Integer> fpsLimitConsumer) {
+            Consumer<Integer> fpsLimitConsumer,
+            BooleanSupplier enabledSupplier,
+            Consumer<Boolean> isEnabledConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
@@ -88,6 +94,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         this.recordingConsumer = recordingConsumer;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.fpsLimitConsumer = fpsLimitConsumer;
+        this.enabledSupplier = enabledSupplier;
+        this.isEnabledConsumer = isEnabledConsumer;
 
         updateCameraNickname(cameraNickname);
         updateEntries();
@@ -156,6 +164,19 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         logger.debug("Set FPS limit to " + newFPSLimit);
     }
 
+    private void onEnabledChange(NetworkTableEvent entryNotification) {
+        var newEnabled = entryNotification.valueData.value.getBoolean();
+        var originalEnabled = enabledSupplier.getAsBoolean();
+
+        if (newEnabled == originalEnabled) {
+            logger.debug("Enabled value is already " + newEnabled);
+            return;
+        }
+
+        isEnabledConsumer.accept(newEnabled);
+        logger.debug("Set is enabled to " + newEnabled);
+    }
+
     private void removeEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
@@ -207,6 +228,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                 ts.subTable.getIntegerTopic("replayProgressTotalFrames").publish();
         replayProgressRecordingNamePublisher =
                 ts.subTable.getStringTopic("replayProgressRecordingName").publish();
+
+        isEnabledListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.enabledSubscriber, this::onEnabledChange);
     }
 
     /** Set the {@code isReplaying} topic. Called from {@code VisionModule.startReplay/cancel}. */
@@ -281,6 +306,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
         ts.recordingPublisher.set(recordingSupplier.getAsBoolean());
         ts.fpsLimitPublisher.set(fpsLimitSupplier.get());
+        ts.enabledPublisher.set(enabledSupplier.getAsBoolean());
         ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
         ts.fpsEntry.set(acceptedResult.fps);
         ts.hasTargetEntry.set(acceptedResult.hasTargets());

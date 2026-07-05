@@ -17,33 +17,31 @@
 
 package org.photonvision.vision.camera;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.avaje.jsonb.Json;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class)
-})
+@Json(typeProperty = "type")
+@Json.SubType(type = PVCameraInfo.PVUsbCameraInfo.class)
+@Json.SubType(type = PVCameraInfo.PVCSICameraInfo.class)
+@Json.SubType(type = PVCameraInfo.PVFileCameraInfo.class)
 public sealed interface PVCameraInfo {
     /**
      * @return The path of the camera.
      */
+    @Json.Property("path")
     String path();
 
     /**
      * @return The base name of the camera aka the name as just ascii.
      */
+    @Json.Property("name")
     String name();
 
     /**
@@ -64,7 +62,7 @@ public sealed interface PVCameraInfo {
      *
      * @return The unique path of the camera
      */
-    @JsonGetter(value = "uniquePath")
+    @Json.Property("uniquePath")
     String uniquePath();
 
     String[] otherPaths();
@@ -82,16 +80,9 @@ public sealed interface PVCameraInfo {
         return this.equals((Object) other);
     }
 
-    @JsonTypeName("PVUsbCameraInfo")
     public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraInfo {
-        @JsonCreator
         public PVUsbCameraInfo(
-                @JsonProperty("dev") int dev,
-                @JsonProperty("path") String path,
-                @JsonProperty("name") String name,
-                @JsonProperty("otherPaths") String[] otherPaths,
-                @JsonProperty("vendorId") int vendorId,
-                @JsonProperty("productId") int productId) {
+                int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
             super(dev, path, name, otherPaths, vendorId, productId);
         }
 
@@ -168,14 +159,11 @@ public sealed interface PVCameraInfo {
         }
     }
 
-    @JsonTypeName("PVCSICameraInfo")
     public static final class PVCSICameraInfo implements PVCameraInfo {
         public final String path;
         public final String baseName;
 
-        @JsonCreator
-        public PVCSICameraInfo(
-                @JsonProperty("path") String path, @JsonProperty("baseName") String baseName) {
+        public PVCSICameraInfo(String path, String baseName) {
             this.path = path;
             this.baseName = baseName;
         }
@@ -233,13 +221,11 @@ public sealed interface PVCameraInfo {
         }
     }
 
-    @JsonTypeName("PVFileCameraInfo")
     public static final class PVFileCameraInfo implements PVCameraInfo {
         public final String path;
         public final String name;
 
-        @JsonCreator
-        public PVFileCameraInfo(@JsonProperty("path") String path, @JsonProperty("name") String name) {
+        public PVFileCameraInfo(String path, String name) {
             this.path = path;
             this.name = name;
         }
@@ -299,5 +285,26 @@ public sealed interface PVCameraInfo {
 
     public static PVCameraInfo fromFileInfo(String path, String baseName) {
         return new PVFileCameraInfo(path, baseName);
+    }
+
+    // MIGRATION: 2026
+    public static String remapConfigJson(String configJson, String cameraType) {
+        final JsonType<Map<String, Object>> objMapJsonb =
+                Jsonb.instance().type(Types.mapOf(Object.class));
+
+        Map<String, Object> cameraMigration = objMapJsonb.fromJson(configJson);
+
+        @SuppressWarnings("unchecked")
+        var cameraMigrationIn = (Map<String, Object>) cameraMigration.get("matchedCameraInfo");
+
+        @SuppressWarnings("unchecked")
+        var cameraData = (Map<String, Object>) cameraMigrationIn.get(cameraType);
+
+        Map<String, Object> cameraMigrationOut = new HashMap<>();
+        cameraMigrationOut.putAll(cameraData);
+        cameraMigrationOut.put("type", "PVCameraInfo." + cameraType);
+
+        cameraMigration.put("matchedCameraInfo", cameraMigrationOut);
+        return objMapJsonb.toJson(cameraMigration);
     }
 }

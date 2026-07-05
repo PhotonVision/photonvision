@@ -17,22 +17,21 @@
 
 package org.photonvision.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.json.JsonException;
+import io.avaje.jsonb.Json;
+import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.jackson.JacksonAdapter;
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.jetbrains.annotations.Nullable;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -47,7 +46,9 @@ import org.wpilib.math.util.Pair;
 public class DataSocketHandler {
     private final Logger logger = new Logger(DataSocketHandler.class, LogGroup.WebServer);
     private final List<WsContext> users = new CopyOnWriteArrayList<>();
-    private final ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
+    private final JacksonAdapter adapter =
+            JacksonAdapter.builder().jsonFactory(new MessagePackFactory()).serializeEmpty(true).build();
+    private final Jsonb msgpackJsonb = Jsonb.builder().adapter(adapter).build();
     private final DataChangeService dcService = DataChangeService.getInstance();
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -91,20 +92,16 @@ public class DataSocketHandler {
         }
     }
 
+    @Json
+    static record WSMessage(
+            @Nullable String cameraUniqueName, @Json.Unmapped Map<String, Object> properties) {}
+
     @SuppressWarnings({"unchecked"})
     public void onBinaryMessage(WsBinaryMessageContext context) {
         try {
-            Map<String, Object> deserializedData =
-                    objectMapper.readValue(context.data(), new TypeReference<>() {});
+            var message = msgpackJsonb.type(WSMessage.class).fromJson(context.data());
 
-            // Special case the current camera index
-            String cameraUniqueName = "";
-            if (deserializedData.get("cameraUniqueName") instanceof String camUniqueNameValue) {
-                cameraUniqueName = camUniqueNameValue;
-                deserializedData.remove("cameraUniqueName");
-            }
-
-            for (Map.Entry<String, Object> entry : deserializedData.entrySet()) {
+            for (Map.Entry<String, Object> entry : message.properties.entrySet()) {
                 try {
                     var entryKey = entry.getKey();
                     var entryValue = entry.getValue();
@@ -131,7 +128,7 @@ public class DataSocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "isDriverMode",
                                                 (Boolean) entryValue,
-                                                cameraUniqueName,
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_CHANGECAMERANAME ->
                                 dcService.publishEvent(
@@ -139,7 +136,7 @@ public class DataSocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "cameraNickname",
                                                 (String) entryValue,
-                                                cameraUniqueName,
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_CHANGEPIPELINENAME ->
                                 dcService.publishEvent(
@@ -147,38 +144,39 @@ public class DataSocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "pipelineName",
                                                 (String) entryValue,
-                                                cameraUniqueName,
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_ADDNEWPIPELINE -> {
                             // HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
                             // var type = (PipelineType) data.get("pipelineType");
                             // var name = (String) data.get("pipelineName");
-                            var arr = (ArrayList<Object>) entryValue;
+                            var arr = (List<Object>) entryValue;
                             var name = (String) arr.get(0);
-                            var type = PipelineType.values()[(Integer) arr.get(1) + 3];
+                            var type = PipelineType.values()[((Long) arr.get(1)).intValue() + 3];
 
                             dcService.publishEvent(
                                     new IncomingWebSocketEvent<>(
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "newPipelineInfo",
                                             Pair.of(name, type),
-                                            cameraUniqueName,
+                                            message.cameraUniqueName,
                                             context));
                         }
                         case SMT_CHANGEBRIGHTNESS ->
                                 HardwareManager.getInstance()
                                         .setBrightnessPercent(Integer.parseInt(entryValue.toString()));
                         case SMT_DUPLICATEPIPELINE -> {
-                            var pipeIndex = (Integer) entryValue;
+                            var pipeIndex = ((Long) entryValue).intValue();
 
-                            logger.info("Duplicating pipe@index" + pipeIndex + " for camera " + cameraUniqueName);
+                            logger.info(
+                                    "Duplicating pipe@index" + pipeIndex + " for camera " + message.cameraUniqueName);
 
                             dcService.publishEvent(
                                     new IncomingWebSocketEvent<>(
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "duplicatePipeline",
                                             pipeIndex,
-                                            cameraUniqueName,
+                                            message.cameraUniqueName,
                                             context));
                         }
                         case SMT_DELETECURRENTPIPELINE ->
@@ -187,27 +185,29 @@ public class DataSocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "deleteCurrPipeline",
                                                 0,
-                                                cameraUniqueName,
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_ROBOTOFFSETPOINT ->
                                 dcService.publishEvent(
                                         new IncomingWebSocketEvent<>(
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "robotOffsetPoint",
-                                                (Integer) entryValue,
-                                                cameraUniqueName,
+                                                ((Long) entryValue).intValue(),
+                                                message.cameraUniqueName,
                                                 null));
                         case SMT_CURRENTCAMERA ->
                                 dcService.publishEvent(
                                         new IncomingWebSocketEvent<>(
-                                                DataChangeDestination.DCD_OTHER, "changeUICamera", (Integer) entryValue));
+                                                DataChangeDestination.DCD_OTHER,
+                                                "changeUICamera",
+                                                ((Long) entryValue).intValue()));
                         case SMT_CURRENTPIPELINE ->
                                 dcService.publishEvent(
                                         new IncomingWebSocketEvent<>(
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "changePipeline",
-                                                (Integer) entryValue,
-                                                cameraUniqueName,
+                                                ((Long) entryValue).intValue(),
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_STARTPNPCALIBRATION ->
                                 dcService.publishEvent(
@@ -215,7 +215,7 @@ public class DataSocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "startCalibration",
                                                 (Map) entryValue,
-                                                cameraUniqueName,
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_SAVEINPUTSNAPSHOT ->
                                 dcService.publishEvent(
@@ -223,7 +223,7 @@ public class DataSocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "saveInputSnapshot",
                                                 0,
-                                                cameraUniqueName,
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_SAVEOUTPUTSNAPSHOT ->
                                 dcService.publishEvent(
@@ -231,7 +231,7 @@ public class DataSocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "saveOutputSnapshot",
                                                 0,
-                                                cameraUniqueName,
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_TAKECALIBRATIONSNAPSHOT ->
                                 dcService.publishEvent(
@@ -239,10 +239,10 @@ public class DataSocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "takeCalSnapshot",
                                                 0,
-                                                cameraUniqueName,
+                                                message.cameraUniqueName,
                                                 context));
                         case SMT_PIPELINESETTINGCHANGE -> {
-                            HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
+                            Map<String, Object> data = (Map) entryValue;
 
                             if (data.size() >= 2) {
                                 var cameraIndex2 = (String) data.get("cameraUniqueName");
@@ -267,28 +267,27 @@ public class DataSocketHandler {
                                         new IncomingWebSocketEvent<>(
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "changePipelineType",
-                                                (Integer) entryValue,
-                                                cameraUniqueName,
+                                                ((Long) entryValue).intValue(),
+                                                message.cameraUniqueName,
                                                 context));
                     }
                 } catch (Exception e) {
                     logger.error("Failed to parse message!", e);
                 }
             }
-        } catch (IOException e) {
+        } catch (IllegalStateException | JsonException e) {
             logger.error("Failed to deserialize message!", e);
         }
     }
 
-    private void sendMessage(ByteBuffer b, WsContext user) throws JsonProcessingException {
+    private void sendMessage(ByteBuffer b, WsContext user) {
         if (user.session.isOpen()) {
             user.send(b);
         }
     }
 
-    public void broadcastMessage(Object message, WsContext userToSkip)
-            throws JsonProcessingException {
-        ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
+    public void broadcastMessage(Object message, WsContext userToSkip) throws JsonException {
+        ByteBuffer b = ByteBuffer.wrap(msgpackJsonb.toJsonBytes(message));
 
         if (userToSkip == null) {
             for (WsContext user : users) {
