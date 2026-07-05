@@ -187,6 +187,10 @@ public class ConfigManager {
         return PathManager.getInstance().getRootFolder();
     }
 
+    public static Path getImageMetadataPath() {
+        return Path.of(getRootFolder().toString(), "image_metadata.json");
+    }
+
     ConfigManager(Path configDirectory, ConfigProvider provider) {
         this.configDirectoryFile = new File(configDirectory.toUri());
         m_provider = provider;
