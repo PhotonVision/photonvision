@@ -172,6 +172,12 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (driverModeListener != null) driverModeListener.remove();
         if (recordingListener != null) recordingListener.remove();
         if (fpsLimitListener != null) fpsLimitListener.remove();
+        // Close any previous replay publishers before recreating them — updateEntries can run
+        // more than once (ctor, nickname changes) and the old handles would otherwise leak.
+        if (isReplayingPublisher != null) isReplayingPublisher.close();
+        if (replayProgressCurrentFramePublisher != null) replayProgressCurrentFramePublisher.close();
+        if (replayProgressTotalFramesPublisher != null) replayProgressTotalFramesPublisher.close();
+        if (replayProgressRecordingNamePublisher != null) replayProgressRecordingNamePublisher.close();
 
         ts.updateEntries();
 
