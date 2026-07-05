@@ -110,6 +110,10 @@ public class VisionModule {
     // Latches true on first open failure so we log + skip silently rather than spamming on
     // every subsequent frame.
     private boolean jsonExporterDisabled;
+    // Settings hashCode the live exporter was created with. Only touched on the vision thread
+    // (the tee path); a mismatch means the pipeline changed mid-replay and the exporter must be
+    // recreated against the new settings' file.
+    private int jsonExporterSettingsHash;
 
     // Replay state — all guarded by the replayLock. The active replay provider's EOF / cancel
     // callback dispatches the swap-back onto a single-thread executor so we never run cleanup on
@@ -978,14 +982,23 @@ public class VisionModule {
         if (replayDirOpt.isEmpty()) return;
         Path recordingDir = replayDirOpt.get();
 
-        if (jsonResultExporter == null) {
-            var settings = pipelineManager.getCurrentPipelineSettings();
-            if (settings == null) return; // pre-init: skip and try again on the next frame.
+        var settings = pipelineManager.getCurrentPipelineSettings();
+        if (settings == null) return; // pre-init: skip and try again on the next frame.
+        int settingsHash = settings.hashCode();
 
+        var exporter = jsonResultExporter;
+        // A pipeline switch mid-replay invalidates the exporter: its file name and header carry
+        // the settings hash it was created with, so the new settings' results must not be
+        // appended to it. Close it here and lazily recreate below — all on the vision thread.
+        if (exporter != null && settingsHash != jsonExporterSettingsHash) {
+            exporter.close();
+            jsonResultExporter = null;
+            exporter = null;
+        }
+
+        if (exporter == null) {
             Path outputFile =
-                    recordingDir
-                            .resolve("results")
-                            .resolve(Integer.toHexString(settings.hashCode()) + ".jsonl");
+                    recordingDir.resolve("results").resolve(Integer.toHexString(settingsHash) + ".jsonl");
 
             var snapshot = JsonResultExporter.readSnapshot(recordingDir);
             if (snapshot.isEmpty() || !snapshot.get().tssActiveAtRecord()) {
@@ -1001,7 +1014,7 @@ public class VisionModule {
             var frameWindow = JsonResultExporter.readFrameWindow(recordingDir);
 
             try {
-                jsonResultExporter =
+                exporter =
                         new JsonResultExporter(
                                 outputFile,
                                 visionSource.getSettables().getConfiguration().uniqueName,
@@ -1014,9 +1027,11 @@ public class VisionModule {
                 jsonExporterDisabled = true; // latch: don't spam-retry on every subsequent frame.
                 return;
             }
+            jsonExporterSettingsHash = settingsHash;
+            jsonResultExporter = exporter;
         }
 
-        jsonResultExporter.accept(result);
+        exporter.accept(result);
     }
 
     public void setTargetModel(TargetModel targetModel) {
