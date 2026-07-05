@@ -27,14 +27,18 @@ public final class PathSafety {
 
     /**
      * Resolve user-supplied segments inside a trusted root, rejecting any input that would escape the
-     * root (e.g. {@code ".."}, absolute paths, embedded {@code "../"} sequences) or that the
-     * underlying filesystem refuses to parse.
+     * root or widen scope beyond the directory each segment names. Every segment must be a single
+     * path name: {@code "."}, {@code ".."}, absolute or drive-relative paths (e.g. {@code "C:x"} on
+     * Windows), segments containing {@code "/"} or {@code "\"}, and anything the underlying
+     * filesystem refuses to parse are all rejected.
      *
-     * @param root the trusted root directory. The result is guaranteed to be inside this directory.
-     * @param segments user-supplied path segments, applied in order via {@link Path#resolve(String)}.
-     * @return the resolved, normalized, absolute path. Always inside {@code root}.
-     * @throws SecurityException if any segment is null/blank, contains characters the filesystem
-     *     can't parse, or if the resolved path is outside the root.
+     * @param root the trusted root directory. The result is guaranteed to be strictly inside this
+     *     directory (never the root itself).
+     * @param segments user-supplied path segments, applied in order via {@link Path#resolve(Path)}.
+     * @return the resolved, normalized, absolute path. Always strictly inside {@code root}.
+     * @throws SecurityException if any segment is null/blank, is not a single path name, contains
+     *     characters the filesystem can't parse, or if the resolved path is not strictly inside the
+     *     root.
      */
     public static Path safeResolve(Path root, String... segments) {
         Path rootAbs = root.toAbsolutePath().normalize();
@@ -43,14 +47,27 @@ public final class PathSafety {
             if (segment == null || segment.isBlank()) {
                 throw new SecurityException("Empty path segment");
             }
+            if (segment.equals(".")
+                    || segment.equals("..")
+                    || segment.indexOf('/') >= 0
+                    || segment.indexOf('\\') >= 0) {
+                throw new SecurityException("Path segment is not a single name: " + segment);
+            }
+            Path segmentPath;
             try {
-                resolved = resolved.resolve(segment);
+                segmentPath = rootAbs.getFileSystem().getPath(segment);
             } catch (InvalidPathException e) {
                 throw new SecurityException("Invalid path segment: " + segment, e);
             }
+            if (segmentPath.isAbsolute()
+                    || segmentPath.getRoot() != null
+                    || segmentPath.getNameCount() != 1) {
+                throw new SecurityException("Path segment is not a single name: " + segment);
+            }
+            resolved = resolved.resolve(segmentPath);
         }
         resolved = resolved.normalize();
-        if (!resolved.startsWith(rootAbs)) {
+        if (resolved.equals(rootAbs) || !resolved.startsWith(rootAbs)) {
             throw new SecurityException("Path escapes root: " + Arrays.toString(segments));
         }
         return resolved;
