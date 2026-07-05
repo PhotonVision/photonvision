@@ -1572,6 +1572,12 @@ public class RequestHandler {
             DeleteRecordingRequest request =
                     kObjectMapper.readValue(ctx.body(), DeleteRecordingRequest.class);
 
+            if (request.recordings == null) {
+                ctx.status(400).result("recordings is required");
+                logger.error("Delete recording request was missing the recordings key");
+                return;
+            }
+
             Path recordingsRoot = ConfigManager.getInstance().getRecordingsDirectory().toPath();
             for (String recording : request.recordings) {
                 Path rec;
@@ -1585,9 +1591,16 @@ public class RequestHandler {
                 FileUtils.deleteDirectory(rec.toFile());
             }
 
+            String deleted = String.join(", ", request.recordings);
             ctx.status(200);
-            ctx.result("Successfully deleted recording(s): " + request.recordings.toString());
-            logger.info("Successfully deleted recording(s): " + request.recordings.toString());
+            ctx.result("Successfully deleted recording(s): " + deleted);
+            logger.info("Successfully deleted recording(s): " + deleted);
+
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (JsonProcessingException e) {
             ctx.status(400).result("Invalid JSON format");
             logger.error("Failed to delete recording(s)", e);
@@ -1604,6 +1617,12 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Successfully deleted all recordings");
             logger.info("Successfully deleted all recordings");
+
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (Exception e) {
             ctx.status(500).result("Failed to delete all recordings");
             logger.error("Unexpected error while attempting to delete all recordings", e);
@@ -1770,11 +1789,7 @@ public class RequestHandler {
             ctx.header(
                     "Content-Disposition",
                     "attachment; filename=\""
-                            + sanitizeForFilename(nickname)
-                            + "_"
-                            + recording
-                            + "_"
-                            + hash
+                            + sanitizeForFilename(nickname + "_" + recording + "_" + hash)
                             + ".jsonl\"");
             ctx.result(bytes);
         } catch (Exception e) {
