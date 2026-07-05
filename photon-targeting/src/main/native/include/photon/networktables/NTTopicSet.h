@@ -46,7 +46,6 @@ class NTTopicSet {
   wpi::nt::BooleanPublisher driverModePublisher;
   wpi::nt::BooleanSubscriber driverModeSubscriber;
 
-  wpi::nt::BooleanTopic recordingEntry;
   wpi::nt::BooleanPublisher recordingPublisher;
   wpi::nt::BooleanSubscriber recordingSubscriber;
 
@@ -87,7 +86,7 @@ class NTTopicSet {
 
     recordingPublisher = subTable->GetBooleanTopic("recording").Publish();
     recordingSubscriber =
-        subTable->GetBooleanTopic("recordingRequest").Subscribe(0);
+        subTable->GetBooleanTopic("recordingRequest").Subscribe(false);
 
     recordingSubscriber.GetTopic().Publish().SetDefault(false);
 

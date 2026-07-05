@@ -54,7 +54,6 @@ public class NTTopicSet {
     public BooleanPublisher driverModePublisher;
     public BooleanSubscriber driverModeSubscriber;
 
-    public BooleanTopic recordingEntry;
     public BooleanPublisher recordingPublisher;
     public BooleanSubscriber recordingSubscriber;
     public IntegerPublisher fpsLimitPublisher;
