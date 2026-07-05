@@ -180,8 +180,10 @@ public class VisionModule {
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode,
-                        visionSource.getFrameProvider()::getRecording,
-                        visionSource.getFrameProvider()::setRecording,
+                        // Re-read the provider per call (not a bound method reference) so the NT
+                        // recording callbacks track in-place provider swaps (live → replay → live).
+                        () -> visionSource.getFrameProvider().getRecording(),
+                        (b) -> visionSource.getFrameProvider().setRecording(b),
                         this::getFPSLimit,
                         this::setFPSLimit);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
