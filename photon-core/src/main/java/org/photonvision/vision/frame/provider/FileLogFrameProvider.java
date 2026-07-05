@@ -40,10 +40,11 @@ import org.photonvision.vision.pipeline.FrameRecorder;
  * {@link #getInputMat()} blocks the vision thread so wall-clock spacing matches the recording's
  * {@code capture_ns} deltas.
  *
- * <p>At EOF the provider transitions to its stopped state and fires {@link #setOnEof onEof} once.
- * Swap-aware consumers (see {@code VisionModule.startReplay}) wire the callback and receive empty
- * frames after that; standalone callers (no callback) get the legacy park-until-interrupted
- * behaviour so they don't busy-loop. Construction throws {@link IOException} if either {@code
+ * <p>At EOF the provider transitions to its stopped state and fires {@link #setOnEof onEof} once,
+ * then returns empty frames from every subsequent {@link #getInputMat()} so the swap-back
+ * orchestrated by the callback (see {@code VisionModule.startReplay}) can run. The callback MUST be
+ * wired before the provider is installed; reaching the stopped state without one throws {@link
+ * IllegalStateException}. Construction throws {@link IOException} if either {@code
  * frames/000000.jpg} or {@code metadata.jsonl} is missing.
  */
 public class FileLogFrameProvider extends CpuImageProcessor {
@@ -146,7 +147,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
 
         if (stoppedAtEof.get()) {
-            return emptyOrPark();
+            return emptyFrame();
         }
 
         Optional<MetadataSidecarReader.Entry> entry;
@@ -255,8 +256,9 @@ public class FileLogFrameProvider extends CpuImageProcessor {
      * <p><strong>Wire BEFORE installing this provider on a VisionSource.</strong> The natural-EOF
      * path fires from inside the very first {@link #getInputMat()} call on a zero-frame (or
      * already-corrupt) recording, so a callback wired after the runner has begun pulling frames could
-     * be skipped silently — the swap-back would never run. {@code VisionModule.startReplay} preserves
-     * this ordering; future callers must do the same.
+     * be skipped — the one-shot transition has already fired and {@link #getInputMat()} throws {@link
+     * IllegalStateException} while unwired. {@code VisionModule.startReplay} preserves this ordering;
+     * future callers must do the same.
      */
     public void setOnEof(Runnable onEof) {
         this.onEof = onEof;
@@ -264,9 +266,9 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
     /**
      * Trigger an early end-of-replay from any thread. Idempotent. Once called, the next call to
-     * {@link #getInputMat()} returns an empty frame without parking (assuming {@link #setOnEof} has
-     * been wired) or parks (standalone use). Fires the EOF callback exactly once via the same CAS the
-     * natural-EOF path uses.
+     * {@link #getInputMat()} returns an empty frame. Fires the EOF callback exactly once via the same
+     * CAS the natural-EOF path uses, then unparks the vision thread if it's mid-{@link #pace} so the
+     * cancel doesn't wait out the recorded inter-frame gap.
      */
     public void requestStop() {
         enterStoppedFiringEofOnce("explicit cancel");
@@ -275,7 +277,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
     private CapturedFrame enterStoppedState(String reason) {
         enterStoppedFiringEofOnce(reason);
-        return emptyOrPark();
+        return emptyFrame();
     }
 
     private void enterStoppedFiringEofOnce(String reason) {
@@ -290,13 +292,14 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
     }
 
-    // Swap-aware consumers (setOnEof wired): return an empty frame so the runner moves on.
-    // Standalone: park until interrupted, matching the legacy "deactivate to restart" semantics.
-    private CapturedFrame emptyOrPark() {
+    // Return an empty frame so the runner moves on to the provider the EOF callback restores.
+    // Reaching the stopped state with no callback wired is a wiring bug (see setOnEof) — fail
+    // loudly rather than starve the vision thread on empties forever.
+    private CapturedFrame emptyFrame() {
         if (onEof == null) {
-            while (!Thread.currentThread().isInterrupted()) {
-                LockSupport.parkNanos(Long.MAX_VALUE);
-            }
+            throw new IllegalStateException(
+                    "FileLogFrameProvider stopped with no EOF callback wired; setOnEof must be called"
+                            + " before installing this provider on a VisionSource");
         }
         return new CapturedFrame(new CVMat(), properties, 0L);
     }

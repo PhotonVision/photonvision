@@ -37,7 +37,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.jni.LibraryLoader;
-import org.photonvision.vision.frame.provider.CpuImageProcessor.CapturedFrame;
 import org.photonvision.vision.pipeline.FrameRecorder;
 
 /**
@@ -115,11 +114,8 @@ class FileLogFrameProviderTest {
                 captured.colorImage.release();
             }
 
-            // After EOF the provider parks the vision thread instead of disconnecting — the
-            // MJPEG stream holds whatever the browser last received, the pipeline stops running,
-            // and the "Frames Processed" counter freezes. To restart the user deactivates and
-            // reactivates the camera. See parksTheVisionThreadAtEof below for the wake-on-interrupt
-            // contract; here we just verify isConnected stays true past EOF.
+            // The provider never "disconnects": isConnected stays true past EOF so the swap-back
+            // (driven by the onEof callback, never a connection loss) is the only exit path.
             assertTrue(provider.isConnected(), "replay source should stay connected after EOF");
         } finally {
             provider.release();
@@ -127,47 +123,16 @@ class FileLogFrameProviderTest {
     }
 
     @Test
-    void parksTheVisionThreadAtEof() throws Exception {
-        // After consuming the recording, getInputMat must block until interrupted (mirroring
-        // VisionRunner.stopProcess's path) so the pipeline stops running on deactivation rather
-        // than spinning on a frozen frame. Run getInputMat on a separate thread, confirm it
-        // blocks, then interrupt it and verify it wakes with an empty CVMat + preserved flag.
+    void throwsAtEofWhenNoCallbackWired() throws IOException {
+        // Reaching the stopped state without setOnEof is a wiring bug — VisionModule.startReplay
+        // always wires the callback before installing the provider. Fail loudly rather than
+        // starve the vision thread on empty frames forever.
         FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
         try {
-            // Burn through all frames so the next call hits EOF.
             for (int i = 0; i < CAPTURE_NS.length; i++) {
                 provider.getInputMat().colorImage.release();
             }
-
-            java.util.concurrent.atomic.AtomicReference<CapturedFrame> result =
-                    new java.util.concurrent.atomic.AtomicReference<>();
-            java.util.concurrent.atomic.AtomicBoolean interruptedAfter =
-                    new java.util.concurrent.atomic.AtomicBoolean();
-            Thread t =
-                    new Thread(
-                            () -> {
-                                result.set(provider.getInputMat());
-                                interruptedAfter.set(Thread.currentThread().isInterrupted());
-                            });
-            t.setName("parksTheVisionThreadAtEof-runner");
-            t.start();
-
-            Thread.sleep(250); // give it time to enter the park
-            assertTrue(t.isAlive(), "getInputMat should park after EOF, not return");
-
-            t.interrupt();
-            t.join(2_000);
-            assertFalse(t.isAlive(), "getInputMat should wake within 2s of interrupt");
-
-            CapturedFrame captured = result.get();
-            assertNotNull(captured, "returned CapturedFrame should not be null");
-            assertTrue(
-                    captured.colorImage.getMat().empty(),
-                    "post-interrupt CapturedFrame should carry an empty Mat");
-            assertTrue(
-                    interruptedAfter.get(),
-                    "interrupt flag must be preserved so VisionRunner's outer loop exits cleanly");
-            captured.colorImage.release();
+            assertThrows(IllegalStateException.class, provider::getInputMat);
         } finally {
             provider.release();
         }
@@ -295,27 +260,42 @@ class FileLogFrameProviderTest {
     }
 
     @Test
-    void eofWithoutCallbackPreservesParkingBehaviour() throws Exception {
-        // Standalone use (no setOnEof): the original "park on EOF, deactivate to restart" semantics
-        // must be preserved so non-swap-aware consumers don't busy-loop on empties.
-        FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
+    void requestStopUnparksAPacedRead(@TempDir Path tmp) throws Exception {
+        // Two frames 30 s apart: the second getInputMat parks to honour the recorded delta.
+        // requestStop must wake it promptly instead of waiting out the full gap.
+        Path dir = tmp.resolve("long-gap");
+        Path frames = dir.resolve("frames");
+        Files.createDirectories(frames);
+        Files.copy(
+                FrameRecorder.framePath(recordingDir.resolve("frames"), 0),
+                FrameRecorder.framePath(frames, 0));
+        Files.copy(
+                FrameRecorder.framePath(recordingDir.resolve("frames"), 1),
+                FrameRecorder.framePath(frames, 1));
+        try (BufferedWriter w =
+                Files.newBufferedWriter(dir.resolve("metadata.jsonl"), StandardCharsets.UTF_8)) {
+            w.write("{\"seq\":0,\"capture_ns\":0}\n");
+            w.write("{\"seq\":1,\"capture_ns\":30000000000}\n");
+        }
+
+        FileLogFrameProvider provider = new FileLogFrameProvider(dir);
         try {
-            for (int i = 0; i < CAPTURE_NS.length; i++) {
-                provider.getInputMat().colorImage.release();
-            }
+            provider.setOnEof(() -> {});
+            provider.getInputMat().colorImage.release(); // anchors pacing
 
             Thread t =
                     new Thread(
                             () -> {
                                 provider.getInputMat().colorImage.release();
                             });
-            t.setName("eofWithoutCallback-runner");
+            t.setName("requestStopUnparksAPacedRead-runner");
             t.start();
-            Thread.sleep(150);
-            assertTrue(t.isAlive(), "no callback wired ⇒ should park at EOF, not return");
-            t.interrupt();
+            Thread.sleep(250); // give it time to enter the paced park
+            assertTrue(t.isAlive(), "second read should be parked honouring the recorded 30s gap");
+
+            provider.requestStop();
             t.join(2_000);
-            assertFalse(t.isAlive(), "interrupt must wake the parked thread");
+            assertFalse(t.isAlive(), "requestStop must unpark the paced read promptly");
         } finally {
             provider.release();
         }
