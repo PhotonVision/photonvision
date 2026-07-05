@@ -303,18 +303,4 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     public boolean checkCameraConnected() {
         return true;
     }
-
-    @Override
-    public void setRecording(boolean shouldRecord) {
-        // Must not throw: NTDataPublisher invokes this on the NT listener thread with no
-        // try/catch around the consumer, so an unchecked exception poisons NT4's listener pool.
-        if (shouldRecord) {
-            logger.warn("Ignoring setRecording(true): file-log replay is read-only.");
-        }
-    }
-
-    @Override
-    public boolean getRecording() {
-        return false;
-    }
 }

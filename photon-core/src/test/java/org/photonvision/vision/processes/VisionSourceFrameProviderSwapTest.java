@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -50,9 +49,8 @@ import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
 /**
  * Exercises {@link VisionSource#setFrameProvider}, {@link VisionSource#getFrameProvider}, and
  * {@link VisionSource#getReplayRecordingDir}. The contract under test: after a swap, callers that
- * read through the canonical getter (and any {@code Supplier<FrameProvider>} bound to it) observe
- * the new provider on the very next call. That's what lets {@code VisionRunner} pick up an in-place
- * replay swap without a runner restart.
+ * read through the canonical getter observe the new provider on the very next call. That's what
+ * lets {@code VisionRunner} pick up an in-place replay swap without a runner restart.
  */
 class VisionSourceFrameProviderSwapTest {
     @BeforeAll
@@ -84,22 +82,6 @@ class VisionSourceFrameProviderSwapTest {
 
         source.setFrameProvider(replay);
         assertSame(replay, source.getFrameProvider(), "post-swap read must see the new provider");
-    }
-
-    @Test
-    void supplierBoundToTheGetterTracksTheSwap() {
-        // VisionRunner is wired with `visionSource::getFrameProvider`, then re-reads it every loop
-        // tick. This emulates that pattern and confirms a swap on the source flows through.
-        var source = new TestVisionSource(newConfig());
-        var live = new NamedNoopProvider("live");
-        var replay = new NamedNoopProvider("replay");
-        source.setFrameProvider(live);
-
-        Supplier<FrameProvider> supplier = source::getFrameProvider;
-        assertSame(live, supplier.get());
-
-        source.setFrameProvider(replay);
-        assertSame(replay, supplier.get(), "the method-ref supplier must re-read the volatile field");
     }
 
     @Test
@@ -238,13 +220,5 @@ class VisionSourceFrameProviderSwapTest {
 
         @Override
         public void release() {}
-
-        @Override
-        public void setRecording(boolean shouldRecord) {}
-
-        @Override
-        public boolean getRecording() {
-            return false;
-        }
     }
 }

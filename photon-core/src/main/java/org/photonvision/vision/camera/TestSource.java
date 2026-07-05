@@ -101,16 +101,6 @@ public class TestSource extends VisionSource {
             public boolean isConnected() {
                 return true;
             }
-
-            @Override
-            public void setRecording(boolean shouldRecord) {
-                throw new UnsupportedOperationException("Unimplemented method 'setRecording'");
-            }
-
-            @Override
-            public boolean getRecording() {
-                return false;
-            }
         };
     }
 

@@ -164,20 +164,4 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
         var vidMode = settables.getCurrentVideoMode();
         settables.setVideoMode(vidMode);
     }
-
-    @Override
-    public void setRecording(boolean shouldRecord) {
-        // Must NOT throw — NTDataPublisher routes recordingRequest writes through
-        // FrameProvider::setRecording on the NT listener thread, with no try/catch around
-        // the consumer. An unchecked exception here propagates into NT4's listener pool.
-        if (shouldRecord) {
-            logger.warn(
-                    "Ignoring setRecording(true): LibcameraGpuFrameProvider does not support recording.");
-        }
-    }
-
-    @Override
-    public boolean getRecording() {
-        return false;
-    }
 }

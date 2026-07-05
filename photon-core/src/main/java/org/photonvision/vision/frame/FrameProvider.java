@@ -18,12 +18,16 @@
 package org.photonvision.vision.frame;
 
 import java.util.function.Supplier;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.FrameRecorder;
 
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
+    private static final Logger logger = new Logger(FrameProvider.class, LogGroup.Camera);
+
     protected int sequenceID = 0;
 
     // Escape hatch to allow us to synchronously (from the main vision thread) run
@@ -78,7 +82,19 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     /** Ask the camera to block for new frames (true) or use latest available (false) */
     public abstract void requestBlockForFrames(boolean blockForFrames);
 
-    public abstract void setRecording(boolean shouldRecord);
+    /**
+     * Ask this provider to start/stop recording frames to disk. The base implementation does not
+     * support recording: setRecording(true) is warn-logged and ignored. Overrides must NOT throw —
+     * NTDataPublisher routes recordingRequest writes through this on the NT listener thread, with no
+     * try/catch around the consumer, so an unchecked exception propagates into NT4's listener pool.
+     */
+    public void setRecording(boolean shouldRecord) {
+        if (shouldRecord) {
+            logger.warn("Ignoring setRecording(true): " + getName() + " does not support recording.");
+        }
+    }
 
-    public abstract boolean getRecording();
+    public boolean getRecording() {
+        return false;
+    }
 }
