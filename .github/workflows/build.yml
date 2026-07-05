@@ -599,19 +599,11 @@ jobs:
           commands: java -jar *.jar --smoketest --platform=${{ matrix.plat_override }}
 
   matrix-checker:
-    # This job is the single required status check for branch protection and the
-    # overall pass/fail signal for a run. It needs every terminal job in the
-    # workflow graph, so a failure anywhere fails this check:
-    #   - Intermediate jobs (validation, build-offline-docs, build-photonlib-host,
-    #     build-photonlib-docker, build-package-*) are covered transitively: when
-    #     one of them fails, GitHub marks its dependents as 'skipped', so any
-    #     needed job that is 'skipped' (or 'cancelled') must be treated as a
-    #     failure here, not ignored.
-    #   - 'release' is the one exception: its own `if:` only lets it run on
-    #     pushes to main or v* tags of PhotonVision/photonvision, so a skipped
-    #     'release' is only an error when that condition holds (handled in the
-    #     check script below).
-    # The job name is referenced by branch protection - do not rename it.
+    # Single required status check for branch protection: it needs every terminal
+    # job, so any non-success -- including a 'skipped' caused by an upstream failure
+    # -- fails the gate. Exception: 'release' only runs on main/v* tags upstream, so
+    # a skipped 'release' off those refs is expected (handled in the script below).
+    # Do not rename this job -- branch protection references it by name.
     runs-on: ubuntu-latest
     needs:
       - build-gradle
