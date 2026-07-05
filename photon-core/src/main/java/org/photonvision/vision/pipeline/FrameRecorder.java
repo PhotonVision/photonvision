@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
@@ -237,10 +238,16 @@ public class FrameRecorder implements Releasable {
      * cvmat} and is responsible for releasing it.
      *
      * @param captureTimestampNs source-machine capture time; preserved verbatim into the sidecar.
-     * @return false if recording is off, shutting down, the queue is full, or disk is low.
+     * @return false if recording is off, shutting down, the frame is empty, the queue is full, or
+     *     disk is low.
      */
     public boolean recordFrame(CVMat cvmat, long captureTimestampNs) {
         if (!recording.get() || shutdown.get()) {
+            return false;
+        }
+
+        // Grab-error paths hand us empty mats; imwrite asserts !empty.
+        if (cvmat.getMat().empty()) {
             return false;
         }
 
@@ -280,12 +287,19 @@ public class FrameRecorder implements Releasable {
                     break;
                 }
 
-                // Metadata before frame keeps the len(jsonl) >= frame_count invariant (class doc).
-                if (writeMetadataLine(frame.sequenceId, frame.captureTimestampNs)) {
-                    writeFrame(frame.sequenceId, frame.mat);
+                try {
+                    // Metadata before frame keeps the len(jsonl) >= frame_count invariant (class doc).
+                    if (writeMetadataLine(frame.sequenceId, frame.captureTimestampNs)) {
+                        writeFrame(frame.sequenceId, frame.mat);
+                    }
+                } catch (RuntimeException e) {
+                    // Keep this thread alive to drain the queue — if it dies, release() would have
+                    // nothing servicing the poison pill.
+                    logger.error("Unexpected exception writing frame; stopping recording.", e);
+                    stopRecording();
+                } finally {
+                    frame.mat.release();
                 }
-
-                frame.mat.release();
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -336,9 +350,10 @@ public class FrameRecorder implements Releasable {
 
         stopRecording();
 
-        // Send poison pill to stop writer thread
+        // Send poison pill to stop writer thread. Timed offer, not put: if the writer thread is
+        // dead with a full queue, put would block the calling (NT listener) thread forever.
         try {
-            frameQueue.put(RecordFrame.poison());
+            frameQueue.offer(RecordFrame.poison(), 250, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -349,12 +364,30 @@ public class FrameRecorder implements Releasable {
             Thread.currentThread().interrupt();
         }
 
-        // Clear any remaining frames
-        RecordFrame frame;
-        while ((frame = frameQueue.poll()) != null) {
-            if (frame.mat != null) {
-                frame.mat.release();
+        if (writerThread.isAlive()) {
+            // Poison never landed or the writer is wedged; interrupt breaks it out of take().
+            writerThread.interrupt();
+            try {
+                writerThread.join(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
+        }
+
+        if (writerThread.isAlive()) {
+            // Never touch the queue or native params while the writer may still be using them — a
+            // small native leak beats a use-after-free inside imwrite.
+            logger.error("FrameRecorder writer thread did not exit; leaking jpegWriteParams.");
+        } else {
+            // Clear any remaining frames
+            RecordFrame frame;
+            while ((frame = frameQueue.poll()) != null) {
+                if (frame.mat != null) {
+                    frame.mat.release();
+                }
+            }
+
+            jpegWriteParams.release();
         }
 
         try {
