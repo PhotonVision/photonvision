@@ -428,21 +428,16 @@ public class FrameRecorder implements Releasable {
     /**
      * Export a recording.
      *
-     * <p>Image-sequence recordings are directories ({@code frames/*.jpg} + {@code metadata.jsonl} +
-     * {@code strat}). For download convenience we zip the whole recording into a single portable
-     * file. Users who want a watchable video can run any standard tool against the zipped frame
-     * directory (e.g. ffmpeg can build an mp4 from the JPEGs offline).
+     * <p>Image-sequence recordings are directories ({@code frames/*.jpg} + {@code metadata.jsonl}).
+     * For download convenience we zip the whole recording into a single portable file. Users who want
+     * a watchable video can run any standard tool against the zipped frame directory (e.g. ffmpeg can
+     * build an mp4 from the JPEGs offline).
      *
      * @param recording Path to recording directory
      * @return Path to a unique temp file with the recording's contents zipped
      */
     public static File export(Path recording) throws Exception {
-        if (!Files.isDirectory(recording)) {
-            throw new IllegalStateException("Recording directory not found: " + recording);
-        }
-        File zip = Files.createTempFile(recording.getFileName().toString() + "_", ".zip").toFile();
-        ZipUtil.pack(recording.toFile(), zip);
-        return zip;
+        return zipDirectory(recording, recording.getFileName().toString() + "_");
     }
 
     /**
@@ -451,25 +446,37 @@ public class FrameRecorder implements Releasable {
      * after unzipping.
      */
     public static File exportCamera(Path cameraRecordingsDir) throws Exception {
-        if (!Files.isDirectory(cameraRecordingsDir)) {
-            throw new IllegalStateException(
-                    "Camera recordings directory not found: " + cameraRecordingsDir);
-        }
-        String prefix = cameraRecordingsDir.getFileName().toString();
-        File zip = Files.createTempFile(prefix + "_recordings_", ".zip").toFile();
-        ZipUtil.pack(cameraRecordingsDir.toFile(), zip);
-        return zip;
+        return zipDirectory(
+                cameraRecordingsDir, cameraRecordingsDir.getFileName().toString() + "_recordings_");
     }
 
     /**
      * Export every recording from every camera as a single zip. Preserves the {@code
-     * <camera>/<recording>/{frames/, metadata.jsonl, strat}} tree so cameras stay grouped.
+     * <camera>/<recording>/{frames/, metadata.jsonl}} tree so cameras stay grouped.
      */
     public static File exportAll() throws Exception {
         Path recordingsRoot = ConfigManager.getInstance().getRecordingsDirectory().toPath();
-        File zip = Files.createTempFile("photonvision-recordings-export-", ".zip").toFile();
-        if (Files.isDirectory(recordingsRoot)) {
-            ZipUtil.pack(recordingsRoot.toFile(), zip);
+        if (!Files.isDirectory(recordingsRoot)) {
+            throw new IllegalStateException("No recordings to export");
+        }
+        try (var entries = Files.list(recordingsRoot)) {
+            if (entries.findAny().isEmpty()) {
+                throw new IllegalStateException("No recordings to export");
+            }
+        }
+        return zipDirectory(recordingsRoot, "photonvision-recordings-export-");
+    }
+
+    private static File zipDirectory(Path dir, String zipNamePrefix) throws Exception {
+        if (!Files.isDirectory(dir)) {
+            throw new IllegalStateException("Recording directory not found: " + dir);
+        }
+        File zip = Files.createTempFile(zipNamePrefix, ".zip").toFile();
+        try {
+            ZipUtil.pack(dir.toFile(), zip);
+        } catch (Exception e) {
+            zip.delete();
+            throw e;
         }
         return zip;
     }
