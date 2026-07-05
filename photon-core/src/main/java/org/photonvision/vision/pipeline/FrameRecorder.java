@@ -131,9 +131,9 @@ public class FrameRecorder implements Releasable {
             throw new IllegalStateException("Insufficient disk space for FrameRecorder");
         }
 
-        logger.info("Initializing FrameRecorder with output path: " + outputPath.toString());
-        this.outputPath = outputPath;
-        this.framesDir = outputPath.resolve("frames");
+        this.outputPath = uniquifyOutputPath(outputPath);
+        this.framesDir = this.outputPath.resolve("frames");
+        logger.info("Initializing FrameRecorder with output path: " + this.outputPath);
 
         try {
             java.nio.file.Files.createDirectories(framesDir);
@@ -145,13 +145,13 @@ public class FrameRecorder implements Releasable {
         try {
             this.metadataWriter =
                     java.nio.file.Files.newBufferedWriter(
-                            outputPath.resolve("metadata.jsonl"),
+                            this.outputPath.resolve("metadata.jsonl"),
                             java.nio.charset.StandardCharsets.UTF_8,
                             java.nio.file.StandardOpenOption.CREATE,
                             java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new IllegalStateException(
-                    "Failed to open metadata sidecar at " + outputPath + "/metadata.jsonl", e);
+                    "Failed to open metadata sidecar at " + this.outputPath + "/metadata.jsonl", e);
         }
 
         writeTssSnapshot(tss);
@@ -167,6 +167,32 @@ public class FrameRecorder implements Releasable {
         this.writerThread = new Thread(this::videoLoop, "FrameRecorder-Video");
         this.writerThread.setDaemon(true);
         this.writerThread.start();
+    }
+
+    // Recording into a directory that already holds a recording (e.g. two recordings resolving to
+    // the same name within one match) would truncate its metadata.jsonl while stale frames/*.jpg
+    // persist, so replay would silently serve the old frames. Suffix until we find a fresh dir.
+    private static Path uniquifyOutputPath(Path requested) {
+        Path candidate = requested;
+        for (int suffix = 2; containsRecording(candidate); suffix++) {
+            candidate = requested.resolveSibling(requested.getFileName().toString() + "_" + suffix);
+        }
+        return candidate;
+    }
+
+    private static boolean containsRecording(Path dir) {
+        if (Files.exists(dir.resolve("metadata.jsonl"))) {
+            return true;
+        }
+        Path frames = dir.resolve("frames");
+        if (!Files.isDirectory(frames)) {
+            return false;
+        }
+        try (var entries = Files.list(frames)) {
+            return entries.findAny().isPresent();
+        } catch (IOException e) {
+            return true; // Unreadable — treat as occupied rather than risk truncating it.
+        }
     }
 
     /**

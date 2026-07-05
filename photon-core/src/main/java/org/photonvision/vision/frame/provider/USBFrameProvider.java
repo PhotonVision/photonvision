@@ -183,23 +183,24 @@ public class USBFrameProvider extends CpuImageProcessor {
         if (shouldRecord) {
             String camPath = settables.getConfiguration().uniqueName;
 
-            String recordingPath = NetworkTablesManager.getInstance().getMatchData();
-            if (recordingPath == null || recordingPath.isBlank()) {
-                // No match is currently active (or FMS published whitespace), use timestamp.
-                recordingPath =
-                        DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
-                                .format(java.time.LocalDateTime.now());
+            // Timestamp first so names never collide within a match; match data (if any) is
+            // FMS-supplied over an unauthenticated NT topic, so sanitize it before letting it
+            // become part of a path segment.
+            String recordingName =
+                    DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
+                            .format(java.time.LocalDateTime.now());
+            String matchData = NetworkTablesManager.getInstance().getMatchData();
+            if (matchData != null && !matchData.isBlank()) {
+                recordingName += "_" + matchData.replaceAll("[^A-Za-z0-9_-]", "_");
             }
 
-            // matchData is FMS-supplied and reaches us via an unauthenticated NT topic; sanitize
-            // before letting it become a path segment.
             Path outputPath;
             try {
                 outputPath =
                         PathSafety.safeResolve(
                                 ConfigManager.getInstance().getRecordingsDirectory().toPath(),
                                 camPath,
-                                recordingPath);
+                                recordingName);
             } catch (SecurityException e) {
                 logger.error("Refusing to start recording at unsafe path: " + e.getMessage());
                 return;
