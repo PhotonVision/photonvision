@@ -108,8 +108,9 @@ public class VisionModule {
     // Volatile so stop() (caller thread) sees writes made by the vision thread on first frame.
     private volatile JsonResultExporter jsonResultExporter;
     // Latches true on first open failure so we log + skip silently rather than spamming on
-    // every subsequent frame.
-    private boolean jsonExporterDisabled;
+    // every subsequent frame. Volatile: set on the vision thread, reset by the replayWorker
+    // in finishReplay.
+    private volatile boolean jsonExporterDisabled;
     // Settings hashCode the live exporter was created with. Only touched on the vision thread
     // (the tee path); a mismatch means the pipeline changed mid-replay and the exporter must be
     // recreated against the new settings' file.
@@ -410,7 +411,8 @@ public class VisionModule {
         outputVideoStreamer.close();
         inputFrameSaver.close();
         outputFrameSaver.close();
-        if (jsonResultExporter != null) jsonResultExporter.close();
+        var exporter = jsonResultExporter;
+        if (exporter != null) exporter.close();
         synchronized (replayLock) {
             if (replayWorker != null) {
                 replayWorker.shutdownNow();
@@ -558,19 +560,20 @@ public class VisionModule {
         FrameProvider toRestore;
         FileLogFrameProvider toRelease;
         synchronized (replayLock) {
-            if (!isReplaying) return;
+            if (!isReplaying || activeReplayProvider == null) return;
             toRestore = savedFrameProvider;
             toRelease = activeReplayProvider;
             savedFrameProvider = null;
             activeReplayProvider = null;
-            isReplaying = false;
         }
 
         // Restore the live provider first so VisionRunner re-reads it on the very next tick.
         visionSource.setFrameProvider(toRestore);
-        // Fence: the runSynchronously task is drained at the top of the runner loop, AFTER it has
-        // re-read frameSupplier.get() on the new (restored) provider. So when the future resolves,
-        // the vision thread is no longer holding a reference inside toRelease.getInputMat().
+        // Fence: the runSynchronously task is drained at the top of the runner loop, before that
+        // tick's provider re-read. Its resolution proves the vision thread is at loop-top —
+        // outside any getInputMat() call on toRelease — and every provider read from there on
+        // sees the restored provider (the volatile write above), so the runner never re-enters
+        // toRelease.
         try {
             visionRunner.runSynchronously(() -> {}).get(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -586,8 +589,9 @@ public class VisionModule {
             logger.warn("Exception releasing file-log replay provider: " + e.getMessage());
         }
 
-        // Close + null the JSON exporter so the next replay starts fresh (commit C makes the tee
-        // observe these resets through getReplayRecordingDir()).
+        // Close + null the JSON exporter BEFORE isReplaying flips false: a poll that observes
+        // "replay ended" must be able to download a complete, flushed results file. The fence
+        // above guarantees the vision thread is done teeing to it.
         var exporter = jsonResultExporter;
         if (exporter != null) {
             exporter.close();
@@ -595,6 +599,7 @@ public class VisionModule {
         }
         jsonExporterDisabled = false;
 
+        isReplaying = false;
         ntConsumer.publishReplayState(false);
         logger.info("Replay ended (" + reason + ")");
     }
