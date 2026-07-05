@@ -61,6 +61,10 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     private long firstCaptureNs;
     private long firstMonoNs;
 
+    // The thread currently parked in pace(), if any. Volatile so requestStop() (any thread) can
+    // unpark it instead of waiting out the full recorded inter-frame gap.
+    private volatile Thread pacingThread;
+
     // Discovered at construction by listing frames/*.jpg. Used by replay UIs to render a
     // progress bar without having to walk the directory themselves. -1 if discovery failed
     // (logged once, treated as unknown).
@@ -200,9 +204,20 @@ public class FileLogFrameProvider extends CpuImageProcessor {
             pacingAnchored = true;
             return;
         }
-        long sleepNs = (firstMonoNs + (captureNs - firstCaptureNs)) - System.nanoTime();
-        if (sleepNs > 0) {
-            LockSupport.parkNanos(sleepNs);
+        long deadlineNs = firstMonoNs + (captureNs - firstCaptureNs);
+        pacingThread = Thread.currentThread();
+        try {
+            long sleepNs;
+            // Loop: parkNanos can return spuriously, and requestStop() unparks us early — re-check
+            // the deadline and the stop flag each wakeup. Preserve the interrupt flag for the
+            // runner's outer loop.
+            while ((sleepNs = deadlineNs - System.nanoTime()) > 0
+                    && !stoppedAtEof.get()
+                    && !Thread.currentThread().isInterrupted()) {
+                LockSupport.parkNanos(sleepNs);
+            }
+        } finally {
+            pacingThread = null;
         }
     }
 
@@ -255,6 +270,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
      */
     public void requestStop() {
         enterStoppedFiringEofOnce("explicit cancel");
+        LockSupport.unpark(pacingThread);
     }
 
     private CapturedFrame enterStoppedState(String reason) {
