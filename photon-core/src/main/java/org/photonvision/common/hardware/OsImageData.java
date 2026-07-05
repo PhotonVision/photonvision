@@ -23,8 +23,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.Optional;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -37,7 +37,8 @@ import org.photonvision.common.logging.Logger;
 public class OsImageData {
     private static final Logger logger = new Logger(OsImageData.class, LogGroup.General);
 
-    private static File imageMetadataFile = Path.of("/opt/photonvision/image-version.json").toFile();
+    private static File imageMetadataFile =
+            ConfigManager.getInstance().getImageMetadataPath().toFile();
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 
