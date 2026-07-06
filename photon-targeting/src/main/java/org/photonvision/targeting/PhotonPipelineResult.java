@@ -168,8 +168,8 @@ public class PhotonPipelineResult
     }
 
     /**
-     * Returns the estimated time the frame was captured, in the same time base as {@link
-     * edu.wpi.first.wpilibj.Timer#getFPGATimestamp()}.
+     * Returns the estimated time the frame was captured, in the same time base as {@code
+     * Timer.getFPGATimestamp()}.
      *
      * @return The timestamp in seconds.
      */
