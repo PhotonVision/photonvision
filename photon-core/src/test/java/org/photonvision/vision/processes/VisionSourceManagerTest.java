@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.avaje.jsonb.Jsonb;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +32,8 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
@@ -94,17 +95,18 @@ public class VisionSourceManagerTest {
                                     7,
                                     8));
 
-            var str = JacksonUtils.serializeToString(usb);
+            var str = Jsonb.instance().type(PVCameraInfo.class).toJson(usb);
             System.out.println(str);
-            System.out.println(JacksonUtils.deserialize(str, PVCameraInfo.class));
+            System.out.println(Jsonb.instance().type(PVCameraInfo.class).fromJson(str));
         }
         {
             var csi =
                     PVCameraInfo.fromCSICameraInfo(
                             "/dev/v4l/by-path/platform-1f00110000.csi-video-index0", "rp1-cfe");
-            var str = JacksonUtils.serializeToString(csi);
+
+            var str = Jsonb.instance().type(PVCameraInfo.class).toJson(csi);
             System.out.println(str);
-            System.out.println(JacksonUtils.deserialize(str, PVCameraInfo.class));
+            System.out.println(Jsonb.instance().type(PVCameraInfo.class).fromJson(str));
         }
     }
 
@@ -137,7 +139,10 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera1);
 
-        System.out.println(JacksonUtils.serializeToString(ConfigManager.getInstance().getConfig()));
+        System.out.println(
+                Jsonb.instance()
+                        .type(PhotonConfiguration.class)
+                        .toJson(ConfigManager.getInstance().getConfig()));
 
         // And make assertions about the current matching state
         assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
@@ -268,7 +273,10 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera3);
 
-        System.out.println(JacksonUtils.serializeToString(ConfigManager.getInstance().getConfig()));
+        System.out.println(
+                Jsonb.instance()
+                        .type(PhotonConfiguration.class)
+                        .toJson(ConfigManager.getInstance().getConfig()));
 
         // And make assertions about the current matching state
         assertEquals(3, vsm.getVsmState().allConnectedCameras.size());

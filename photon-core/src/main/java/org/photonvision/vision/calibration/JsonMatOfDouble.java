@@ -17,8 +17,7 @@
 
 package org.photonvision.vision.calibration;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.util.Arrays;
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.core.CvType;
@@ -28,6 +27,7 @@ import org.photonvision.vision.opencv.Releasable;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.util.Num;
 
+@Json
 /** JSON-serializable image. Data is stored as a raw JSON array. */
 public class JsonMatOfDouble implements Releasable {
     public final int rows;
@@ -36,28 +36,23 @@ public class JsonMatOfDouble implements Releasable {
     public final double[] data;
 
     // Cached matrices to avoid object recreation
-    @JsonIgnore private Mat wrappedMat = null;
-    @JsonIgnore private Matrix wpilibMat = null;
+    @Json.Ignore private Mat wrappedMat = null;
+    @Json.Ignore private Matrix wpilibMat = null;
 
-    @JsonIgnore private MatOfDouble wrappedMatOfDouble;
-    private boolean released = false;
+    @Json.Ignore private MatOfDouble wrappedMatOfDouble;
+    @Json.Ignore private boolean released = false;
 
     public JsonMatOfDouble(int rows, int cols, double[] data) {
         this(rows, cols, CvType.CV_64FC1, data);
     }
 
-    public JsonMatOfDouble(
-            @JsonProperty("rows") int rows,
-            @JsonProperty("cols") int cols,
-            @JsonProperty("type") int type,
-            @JsonProperty("data") double[] data) {
+    public JsonMatOfDouble(int rows, int cols, int type, double[] data) {
         this.rows = rows;
         this.cols = cols;
         this.type = type;
         this.data = data;
     }
 
-    @JsonIgnore
     private static double[] getDataFromMat(Mat mat) {
         double[] data = new double[(int) mat.total()];
         mat.get(0, 0, data);
@@ -75,7 +70,6 @@ public class JsonMatOfDouble implements Releasable {
         return new JsonMatOfDouble(mat.rows(), mat.cols(), getDataFromMat(mat));
     }
 
-    @JsonIgnore
     private Mat getAsMat() {
         if (this.type != CvType.CV_64FC1) return null;
 
@@ -91,7 +85,6 @@ public class JsonMatOfDouble implements Releasable {
         return this.wrappedMat;
     }
 
-    @JsonIgnore
     public MatOfDouble getAsMatOfDouble() {
         if (this.released) {
             throw new RuntimeException("This calibration object was already released");
@@ -105,7 +98,6 @@ public class JsonMatOfDouble implements Releasable {
     }
 
     @SuppressWarnings("unchecked")
-    @JsonIgnore
     public <R extends Num, C extends Num> Matrix<R, C> getAsWpilibMat() {
         if (wpilibMat == null) {
             wpilibMat = new Matrix<R, C>(new SimpleMatrix(rows, cols, true, data));

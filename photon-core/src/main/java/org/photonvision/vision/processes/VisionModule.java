@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -54,7 +55,6 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.math.util.Units;
 import org.wpilib.vision.camera.CameraServerJNI;
 import org.wpilib.vision.camera.VideoException;
 
@@ -182,7 +182,10 @@ public class VisionModule {
         if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
-                    .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
+                    .ifPresent(
+                            (visionLED) ->
+                                    visionLED.setPipelineModeSupplier(
+                                            () -> pipelineManager.getCurrentPipelineSettings().ledMode));
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
@@ -387,8 +390,8 @@ public class VisionModule {
                         + data.videoModeIndex
                         + " and settings "
                         + data);
-        settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
-        settings.markerSize = Units.inchesToMeters(data.markerSizeIn);
+        settings.gridSize = data.squareSizeMeters;
+        settings.markerSize = data.markerSizeMeters;
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
@@ -517,8 +520,9 @@ public class VisionModule {
     }
 
     private void setVisionLEDs(boolean on) {
-        if (camShouldControlLEDs() && HardwareManager.getInstance().visionLED != null)
-            HardwareManager.getInstance().visionLED.setState(on);
+        if (camShouldControlLEDs()) {
+            HardwareManager.getInstance().visionLED.ifPresent((visionLED) -> visionLED.setState(on));
+        }
     }
 
     public void saveModule() {
@@ -580,29 +584,29 @@ public class VisionModule {
         ret.maxWhiteBalanceTemp = visionSource.getSettables().getMaxWhiteBalanceTemp();
 
         ret.deactivated = config.deactivated;
+        ret.isEnabled = getEnabled();
 
         ret.mismatch = this.mismatch;
 
         ret.fpsLimit = this.fpsLimit;
 
         // TODO refactor into helper method
-        var temp = new HashMap<Integer, HashMap<String, Object>>();
+        var temp = new ArrayList<Map<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
 
-        for (var k : videoModes.entrySet()) {
+        for (var videoMode : videoModes) {
             var internalMap = new HashMap<String, Object>();
 
-            internalMap.put("width", k.getValue().width);
-            internalMap.put("height", k.getValue().height);
-            internalMap.put("fps", k.getValue().fps);
+            internalMap.put("width", videoMode.width);
+            internalMap.put("height", videoMode.height);
+            internalMap.put("fps", videoMode.fps);
             internalMap.put(
                     "pixelFormat",
-                    ((k.getValue() instanceof LibcameraGpuSource.FPSRatedVideoMode)
-                                    ? "kPicam"
-                                    : k.getValue().pixelFormat.toString())
-                            .substring(1)); // Remove the k prefix
+                    ((videoMode instanceof LibcameraGpuSource.FPSRatedVideoMode)
+                            ? "Picam"
+                            : videoMode.pixelFormat.toString()));
 
-            temp.put(k.getKey(), internalMap);
+            temp.add(internalMap);
         }
 
         if (videoModes.size() == 0) {
@@ -723,7 +727,7 @@ public class VisionModule {
 
     public void addCalibrationToConfig(CameraCalibrationCoefficients newCalibration) {
         if (newCalibration != null) {
-            logger.info("Got new calibration for " + newCalibration.unrotatedImageSize);
+            logger.info("Got new calibration for " + newCalibration.resolution);
             visionSource.getSettables().addCalibration(newCalibration);
         } else {
             logger.error("Got null calibration?");
@@ -732,9 +736,9 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    public void removeCalibrationFromConfig(Size unrotatedImageSize) {
-        if (unrotatedImageSize != null) {
-            visionSource.getSettables().removeCalibration(unrotatedImageSize);
+    public void removeCalibrationFromConfig(Size resolution) {
+        if (resolution != null) {
+            visionSource.getSettables().removeCalibration(resolution);
         } else {
             logger.error("Got null size?");
         }

@@ -118,13 +118,16 @@ class PhotonCamera:
         )
 
         self._prevHeartbeat = 0
-        self._prevHeartbeatChangeTime = Timer.getFPGATimestamp()
+        self._prevHeartbeatChangeTime = Timer.getMonotonicTimestamp()
 
         # Start the time sync server
         inst.start()
 
         # Usage reporting
-        hal.reportUsage("PhotonVision/PhotonCamera", PhotonCamera.instance_count, "")
+        hal.reportUsage(
+            "PhotonVision/PhotonCamera",  # Not 100% sure if this is correct
+            str(PhotonCamera.instance_count),
+        )
         PhotonCamera.instance_count += 1
 
     def getAllUnreadResults(self) -> List[PhotonPipelineResult]:
@@ -289,7 +292,7 @@ class PhotonCamera:
         """
 
         curHeartbeat = self._heartbeatEntry.get()
-        now = Timer.getFPGATimestamp()
+        now = Timer.getMonotonicTimestamp()
 
         if curHeartbeat != self._prevHeartbeat:
             self._prevHeartbeat = curHeartbeat
@@ -303,10 +306,10 @@ class PhotonCamera:
         if not _VERSION_CHECK_ENABLED:
             return
 
-        if (Timer.getFPGATimestamp() - _lastVersionTimeCheck) < 5.0:
+        if (Timer.getMonotonicTimestamp() - _lastVersionTimeCheck) < 5.0:
             return
 
-        _lastVersionTimeCheck = Timer.getFPGATimestamp()
+        _lastVersionTimeCheck = Timer.getMonotonicTimestamp()
 
         # Heartbeat entry is assumed to always be present. If it's not present, we
         # assume that a camera with that name was never connected in the first place.

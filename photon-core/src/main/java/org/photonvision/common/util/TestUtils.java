@@ -17,9 +17,11 @@
 
 package org.photonvision.common.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.json.JsonException;
+import io.avaje.jsonb.Jsonb;
 import java.awt.HeadlessException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
@@ -342,12 +344,10 @@ public class TestUtils {
     public static final String LIMELIGHT_480P_CAL_FILE = "limelight_1280_720.json";
 
     public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
-        try {
-            return new ObjectMapper()
-                    .readValue(
-                            (Path.of(getCalibrationPath(testMode).toString(), filename).toFile()),
-                            CameraCalibrationCoefficients.class);
-        } catch (IOException e) {
+        try (var stream =
+                new FileInputStream(Path.of(getCalibrationPath(testMode).toString(), filename).toFile())) {
+            return Jsonb.instance().type(CameraCalibrationCoefficients.class).fromJson(stream);
+        } catch (IOException | IllegalStateException | JsonException e) {
             e.printStackTrace();
             return null;
         }

@@ -29,7 +29,7 @@ import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
@@ -608,7 +608,7 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
         if (referencePose == null) {
-            DriverStation.reportError(
+            DriverStationErrors.reportError(
                     "[PhotonPoseEstimator] Tried to use reference pose strategy without setting the reference!",
                     false);
             return Optional.empty();
@@ -760,7 +760,7 @@ public class PhotonPoseEstimator {
 
     private void reportFiducialPoseError(int fiducialId) {
         if (!reportedErrors.contains(fiducialId)) {
-            DriverStation.reportError(
+            DriverStationErrors.reportError(
                     "[PhotonPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId, false);
             reportedErrors.add(fiducialId);
         }

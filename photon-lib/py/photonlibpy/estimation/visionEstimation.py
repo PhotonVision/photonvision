@@ -1,6 +1,6 @@
 import numpy as np
 from robotpy_apriltag import AprilTag, AprilTagFieldLayout
-from wpimath.geometry import Pose3d, Transform3d, Translation3d
+from wpimath import Pose3d, Transform3d, Translation3d
 
 from ..targeting import PhotonTrackedTarget, PnpResult, TargetCorner
 from . import OpenCVHelp, TargetModel

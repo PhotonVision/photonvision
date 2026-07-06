@@ -116,23 +116,20 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             inputPort: d.inputStreamPort,
             outputPort: d.outputStreamPort
           },
-          validVideoFormats: Object.entries(d.videoFormatList)
-            .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .map<VideoFormat>(([k, v], i) => ({
-              resolution: {
-                width: v.width,
-                height: v.height
-              },
-              fps: v.fps,
-              pixelFormat: v.pixelFormat,
-              index: v.index || i,
-              diagonalFOV: v.diagonalFOV,
-              horizontalFOV: v.horizontalFOV,
-              verticalFOV: v.verticalFOV,
-              standardDeviation: v.standardDeviation,
-              mean: v.mean
-            })),
+          validVideoFormats: d.videoFormatList.map((v, i) => ({
+            resolution: {
+              width: v.width,
+              height: v.height
+            },
+            fps: v.fps,
+            pixelFormat: v.pixelFormat,
+            index: v.index || i,
+            diagonalFOV: v.diagonalFOV,
+            horizontalFOV: v.horizontalFOV,
+            verticalFOV: v.verticalFOV,
+            standardDeviation: v.standardDeviation,
+            mean: v.mean
+          })),
           completeCalibrations: d.calibrations,
           isCSICamera: d.isCSICamera,
           minExposureRaw: d.minExposureRaw,
@@ -371,8 +368,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      */
     startPnPCalibration(
       calibrationInitData: {
-        squareSizeIn: number;
-        markerSizeIn: number;
+        squareSizeMeters: number;
+        markerSizeMeters: number;
         patternWidth: number;
         patternHeight: number;
         boardType: CalibrationBoardTypes;
@@ -385,8 +382,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       const payload = {
         startPnpCalibration: {
           count: stateCalibData.imageCount,
-          minCount: stateCalibData.minimumImageCount,
-          hasEnough: stateCalibData.hasEnoughImages,
           videoModeIndex: stateCalibData.videoFormatIndex,
           ...calibrationInitData
         },

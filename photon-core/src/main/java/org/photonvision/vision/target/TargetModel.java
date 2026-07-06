@@ -17,10 +17,7 @@
 
 package org.photonvision.vision.target;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.MatOfPoint3f;
@@ -49,6 +46,7 @@ import org.wpilib.math.util.Units;
  *
  * <p>AprilTag models are currently only used for drawing on the output stream.
  */
+@Json
 public enum TargetModel implements Releasable {
     k2016HighGoal(
             List.of(
@@ -71,100 +69,28 @@ public enum TargetModel implements Releasable {
                     new Point3(Units.inchesToMeters(-19.625), Units.inchesToMeters(-8.5), 0),
                     new Point3(Units.inchesToMeters(19.625), Units.inchesToMeters(-8.5), 0)),
             Units.inchesToMeters(12)),
-    kCircularPowerCell7in(
-            List.of(
-                    new Point3(
-                            -Units.inchesToMeters(7) / 2,
-                            -Units.inchesToMeters(7) / 2,
-                            -Units.inchesToMeters(7) / 2),
-                    new Point3(
-                            -Units.inchesToMeters(7) / 2,
-                            Units.inchesToMeters(7) / 2,
-                            -Units.inchesToMeters(7) / 2),
-                    new Point3(
-                            Units.inchesToMeters(7) / 2,
-                            Units.inchesToMeters(7) / 2,
-                            -Units.inchesToMeters(7) / 2),
-                    new Point3(
-                            Units.inchesToMeters(7) / 2,
-                            -Units.inchesToMeters(7) / 2,
-                            -Units.inchesToMeters(7) / 2)),
-            0),
-    k2022CircularCargoBall(
-            List.of(
-                    new Point3(
-                            -Units.inchesToMeters(9.5) / 2,
-                            -Units.inchesToMeters(9.5) / 2,
-                            -Units.inchesToMeters(9.5) / 2),
-                    new Point3(
-                            -Units.inchesToMeters(9.5) / 2,
-                            Units.inchesToMeters(9.5) / 2,
-                            -Units.inchesToMeters(9.5) / 2),
-                    new Point3(
-                            Units.inchesToMeters(9.5) / 2,
-                            Units.inchesToMeters(9.5) / 2,
-                            -Units.inchesToMeters(9.5) / 2),
-                    new Point3(
-                            Units.inchesToMeters(9.5) / 2,
-                            -Units.inchesToMeters(9.5) / 2,
-                            -Units.inchesToMeters(9.5) / 2)),
-            0),
-    k2025Algae(
-            List.of(
-                    new Point3(
-                            -Units.inchesToMeters(16.25) / 2,
-                            -Units.inchesToMeters(16.25) / 2,
-                            -Units.inchesToMeters(16.25) / 2),
-                    new Point3(
-                            -Units.inchesToMeters(16.25) / 2,
-                            Units.inchesToMeters(16.25) / 2,
-                            -Units.inchesToMeters(16.25) / 2),
-                    new Point3(
-                            Units.inchesToMeters(16.25) / 2,
-                            Units.inchesToMeters(16.25) / 2,
-                            -Units.inchesToMeters(16.25) / 2),
-                    new Point3(
-                            Units.inchesToMeters(16.25) / 2,
-                            -Units.inchesToMeters(16.25) / 2,
-                            -Units.inchesToMeters(16.25) / 2)),
-            0),
+    kCircularPowerCell7in(circleTargetCorners(Units.inchesToMeters(7)), 0),
+    k2022CircularCargoBall(circleTargetCorners(Units.inchesToMeters(9.5)), 0),
+    k2025Algae(circleTargetCorners(Units.inchesToMeters(16.25)), 0),
     // 2023 AprilTag, with 6 inch marker width (inner black square).
-    @JsonAlias({"k6in_16h5"})
+    // MIGRATION: 2023
+    @Json.Alias({"k6in_16h5"})
     kAprilTag6in_16h5(
             // Corners of the tag's inner black square (excluding white border)
-            List.of(
-                    new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
-                    new Point3(-Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
-                    new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
-                    new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
-            Units.inchesToMeters(3 * 2)),
+            squareTargetCorners(Units.inchesToMeters(6)), Units.inchesToMeters(6)),
     // 2024 AprilTag, with 6.5 inch marker width (inner black square).
-    @JsonAlias({"k6p5in_36h11", "k200mmAprilTag", "kAruco6p5in_36h11"})
+    // MIGRATION: 2023
+    @Json.Alias({"k6p5in_36h11", "k200mmAprilTag", "kAruco6p5in_36h11"})
     kAprilTag6p5in_36h11(
             // Corners of the tag's inner black square (excluding white border)
-            List.of(
-                    new Point3(-Units.inchesToMeters(6.5 / 2.0), Units.inchesToMeters(6.5 / 2.0), 0),
-                    new Point3(Units.inchesToMeters(6.5 / 2.0), Units.inchesToMeters(6.5 / 2.0), 0),
-                    new Point3(Units.inchesToMeters(6.5 / 2.0), -Units.inchesToMeters(6.5 / 2.0), 0),
-                    new Point3(-Units.inchesToMeters(6.5 / 2.0), -Units.inchesToMeters(6.5 / 2.0), 0)),
-            Units.inchesToMeters(6.5));
+            squareTargetCorners(Units.inchesToMeters(6.5)), Units.inchesToMeters(6.5));
 
-    @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
-    @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-    @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
-
-    @JsonProperty("realWorldCoordinatesArray")
-    private List<Point3> realWorldCoordinatesArray;
-
-    @JsonProperty("boxHeight")
-    private double boxHeight;
-
-    TargetModel() {}
+    @Json.Ignore private final MatOfPoint3f realWorldTargetCoordinates;
+    @Json.Ignore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @Json.Ignore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
     TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
         this.realWorldTargetCoordinates = realWorldTargetCoordinates;
-        this.realWorldCoordinatesArray = realWorldTargetCoordinates.toList();
-        this.boxHeight = boxHeight;
 
         var bottomList = realWorldTargetCoordinates.toList();
         var topList = new ArrayList<Point3>();
@@ -176,27 +102,8 @@ public enum TargetModel implements Releasable {
         this.visualizationBoxTop.fromList(topList);
     }
 
-    @JsonCreator
-    TargetModel(
-            @JsonProperty(value = "realWorldCoordinatesArray") List<Point3> points,
-            @JsonProperty(value = "boxHeight") double boxHeight) {
-        this(listToMat(points), boxHeight);
-    }
-
-    public List<Point3> getRealWorldCoordinatesArray() {
-        return this.realWorldCoordinatesArray;
-    }
-
-    public double getBoxHeight() {
-        return boxHeight;
-    }
-
-    public void setRealWorldCoordinatesArray(List<Point3> realWorldCoordinatesArray) {
-        this.realWorldCoordinatesArray = realWorldCoordinatesArray;
-    }
-
-    public void setBoxHeight(double boxHeight) {
-        this.boxHeight = boxHeight;
+    TargetModel(List<Point3> realWorldCoordinatesArray, double boxHeight) {
+        this(listToMat(realWorldCoordinatesArray), boxHeight);
     }
 
     private static MatOfPoint3f listToMat(List<Point3> points) {
@@ -217,15 +124,29 @@ public enum TargetModel implements Releasable {
         return visualizationBoxTop;
     }
 
-    //    public static TargetModel getCircleTarget(double Units.inchesToMeters(7)) {
-    //        var corners =
-    //            List.of(
-    //                new Point3(-Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2),
-    //                new Point3(-Units.inchesToMeters(7) / 2, radius / 2, -radius / 2),
-    //                new Point3(Units.inchesToMeters(7) / 2, radius / 2, -radius / 2),
-    //                new Point3(Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2));
-    //        return new TargetModel(corners, 0);
-    //    }
+    private static List<Point3> circleTargetCorners(double diameter) {
+        double radius = diameter / 2;
+        return List.of(
+                new Point3(-radius, -radius, -radius),
+                new Point3(-radius, radius, -radius),
+                new Point3(radius, radius, -radius),
+                new Point3(radius, -radius, -radius));
+    }
+
+    private static List<Point3> squareTargetCorners(double edgeLength) {
+        double radius = edgeLength / 2;
+        return List.of(
+                new Point3(-radius, -radius, 0),
+                new Point3(-radius, radius, 0),
+                new Point3(radius, radius, 0),
+                new Point3(radius, -radius, 0));
+    }
+
+    @Json.Value
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 
     @Override
     public void release() {

@@ -30,21 +30,18 @@ export interface WebsocketNumberPair {
   second: number;
 }
 
-export type WebsocketVideoFormat = Record<
-  number,
-  {
-    fps: number;
-    height: number;
-    width: number;
-    pixelFormat: string;
-    index?: number;
-    diagonalFOV?: number;
-    horizontalFOV?: number;
-    verticalFOV?: number;
-    standardDeviation?: number;
-    mean?: number;
-  }
->;
+export type WebsocketVideoFormat = {
+  fps: number;
+  height: number;
+  width: number;
+  pixelFormat: string;
+  index?: number;
+  diagonalFOV?: number;
+  horizontalFOV?: number;
+  verticalFOV?: number;
+  standardDeviation?: number;
+  mean?: number;
+}[];
 
 // Companion to UICameraConfiguration in Java
 export interface WebsocketCameraSettingsUpdate {
@@ -90,8 +87,8 @@ export interface WebsocketCalibrationData {
   minCount: number;
   videoModeIndex: number;
   patternHeight: number;
-  squareSizeIn: number;
-  markerSizeIn: number;
+  squareSizeMm: number;
+  markerSizeMm: number;
 }
 
 export interface IncomingWebsocketData {
