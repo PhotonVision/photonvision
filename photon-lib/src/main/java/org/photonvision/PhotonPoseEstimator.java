@@ -371,8 +371,6 @@ public class PhotonPoseEstimator {
         if (!headingFree && headingSampleOpt.isEmpty()) {
             return Optional.empty();
         }
-        // The solver's heading-free cost function never reads the provided heading, so any
-        // placeholder value works when the buffer is empty
         var headingSample = headingSampleOpt.orElse(Rotation2d.kZero);
         if (!headingFree) {
             // If heading fixed, force rotation component

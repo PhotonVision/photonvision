@@ -489,8 +489,6 @@ PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
   if (!headingFree && !headingSampleOpt) {
     return std::nullopt;
   }
-  // The solver's heading-free cost function never reads the provided heading,
-  // so any placeholder value works when the buffer is empty
   wpi::math::Rotation2d headingSample =
       headingSampleOpt.value_or(wpi::math::Rotation2d{});
   if (!headingFree) {
