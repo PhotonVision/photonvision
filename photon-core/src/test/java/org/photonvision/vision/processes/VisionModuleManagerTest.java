@@ -87,7 +87,9 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void release() {}
+        public void release() {
+            provider.release();
+        }
     }
 
     private static class TestSettables extends VisionSourceSettables {
@@ -164,84 +166,89 @@ public class VisionModuleManagerTest {
     public void setupManager() {
         ConfigManager.getInstance().load();
 
-        var vmm = new VisionModuleManager();
+        try (var vmm = new VisionModuleManager()) {
+            var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
+            var ffp =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
 
-        var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
-        var ffp =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
+            try (var testSource = new TestSource(ffp, conf)) {
+                var module = vmm.addSource(testSource);
+                var module0DataConsumer = new TestDataConsumer();
 
-        var testSource = new TestSource(ffp, conf);
+                module.addResultConsumer(module0DataConsumer);
 
-        var module = vmm.addSource(testSource);
-        var module0DataConsumer = new TestDataConsumer();
+                module.start();
 
-        module.addResultConsumer(module0DataConsumer);
+                sleep(1500);
 
-        module.start();
-
-        sleep(1500);
-
-        assertNotNull(module0DataConsumer.result);
-        TestUtils.printTestResults(module0DataConsumer.result);
+                assertNotNull(module0DataConsumer.result);
+                TestUtils.printTestResults(module0DataConsumer.result);
+            }
+        }
     }
 
     @Test
     public void testMultipleStreamIndex() {
         ConfigManager.getInstance().load();
 
-        var vmm = new VisionModuleManager();
+        try (var vmm = new VisionModuleManager()) {
+            var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
+            conf.streamIndex = 1;
+            var ffp =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
 
-        var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
-        conf.streamIndex = 1;
-        var ffp =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource = new TestSource(ffp, conf);
+            var conf2 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo2", "Bar2"));
+            conf2.streamIndex = 0;
+            var ffp2 =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
 
-        var conf2 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo2", "Bar2"));
-        conf2.streamIndex = 0;
-        var ffp2 =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource2 = new TestSource(ffp2, conf2);
+            var conf3 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo3", "Bar3"));
+            conf3.streamIndex = 0;
+            var ffp3 =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
 
-        var conf3 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo3", "Bar3"));
-        conf3.streamIndex = 0;
-        var ffp3 =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource3 = new TestSource(ffp3, conf3);
+            // Arducam OV9281 UC844 raspberry pi test.
+            var conf4 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Left", "/dev/video1"));
 
-        // Arducam OV9281 UC844 raspberry pi test.
-        var conf4 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Left", "/dev/video1"));
-        USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
+            var conf5 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Right", "/dev/video2"));
 
-        var conf5 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Right", "/dev/video2"));
-        USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
+            try (var testSource = new TestSource(ffp, conf);
+                    var testSource2 = new TestSource(ffp2, conf2);
+                    var testSource3 = new TestSource(ffp3, conf3);
+                    USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
+                    USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45); ) {
+                var modules =
+                        List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
+                                .map(vmm::addSource)
+                                .toList();
 
-        var modules =
-                List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
-                        .map(vmm::addSource)
-                        .toList();
+                System.out.println(
+                        Arrays.toString(
+                                modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
+                var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
 
-        System.out.println(
-                Arrays.toString(
-                        modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
-        var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
+                assertTrue(usbSimulation.equals(usbSimulation));
+                assertTrue(!usbSimulation.equals(usbSimulation2));
 
-        assertTrue(usbSimulation.equals(usbSimulation));
-        assertTrue(!usbSimulation.equals(usbSimulation2));
-
-        assertTrue(idxs.contains(0));
-        assertTrue(idxs.contains(1));
-        assertTrue(idxs.contains(2));
-        assertTrue(idxs.contains(3));
-        assertTrue(idxs.contains(4));
+                assertTrue(idxs.contains(0));
+                assertTrue(idxs.contains(1));
+                assertTrue(idxs.contains(2));
+                assertTrue(idxs.contains(3));
+                assertTrue(idxs.contains(4));
+            }
+        }
     }
 
     private void sleep(int millis) {

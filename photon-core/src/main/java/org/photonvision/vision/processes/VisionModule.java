@@ -767,9 +767,13 @@ public class VisionModule implements AutoCloseable {
 
     @Override
     public void close() {
+        if (visionRunner.isRunning()) {
+            stop();
+        }
+
+        visionRunner.close();
         pipelineManager.close();
         visionSource.close();
-        visionRunner.close();
-        lastPipelineResultBestTarget.close();
+        if (lastPipelineResultBestTarget != null) lastPipelineResultBestTarget.close();
     }
 }

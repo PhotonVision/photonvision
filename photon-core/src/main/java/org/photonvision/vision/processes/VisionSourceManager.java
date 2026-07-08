@@ -261,7 +261,9 @@ public class VisionSourceManager implements AutoCloseable {
                         .map(
                                 it -> {
                                     vmm.removeModule(it);
-                                    return it.getCameraConfiguration();
+                                    var config = it.getCameraConfiguration();
+                                    it.close();
+                                    return config;
                                 });
 
         if (removedConfig.isEmpty()) {
