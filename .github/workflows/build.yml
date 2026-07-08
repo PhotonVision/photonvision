@@ -516,7 +516,9 @@ jobs:
             image_suffix: orangepi5_armbian
             plat_override: LINUX_RK3588_64
             image_name: photonvision_opi5_armbian.img.xz
+            root_location: 'partition=1'
             minimum_free_mb: 1024
+            shrink_image: 'no'
           - os: ubuntu-24.04-arm
             image_suffix: orangepi5b
             plat_override: LINUX_RK3588_64
