@@ -20,34 +20,53 @@ package org.photonvision.common.hardware.statusLED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.ws281xj.PixelColour;
 import com.diozero.ws281xj.apa102.Apa102LedDriver;
-import java.util.List;
+import org.photonvision.common.configuration.StatusLedConfig;
 import org.photonvision.common.hardware.PhotonStatus;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 
 public class SPIStatusLED implements StatusLED {
-    private final Logger logger = new Logger(SPIStatusLED.class, LogGroup.General);
+    public static class Config implements StatusLedConfig {
+        public int spiBus = -1;
+        public int chipSelect = -1;
+        public int numLeds = 1;
+        public int brightness = 0x04; // Brightness is in the range 0x00 to 0x1F
 
-    Apa102LedDriver statusLed;
+        @Override
+        public StatusLED create(NativeDeviceFactoryInterface deviceFactory) {
+            return new SPIStatusLED(deviceFactory, spiBus, chipSelect, numLeds, brightness);
+        }
+
+        @Override
+        public int[] pins() {
+            return new int[0];
+        }
+
+        @Override
+        public String toString() {
+            return "SPIStatusLED.Config[spiBus="
+                    + spiBus
+                    + ", chipSelect="
+                    + chipSelect
+                    + ", numLeds="
+                    + numLeds
+                    + ", brightness="
+                    + brightness
+                    + "]";
+        }
+    }
+
+    Apa102LedDriver ledChain;
     protected int blinkCounter;
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
-    public SPIStatusLED(NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins) {
-        if (statusLedPins.size() != 2) {
-            logger.error(
-                    strictPinErrorTemplate.formatted(
-                            2, "a SPI (DotStar/APA102/SK9822) status LED", statusLedPins.size()));
-        }
-
-        statusLed =
-                new Apa102LedDriver(
-                        statusLedPins.get(0),
-                        statusLedPins.get(1),
-                        2_000_000,
-                        1,
-                        0x04); // Brightness goes up to 0x1F
+    public SPIStatusLED(
+            NativeDeviceFactoryInterface deviceFactory,
+            int spiBus,
+            int chipSelect,
+            int numLeds,
+            int brightness) {
+        ledChain = new Apa102LedDriver(spiBus, chipSelect, 2_000_000, numLeds, brightness);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
     }
@@ -64,19 +83,19 @@ public class SPIStatusLED implements StatusLED {
         switch (status) {
             case NT_CONNECTED_TARGETS_VISIBLE ->
                     // Blue
-                    statusLed.setPixelColour(0, PixelColour.BLUE);
+                    ledChain.setPixelColour(0, PixelColour.BLUE);
             case NT_CONNECTED_TARGETS_MISSING ->
                     // Blinking Green
-                    statusLed.setPixelColour(0, blink ? PixelColour.GREEN : 0);
+                    ledChain.setPixelColour(0, blink ? PixelColour.GREEN : 0);
             case NT_DISCONNECTED_TARGETS_VISIBLE ->
                     // Blinking Blue
-                    statusLed.setPixelColour(0, blink ? PixelColour.BLUE : 0);
+                    ledChain.setPixelColour(0, blink ? PixelColour.BLUE : 0);
             case NT_DISCONNECTED_TARGETS_MISSING ->
                     // Blinking Yellow
-                    statusLed.setPixelColour(0, blink ? PixelColour.YELLOW : 0);
+                    ledChain.setPixelColour(0, blink ? PixelColour.YELLOW : 0);
             case GENERIC_ERROR ->
                     // Blinking Red
-                    statusLed.setPixelColour(0, blink ? PixelColour.RED : 0);
+                    ledChain.setPixelColour(0, blink ? PixelColour.RED : 0);
         }
 
         blinkCounter++;
@@ -85,6 +104,6 @@ public class SPIStatusLED implements StatusLED {
 
     @Override
     public void close() throws Exception {
-        statusLed.close();
+        ledChain.close();
     }
 }
