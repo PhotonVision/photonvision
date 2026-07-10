@@ -73,8 +73,7 @@ public class SPIStatusLED implements StatusLED {
 
     @Override
     public void setStatus(PhotonStatus status) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setStatus'");
+        this.status = status;
     }
 
     protected void updateLED() {
@@ -99,6 +98,8 @@ public class SPIStatusLED implements StatusLED {
                         ledChain.setPixelColour(pixel, blink ? PixelColour.RED : 0);
             }
         }
+
+        ledChain.render();
 
         blinkCounter++;
         blinkCounter %= 3;
