@@ -19,7 +19,6 @@ package org.photonvision.common.configuration;
 
 import io.avaje.jsonb.Json;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.common.hardware.statusLED.RGBStatusLED;
@@ -95,15 +94,15 @@ public class HardwareConfig {
     // MIGRATION: 2026
     @Json.Property("statusRGBPins")
     void importStatusRGBPins(List<Integer> statusRGBPins) {
+        if (statusRGBPins.size() < 3) {
+            // Missing pins are unsupported
+            return;
+        }
         if (statusLEDConfig.isEmpty()) {
             statusLEDConfig = Optional.of(new RGBStatusLED.Config());
         }
         if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
             var config = (RGBStatusLED.Config) statusLEDConfig.get();
-            // fill unassigned pins with -1 to disable
-            if (statusRGBPins.size() < 3) {
-                statusRGBPins.addAll(Collections.nCopies(3 - statusRGBPins.size(), -1));
-            }
             config.redPin = statusRGBPins.get(0);
             config.greenPin = statusRGBPins.get(1);
             config.bluePin = statusRGBPins.get(2);
