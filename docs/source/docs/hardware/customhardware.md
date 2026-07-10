@@ -29,6 +29,7 @@ There are currently two types of status LEDs supported:
 
 * `RGB` (default): A singular LED mixing separate red, green, and blue inputs
 * `GreenYellow`: A pair of independent green and yellow LEDs
+* `SPI`/`DotStar`/`APA102`/`SK9822`: An addressable LED using the DotStar/APA102/SK9822 SPI-based protocol; first pin is interpreted as the SPI peripheral number, second pin is the clock pin number
 
 For an explanation of the colors used for status LEDs, see {ref}`Status LEDs<docs/troubleshooting/status-leds:Status LEDs>`
 
