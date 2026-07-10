@@ -80,22 +80,24 @@ public class SPIStatusLED implements StatusLED {
     protected void updateLED() {
         boolean blink = blinkCounter > 0;
 
-        switch (status) {
-            case NT_CONNECTED_TARGETS_VISIBLE ->
-                    // Blue
-                    ledChain.setPixelColour(0, PixelColour.BLUE);
-            case NT_CONNECTED_TARGETS_MISSING ->
-                    // Blinking Green
-                    ledChain.setPixelColour(0, blink ? PixelColour.GREEN : 0);
-            case NT_DISCONNECTED_TARGETS_VISIBLE ->
-                    // Blinking Blue
-                    ledChain.setPixelColour(0, blink ? PixelColour.BLUE : 0);
-            case NT_DISCONNECTED_TARGETS_MISSING ->
-                    // Blinking Yellow
-                    ledChain.setPixelColour(0, blink ? PixelColour.YELLOW : 0);
-            case GENERIC_ERROR ->
-                    // Blinking Red
-                    ledChain.setPixelColour(0, blink ? PixelColour.RED : 0);
+        for (int pixel = 0; pixel < ledChain.getNumPixels(); pixel++) {
+            switch (status) {
+                case NT_CONNECTED_TARGETS_VISIBLE ->
+                        // Blue
+                        ledChain.setPixelColour(pixel, PixelColour.BLUE);
+                case NT_CONNECTED_TARGETS_MISSING ->
+                        // Blinking Green
+                        ledChain.setPixelColour(pixel, blink ? PixelColour.GREEN : 0);
+                case NT_DISCONNECTED_TARGETS_VISIBLE ->
+                        // Blinking Blue
+                        ledChain.setPixelColour(pixel, blink ? PixelColour.BLUE : 0);
+                case NT_DISCONNECTED_TARGETS_MISSING ->
+                        // Blinking Yellow
+                        ledChain.setPixelColour(pixel, blink ? PixelColour.YELLOW : 0);
+                case GENERIC_ERROR ->
+                        // Blinking Red
+                        ledChain.setPixelColour(pixel, blink ? PixelColour.RED : 0);
+            }
         }
 
         blinkCounter++;
