@@ -142,6 +142,7 @@ jobs:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
+      - run: exit 1
       - uses: actions/setup-java@v5
         with:
           java-version: 25
