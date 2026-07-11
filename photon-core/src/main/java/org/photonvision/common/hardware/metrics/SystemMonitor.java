@@ -116,7 +116,7 @@ public class SystemMonitor {
     protected SystemMonitor() {
         logger.info("Starting SystemMonitor");
         GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, true);
-        GlobalConfig.set("oshi.os.linux.sensors.cpuTemperature.types", getThermalZoneTypes());
+        GlobalConfig.set("oshi.os.linux.sensors.cputemperature.types", getThermalZoneTypes());
 
         si = SystemInfoFactory.create();
         hal = si.getHardware();
@@ -155,7 +155,7 @@ public class SystemMonitor {
         //     `cat /sys/class/thermal/thermal_zone*/type`
         // This command will show the types for all thermal zones.
         //
-        return GlobalConfig.get("oshi.os.linux.sensors.cpuTemperature.types");
+        return GlobalConfig.get("oshi.os.linux.sensors.cputemperature.types");
     }
 
     /**
