@@ -37,7 +37,8 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.ProtobufPublisher;
 import org.wpilib.vision.camera.CameraServerJNI;
-import oshi.SystemInfo;
+import oshi.spi.SystemInfoFactory;
+import oshi.spi.SystemInfoProvider;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
 import oshi.hardware.GlobalMemory;
@@ -62,7 +63,7 @@ public class SystemMonitor {
                     .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
 
-    private SystemInfo si;
+    private SystemInfoProvider si;
     private CentralProcessor cpu;
     private OperatingSystem os;
     private GlobalMemory mem;
@@ -117,7 +118,7 @@ public class SystemMonitor {
         GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, true);
         GlobalConfig.set("oshi.os.linux.sensors.cpuTemperature.types", getThermalZoneTypes());
 
-        si = new SystemInfo();
+        si = SystemInfoFactory.create();
         hal = si.getHardware();
         os = si.getOperatingSystem();
         cpu = hal.getProcessor();
