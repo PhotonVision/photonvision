@@ -37,8 +37,6 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.ProtobufPublisher;
 import org.wpilib.vision.camera.CameraServerJNI;
-import oshi.spi.SystemInfoFactory;
-import oshi.spi.SystemInfoProvider;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
 import oshi.hardware.GlobalMemory;
@@ -46,6 +44,8 @@ import oshi.hardware.GraphicsCard;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.NetworkIF;
 import oshi.software.os.OperatingSystem;
+import oshi.spi.SystemInfoFactory;
+import oshi.spi.SystemInfoProvider;
 import oshi.util.FormatUtil;
 import oshi.util.GlobalConfig;
 
