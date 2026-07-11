@@ -9,6 +9,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  actions: write
+  contents: read
+
 env:
   IMAGE_VERSION: v2027.1.0
 
@@ -156,8 +160,9 @@ jobs:
         run: ./gradlew test jacocoTestReport --stacktrace
       - name: Cancel on failure
         if: failure()
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         with:
+          github-token: ${{ secrets.CI_CANCELLATION_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
             const runId = context.runId;
