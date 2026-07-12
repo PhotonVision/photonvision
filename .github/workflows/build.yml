@@ -10,6 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # TODO: rename image-version --> image-metadata next time we bump
   IMAGE_VERSION: v2027.0.0
 
 jobs:
