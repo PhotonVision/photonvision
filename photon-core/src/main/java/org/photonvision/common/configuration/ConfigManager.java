@@ -188,7 +188,7 @@ public class ConfigManager {
     }
 
     public static Path getImageMetadataPath() {
-        return Path.of(getRootFolder().toString(), "image_metadata.json");
+        return Path.of(getRootFolder().toString(), "image-version.json");
     }
 
     ConfigManager(Path configDirectory, ConfigProvider provider) {
