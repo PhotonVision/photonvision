@@ -12,7 +12,7 @@ Bonjour provides more stable networking when using Windows PCs. Install [Bonjour
 
 ## Installing Java
 
-PhotonVision requires a JDK installed and on the system path. **JDK 17 is needed.** You may already have it if you installed WPILib, but ensure that running `java -version` shows JDK 17. You will likely have to add WPILib's JDK to JAVA_HOME and the JDK's `bin` directory to PATH. If you do not have a JDK 17 install, [download and install it from here.](https://adoptium.net/temurin/releases?version=17)
+PhotonVision requires a JDK installed and on the system path. **Windows Users must use the JDK that ships with WPILib.** After installing WPILib, the JDK will be located in the directory where WPILib is installed. Typically this is `C:\Users\Public\wpilib\YYYY\jdk\bin` wheere YYYY is the year. Copy the full path to the JDK `\bin` directory and add it to the beginning of your PATH.
 
 ## Downloading the Latest Stable Release of PhotonVision
 
@@ -23,7 +23,7 @@ Go to the [GitHub releases page](https://github.com/PhotonVision/photonvision/re
 To run PhotonVision, open a terminal window of your choice and run the following command:
 
 ```
-> java -jar C:\path\to\photonvision\NAME OF JAR FILE GOES HERE.jar
+> java -jar C:\path\to\photonvision\photonvision-XXX.jar
 ```
 
 If your computer has a compatible webcam connected, PhotonVision should startup without any error messages. If there are error messages, your webcam isn't supported or another issue has occurred. If it is the latter, please open an issue on the [PhotonVision issues page](https://github.com/PhotonVision/photonvision/issues).
