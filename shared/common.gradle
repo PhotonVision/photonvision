@@ -37,6 +37,7 @@ dependencies {
     implementation group: "io.avaje", name: "avaje-jsonb", version: avajeJsonbVersion
     annotationProcessor group: "io.avaje", name: "avaje-jsonb-generator", version: avajeJsonbVersion
     implementation group: "io.avaje", name: "avaje-jsonb-jackson", version: avajeJsonbVersion
+    implementation group: "io.avaje", name: "avaje-jsonb-javalin-mapper", version: avajeJsonbVersion
 
     implementation group: "org.ejml", name: "ejml-simple", version: ejmlVersion
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: quickbufVersion;

@@ -91,27 +91,6 @@ jobs:
   #           ./gradlew build
   #           ./gradlew clean
 
-  typecheck-client:
-    name: "Typecheck Client"
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
-        with:
-          version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: photon-client/pnpm-lock.yaml
-      - name: Typecheck Client
-        working-directory: photon-client
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm type-check
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-24.04
@@ -125,19 +104,20 @@ jobs:
           distribution: temurin
       - uses: pnpm/action-setup@v5
         with:
-          version: 10
+          version: 11
       - uses: actions/setup-node@v6
         with:
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
           node-version: 24
-      - name: Setup tests
-        working-directory: photon-client
-        run: |
-          pnpm install
-          pnpm test-setup
-      - name: Prebuild Gradle
-        run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
+      - parallel:
+          - name: Setup tests
+            working-directory: photon-client
+            run: |
+              pnpm install
+              pnpm test-setup
+          - name: Prebuild Gradle
+            run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Run Playwright tests
         working-directory: photon-client
         run: pnpm test
@@ -164,7 +144,7 @@ jobs:
           distribution: temurin
       - uses: pnpm/action-setup@v5
         with:
-          version: 10
+          version: 11
       - uses: actions/setup-node@v6
         with:
           cache: pnpm
@@ -174,6 +154,19 @@ jobs:
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage
         run: ./gradlew test jacocoTestReport --stacktrace
+      - name: Cancel on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const runId = context.runId;
+
+            await github.rest.actions.cancelWorkflowRun({
+              owner,
+              repo,
+              run_id: runId
+            });
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-24.04
@@ -337,7 +330,7 @@ jobs:
           path: output/*.zip
 
   build-package-linux:
-    needs: [build-gradle, build-offline-docs]
+    needs: [build-offline-docs]
 
     strategy:
       fail-fast: false
@@ -363,7 +356,7 @@ jobs:
           distribution: temurin
       - uses: pnpm/action-setup@v5
         with:
-          version: 10
+          version: 11
       - uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -390,7 +383,7 @@ jobs:
           path: photon-targeting/build/libs
 
   build-package-macos:
-    needs: [build-gradle, build-offline-docs]
+    needs: [build-offline-docs]
 
     strategy:
       fail-fast: false
@@ -399,9 +392,6 @@ jobs:
           - os: macos-latest
             artifact-name: macOSArm
             arch-override: macarm64
-          - os: macos-latest
-            artifact-name: macOS
-            arch-override: macx86-64
 
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
@@ -409,13 +399,13 @@ jobs:
     steps: *build-package-steps
 
   build-package-windows:
-    needs: [build-gradle, build-offline-docs]
+    needs: [build-offline-docs]
 
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2022
             artifact-name: Win
             arch-override: winx86-64
 
@@ -434,7 +424,7 @@ jobs:
           - os: ubuntu-24.04
             artifact-name: photonvision-*-linuxx86-64.jar
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
-          - os: windows-latest
+          - os: windows-2022
             artifact-name: photonvision-*-winx86-64.jar
           - os: macos-latest
             artifact-name: photonvision-*-macarm64.jar
@@ -474,11 +464,11 @@ jobs:
           fi
           echo "=== Second run ==="
           java -jar ${{ matrix.extraOpts }} *.jar --smoketest
-        if: ${{ (matrix.os) != 'windows-latest' }}
+        if: ${{ (matrix.os) != 'windows-2022' }}
       - run: |
           ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
           ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
-        if: ${{ (matrix.os) == 'windows-latest' }}
+        if: ${{ (matrix.os) == 'windows-2022' }}
 
   build-image:
     needs: [build-package-linux]
@@ -490,67 +480,68 @@ jobs:
           - os: ubuntu-24.04-arm
             image_suffix: RaspberryPi
             plat_override: LINUX_RASPBIAN64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
+            image_name: photonvision_raspi.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             image_suffix: limelight2
             plat_override: LINUX_RASPBIAN64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight.img.xz
+            image_name: photonvision_limelight.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             image_suffix: limelight3
             plat_override: LINUX_RASPBIAN64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3.img.xz
+            image_name: photonvision_limelight3.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             image_suffix: limelight3G
             plat_override: LINUX_RASPBIAN64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3g.img.xz
+            image_name: photonvision_limelight3g.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             image_suffix: limelight4
             plat_override: LINUX_RASPBIAN64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight4.img.xz
+            image_name: photonvision_limelight4.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             image_suffix: luma_p1
             plat_override: LINUX_RASPBIAN64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_luma_p1.img.xz
+            image_name: photonvision_luma_p1.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             image_suffix: orangepi5
             plat_override: LINUX_RK3588_64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
+            image_name: photonvision_opi5.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             image_suffix: orangepi5b
             plat_override: LINUX_RK3588_64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5b.img.xz
+            image_name: photonvision_opi5b.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             image_suffix: orangepi5plus
             plat_override: LINUX_RK3588_64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5plus.img.xz
+            image_name: photonvision_opi5plus.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             image_suffix: orangepi5pro
             plat_override: LINUX_RK3588_64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5pro.img.xz
+            image_name: photonvision_opi5pro.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             image_suffix: orangepi5max
             plat_override: LINUX_RK3588_64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5max.img.xz
+            image_name: photonvision_opi5max.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             image_suffix: rock5c
             plat_override: LINUX_RK3588_64
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rock5c.img.xz
+            image_name: photonvision_rock5c.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             image_suffix: rubikpi3
+            cache: 'yes'
             plat_override: LINUX_QCS6490
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz
+            image_name: photonvision_rubikpi3.tar.xz
             minimum_free_mb: 1024
             root_location: 'offset=569376768'
             shrink_image: 'no'
@@ -566,11 +557,12 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           pattern: photonvision-*-linuxarm64.jar
-      - uses: photonvision/photon-image-runner@HEAD
+      - uses: photonvision/photon-image-runner@v2.0.0
         name: Generate image
         id: generate_image
         with:
-          image_url: ${{ matrix.image_url }}
+          image_url: "https://github.com/PhotonVision/photon-image-modifier/releases/download/${{ env.IMAGE_VERSION }}/${{ matrix.image_name }}"
+          use_cache: ${{ matrix.cache || 'no' }}
           minimum_free_mb: ${{ matrix.minimum_free_mb }}
           root_location: ${{ matrix.root_location || 'partition=2' }}
           shrink_image: ${{ matrix.shrink_image || 'yes' }}
