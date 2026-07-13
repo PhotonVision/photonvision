@@ -182,4 +182,3 @@ if token:
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
 myst_enable_extensions = ["colon_fence", "substitution", "attrs_inline"]
-myst_heading_anchors = 3

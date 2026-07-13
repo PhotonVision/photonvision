@@ -8,7 +8,7 @@ This section contains the build instructions from the source code available at [
 
 **Java Development Kit:**
 
- Building PhotonVision requires Java Development Kit (JDK) 25. *Windows Users must use the JDK that ships with WPILib.* See the [Installing Java](../advanced-installation/sw_install/windows-pc.md#installing-java) section of the Windows PC installation instructions for configuring Windows to use the WPILib JDK.
+ Building PhotonVision requires Java Development Kit (JDK) 25. *Windows Users must use the JDK that ships with WPILib.* See the {ref}`Installing Java <java-on-windows>` section of the Windows PC installation instructions for configuring Windows to use the WPILib JDK.
 
  For other platforms, you can follow the instructions to install JDK 25 for your platform [here](https://adoptium.net/temurin/releases?version=25).
 

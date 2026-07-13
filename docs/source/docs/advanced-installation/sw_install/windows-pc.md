@@ -10,6 +10,7 @@ You do not need to install PhotonVision on a Windows PC in order to access the w
 
 Bonjour provides more stable networking when using Windows PCs. Install [Bonjour here](https://support.apple.com/downloads/DL999/en_US/BonjourPSSetup.exe) before continuing to ensure a stable experience while using PhotonVision.
 
+(java-on-windows)=
 ## Installing Java
 
 PhotonVision requires a JDK installed and on the system path. **Windows Users must use the JDK that ships with WPILib.** After installing WPILib, the JDK will be located in the directory where WPILib is installed. Typically this is `C:\Users\Public\wpilib\YYYY\jdk\bin` wheere YYYY is the year. Copy the full path to the JDK `\bin` directory and add it to the beginning of your PATH.
