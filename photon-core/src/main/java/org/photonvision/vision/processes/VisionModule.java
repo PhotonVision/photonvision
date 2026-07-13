@@ -544,8 +544,8 @@ public class VisionModule {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
 
-        HashMap<String, Object> map = new HashMap<>();
-        HashMap<String, Object> subMap = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> subMap = new HashMap<>();
         subMap.put(propertyName, value);
         map.put("mutatePipelineSettings", subMap);
 
