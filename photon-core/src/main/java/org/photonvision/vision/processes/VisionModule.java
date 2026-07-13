@@ -751,7 +751,7 @@ public class VisionModule {
      *
      * @param quirksToChange map of true/false for quirks we should change
      */
-    public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
+    public void changeCameraQuirks(Map<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
         visionSource.remakeSettables();
         saveAndBroadcastAll();

@@ -30,6 +30,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
@@ -396,7 +397,7 @@ public class RequestHandler {
 
     @Json
     record CameraSettingsRequest(
-            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
+            double fov, Map<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
@@ -404,7 +405,7 @@ public class RequestHandler {
                     Jsonb.instance().type(CameraSettingsRequest.class).fromJson(ctx.body());
             // Extract the settings from the request
             double fov = request.fov;
-            HashMap<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
+            Map<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
             String cameraUniqueName = request.cameraUniqueName;
 
             if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
