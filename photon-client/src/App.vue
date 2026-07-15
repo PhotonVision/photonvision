@@ -27,6 +27,10 @@ if (!is_demo) {
       }
       if (data.cameraSettings !== undefined) {
         useCameraSettingsStore().updateCameraSettingsFromWebsocket(data.cameraSettings);
+        if (navigator.webdriver && useCameraSettingsStore().currentPipelineSettings.cameraGain < 0) {
+          // Manually force the gain slider to be visible for automated browsers by making gain nonnegative
+          useCameraSettingsStore().currentPipelineSettings.cameraGain = 0;
+        }
       }
       if (data.ntConnectionInfo !== undefined) {
         useStateStore().updateNTConnectionStatusFromWebsocket(data.ntConnectionInfo);
