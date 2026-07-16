@@ -123,9 +123,9 @@ watchEffect(() => {
   useStateStore().calibrationData.videoFormatIndex = currentIndex;
   uniqueVideoResolutionIndex.value = currentIndex;
 });
-const dimensionUnit = ref<"in" | "mm">("in");
-const squareSize = ref(30);
-const markerSize = ref(22);
+const dimensionUnit = ref<"in" | "mm">("mm");
+const squareSize = ref(25);
+const markerSize = ref(18);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.ChArUco);
