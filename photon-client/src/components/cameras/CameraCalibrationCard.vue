@@ -240,21 +240,22 @@ const downloadCalibBoard = async () => {
 
   // Draw ruler pattern
   const lineStartX = 1.0;
-  const lineEndX = paperWidth - lineStartX;
+  const lineWidth = paperWidth - 2 * lineStartX;
   const lineY = paperHeight - 0.75;
 
   doc.setLineWidth(0.01);
-  doc.line(lineStartX, lineY, lineEndX, lineY);
+  doc.line(lineStartX, lineY, lineStartX + lineWidth, lineY);
 
-  for (let tickX = lineStartX; tickX <= lineEndX; tickX++) {
+  for (let tickMeasure = 0; tickMeasure <= lineWidth; tickMeasure++) {
+    const tickX = lineStartX + tickMeasure;
     doc.line(tickX, lineY, tickX, lineY + 0.25);
-    doc.text(`${tickX - 1}${tickX - 1 === 0 ? " in" : ""}`, tickX + 0.1, lineY + 0.2);
+    doc.text(`${tickMeasure}${tickMeasure === 0 ? " in" : ""}`, tickX + 0.1, lineY + 0.2);
   }
 
-  for (let tickX = lineStartX; tickX <= lineEndX; tickX += 20) {
-    const tickXin = length.mm(tickX).in.value;
-    doc.line(tickXin, lineY, tickXin, lineY - 0.25);
-    doc.text(`${Math.round(tickX - 1)}${tickX - 1 === 0 ? " mm" : ""}`, tickXin + 0.1, lineY - 0.05);
+  for (let tickMeasure = 0; tickMeasure <= length.in(lineWidth).mm.value; tickMeasure += 20) {
+    const tickX = lineStartX + length.mm(tickMeasure).in.value;
+    doc.line(tickX, lineY, tickX, lineY - 0.25);
+    doc.text(`${tickMeasure}${tickMeasure === 0 ? " mm" : ""}`, tickX + 0.1, lineY - 0.05);
   }
 
   // Add branding
@@ -451,8 +452,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Units used for pattern spacing and marker size inputs"
               :select-cols="8"
               :items="[
-                { value: 'in', name: 'Inches' },
-                { value: 'mm', name: 'Millimeters' }
+                { value: 'mm', name: 'Millimeters' },
+                { value: 'in', name: 'Inches' }
               ]"
               :disabled="isCalibrating"
             />
