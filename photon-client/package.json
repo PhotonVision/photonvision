@@ -25,7 +25,7 @@
     "@fontsource/prompt": "^5.2.6",
     "@mdi/font": "^7.4.47",
     "@msgpack/msgpack": "^3.1.2",
-    "aruco-marker": "github:thatcomputerguy0101/aruco-marker#update-and-dictionaries",
+    "aruco-marker": "github:photonvision/aruco-marker#semver:^v4.0.0-PV",
     "axios": "^1.11.0",
     "echarts": "^6.0.0",
     "jspdf": "^3.0.1",

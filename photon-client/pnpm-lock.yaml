@@ -21,8 +21,8 @@ importers:
         specifier: ^3.1.2
         version: 3.1.2
       aruco-marker:
-        specifier: github:thatcomputerguy0101/aruco-marker#update-and-dictionaries
-        version: https://codeload.github.com/thatcomputerguy0101/aruco-marker/tar.gz/3a4d99aab87371e138c84a1fe1a33a146520aa4f
+        specifier: github:photonvision/aruco-marker#semver:^v4.0.0-PV
+        version: https://codeload.github.com/photonvision/aruco-marker/tar.gz/c8991636a37a2e62707dadc22a724addf31d0310
       axios:
         specifier: ^1.11.0
         version: 1.11.0
@@ -622,8 +622,8 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  aruco-marker@https://codeload.github.com/thatcomputerguy0101/aruco-marker/tar.gz/3a4d99aab87371e138c84a1fe1a33a146520aa4f:
-    resolution: {tarball: https://codeload.github.com/thatcomputerguy0101/aruco-marker/tar.gz/3a4d99aab87371e138c84a1fe1a33a146520aa4f}
+  aruco-marker@https://codeload.github.com/photonvision/aruco-marker/tar.gz/c8991636a37a2e62707dadc22a724addf31d0310:
+    resolution: {tarball: https://codeload.github.com/photonvision/aruco-marker/tar.gz/c8991636a37a2e62707dadc22a724addf31d0310}
     version: 3.0.0
 
   asynckit@0.4.0:
@@ -2083,7 +2083,7 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  aruco-marker@https://codeload.github.com/thatcomputerguy0101/aruco-marker/tar.gz/3a4d99aab87371e138c84a1fe1a33a146520aa4f: {}
+  aruco-marker@https://codeload.github.com/photonvision/aruco-marker/tar.gz/c8991636a37a2e62707dadc22a724addf31d0310: {}
 
   asynckit@0.4.0: {}
 
