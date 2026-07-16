@@ -229,7 +229,9 @@ const downloadCalibBoard = async () => {
         }
       }
       doc.text(
-        `${patternWidth.value} x ${patternHeight.value} | ${arucoTagFamilyNameFor(tagFamily.value)}\n${squareSize.value}${dimensionUnit.value} squares | ${markerSize.value}${dimensionUnit.value} markers`,
+        `${patternWidth.value} x ${patternHeight.value} | ${arucoTagFamilyNameFor(tagFamily.value)}\n` +
+          `${squareSize.value}${dimensionUnit.value} squares | ${markerSize.value}${dimensionUnit.value} markers` +
+          (useOldPattern.value && patternHeight.value % 2 === 0 ? "\nOld OpenCV Pattern" : ""),
         paperWidth - 1,
         1.0,
         { maxWidth: (paperWidth - 2.0) / 2, align: "right" }
