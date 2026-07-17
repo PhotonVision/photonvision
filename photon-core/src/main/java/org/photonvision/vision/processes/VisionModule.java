@@ -331,16 +331,6 @@ public class VisionModule implements AutoCloseable {
         } catch (InterruptedException e) {
             logger.error("Exception killing process thread", e);
         }
-
-        visionSource.release();
-
-        inputVideoStreamer.close();
-        outputVideoStreamer.close();
-        inputFrameSaver.close();
-        outputFrameSaver.close();
-
-        changeSubscriberHandle.stop();
-        setVisionLEDs(false);
     }
 
     public void setFov(double fov) {
@@ -770,6 +760,14 @@ public class VisionModule implements AutoCloseable {
         if (visionRunner.isRunning()) {
             stop();
         }
+
+        inputVideoStreamer.close();
+        outputVideoStreamer.close();
+        inputFrameSaver.close();
+        outputFrameSaver.close();
+
+        changeSubscriberHandle.stop();
+        setVisionLEDs(false);
 
         visionRunner.close();
         pipelineManager.close();

@@ -258,13 +258,7 @@ public class VisionSourceManager implements AutoCloseable {
                 vmm.getModules().stream()
                         .filter(module -> module.uniqueName().equals(uniqueName))
                         .findFirst()
-                        .map(
-                                it -> {
-                                    vmm.removeModule(it);
-                                    var config = it.getCameraConfiguration();
-                                    it.close();
-                                    return config;
-                                });
+                        .map(vmm::removeModule);
 
         if (removedConfig.isEmpty()) {
             logger.error("Could not find module " + uniqueName);

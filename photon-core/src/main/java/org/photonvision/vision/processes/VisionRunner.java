@@ -261,6 +261,8 @@ public class VisionRunner implements AutoCloseable {
 
     @Override
     public void close() {
-        stopProcess();
+        if (visionProcessThread.isAlive()) {
+            stopProcess();
+        }
     }
 }

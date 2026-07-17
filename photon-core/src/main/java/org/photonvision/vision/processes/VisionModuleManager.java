@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import java.util.*;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -50,10 +51,13 @@ public class VisionModuleManager implements AutoCloseable {
         return module;
     }
 
-    public synchronized void removeModule(VisionModule module) {
+    public synchronized CameraConfiguration removeModule(VisionModule module) {
         visionModules.remove(module);
         module.stop();
         module.saveAndBroadcastAll();
+        var config = module.getCameraConfiguration();
+        module.close();
+        return config;
     }
 
     private synchronized int newCameraIndex() {
