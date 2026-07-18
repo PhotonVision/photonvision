@@ -66,6 +66,9 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         return outputMat;
     }
 
+    @Override
+    public void release() {}
+
     public static record HSVParams(Scalar hsvLower, Scalar hsvUpper, boolean hueInverted) {
         public HSVParams(
                 IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueInverted) {

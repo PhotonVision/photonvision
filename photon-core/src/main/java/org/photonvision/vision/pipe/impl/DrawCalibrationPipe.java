@@ -82,5 +82,8 @@ public class DrawCalibrationPipe
         return null;
     }
 
+    @Override
+    public void release() {}
+
     public static record DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawAllSnapshots) {}
 }

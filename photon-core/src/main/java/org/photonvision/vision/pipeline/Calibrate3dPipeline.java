@@ -209,7 +209,8 @@ public class Calibrate3dPipeline
 
     public boolean removeSnapshot(int index) {
         try {
-            foundCornersList.remove(index);
+            var observation = foundCornersList.remove(index);
+            observation.release();
             return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.error("Could not remove snapshot at index " + index, e);
@@ -223,7 +224,12 @@ public class Calibrate3dPipeline
 
     @Override
     public void release() {
-        // we never actually need to give resources up since pipelinemanager only makes
-        // one of us
+        foundCornersList.forEach(it -> it.release());
+        foundCornersList.clear();
+
+        findBoardCornersPipe.release();
+        calibrate3dPipe.release();
+        calculateFPSPipe.release();
+        super.release();
     }
 }
