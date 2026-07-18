@@ -175,12 +175,8 @@ public class VisionModuleManagerTest {
                             TestUtils.WPI2019Image.FOV);
 
             var testSource = new TestSource(ffp, conf);
-            var module = vmm.addSource(testSource);
             var module0DataConsumer = new TestDataConsumer();
-
-            module.addResultConsumer(module0DataConsumer);
-
-            module.start();
+            vmm.addSource(testSource, List.of(module0DataConsumer));
 
             sleep(1500);
 

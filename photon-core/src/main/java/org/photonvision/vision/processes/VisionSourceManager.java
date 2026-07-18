@@ -126,8 +126,7 @@ public class VisionSourceManager implements AutoCloseable {
         deserializedConfigs.values().stream()
                 .filter(it -> !it.deactivated)
                 .map(this::loadVisionSourceFromCamConfig)
-                .map(vmm::addSource)
-                .forEach(VisionModule::start);
+                .forEach(vmm::addSource);
 
         // 3. write down all disabled sources for later
         deserializedConfigs.entrySet().stream()
@@ -171,16 +170,7 @@ public class VisionSourceManager implements AutoCloseable {
 
         // transform the camera info all the way to a VisionModule and then start it
         var created =
-                deactivatedConfig
-                        .map(this::loadVisionSourceFromCamConfig)
-                        .map(vmm::addSource)
-                        .map(
-                                it -> {
-                                    it.start();
-                                    it.saveAndBroadcastAll();
-                                    return it;
-                                })
-                        .isPresent();
+                deactivatedConfig.map(this::loadVisionSourceFromCamConfig).map(vmm::addSource).isPresent();
 
         if (!created) {
             // Couldn't create a VM for this config - restore state
@@ -220,9 +210,7 @@ public class VisionSourceManager implements AutoCloseable {
         }
 
         var source = loadVisionSourceFromCamConfig(new CameraConfiguration(cameraInfo));
-        var module = vmm.addSource(source);
-
-        module.start();
+        vmm.addSource(source);
 
         // We have a new camera! Tell the world about it
         DataChangeService.getInstance()
@@ -258,7 +246,11 @@ public class VisionSourceManager implements AutoCloseable {
                 vmm.getModules().stream()
                         .filter(module -> module.uniqueName().equals(uniqueName))
                         .findFirst()
-                        .map(vmm::removeModule);
+                        .map(
+                                module -> {
+                                    module.getCameraConfiguration().deactivated = true;
+                                    return vmm.removeModule(module);
+                                });
 
         if (removedConfig.isEmpty()) {
             logger.error("Could not find module " + uniqueName);

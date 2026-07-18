@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -42,10 +43,15 @@ public class VisionModuleManager implements AutoCloseable {
     }
 
     public synchronized VisionModule addSource(VisionSource visionSource) {
+        return addSource(visionSource, List.of());
+    }
+
+    public synchronized VisionModule addSource(
+            VisionSource visionSource, Collection<CVPipelineResultConsumer> consumers) {
         visionSource.cameraConfiguration.streamIndex = newCameraIndex();
 
         var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
-        var module = new VisionModule(pipelineManager, visionSource);
+        var module = new VisionModule(pipelineManager, visionSource, consumers);
         visionModules.add(module);
 
         return module;
@@ -53,8 +59,6 @@ public class VisionModuleManager implements AutoCloseable {
 
     public synchronized CameraConfiguration removeModule(VisionModule module) {
         visionModules.remove(module);
-        module.stop();
-        module.saveAndBroadcastAll();
         var config = module.getCameraConfiguration();
         module.close();
         return config;
