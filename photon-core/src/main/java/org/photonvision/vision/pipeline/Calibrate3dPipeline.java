@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -190,7 +191,7 @@ public class Calibrate3dPipeline
     }
 
     public void broadcastState() {
-        var state =
+        Map<String, Object> state =
                 SerializationUtils.objectToHashMap(
                         new UICalibrationData(
                                 foundCornersList.size(),
