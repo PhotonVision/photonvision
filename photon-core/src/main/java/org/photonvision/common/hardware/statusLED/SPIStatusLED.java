@@ -56,7 +56,7 @@ public class SPIStatusLED implements StatusLED {
     }
 
     Apa102LedDriver ledChain;
-    protected int blinkCounter;
+    protected LinearPattern pattern;
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
@@ -67,8 +67,9 @@ public class SPIStatusLED implements StatusLED {
             int numLeds,
             int brightness) {
         ledChain = new Apa102LedDriver(spiBus, chipSelect, 2_000_000, numLeds, brightness);
+        pattern = new LinearPattern(numLeds);
 
-        TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
+        TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 15);
     }
 
     @Override
@@ -77,32 +78,22 @@ public class SPIStatusLED implements StatusLED {
     }
 
     protected void updateLED() {
-        boolean blink = blinkCounter > 0;
-
-        for (int pixel = 0; pixel < ledChain.getNumPixels(); pixel++) {
+        for (pattern.pixel = 0; pattern.pixel < pattern.numPixels; pattern.pixel++) {
             switch (status) {
                 case NT_CONNECTED_TARGETS_VISIBLE ->
-                        // Blue
-                        ledChain.setPixelColour(pixel, PixelColour.BLUE);
+                        ledChain.setPixelColour(pattern.pixel, PixelColour.BLUE);
                 case NT_CONNECTED_TARGETS_MISSING ->
-                        // Blinking Green
-                        ledChain.setPixelColour(pixel, blink ? PixelColour.GREEN : 0);
+                        ledChain.setPixelColour(pattern.pixel, pattern.phaser(PixelColour.GREEN));
                 case NT_DISCONNECTED_TARGETS_VISIBLE ->
-                        // Blinking Blue
-                        ledChain.setPixelColour(pixel, blink ? PixelColour.BLUE : 0);
+                        ledChain.setPixelColour(pattern.pixel, pattern.throb(PixelColour.BLUE));
                 case NT_DISCONNECTED_TARGETS_MISSING ->
-                        // Blinking Yellow
-                        ledChain.setPixelColour(pixel, blink ? PixelColour.YELLOW : 0);
+                        ledChain.setPixelColour(pattern.pixel, pattern.throb(PixelColour.YELLOW));
                 case GENERIC_ERROR ->
-                        // Blinking Red
-                        ledChain.setPixelColour(pixel, blink ? PixelColour.RED : 0);
+                        ledChain.setPixelColour(pattern.pixel, pattern.blink(PixelColour.RED));
             }
         }
 
         ledChain.render();
-
-        blinkCounter++;
-        blinkCounter %= 3;
     }
 
     @Override
