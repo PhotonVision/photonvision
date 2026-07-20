@@ -31,7 +31,7 @@ ext.localMavenURL = file("$project.buildDir/outputs/maven")
 ext.allOutputsFolder = file("$project.buildDir/outputs")
 
 ext {
-    wpilibVersion = "2027.0.0-alpha-6"
+    wpilibVersion = "2027.0.0-alpha-6-200-g0667c65d7"
     openCVversion = "2027-4.13.0-3"
     ejmlVersion = "0.43.1";
     avajeJsonbVersion = "3.14";
@@ -97,7 +97,7 @@ spotless {
 }
 
 wrapper {
-    gradleVersion = '9.4.0'
+    gradleVersion = '9.4.1'
 }
 
 ext.getCurrentArch = {
