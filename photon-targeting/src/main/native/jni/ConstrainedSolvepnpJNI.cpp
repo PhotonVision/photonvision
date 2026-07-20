@@ -68,7 +68,7 @@ Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization
       pointObservationsMat(pointObservationsVec.data(), 2,
                            pointObservationsVec.size() / 2);
 
-  wpi::util::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus>
+  std::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus>
       result = constrained_solvepnp::do_optimization(
           headingFree, nTags, cameraCal_, robot2cameraMat, xGuessMat,
           field2pointsMat, pointObservationsMat, gyro_θ, gyro_error_scale_fac);
