@@ -25,7 +25,6 @@
 #include <string>
 #include <vector>
 
-#include <fmt/ranges.h>
 #include <gtest/gtest.h>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>

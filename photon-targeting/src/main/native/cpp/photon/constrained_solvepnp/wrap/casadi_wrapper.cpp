@@ -23,8 +23,8 @@
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 #include <Eigen/LU>
-#include <fmt/core.h>
 #include <wpi/math/fmt/Eigen.hpp>
+#include <wpi/util/print.hpp>
 #include <wpi/util/timestamp.hpp>
 
 #include "../generate/constrained_solvepnp_10_tags_fixed.h"
@@ -167,7 +167,7 @@ constrained_solvepnp::do_optimization(
     double gyroθ, double gyroErrorScaleFac) {
   if (field2points.cols() != (nTags * 4) ||
       point_observations.cols() != (nTags * 4)) {
-    if constexpr (VERBOSE) fmt::println("Got unexpected num cols!");
+    if constexpr (VERBOSE) wpi::util::println("Got unexpected num cols!");
     // TODO find a new error code
     return std::unexpected{slp::ExitStatus::NONFINITE_INITIAL_GUESS};
   }
@@ -181,19 +181,19 @@ constrained_solvepnp::do_optimization(
   }
 
   if constexpr (VERBOSE) {
-    fmt::println("----------------------------------");
-    fmt::println("heading free {}; heading {}, cost={}", heading_free, gyroθ,
-                 gyroErrorScaleFac);
-    fmt::println("Camera cal {} {} {} {}", cameraCal.fx, cameraCal.fy,
-                 cameraCal.cx, cameraCal.cy);
-    fmt::println("{} tags", nTags);
-    // fmt::println("nstate {}", nState);
+    wpi::util::println("----------------------------------");
+    wpi::util::println("heading free {}; heading {}, cost={}", heading_free,
+                       gyroθ, gyroErrorScaleFac);
+    wpi::util::println("Camera cal {} {} {} {}", cameraCal.fx, cameraCal.fy,
+                       cameraCal.cx, cameraCal.cy);
+    wpi::util::println("{} tags", nTags);
+    // wpi::util::println("nstate {}", nState);
 
-    fmt::println("robot2camera:\n{}", robot2camera);
-    fmt::println("x guess:\n{}", x_guess);
-    fmt::println("field2pt:\n{}", field2points);
-    fmt::println("observations:\n{}", point_observations);
-    fmt::println("---------^^^^^^^^---------");
+    wpi::util::println("robot2camera:\n{}", robot2camera);
+    wpi::util::println("x guess:\n{}", x_guess);
+    wpi::util::println("field2pt:\n{}", field2points);
+    wpi::util::println("observations:\n{}", point_observations);
+    wpi::util::println("---------^^^^^^^^---------");
   }
 
   auto problemOpt = createProblem(nTags, heading_free);
@@ -238,7 +238,8 @@ constrained_solvepnp::do_optimization(
     if (norm_g < ERROR_TOL) {
       // Done!
       if constexpr (VERBOSE)
-        fmt::println("{}: Exiting due to convergence (‖∇J‖={})", iter, norm_g);
+        wpi::util::println("{}: Exiting due to convergence (‖∇J‖={})", iter,
+                           norm_g);
       break;
     }
 
@@ -248,7 +249,7 @@ constrained_solvepnp::do_optimization(
 
     auto H_ldlt = H.ldlt();
     if (H_ldlt.info() != Eigen::Success) {
-      fmt::println(stderr, "LDLT decomp failed! H=\n{}", H);
+      wpi::util::println(stderr, "LDLT decomp failed! H=\n{}", H);
       return std::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
     }
 
@@ -266,13 +267,13 @@ constrained_solvepnp::do_optimization(
       int MAX_REG_STEPS = 100;
       for (i_reg = 0; i_reg < MAX_REG_STEPS; i_reg++) {
         // Try δ, which we may have adjusted above
-        // std::printf("Trying %f\n", δ);
+        // wpi::util::printf("Trying %f\n", δ);
         HessianMat delta_I = HessianMat::Identity() * δ;
         H_reg = H + delta_I;
         H_ldlt = H_reg.ldlt();
 
         if (H_ldlt.info() != Eigen::Success) {
-          fmt::println(stderr, "LDLT decomp failed! H=\n{}", H);
+          wpi::util::println(stderr, "LDLT decomp failed! H=\n{}", H);
           return std::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
         }
 
@@ -297,7 +298,7 @@ constrained_solvepnp::do_optimization(
         return std::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
       }
     } else {
-      // std::printf("Already regularized\n");
+      // wpi::util::printf("Already regularized\n");
     }
 
     // Solve for p_x, and refine our solution
@@ -344,18 +345,18 @@ constrained_solvepnp::do_optimization(
 
     auto iter_end = wpi::nt::Now();
     if constexpr (VERBOSE) {
-      fmt::println(
+      wpi::util::println(
           "{}: {} uS, ‖∇J‖={}, α={} ({} refinement steps), {} regularization "
           "steps",
           iter, iter_end - iter_start, g.norm(), alpha, alpha_refinement,
           i_reg);
-      // fmt::println("∇J={}", g);
-      // fmt::println("H={}", H);
-      // fmt::println("p_x={}", p_x);
-      // fmt::println("|Hp_x + ∇f|₂={}", (H * p_x + g).norm());
+      // wpi::util::println("∇J={}", g);
+      // wpi::util::println("H={}", H);
+      // wpi::util::println("p_x={}", p_x);
+      // wpi::util::println("|Hp_x + ∇f|₂={}", (H * p_x + g).norm());
     }
   }
-  if constexpr (VERBOSE) fmt::println("======================");
+  if constexpr (VERBOSE) wpi::util::println("======================");
 
   return x;
 }
