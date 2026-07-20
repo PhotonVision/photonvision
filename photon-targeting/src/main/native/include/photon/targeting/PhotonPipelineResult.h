@@ -17,14 +17,15 @@
 
 #pragma once
 
+#include <format>
 #include <span>
 #include <utility>
 
 #include <wpi/units/time.hpp>
+#include <wpi/util/print.hpp>
 
 #include "MultiTargetPNPResult.h"
 #include "PhotonTrackedTarget.h"
-#include "fmt/base.h"
 #include "photon/struct/PhotonPipelineResultStruct.h"
 
 namespace photon {
@@ -70,7 +71,7 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
    */
   PhotonTrackedTarget GetBestTarget() const {
     if (!HasTargets() && !HAS_WARNED) {
-      fmt::println(
+      wpi::util::println(
           "WARNING: This PhotonPipelineResult object has no targets associated "
           "with it! "
           "Please check HasTargets() before calling this method. For more "

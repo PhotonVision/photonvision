@@ -191,8 +191,8 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
       guess2.X().value(), guess2.Y().value(),
       guess2.Rotation().Radians().value()};
 
-  std::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus>
-      result = constrained_solvepnp::do_optimization(
+  std::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus> result =
+      constrained_solvepnp::do_optimization(
           headingFree, knownTags.size(), cameraCal, robotToCamera, guessMat,
           field2points, pointObservations, gyroTheta.Radians().value(),
           gyroErrorScaleFac);

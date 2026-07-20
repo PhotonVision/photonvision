@@ -17,9 +17,10 @@
 
 #pragma once
 
+#include <expected>
+
 #include <Eigen/Core>
 #include <sleipnir/optimization/solver/exit_status.hpp>
-#include <expected>
 
 namespace constrained_solvepnp {
 using casadi_real = double;
