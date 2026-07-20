@@ -139,7 +139,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     }
 
     @Override
-    public void setSaturation(int saturation) {
+    public void setSaturation(int saturationRaw) {
+        float saturation = (float) saturationRaw / 100f * 2f;
         LibCameraJNI.setSaturation(r_ptr, saturation);
     }
 
