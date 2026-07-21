@@ -154,19 +154,6 @@ jobs:
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage
         run: ./gradlew test jacocoTestReport --stacktrace
-      - name: Cancel on failure
-        if: failure()
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const runId = context.runId;
-
-            await github.rest.actions.cancelWorkflowRun({
-              owner,
-              repo,
-              run_id: runId
-            });
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-24.04
