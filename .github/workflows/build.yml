@@ -14,13 +14,6 @@ env:
 
 jobs:
 
-  validation:
-    name: "Validation"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: gradle/actions/wrapper-validation@v5
-
   # build-examples:
 
   #     strategy:
@@ -94,7 +87,6 @@ jobs:
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-24.04
-    needs: [validation]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -102,6 +94,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - uses: pnpm/action-setup@v5
         with:
           version: 11
@@ -130,7 +125,6 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-24.04
-    needs: [validation]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -142,6 +136,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - uses: pnpm/action-setup@v5
         with:
           version: 11
@@ -197,7 +194,6 @@ jobs:
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
     runs-on: ubuntu-24.04
-    needs: [validation]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -207,6 +203,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       # grab all tags
       - run: git fetch --tags --force
@@ -239,7 +238,6 @@ jobs:
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
-    needs: [validation]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -248,6 +246,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - run: git fetch --tags --force
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
@@ -281,7 +282,6 @@ jobs:
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
-    needs: [validation]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -289,6 +289,9 @@ jobs:
       - name: Config Git
         run: |
           git config --global --add safe.directory /__w/photonvision/photonvision
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
         run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
@@ -354,6 +357,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - uses: pnpm/action-setup@v5
         with:
           version: 11
