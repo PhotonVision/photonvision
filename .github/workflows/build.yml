@@ -254,6 +254,7 @@ jobs:
           distribution: temurin
       - run: git fetch --tags --force
       - name: Make GCC 14 the default toolchain (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
