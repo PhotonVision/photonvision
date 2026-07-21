@@ -241,8 +241,6 @@ jobs:
            artifact-name: Win64
          - os: macos-26
            artifact-name: macOS
-         - os: ubuntu-24.04
-           artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -286,6 +284,9 @@ jobs:
           - container: wpilib/aarch64-cross-debian:trixie
             artifact-name: Aarch64
             build-options: "-Ponlylinuxarm64"
+          - container: wpilib/systemcore-cross-debian:trixie
+            artifact-name: Linux
+            build-options: "-Ponlylinuxx86-64"
 
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
