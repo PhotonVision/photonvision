@@ -1,0 +1,16 @@
+classes:
+  wpi::tsp::TimeSyncClient:
+    methods:
+      TimeSyncClient:
+      Start:
+      Stop:
+      GetOffset:
+      GetMetadata:
+      UpdateStatistics:
+  wpi::tsp::TimeSyncClient::Metadata:
+    attributes:
+      offset:
+      rtt2:
+      pingsSent:
+      pongsReceived:
+      lastPongTime:

@@ -1,0 +1,23 @@
+functions:
+  GetConvexHull:
+  GetMinAreaRect:
+  TranslationNWUtoEDN:
+  RotationNWUtoEDN:
+  TranslationToTVec:
+  RotationToRVec:
+  AvgPoint:
+  PointsToTargetCorners:
+  PointsToCorners:
+  CornersToPoints:
+    overloads:
+      const std::vector<std::pair<float, float>>&:
+      const std::vector<photon::TargetCorner>&:
+  GetBoundingRect:
+  ProjectPoints:
+  ReorderCircular:
+  TranslationEDNToNWU:
+  RotationEDNToNWU:
+  TVecToTranslation:
+  RVecToRotation:
+  SolvePNP_Square:
+  SolvePNP_SQPNP:
