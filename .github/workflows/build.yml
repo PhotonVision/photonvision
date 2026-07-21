@@ -133,6 +133,7 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-24.04
+    container: wpilib/systemcore-cross-debian:trixie
     needs: [validation]
     steps:
       - name: Checkout code
@@ -153,10 +154,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
           node-version: 24
-      - name: Make GCC 14 the default toolchain (Linux)
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage
