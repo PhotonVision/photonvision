@@ -119,8 +119,6 @@ jobs:
               pnpm test-setup
           - name: Prebuild Gradle
             run: |
-              sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
-              sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
               ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Run Playwright tests
         working-directory: photon-client
