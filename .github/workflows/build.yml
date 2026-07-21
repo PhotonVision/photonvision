@@ -93,9 +93,9 @@ jobs:
 
   playwright-tests:
     name: "Playwright E2E tests"
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [validation]
-    container: wpilib/systemcore-cross-debian:trixie
+    # container: wpilib/systemcore-cross-debian:trixie
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
