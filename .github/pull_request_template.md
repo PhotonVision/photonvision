@@ -23,7 +23,7 @@ Closes #<!-- issue number -->
 
 - [ ] This PR was authored entirely by me
 - [ ] This PR includes AI-generated code (e.g., from GitHub Copilot, ChatGPT)
-  - [ ] If yes, I have reviewed all AI-generated code for correctness and security
+  - [ ] If yes, I have reviewed all AI-generated code for correctness
   - [ ] If yes, please describe which parts were AI-assisted:
 
 <!-- Describe AI involvement here if applicable -->
