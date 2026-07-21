@@ -133,6 +133,7 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-24.04
+    container: wpilib/systemcore-cross-debian:trixie
     needs: [validation]
     steps:
       - name: Checkout code
