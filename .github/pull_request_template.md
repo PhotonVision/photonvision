@@ -1,19 +1,47 @@
 ## Description
 
-What changed? Why? (the code + comments should speak for itself on the "how")
+**What changed?**
+<!-- Describe the change concisely -->
 
-Include fun testing screenshots or a cool video, to collect test evidence in a place where we can later reference it. Including proof this change was tested makes reviewing easier, helps us make sure we tested all our edge cases, and helps provide context for the future.
+**Why?**
+<!-- Explain the reasoning and any issues this addresses -->
 
-Any issues this pull request closes or pull requests this supersedes should be linked with `Closes #issuenumber`.
+## Testing
 
-## Meta
+- [ ] I have tested this change locally
+- [ ] Test evidence (screenshots, videos, or test results):
 
-Merge checklist:
-- [ ] Pull Request title is [short, imperative summary](https://cbea.ms/git-commit/) of proposed changes
-- [ ] The description documents the _what_ and _why_, including events that led to this PR
-- [ ] If this PR changes behavior or adds a feature, user documentation is updated
-- [ ] If this PR touches photon-serde, all messages have been regenerated and hashes have not changed unexpectedly
-- [ ] If this PR touches configuration, this is backwards compatible with all settings going back to the previous seasons's last release (seasons end after champs ends)
-- [ ] If this PR touches pipeline settings or anything related to data exchange, the frontend typing is updated
-- [ ] If this PR addresses a bug, a regression test for it is added
-- [ ] If this PR adds a dependency, the license has been checked for compatibility and steps taken to follow it
+<!-- Paste screenshots or video links here -->
+
+## Related Issues
+
+Closes #<!-- issue number -->
+
+---
+
+## AI Disclosure
+
+- [ ] This PR was authored entirely by me
+- [ ] This PR includes AI-generated code (e.g., from GitHub Copilot, ChatGPT)
+  - [ ] If yes, I have reviewed all AI-generated code for correctness
+  - [ ] If yes, please describe which parts were AI-assisted:
+
+<!-- Describe AI involvement here if applicable -->
+
+---
+
+## Merge Checklist
+
+- [ ] PR title is a [short, imperative summary](https://cbea.ms/git-commit/) of changes
+- [ ] PR description documents the *what* and *why*
+
+
+### Additional Checks (if applicable)
+
+- [ ] **User-facing changes?** User documentation is updated
+- [ ] **Breaking changes?** Migration guide is included in description
+- [ ] **Bug fix?** Regression test is added
+- [ ] **New dependency?** License compatibility is verified and steps have been taken to follow it
+- [ ] **Serde changes?** All messages are regenerated with no unexpected hash changes
+- [ ] **Configuration changes?** Changes are backwards compatible with previous season's last release
+- [ ] **Pipeline/data exchange changes?** Frontend types are updated in `./photon-client/src/types`
