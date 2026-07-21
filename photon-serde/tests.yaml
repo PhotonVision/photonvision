@@ -1,0 +1,255 @@
+---
+java_imports:
+- 'org.wpilib.math.geometry.Rotation3d'
+- 'org.wpilib.math.geometry.Translation3d'
+- 'org.wpilib.math.geometry.Transform3d'
+cpp_includes:
+- '<wpi/math/geometry/Rotation3d.hpp>'
+- '<wpi/math/geometry/Translation3d.hpp>'
+- '<wpi/math/geometry/Transform3d.hpp>'
+- '<wpi/units/angle.hpp>'
+python_imports:
+- 'from wpimath import Rotation3d'
+- 'from wpimath import Translation3d'
+- 'from wpimath import Transform3d'
+tests:
+- name: Int8Test
+  type: Int8TestMessage
+  cases:
+  - name: default_test
+  - name: optional_test
+    fields:
+    - name: optTest
+      java_value: 'Optional.of((byte) 3)'
+      cpp_value: '{3}'
+      python_value: '3'
+  - name: vla_test
+    fields:
+    - name: vlaTest
+      java_value: 'List.of((byte) 1, (byte) 2, (byte) 3)'
+      cpp_value: '{1, 2, 3}'
+      python_value: '[1, 2, 3]'
+  - name: general_test
+    fields:
+    - name: test
+      java_value: '(byte) 42'
+      cpp_value: '42'
+      python_value: '42'
+    - name: optTest
+      java_value: 'Optional.of((byte) 7)'
+      cpp_value: '{7}'
+      python_value: '7'
+    - name: vlaTest
+      java_value: 'List.of((byte) 4, (byte) 5, (byte) 6)'
+      cpp_value: '{4, 5, 6}'
+      python_value: '[4, 5, 6]'
+- name: Int16Test
+  type: Int16TestMessage
+  cases:
+  - name: default_test
+  - name: optional_test
+    fields:
+    - name: optTest
+      java_value: 'Optional.of((short) 3)'
+      cpp_value: '{3}'
+      python_value: '3'
+  - name: vla_test
+    fields:
+    - name: vlaTest
+      java_value: 'List.of((short) 1, (short) 2, (short) 3)'
+      cpp_value: '{1, 2, 3}'
+      python_value: '[1, 2, 3]'
+  - name: general_test
+    fields:
+    - name: test
+      java_value: '(short) 42'
+      cpp_value: '42'
+      python_value: '42'
+    - name: optTest
+      java_value: 'Optional.of((short) 7)'
+      cpp_value: '{7}'
+      python_value: '7'
+    - name: vlaTest
+      java_value: 'List.of((short) 4, (short) 5, (short) 6)'
+      cpp_value: '{4, 5, 6}'
+      python_value: '[4, 5, 6]'
+- name: Int32Test
+  type: Int32TestMessage
+  cases:
+  - name: default_test
+  - name: optional_test
+    fields:
+    - name: optTest
+      java_value: 'Optional.of((int) 3)'
+      cpp_value: '{3}'
+      python_value: '3'
+  - name: vla_test
+    fields:
+    - name: vlaTest
+      java_value: 'List.of((int) 1, (int) 2, (int) 3)'
+      cpp_value: '{1, 2, 3}'
+      python_value: '[1, 2, 3]'
+  - name: general_test
+    fields:
+    - name: test
+      java_value: '(int) 42'
+      cpp_value: '42'
+      python_value: '42'
+    - name: optTest
+      java_value: 'Optional.of((int) 7)'
+      cpp_value: '{7}'
+      python_value: '7'
+    - name: vlaTest
+      java_value: 'List.of((int) 4, (int) 5, (int) 6)'
+      cpp_value: '{4, 5, 6}'
+      python_value: '[4, 5, 6]'
+- name: Int64Test
+  type: Int64TestMessage
+  cases:
+  - name: default_test
+  - name: optional_test
+    fields:
+    - name: optTest
+      java_value: 'Optional.of((long) 3)'
+      cpp_value: '{3}'
+      python_value: '3'
+  - name: vla_test
+    fields:
+    - name: vlaTest
+      java_value: 'List.of((long) 1, (long) 2, (long) 3)'
+      cpp_value: '{1, 2, 3}'
+      python_value: '[1, 2, 3]'
+  - name: general_test
+    fields:
+    - name: test
+      java_value: '(long) 42'
+      cpp_value: '42'
+      python_value: '42'
+    - name: optTest
+      java_value: 'Optional.of((long) 7)'
+      cpp_value: '{7}'
+      python_value: '7'
+    - name: vlaTest
+      java_value: 'List.of((long) 4, (long) 5, (long) 6)'
+      cpp_value: '{4, 5, 6}'
+      python_value: '[4, 5, 6]'
+- name: Float32Test
+  type: Float32TestMessage
+  cases:
+  - name: default_test
+  - name: optional_test
+    fields:
+    - name: optTest
+      java_value: 'Optional.of((float) 3.0)'
+      cpp_value: '{3.0}'
+      python_value: '3.0'
+  - name: vla_test
+    fields:
+    - name: vlaTest
+      java_value: 'List.of((float) 1.0, (float) 2.0, (float) 3.0)'
+      cpp_value: '{1.0, 2.0, 3.0}'
+      python_value: '[1.0, 2.0, 3.0]'
+  - name: general_test
+    fields:
+    - name: test
+      java_value: '(float) 42.0'
+      cpp_value: '42.0'
+      python_value: '42.0'
+    - name: optTest
+      java_value: 'Optional.of((float) 7.0)'
+      cpp_value: '{7.0}'
+      python_value: '7.0'
+    - name: vlaTest
+      java_value: 'List.of((float) 4.0, (float) 5.0, (float) 6.0)'
+      cpp_value: '{4.0, 5.0, 6.0}'
+      python_value: '[4.0, 5.0, 6.0]'
+- name: Float64Test
+  type: Float64TestMessage
+  cases:
+  - name: default_test
+  - name: optional_test
+    fields:
+    - name: optTest
+      java_value: 'Optional.of((double) 3.0)'
+      cpp_value: '{3.0}'
+      python_value: '3.0'
+  - name: vla_test
+    fields:
+    - name: vlaTest
+      java_value: 'List.of((double) 1.0, (double) 2.0, (double) 3.0)'
+      cpp_value: '{1.0, 2.0, 3.0}'
+      python_value: '[1.0, 2.0, 3.0]'
+  - name: general_test
+    fields:
+    - name: test
+      java_value: '(double) 42.0'
+      cpp_value: '42.0'
+      python_value: '42.0'
+    - name: optTest
+      java_value: 'Optional.of((double) 7.0)'
+      cpp_value: '{7.0}'
+      python_value: '7.0'
+    - name: vlaTest
+      java_value: 'List.of((double) 4.0, (double) 5.0, (double) 6.0)'
+      cpp_value: '{4.0, 5.0, 6.0}'
+      python_value: '[4.0, 5.0, 6.0]'
+- name: BoolTest
+  type: BoolTestMessage
+  cases:
+  - name: default_test
+  - name: optional_test
+    fields:
+    - name: optTest
+      java_value: 'Optional.of(true)'
+      cpp_value: '{true}'
+      python_value: 'True'
+  - name: vla_test
+    fields:
+    - name: vlaTest
+      java_value: 'List.of(true, false, true)'
+      cpp_value: '{true, false, true}'
+      python_value: '[True, False, True]'
+  - name: general_test
+    fields:
+    - name: test
+      java_value: 'false'
+      cpp_value: 'false'
+      python_value: 'False'
+    - name: optTest
+      java_value: 'Optional.of(true)'
+      cpp_value: '{true}'
+      python_value: 'True'
+    - name: vlaTest
+      java_value: 'List.of(true, false, true)'
+      cpp_value: '{true, false, true}'
+      python_value: '[True, False, True]'
+- name: Transform3dTest
+  type: Transform3dTestMessage
+  cases:
+  - name: default_test
+  - name: optional_test
+    fields:
+    - name: optTest
+      java_value: 'Optional.of(new Transform3d(new Translation3d(1.0, 2.0, 3.0), new Rotation3d(0.1, 0.2, 0.3)))'
+      cpp_value: '{1_m, 2_m, 3_m, wpi::math::Rotation3d{6_deg, 7_deg, 12_deg}}'
+      python_value: 'Transform3d(Translation3d(1.0, 2.0, 3.0), Rotation3d(0.1, 0.2, 0.3))'
+  - name: vla_test
+    fields:
+    - name: vlaTest
+      java_value: 'List.of(new Transform3d(new Translation3d(1.0, 2.0, 3.0), new Rotation3d(0.1, 0.2, 0.3)), new Transform3d(new Translation3d(4.0, 5.0, 6.0), new Rotation3d(0.4, 0.5, 0.6)))'
+      cpp_value: '{{1_m, 2_m, 3_m, wpi::math::Rotation3d{6_deg, 7_deg, 12_deg}},{1_m, 2_m, 3_m, wpi::math::Rotation3d{6_deg, 7_deg, 12_deg}},{8_m, 2_m, 1_m, wpi::math::Rotation3d{0_deg, 1_deg, 88_deg}}}'
+      python_value: '[Transform3d(Translation3d(1.0, 2.0, 3.0), Rotation3d(0.1, 0.2, 0.3)), Transform3d(Translation3d(4.0, 5.0, 6.0), Rotation3d(0.4, 0.5, 0.6))]'
+  - name: general_test
+    fields:
+    - name: test
+      java_value: 'new Transform3d(new Translation3d(7.0, 8.0, 9.0), new Rotation3d(0.7, 0.8, 0.9))'
+      cpp_value: '{8_m, 2_m, 1_m, wpi::math::Rotation3d{0_deg, 1_deg, 88_deg}}'
+      python_value: 'Transform3d(Translation3d(7.0, 8.0, 9.0), Rotation3d(0.7, 0.8, 0.9))'
+    - name: optTest
+      java_value: 'Optional.of(new Transform3d(new Translation3d(1.0, 2.0, 3.0), new Rotation3d(0.1, 0.2, 0.3)))'
+      cpp_value: '{1_m, 2_m, 3_m, wpi::math::Rotation3d{6_deg, 7_deg, 12_deg}}'
+      python_value: 'Transform3d(Translation3d(1.0, 2.0, 3.0), Rotation3d(0.1, 0.2, 0.3))'
+    - name: vlaTest
+      java_value: 'List.of(new Transform3d(new Translation3d(1.0, 2.0, 3.0), new Rotation3d(0.1, 0.2, 0.3)), new Transform3d(new Translation3d(4.0, 5.0, 6.0), new Rotation3d(0.4, 0.5, 0.6)))'
+      cpp_value: '{{1_m, 2_m, 3_m, wpi::math::Rotation3d{6_deg, 7_deg, 12_deg}},{1_m, 2_m, 3_m, wpi::math::Rotation3d{6_deg, 7_deg, 12_deg}},{8_m, 2_m, 1_m, wpi::math::Rotation3d{0_deg, 1_deg, 88_deg}}}'
+      python_value: '[Transform3d(Translation3d(1.0, 2.0, 3.0), Rotation3d(0.1, 0.2, 0.3)), Transform3d(Translation3d(4.0, 5.0, 6.0), Rotation3d(0.4, 0.5, 0.6))]'

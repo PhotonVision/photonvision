@@ -1,0 +1,139 @@
+ext {
+    nativeName = "photonserdetest"
+    includePhotonTargeting = true
+}
+
+apply plugin: 'cpp'
+apply plugin: 'c'
+apply plugin: 'google-test-test-suite'
+apply plugin: 'org.wpilib.NativeUtils'
+apply plugin: 'org.photonvision.tools.WpilibTools'
+apply plugin: 'org.wpilib.GradleJni'
+
+ext.licenseFile = file("$rootDir/LICENSE")
+apply from: "${rootDir}/shared/config.gradle"
+apply from: "${rootDir}/shared/javacommon.gradle"
+
+nativeUtils {
+    exportsConfigs {
+        "${nativeName}" {}
+    }
+}
+
+model {
+    components {
+        "${nativeName}"(NativeLibrarySpec) {
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/cpp'
+                        include '**/*.cpp', '**/*.cc'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/main/native/include'
+                        include "**/*.h"
+                    }
+                }
+            }
+
+            binaries.all {
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                }
+            }
+
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+        }
+    }
+    testSuites {
+        "${nativeName}Test"(GoogleTestTestSuiteSpec) {
+            for(NativeComponentSpec c : $.components) {
+                if (c.name == nativeName) {
+                    testing c
+                    break
+                }
+            }
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/test/native/cpp'
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/test/native/include'
+                    }
+                }
+            }
+
+            binaries.all {
+                lib library: nativeName, linkage: 'shared'
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                }
+            }
+
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            nativeUtils.useRequiredLibrary(it, "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
+        }
+    }
+
+    tasks {
+        def c = $.testSuites
+        project.tasks.create('runCpp', Exec) {
+            description = "Run the photon-lib executable"
+            def found = false
+            def systemArch = getCurrentArch()
+            c.each {
+                if (it in GoogleTestTestSuiteSpec && it.name == "${nativeName}Test") {
+                    it.binaries.each {
+                        if (!found) {
+                            def arch = it.targetPlatform.name
+                            if (arch == systemArch) {
+                                dependsOn it.tasks.install
+                                commandLine it.tasks.install.runScriptFile.get().asFile.toString()
+                                def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                                test.dependsOn it.tasks.install
+                                test.systemProperty 'java.library.path', filePath
+                                test.environment 'LD_LIBRARY_PATH', filePath
+                                test.environment 'DYLD_LIBRARY_PATH', filePath
+                                test.workingDir filePath
+
+                                found = true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+apply from: "${rootDir}/shared/javacpp/publish.gradle"
+
+// setup wpilib bundled native libs
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.test)
+
+dependencies {
+    wpilibNatives project(":photon-targeting")
+}
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("datalog")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")

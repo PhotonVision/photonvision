@@ -33,6 +33,10 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
 {% for type in nested_wpilib_types -%}
@@ -57,27 +61,42 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, {{ name }} value) {
 {%- for field in fields -%}
 {%- if field.type | is_shimmed %}
-        {{ get_message_by_name(field.type).java_encode_shim }}(packet, value.{{ field.name }});
-{%- elif field.optional == True %}
+        {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        packet.encodeOptional(value.{{ field.name }});
-{%- elif field.vla == True and field.type | is_intrinsic %}
-        // {{ field.name }} is a intrinsic VLA!
-        packet.encode(value.{{ field.name }});
-{%- elif field.vla == True %}
-        // {{ field.name }} is a custom VLA!
-        packet.encodeList(value.{{ field.name }});
+        packet.encodeOptionalImpl(value.{{ field.name }}, {{ get_message_by_name(field.type).java_encode_shim_ref }});
+        {%- elif field.vla == True %}
+        // {{ field.name }} is a shimmed VLA!
+        packet.encodeListImpl(value.{{ field.name }}, {{ get_message_by_name(field.type).java_encode_shim_ref }});
+        {%- else %}
+        // {{ field.name }} is of shimmed type {{ field.type }}
+        {{ get_message_by_name(field.type).java_encode_shim }}(packet, value.{{ field.name }});
+        {%- endif %}
 {%- elif field.type | is_intrinsic %}
+        {%- if field.optional == True %}
+        // {{ field.name }} is optional! it better not be a VLA too
+        packet.encodeOptionalImpl(value.{{ field.name }},{{ type_map[field.type].java_encode_shim_ref }});
+        {%- elif field.vla == True %}
+        // {{ field.name }} is an intrinsic VLA!
+        packet.encodeListImpl(value.{{ field.name }},{{ type_map[field.type].java_encode_shim_ref }});
+        {%- else %}
         // field {{ field.name }} is of intrinsic type {{ field.type }}
-        packet.encode(({{ type_map[field.type].java_type }}) value.{{ field.name }});
+        packet.encode(value.{{ field.name }});
+        {%- endif %}
 {%- else %}
+        {%- if field.optional == True %}
+        // {{ field.name }} is optional! it better not be a VLA too
+        packet.encodeOptionalImpl(value.{{ field.name }},{{ field.type }}.photonStruct::pack);
+        {%- elif field.vla == True %}
+        // {{ field.name }} is a custom VLA!
+        packet.encodeListImpl(value.{{ field.name }},{{ field.type }}.photonStruct::pack);
+        {%- else %}
         // field {{ field.name }} is of non-intrinsic type {{ field.type }}
         {{ field.type }}.photonStruct.pack(packet, value.{{ field.name }});
+        {%- endif %}
 {%- endif %}
 {%- if not loop.last %}
 {% endif -%}
@@ -89,22 +108,38 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
         var ret = new {{ name }}();
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
-        ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
-{%- elif field.optional == True %}
+        {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        ret.{{ field.name }} = packet.decodeOptional({{ field.type }}.photonStruct);
-{%- elif field.vla == True and not field.type | is_intrinsic %}
-        // {{ field.name }} is a custom VLA!
-        ret.{{ field.name }} = packet.decodeList({{ field.type }}.photonStruct);
-{%- elif field.vla == True and field.type | is_intrinsic %}
-        // {{ field.name }} is a custom VLA!
-        ret.{{ field.name }} = packet.decode{{ type_map[field.type].java_type.title() }}List();
+        ret.{{ field.name }} = packet.decodeOptionalImpl({{ get_message_by_name(field.type).java_decode_shim_ref }});
+        {%- elif field.vla == True %}
+        // {{ field.name }} is a shimmed VLA!
+        ret.{{ field.name }} = packet.decodeListImpl({{ get_message_by_name(field.type).java_decode_shim_ref }});
+        {%- else %}
+        // {{ field.name }} is of shimmed type {{ field.type }}
+        ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
+        {%- endif %}
 {%- elif field.type | is_intrinsic %}
+        {%- if field.optional == True %}
+        // {{ field.name }} is optional! it better not be a VLA too
+        ret.{{ field.name }} = packet.decodeOptionalImpl({{ type_map[field.type].java_decode_shim_ref }});
+        {%- elif field.vla == True %}
+        // {{ field.name }} is an intrinsic VLA!
+        ret.{{ field.name }} = packet.decodeListImpl({{ type_map[field.type].java_decode_shim_ref }});
+        {%- else %}
         // {{ field.name }} is of intrinsic type {{ field.type }}
         ret.{{field.name}} = packet.{{ type_map[field.type].java_decode_method }}();
+        {%- endif %}
 {%- else %}
+        {%- if field.optional == True %}
+        // {{ field.name }} is optional! it better not be a VLA too
+        ret.{{ field.name }} = packet.decodeOptionalImpl({{ field.type }}.photonStruct::unpack);
+        {%- elif field.vla == True %}
+        // {{ field.name }} is a custom VLA!
+        ret.{{ field.name }} = packet.decodeListImpl({{ field.type }}.photonStruct::unpack);
+        {%- else %}
         // {{ field.name }} is of non-intrinsic type {{ field.type }}
         ret.{{field.name}} = {{ field.type }}.photonStruct.unpack(packet);
+        {%- endif %}
 {%- endif %}
 {%- if not loop.last %}
 {% endif -%}

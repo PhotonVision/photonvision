@@ -28,9 +28,14 @@ package org.photonvision.struct;
 
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.utils.PacketUtils;
 
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
+
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
@@ -53,14 +58,13 @@ public class TargetCornerSerde implements PacketSerde<TargetCorner> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, TargetCorner value) {
         // field x is of intrinsic type float64
-        packet.encode((double) value.x);
+        packet.encode(value.x);
 
         // field y is of intrinsic type float64
-        packet.encode((double) value.y);
+        packet.encode(value.y);
     }
 
     @Override
