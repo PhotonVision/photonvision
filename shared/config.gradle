@@ -29,6 +29,7 @@ model {
             nativeUtils.usePlatformArguments(it)
             if (it.toolChain instanceof GccCompatibleToolChain) {
                 it.cppCompiler.args << "-Wno-deprecated-enum-enum-conversion"
+                it.cppCompiler.args << "-Wno-error=c11-extensions"
 
                 if (project.hasProperty('withSanitizers')) {
                     println("Adding asan/usan/lsan to " + it)
