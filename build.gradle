@@ -44,7 +44,7 @@ ext {
     rknnVersion = "v2027.0.0"
     tfliteVersion = "v2027.0.2-alpha-1"
     wpilibYear = "2027_alpha5"
-    mrcalVersion = "v2027.0.2";
+    mrcalVersion = "dev-v2027.0.2-5-g41288dc";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")

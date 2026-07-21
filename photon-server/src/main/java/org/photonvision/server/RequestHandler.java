@@ -1053,8 +1053,53 @@ public class RequestHandler {
             return;
         }
 
-        ctx.json(calList);
+        ctx.contentType("application/json");
+        ctx.result(Jsonb.instance().toJson(calList));
         ctx.status(200);
+    }
+
+    public static void onUncertaintyJsonRequest(Context ctx) {
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+        if (module == null) {
+            ctx.status(404);
+            return;
+        }
+
+        CameraCalibrationCoefficients calList =
+                module.getStateAsCameraConfig().calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.resolution.width - width) < 1e-4
+                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        try {
+            ctx.json(calList.estimateUncertainty());
+            ctx.status(200);
+        } catch (Exception e) {
+            ctx.status(422)
+                    .result("Unable to estimate uncertainty for this calibration: " + e.getMessage());
+            logger.error(
+                    "Unable to estimate uncertainty for camera "
+                            + cameraUniqueName
+                            + " at "
+                            + width
+                            + "x"
+                            + height
+                            + ": "
+                            + e.getMessage(),
+                    e);
+        }
     }
 
     @Json
@@ -1163,9 +1208,9 @@ public class RequestHandler {
         }
 
         var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
-        ctx.contentType("application/zip");
+        ctx.contentType("application/json");
         ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        ctx.json(calList);
+        ctx.result(Jsonb.instance().toJson(calList));
 
         ctx.status(200);
     }
@@ -1204,7 +1249,8 @@ public class RequestHandler {
         }
 
         ctx.status(200);
-        ctx.json(snapshots);
+        ctx.contentType("application/json");
+        ctx.result(Jsonb.instance().toJson(snapshots));
     }
 
     public static void onCameraCalibImagesRequest(Context ctx) {
@@ -1242,7 +1288,8 @@ public class RequestHandler {
                 }
             }
 
-            ctx.json(snapshots);
+            ctx.contentType("application/json");
+            ctx.result(Jsonb.instance().toJson(snapshots));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("An error occurred while getting calib data");
