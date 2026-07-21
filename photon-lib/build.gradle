@@ -56,6 +56,7 @@ model {
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
+            nativeUtils.useRequiredLibrary(it, "mrclib_shared")
         }
     }
     testSuites {
@@ -373,4 +374,5 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("mrclib", mrclibVersion)
 nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)

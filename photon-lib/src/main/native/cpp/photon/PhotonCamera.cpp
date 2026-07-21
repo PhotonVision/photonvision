@@ -392,7 +392,7 @@ void PhotonCamera::VerifyVersion() {
           ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
           "\n\n";
       WPILIB_ReportWarning(bfw);
-      std::string error_str = fmt::format(
+      std::string error_str = std::format(
           "Photonlib version {} (message definition version {}) does not match "
           "coprocessor version {} (message definition version {})!",
           PhotonVersion::versionString, local_uuid, versionString, remote_uuid);

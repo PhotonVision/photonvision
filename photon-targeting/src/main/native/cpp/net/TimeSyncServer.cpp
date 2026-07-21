@@ -33,7 +33,7 @@
 static void ServerLoggerFunc(unsigned int level, const char* file,
                              unsigned int line, const char* msg) {
   if (level == 20) {
-    fmt::print(stderr, "TimeSyncServer: {}\n", msg);
+    wpi::util::print(stderr, "TimeSyncServer: {}\n", msg);
     return;
   }
 
@@ -47,8 +47,8 @@ static void ServerLoggerFunc(unsigned int level, const char* file,
   } else {
     return;
   }
-  fmt::print(stderr, "TimeSyncServer: {}: {} ({}:{})\n", levelmsg, msg, file,
-             line);
+  wpi::util::print(stderr, "TimeSyncServer: {}: {} ({}:{})\n", levelmsg, msg,
+                   file, line);
 }
 
 void wpi::tsp::TimeSyncServer::UdpCallback(wpi::net::uv::Buffer& data, size_t n,

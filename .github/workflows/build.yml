@@ -93,8 +93,9 @@ jobs:
 
   playwright-tests:
     name: "Playwright E2E tests"
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [validation]
+    # container: wpilib/systemcore-cross-debian:trixie
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -117,7 +118,8 @@ jobs:
               pnpm install
               pnpm test-setup
           - name: Prebuild Gradle
-            run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
+            run: |
+              ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Run Playwright tests
         working-directory: photon-client
         run: pnpm test
@@ -130,12 +132,16 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-24.04
+    container: wpilib/systemcore-cross-debian:trixie
     needs: [validation]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Config Git
+        run: |
+          git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Fetch tags
         run: git fetch --tags --force
       - uses: actions/setup-java@v5
@@ -234,8 +240,6 @@ jobs:
            artifact-name: Win64
          - os: macos-26
            artifact-name: macOS
-         - os: ubuntu-24.04
-           artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -249,6 +253,11 @@ jobs:
           java-version: 25
           distribution: temurin
       - run: git fetch --tags --force
+      - name: Make GCC 14 the default toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
@@ -268,15 +277,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/systemcore-cross-ubuntu:2027-24.04
+          - container: wpilib/systemcore-cross-debian:trixie
             artifact-name: SystemCore
             build-options: "-Ponlylinuxsystemcore"
-          - container: wpilib/raspbian-cross-ubuntu:2027-bookworm-24.04
-            artifact-name: Raspbian
-            build-options: "-Ponlylinuxarm32"
-          - container: wpilib/aarch64-cross-ubuntu:2027-bookworm-24.04
+          - container: wpilib/aarch64-cross-debian:trixie
             artifact-name: Aarch64
             build-options: "-Ponlylinuxarm64"
+          - container: wpilib/systemcore-cross-debian:trixie
+            artifact-name: Linux
+            build-options: "-Ponlylinuxx86-64"
 
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
@@ -365,6 +374,11 @@ jobs:
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
+      - name: Make GCC 14 the default toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
       - uses: actions/download-artifact@v8
         with:
           name: built-docs
@@ -421,14 +435,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-24.04
+          - os: ubuntu-26.04
             artifact-name: photonvision-*-linuxx86-64.jar
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-2022
             artifact-name: photonvision-*-winx86-64.jar
           - os: macos-latest
             artifact-name: photonvision-*-macarm64.jar
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-26.04-arm
             artifact-name: photonvision-*-linuxarm64.jar
 
 
