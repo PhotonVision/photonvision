@@ -27,9 +27,9 @@ model {
     binaries {
         withType(NativeBinarySpec).all {
             nativeUtils.usePlatformArguments(it)
+            it.cppCompiler.args << "-Wno-error=c++11-extensions"
             if (it.toolChain instanceof GccCompatibleToolChain) {
                 it.cppCompiler.args << "-Wno-deprecated-enum-enum-conversion"
-                it.cppCompiler.args << "-Wno-error=c11-extensions"
 
                 if (project.hasProperty('withSanitizers')) {
                     println("Adding asan/usan/lsan to " + it)
