@@ -9,10 +9,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
-permissions:
-  actions: write
-  contents: read
-
 env:
   IMAGE_VERSION: v2027.1.0
 
@@ -142,7 +138,6 @@ jobs:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
-      - run: exit 1
       - uses: actions/setup-java@v5
         with:
           java-version: 25
