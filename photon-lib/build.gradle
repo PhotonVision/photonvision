@@ -1,7 +1,5 @@
 apply plugin: 'org.photonvision.tools.WpilibTools'
 
-import java.nio.file.Path
-
 ext {
     nativeName = "photonlib"
     includePhotonTargeting = true
@@ -158,6 +156,7 @@ task generateVendorJson() {
     def read = photonlibFileInput.text
             .replace('${photon_version}', pubVersion)
             .replace('${wpilib_year}', wpilibYear)
+            .replace('${frcYear}', frcYear)
     photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
