@@ -483,17 +483,18 @@ PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
   if (!ShouldEstimate(cameraResult)) {
     return std::nullopt;
   }
+  std::optional<wpi::math::Rotation2d> headingSampleOpt =
+      headingBuffer.Sample(cameraResult.GetTimestamp());
   // Need heading if heading fixed
+  if (!headingFree && !headingSampleOpt) {
+    return std::nullopt;
+  }
+  wpi::math::Rotation2d headingSample =
+      headingSampleOpt.value_or(wpi::math::Rotation2d{});
   if (!headingFree) {
-    if (!headingBuffer.Sample(cameraResult.GetTimestamp())) {
-      return std::nullopt;
-    } else {
-      // If heading fixed, force rotation component
-      seedPose = wpi::math::Pose3d{
-          seedPose.Translation(),
-          wpi::math::Rotation3d{
-              headingBuffer.Sample(cameraResult.GetTimestamp()).value()}};
-    }
+    // If heading fixed, force rotation component
+    seedPose = wpi::math::Pose3d{seedPose.Translation(),
+                                 wpi::math::Rotation3d{headingSample}};
   }
   std::vector<photon::PhotonTrackedTarget> targets{
       cameraResult.GetTargets().begin(), cameraResult.GetTargets().end()};
@@ -501,9 +502,7 @@ PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
   std::optional<photon::PnpResult> pnpResult =
       VisionEstimation::EstimateRobotPoseConstrainedSolvePNP(
           cameraMatrix, distCoeffs, targets, m_robotToCamera, seedPose,
-          aprilTags, photon::kAprilTag36h11, headingFree,
-          wpi::math::Rotation2d{
-              headingBuffer.Sample(cameraResult.GetTimestamp()).value()},
+          aprilTags, photon::kAprilTag36h11, headingFree, headingSample,
           headingScaleFactor);
 
   if (!pnpResult) {
