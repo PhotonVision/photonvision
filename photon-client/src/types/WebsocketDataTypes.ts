@@ -61,6 +61,8 @@ export interface WebsocketCameraSettingsUpdate {
   cameraQuirks: QuirkyCamera;
   minExposureRaw: number;
   maxExposureRaw: number;
+  minSaturation: number;
+  maxSaturation: number;
   minWhiteBalanceTemp: number;
   maxWhiteBalanceTemp: number;
   matchedCameraInfo: PVCameraInfo;
