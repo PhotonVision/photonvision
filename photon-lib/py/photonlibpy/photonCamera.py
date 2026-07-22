@@ -24,7 +24,7 @@ import ntcore
 # magical import to make serde stuff work
 import photonlibpy.generated  # noqa
 import wpilib
-from wpilib import RobotController, Timer
+from wpilib import Timer
 
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
@@ -147,7 +147,6 @@ class PhotonCamera:
 
         for change in changes:
             byteList = change.value
-            timestamp = change.time
 
             if len(byteList) < 1:
                 pass
@@ -155,8 +154,6 @@ class PhotonCamera:
                 newResult = PhotonPipelineResult()
                 pkt = Packet(byteList)
                 newResult = PhotonPipelineResult.photonStruct.unpack(pkt)
-                # NT4 allows us to correct the timestamp based on when the message was sent
-                newResult.ntReceiveTimestampMicros = timestamp
                 ret.append(newResult)
 
         return ret
@@ -172,19 +169,14 @@ class PhotonCamera:
 
         self._versionCheck()
 
-        now = RobotController.getMonotonicTime()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
-        packetWithTimestamp.time
 
         if len(byteList) < 1:
             return PhotonPipelineResult()
         else:
             pkt = Packet(byteList)
-            retVal = PhotonPipelineResult.photonStruct.unpack(pkt)
-            # We don't trust NT4 time, hack around
-            retVal.ntReceiveTimestampMicros = now
-            return retVal
+            return PhotonPipelineResult.photonStruct.unpack(pkt)
 
     def getDriverMode(self) -> bool:
         """Returns whether the camera is in driver mode.

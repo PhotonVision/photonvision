@@ -192,9 +192,9 @@ def test_pnpDistanceTrigSolve():
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
     assert bestTarget.fiducialId == 0
-    assert result.ntReceiveTimestampMicros > 0
+    assert result.metadata.captureTimestampMicros > 0
     # Make test independent of the FPGA time.
-    result.ntReceiveTimestampMicros = int(fakeTimestampSecs * 1e6)
+    result.metadata.captureTimestampMicros = int(fakeTimestampSecs * 1e6)
 
     estimator.addHeadingData(
         result.getTimestampSeconds(), realPose.rotation().toRotation2d()
@@ -221,9 +221,9 @@ def test_pnpDistanceTrigSolve():
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
     assert bestTarget.fiducialId == 0
-    assert result.ntReceiveTimestampMicros > 0
+    assert result.metadata.captureTimestampMicros > 0
     # Make test independent of the FPGA time.
-    result.ntReceiveTimestampMicros = int(fakeTimestampSecs * 1e6)
+    result.metadata.captureTimestampMicros = int(fakeTimestampSecs * 1e6)
 
     estimator.addHeadingData(
         result.getTimestampSeconds(), realPose.rotation().toRotation2d()
