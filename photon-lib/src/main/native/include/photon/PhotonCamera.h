@@ -104,6 +104,18 @@ class PhotonCamera {
   bool GetDriverMode() const;
 
   /**
+   * Sets whether the camera is recording.
+   * @param recording Whether to set recording.
+   */
+  void SetRecording(bool recording);
+
+  /**
+   * Returns whether the camera is recording.
+   * @return Whether the camera is recording.
+   */
+  bool GetRecording() const;
+
+  /**
    *  Sets the FPS limit on the camera.
    *
    * <p>An FPS of 0 means to pause processing until a FPS limit greater than 0
@@ -192,7 +204,8 @@ class PhotonCamera {
    * Returns whether the camera is connected and actively returning new data.
    * Connection status is debounced.
    *
-   * @return True if the camera is actively sending frame data, false otherwise.
+   * @return True if the camera is actively sending frame data, false
+   * otherwise.
    */
   bool IsConnected();
 
@@ -217,8 +230,8 @@ class PhotonCamera {
 
   /**
    * Sets whether or not coprocessor version checks will occur. Setting this to
-   * true will silence all console warnings about coproccessor connection, so be
-   * careful when enabling this and ensure all your coprocessors are
+   * true will silence all console warnings about coproccessor connection, so
+   * be careful when enabling this and ensure all your coprocessors are
    * communicating to the robot properly and everything has matching versions.
    *
    * @param enabled Whether or not to enable coprocessor version checks
@@ -258,6 +271,9 @@ class PhotonCamera {
   wpi::nt::BooleanPublisher enabledPublisher;
 
   wpi::nt::IntegerSubscriber ledModeSubscriber;
+
+  wpi::nt::BooleanSubscriber recordingSubscriber;
+  wpi::nt::BooleanPublisher recordingPublisher;
 
   wpi::nt::IntegerSubscriber heartbeatSubscriber;
 

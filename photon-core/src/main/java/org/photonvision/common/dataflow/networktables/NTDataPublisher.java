@@ -32,9 +32,12 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.networktables.BooleanPublisher;
+import org.wpilib.networktables.IntegerPublisher;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableEvent;
 import org.wpilib.networktables.NetworkTablesJNI;
+import org.wpilib.networktables.StringPublisher;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.General);
@@ -51,9 +54,21 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final BooleanSupplier driverModeSupplier;
     private final Consumer<Boolean> driverModeConsumer;
 
+    NTDataChangeListener recordingListener;
+    private final BooleanSupplier recordingSupplier;
+    private final Consumer<Boolean> recordingConsumer;
     NTDataChangeListener fpsLimitListener;
     private final Consumer<Integer> fpsLimitConsumer;
     private final Supplier<Integer> fpsLimitSupplier;
+
+    // Replay-state publishers — created in updateEntries(), closed in removeEntries(). Driven by
+    // explicit publishReplayState / publishReplayProgress calls from VisionModule rather than
+    // re-published every frame like the rest of the per-result topics, because the values change
+    // only on replay start / progress tick / end.
+    private BooleanPublisher isReplayingPublisher;
+    private IntegerPublisher replayProgressCurrentFramePublisher;
+    private IntegerPublisher replayProgressTotalFramesPublisher;
+    private StringPublisher replayProgressRecordingNamePublisher;
 
     NTDataChangeListener isEnabledListener;
     private final Consumer<Boolean> isEnabledConsumer;
@@ -65,6 +80,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             Consumer<Integer> pipelineIndexConsumer,
             BooleanSupplier driverModeSupplier,
             Consumer<Boolean> driverModeConsumer,
+            BooleanSupplier recordingSupplier,
+            Consumer<Boolean> recordingConsumer,
             Supplier<Integer> fpsLimitSupplier,
             Consumer<Integer> fpsLimitConsumer,
             BooleanSupplier enabledSupplier,
@@ -73,6 +90,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
+        this.recordingSupplier = recordingSupplier;
+        this.recordingConsumer = recordingConsumer;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.fpsLimitConsumer = fpsLimitConsumer;
         this.enabledSupplier = enabledSupplier;
@@ -119,6 +138,19 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         logger.debug("Set driver mode to " + newDriverMode);
     }
 
+    private void onRecordingChange(NetworkTableEvent entryNotification) {
+        var newRecording = entryNotification.valueData.value.getBoolean();
+        var originalRecording = recordingSupplier.getAsBoolean();
+
+        if (newRecording == originalRecording) {
+            logger.debug("Recording state is already " + newRecording);
+            return;
+        }
+
+        recordingConsumer.accept(newRecording);
+        logger.debug("Set recording state to " + newRecording);
+    }
+
     private void onFPSLimitChange(NetworkTableEvent entryNotification) {
         var newFPSLimit = (int) entryNotification.valueData.value.getInteger();
         var originalFPSLimit = fpsLimitSupplier.get();
@@ -148,13 +180,25 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private void removeEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
+        if (recordingListener != null) recordingListener.remove();
+        if (isReplayingPublisher != null) isReplayingPublisher.close();
+        if (replayProgressCurrentFramePublisher != null) replayProgressCurrentFramePublisher.close();
+        if (replayProgressTotalFramesPublisher != null) replayProgressTotalFramesPublisher.close();
+        if (replayProgressRecordingNamePublisher != null) replayProgressRecordingNamePublisher.close();
         ts.removeEntries();
     }
 
     private void updateEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
+        if (recordingListener != null) recordingListener.remove();
         if (fpsLimitListener != null) fpsLimitListener.remove();
+        // Close any previous replay publishers before recreating them — updateEntries can run
+        // more than once (ctor, nickname changes) and the old handles would otherwise leak.
+        if (isReplayingPublisher != null) isReplayingPublisher.close();
+        if (replayProgressCurrentFramePublisher != null) replayProgressCurrentFramePublisher.close();
+        if (replayProgressTotalFramesPublisher != null) replayProgressTotalFramesPublisher.close();
+        if (replayProgressRecordingNamePublisher != null) replayProgressRecordingNamePublisher.close();
 
         ts.updateEntries();
 
@@ -166,13 +210,51 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.driverModeSubscriber, this::onDriverModeChange);
 
+        recordingListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.recordingSubscriber, this::onRecordingChange);
         fpsLimitListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.fpsLimitSubscriber, this::onFPSLimitChange);
 
+        // Replay-state topics live in the same per-camera subtable as the existing recording /
+        // driverMode topics. updateCameraNickname() calls remove + update so these migrate when
+        // the camera is renamed.
+        isReplayingPublisher = ts.subTable.getBooleanTopic("isReplaying").publish();
+        isReplayingPublisher.setDefault(false);
+        replayProgressCurrentFramePublisher =
+                ts.subTable.getIntegerTopic("replayProgressCurrentFrame").publish();
+        replayProgressTotalFramesPublisher =
+                ts.subTable.getIntegerTopic("replayProgressTotalFrames").publish();
+        replayProgressRecordingNamePublisher =
+                ts.subTable.getStringTopic("replayProgressRecordingName").publish();
+
         isEnabledListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.enabledSubscriber, this::onEnabledChange);
+    }
+
+    /** Set the {@code isReplaying} topic. Called from {@code VisionModule.startReplay/cancel}. */
+    public void publishReplayState(boolean isReplaying) {
+        if (isReplayingPublisher != null) isReplayingPublisher.set(isReplaying);
+    }
+
+    /**
+     * Set the three {@code replayProgress*} topics. Called from the {@link
+     * org.photonvision.vision.frame.provider.FileLogFrameProvider} progress callback on the vision
+     * thread (once per emitted frame) and from {@code startReplay} to zero things out at the start of
+     * a replay.
+     */
+    public void publishReplayProgress(long currentFrame, long totalFrames, String recordingName) {
+        if (replayProgressCurrentFramePublisher != null) {
+            replayProgressCurrentFramePublisher.set(currentFrame);
+        }
+        if (replayProgressTotalFramesPublisher != null) {
+            replayProgressTotalFramesPublisher.set(totalFrames);
+        }
+        if (replayProgressRecordingNamePublisher != null) {
+            replayProgressRecordingNamePublisher.set(recordingName == null ? "" : recordingName);
+        }
     }
 
     public void updateCameraNickname(String newCameraNickname) {
@@ -222,6 +304,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
+        ts.recordingPublisher.set(recordingSupplier.getAsBoolean());
         ts.fpsLimitPublisher.set(fpsLimitSupplier.get());
         ts.enabledPublisher.set(enabledSupplier.getAsBoolean());
         ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
