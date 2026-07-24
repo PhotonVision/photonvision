@@ -9,12 +9,11 @@ import {
   ContourIntersection,
   ContourShape
 } from "@/types/PipelineTypes";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvSlider from "@/components/common/pv-slider.vue";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { useDisplay } from "vuetify";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -57,10 +56,14 @@ const contourRadius = computed<[number, number]>({
     }
   }
 });
-const { mdAndDown } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
+
+const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
+  Array.isArray(value) ? value : [value.first, value.second];
 </script>
 
 <template>
@@ -75,7 +78,8 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+        (value: ContourTargetOrientation) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
     <pv-select
@@ -93,7 +97,8 @@ const interactiveCols = computed(() =>
         { value: ContourSortMode.Centermost, name: 'Centermost' }
       ]"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
+        (value: ContourSortMode) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
       "
     />
     <pv-range-slider
@@ -104,7 +109,8 @@ const interactiveCols = computed(() =>
       :slider-cols="interactiveCols"
       :step="0.01"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: normalizeNumberPair(value) }, false)
       "
     />
     <pv-range-slider
@@ -117,7 +123,8 @@ const interactiveCols = computed(() =>
       :slider-cols="interactiveCols"
       :step="0.1"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: normalizeNumberPair(value) }, false)
       "
     />
     <pv-range-slider
@@ -129,7 +136,8 @@ const interactiveCols = computed(() =>
       :max="100"
       :slider-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFullness: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourFullness: normalizeNumberPair(value) }, false)
       "
     />
     <pv-range-slider
@@ -141,7 +149,8 @@ const interactiveCols = computed(() =>
       :max="4000"
       :slider-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourPerimeter: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourPerimeter: normalizeNumberPair(value) }, false)
       "
     />
     <pv-slider
@@ -152,7 +161,8 @@ const interactiveCols = computed(() =>
       :max="100"
       :slider-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSpecklePercentage: value }, false)
+        (value: number) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourSpecklePercentage: value }, false)
       "
     />
     <template v-if="currentPipelineSettings.pipelineType === PipelineType.Reflective">
@@ -165,7 +175,8 @@ const interactiveCols = computed(() =>
         :step="0.1"
         :slider-cols="interactiveCols"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFilterRangeX: value }, false)
+          (value: number) =>
+            useCameraSettingsStore().changeCurrentPipelineSetting({ contourFilterRangeX: value }, false)
         "
       />
       <pv-slider
@@ -177,7 +188,8 @@ const interactiveCols = computed(() =>
         :step="0.1"
         :slider-cols="interactiveCols"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourFilterRangeY: value }, false)
+          (value: number) =>
+            useCameraSettingsStore().changeCurrentPipelineSetting({ contourFilterRangeY: value }, false)
         "
       />
       <pv-select
@@ -191,7 +203,8 @@ const interactiveCols = computed(() =>
           { value: ContourGroupingMode.TwoOrMore, name: 'Two or More' }
         ]"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourGroupingMode: value }, false)
+          (value: ContourGroupingMode) =>
+            useCameraSettingsStore().changeCurrentPipelineSetting({ contourGroupingMode: value }, false)
         "
       />
       <pv-select
@@ -208,7 +221,8 @@ const interactiveCols = computed(() =>
         ]"
         :disabled="useCameraSettingsStore().currentPipelineSettings.contourGroupingMode === 0"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourIntersection: value }, false)
+          (value: ContourIntersection) =>
+            useCameraSettingsStore().changeCurrentPipelineSetting({ contourIntersection: value }, false)
         "
       />
     </template>
@@ -225,7 +239,7 @@ const interactiveCols = computed(() =>
           { value: ContourShape.Quadrilateral, name: 'Quadrilateral' }
         ]"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourShape: value }, false)
+          (value: ContourShape) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourShape: value }, false)
         "
       />
       <pv-slider
@@ -238,7 +252,7 @@ const interactiveCols = computed(() =>
         :max="100"
         :slider-cols="interactiveCols"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ accuracyPercentage: value }, false)
+          (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ accuracyPercentage: value }, false)
         "
       />
       <pv-slider
@@ -251,7 +265,8 @@ const interactiveCols = computed(() =>
         :max="100"
         :slider-cols="interactiveCols"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ circleDetectThreshold: value }, false)
+          (value: number) =>
+            useCameraSettingsStore().changeCurrentPipelineSetting({ circleDetectThreshold: value }, false)
         "
       />
       <pv-slider
@@ -263,7 +278,7 @@ const interactiveCols = computed(() =>
         :max="100"
         :slider-cols="interactiveCols"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ maxCannyThresh: value }, false)
+          (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ maxCannyThresh: value }, false)
         "
       />
       <pv-slider
@@ -275,7 +290,7 @@ const interactiveCols = computed(() =>
         :max="100"
         :slider-cols="interactiveCols"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ circleAccuracy: value }, false)
+          (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ circleAccuracy: value }, false)
         "
       />
       <pv-range-slider
@@ -287,7 +302,8 @@ const interactiveCols = computed(() =>
         :max="100"
         :slider-cols="interactiveCols"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRadius: value }, false)
+          (value: WebsocketNumberPair | [number, number]) =>
+            useCameraSettingsStore().changeCurrentPipelineSetting({ contourRadius: normalizeNumberPair(value) }, false)
         "
       />
     </template>

@@ -3,9 +3,11 @@ import { computed, inject, onBeforeUnmount, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import type { StyleValue } from "vue";
-import PvIcon from "@/components/common/pv-icon.vue";
+import IconCameraImage from "~icons/mdi/camera-image";
+import IconFullscreen from "~icons/mdi/fullscreen";
+import IconOpenInNew from "~icons/mdi/open-in-new";
+
 import type { UiCameraConfiguration } from "@/types/SettingTypes";
-import PvLoading from "@/components/common/pv-loading.vue";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed";
@@ -92,80 +94,46 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="stream-container" :style="containerStyle">
-    <pv-loading class="stream-loading" />
+  <div
+    class="stream-container group relative flex h-full max-h-full w-full max-w-full items-center justify-center"
+    :style="containerStyle"
+  >
+    <pv-loading class="absolute h-1/4 w-1/4 object-contain" />
     <img
       :id="id"
       ref="mjpgStream"
-      class="stream-video"
+      class="absolute h-full w-full object-contain"
       crossorigin="anonymous"
       :src="streamSrc"
       :alt="streamDesc"
       :style="streamStyle"
       @error="handleStreamError"
     />
-    <div class="stream-overlay" :style="overlayStyle">
-      <pv-icon
+    <div
+      class="absolute top-0 right-0 flex opacity-0 transition duration-100 group-hover:opacity-100"
+      :style="overlayStyle"
+    >
+      <pv-tooltipped-icon
         color="primary"
-        icon-name="mdi-camera-image"
+        :icon="IconCameraImage"
         tooltip="Capture and save a frame of this stream"
-        class="ma-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handleCaptureClick"
       />
-      <pv-icon
+      <pv-tooltipped-icon
         color="primary"
-        icon-name="mdi-fullscreen"
+        :icon="IconFullscreen"
         tooltip="Open this stream in fullscreen"
-        class="ma-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handleFullscreenRequest"
       />
-      <pv-icon
+      <pv-tooltipped-icon
         color="primary"
-        icon-name="mdi-open-in-new"
+        :icon="IconOpenInNew"
         tooltip="Open this stream in a new window"
-        class="ma-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handlePopoutClick"
       />
     </div>
   </div>
 </template>
-
-<style scoped>
-.stream-container {
-  display: flex;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  justify-content: center;
-  align-items: center;
-}
-
-.stream-loading {
-  position: absolute;
-  width: 25%;
-  height: 25%;
-  object-fit: contain;
-}
-
-.stream-video {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.stream-overlay {
-  display: flex;
-  opacity: 0;
-  transition: 0.1s ease;
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.stream-container:hover .stream-overlay {
-  opacity: 1;
-}
-</style>

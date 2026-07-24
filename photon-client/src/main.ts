@@ -1,9 +1,9 @@
 import { h, createApp } from "vue";
 import App from "@/App.vue";
+import "@/assets/styles/main.css";
 
 import { createPinia } from "pinia";
 import router from "@/router";
-import vuetify from "@/plugins/vuetify";
 import axios from "axios";
 
 type PhotonClientRuntimeMode = "production" | "development" | "local-network-development";
@@ -33,7 +33,6 @@ const pinia = createPinia();
 
 const app = createApp({
   router,
-  vuetify,
   pinia: createPinia(),
   provide: {
     backendHost: backendHost,
@@ -42,6 +41,5 @@ const app = createApp({
   render: () => h(App)
 });
 app.use(pinia);
-app.use(vuetify);
 app.use(router);
 app.mount("#app");

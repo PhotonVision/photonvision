@@ -1,0 +1,62 @@
+<script setup lang="ts">
+import { computed, useAttrs } from "vue";
+import { useThemeColor } from "../../../lib/ComponentUtils";
+
+defineOptions({
+  inheritAttrs: false
+});
+
+const props = withDefaults(
+  defineProps<{
+    color?: string;
+    label?: boolean;
+    variant?: "filled" | "text";
+  }>(),
+  {
+    color: "primary",
+    label: false,
+    variant: "filled"
+  }
+);
+
+const attrs = useAttrs();
+
+const { solid, translucent, isRaw } = useThemeColor(() => props.color, { translucentAlpha: 0.15 });
+
+const chipStyle = computed(() => {
+  if (props.variant === "text") {
+    return { "--pv-chip-fg": solid.value };
+  }
+  // filled
+  if (isRaw.value) {
+    return { "--pv-chip-bg": solid.value, "--pv-chip-fg": "#fff" };
+  }
+  return {
+    "--pv-chip-bg": translucent.value,
+    "--pv-chip-fg": solid.value
+  };
+});
+</script>
+
+<template>
+  <span
+    v-bind="attrs"
+    :style="chipStyle"
+    :class="[
+      'inline-flex items-center gap-1 align-middle text-sm leading-6 font-medium whitespace-nowrap select-none',
+      label ? 'rounded-sm' : 'rounded-full',
+      variant === 'text'
+        ? 'bg-transparent p-0 text-(--pv-chip-fg)'
+        : 'bg-(--pv-chip-bg) px-[0.65em] py-[0.15em] text-(--pv-chip-fg)',
+      attrs.class
+    ]"
+  >
+    <slot />
+  </span>
+</template>
+<style scoped>
+:root {
+  --pv-chip-bg: transparent;
+  --pv-chip-fg: inherit;
+}
+</style>

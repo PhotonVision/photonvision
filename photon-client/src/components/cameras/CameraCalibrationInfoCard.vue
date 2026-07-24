@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
+
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref, useTemplateRef } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
-import { useTheme } from "vuetify";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
+import IconImport from "~icons/mdi/import";
+import IconExport from "~icons/mdi/export";
+import IconEye from "~icons/mdi/eye";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
 
-const theme = useTheme();
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
@@ -85,6 +87,11 @@ interface ObservationDetails {
   numMissing: number;
 }
 
+type TabItem = {
+  label: string;
+  value: string;
+};
+
 const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(() =>
   useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
@@ -106,27 +113,26 @@ const exportCalibrationURL = computed<string>(() =>
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 
-const tab = ref("details");
+const tab = ref(0);
 const viewingImg = ref(0);
+const expandedObservations = ref<Array<string | number>>([]);
+const tabItems: TabItem[] = [
+  { label: "Details", value: "details" },
+  { label: "Observations", value: "observations" }
+];
 </script>
 
 <template>
-  <v-card color="surface" dark>
-    <v-card-title class="pb-2">
-      <div class="d-flex flex-wrap">
-        <v-col cols="12" md="6" class="pa-0">
-          <v-card-title class="pa-0"> Calibration Details </v-card-title>
-        </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
-          <v-btn
-            color="buttonPassive"
-            style="width: 100%"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="openUploadPhotonCalibJsonPrompt"
+  <pv-card>
+    <div>
+      <div class="flex flex-wrap justify-between">
+        <div class="w-full flex-1 p-0">
+          <div class="text-base font-semibold">Calibration Details</div>
+        </div>
+        <div class="mr-2 flex items-center">
+          <pv-button variant="passive" :icon="IconImport" block @click="openUploadPhotonCalibJsonPrompt"
+            >Import</pv-button
           >
-            <v-icon start size="large"> mdi-import</v-icon>
-            <span>Import</span>
-          </v-btn>
           <input
             ref="importCalibrationFromPhotonJson"
             type="file"
@@ -134,37 +140,33 @@ const viewingImg = ref(0);
             style="display: none"
             @change="importCalibration"
           />
-        </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
-          <v-btn
-            color="buttonPassive"
+        </div>
+        <div class="flex items-center">
+          <pv-button
+            variant="passive"
+            :icon="IconExport"
+            block
             :disabled="!currentCalibrationCoeffs"
-            style="width: 100%"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="openExportCalibrationPrompt"
           >
-            <v-icon start size="large">mdi-export</v-icon>
-            <span>Export</span>
-          </v-btn>
+            Export
+          </pv-button>
           <a
             ref="exportCalibration"
             style="color: black; text-decoration: none; display: none"
             :href="exportCalibrationURL"
             target="_blank"
           />
-        </v-col>
+        </div>
       </div>
-    </v-card-title>
+    </div>
 
-    <v-card-text class="d-flex flex-row pt-0">
-      <v-col cols="4" class="pa-0">
-        <v-tabs v-model="tab" grow bg-color="surface" height="48" slider-color="buttonActive">
-          <v-tab key="details" value="details">Details</v-tab>
-          <v-tab key="observations" value="observations">Observations</v-tab>
-        </v-tabs>
-        <v-tabs-window v-model="tab" class="pt-3">
-          <v-tabs-window-item key="details" value="details">
-            <v-table style="width: 100%" density="compact">
+    <div class="flex flex-row pt-0 pb-4">
+      <div class="w-1/3 p-0">
+        <pv-tabs v-model="tab" :items="tabItems" class="mt-2" />
+        <div class="pt-3">
+          <div v-if="tab === 0">
+            <pv-table style="width: 100%">
               <template #default>
                 <tbody>
                   <tr>
@@ -274,54 +276,53 @@ const viewingImg = ref(0);
                   </tr>
                 </tbody>
               </template>
-            </v-table>
-          </v-tabs-window-item>
-          <v-tabs-window-item key="observations" value="observations">
-            <v-data-table
+            </pv-table>
+          </div>
+          <div v-else-if="tab === 1">
+            <pv-data-table
               id="observations-table"
-              items-per-page-text="Page size:"
-              density="compact"
+              v-model:expanded="expandedObservations"
               style="width: 100%"
-              :headers="[
-                { title: 'Id', key: 'index' },
-                { title: 'Mean Reprojection Error', key: 'mean' }
+              :columns="[
+                { header: 'Id', accessorKey: 'index' },
+                { header: 'Mean Reprojection Error', accessorKey: 'mean' }
               ]"
-              :items="getObservationDetails()"
+              :data="getObservationDetails() ?? []"
               item-value="index"
               show-expand
             >
-              <template #item.data-table-expand="{ internalItem }">
-                <v-btn
-                  class="text-none"
-                  size="small"
+              <template #item.data-table-expand="{ internalItem, toggleExpand }">
+                <pv-button
+                  size="icon"
                   variant="text"
-                  slim
-                  rounded
-                  @click="viewingImg = internalItem.index"
+                  :class="
+                    viewingImg === (internalItem as { index: number }).index
+                      ? 'text-pv-button-active'
+                      : 'text-pv-on-surface/70'
+                  "
+                  @click="
+                    viewingImg = (internalItem as { index: number }).index;
+                    toggleExpand();
+                  "
                 >
-                  <v-icon
-                    size="large"
-                    :color="viewingImg === internalItem.index ? 'buttonActive' : 'rgba(255, 255, 255, 0.7)'"
-                    >mdi-eye</v-icon
-                  >
-                </v-btn>
+                  <IconEye class="size-5" aria-hidden="true" />
+                </pv-button>
               </template>
-            </v-data-table>
-          </v-tabs-window-item>
-        </v-tabs-window>
-      </v-col>
-      <v-col cols="8" class="pa-0 pl-6">
-        <v-card-text class="pa-0 fill-height d-flex justify-center align-center">
+            </pv-data-table>
+          </div>
+        </div>
+      </div>
+      <div class="w-2/3 p-0 pl-6">
+        <div class="flex h-full items-center justify-center p-0">
           <div v-if="!currentCalibrationCoeffs">
-            <v-alert
+            <pv-alert
               class="pt-3 pb-3"
               color="primary"
               text="The selected video format has not been calibrated."
-              icon="mdi-alert-circle-outline"
-              :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+              :icon="IconAlertCircleOutline"
             />
           </div>
-          <Suspense v-else-if="tab === 'details'">
+          <Suspense v-else-if="tab === 0">
             <!-- Allows us to import three js when it's actually needed  -->
             <PhotonCalibrationVisualizer
               :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
@@ -331,12 +332,12 @@ const viewingImg = ref(0);
             <template #fallback> Loading... </template>
           </Suspense>
           <div v-else style="display: flex; justify-content: center; width: 100%">
-            <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+            <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="max-h-full max-w-full py-2" />
           </div>
-        </v-card-text>
-      </v-col>
-    </v-card-text>
-  </v-card>
+        </div>
+      </div>
+    </div>
+  </pv-card>
 
   <pv-delete-modal
     v-model="confirmRemoveDialog.show"
@@ -346,10 +347,3 @@ const viewingImg = ref(0);
     :on-confirm="() => removeCalibration(confirmRemoveDialog.vf)"
   />
 </template>
-
-<style scoped>
-.snapshot-preview {
-  max-width: 100%;
-  max-height: 100%;
-}
-</style>
