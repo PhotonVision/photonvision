@@ -401,6 +401,27 @@ jobs:
 
     steps: *build-package-steps
 
+  build-ipk:
+    needs: [validation]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    name: "Build photon-sc-app IPK"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Make build script executable
+        run: chmod +x photon-sc-app/build.sh
+      - name: Build IPK
+        working-directory: photon-sc-app
+        run: ./build.sh
+      - name: Upload IPK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: photon-sc-ipk
+          path: '*.ipk'
+
   run-smoketest-native:
     needs: [build-package-linux, build-package-macos, build-package-windows]
 
@@ -613,7 +634,7 @@ jobs:
 
   release:
     # Require smoketest-native so that if those fail, we don't release broken artifacts
-    needs: [build-photonlib-vendorjson, build-image, combine, build-package-linux, build-package-macos, build-package-windows, run-smoketest-native]
+    needs: [build-photonlib-vendorjson, build-image, combine, build-package-linux, build-package-macos, build-package-windows, run-smoketest-native, build-ipk]
     if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && github.repository == 'PhotonVision/photonvision'
     runs-on: ubuntu-24.04
     steps:
@@ -636,6 +657,11 @@ jobs:
         with:
           merge-multiple: true
           pattern: photonvision-*.xz
+      # Download IPK package
+      - uses: actions/download-artifact@v8
+        with:
+          name: photon-sc-ipk
+          path: .
 
       - run: find
       # Push to dev release
@@ -651,6 +677,7 @@ jobs:
             **/*win*.jar
             **/photonlib*.json
             **/photonlib*.zip
+            **/*.ipk
         if: github.event_name == 'push'
       - name: Create Vendor JSON Repo PR
         uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@HEAD

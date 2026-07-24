@@ -1,0 +1,27 @@
+[Unit]
+Description=PhotonVision SystemCore App service
+Requires=photon-sc-app.socket
+After=photon-sc-app.socket
+DefaultDependencies=no
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/local/bin/photon-sc-app/photon_sc_app.py
+
+Restart=no
+
+KillMode=mixed
+TimeoutStopSec=3
+
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log
+
+#don't enable this service unit
+[Install]
+#########

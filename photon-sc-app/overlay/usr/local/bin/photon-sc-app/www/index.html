@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photon SC App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <section class="tabs-row">
+      <div class="tab-bar" id="tabList"></div>
+      <button class="refresh-button" id="refreshButton">Update Clients</button>
+    </section>
+
+    <section class="panel-section">
+      <div class="iframe-wrapper">
+        <iframe id="tabFrame" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
