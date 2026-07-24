@@ -544,8 +544,8 @@ public class VisionModule {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
 
-        HashMap<String, Object> map = new HashMap<>();
-        HashMap<String, Object> subMap = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> subMap = new HashMap<>();
         subMap.put(propertyName, value);
         map.put("mutatePipelineSettings", subMap);
 
@@ -751,7 +751,7 @@ public class VisionModule {
      *
      * @param quirksToChange map of true/false for quirks we should change
      */
-    public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
+    public void changeCameraQuirks(Map<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
         visionSource.remakeSettables();
         saveAndBroadcastAll();

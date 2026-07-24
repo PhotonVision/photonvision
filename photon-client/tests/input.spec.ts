@@ -38,3 +38,35 @@ test("Brightness Slider won't go past max or min", async ({ page }) => {
 
   await expect(page.getByText("Brightness", { exact: true })).toBeVisible();
 });
+
+test("Camera Gain Slider won't go past max or min", async ({ page }) => {
+  await page.goto("http://localhost:5800/#/dashboard");
+
+  const cameraGainInput = page.getByRole("spinbutton", { name: "Camera Gain value" });
+  const increaseCameraGain = page.getByRole("button", { name: "Increase Camera Gain value" });
+  const decreaseCameraGain = page.getByRole("button", { name: "Decrease Camera Gain value" });
+
+  await cameraGainInput.fill("1000");
+  await cameraGainInput.press("Enter");
+  await expect(cameraGainInput).toHaveValue("100");
+
+  await increaseCameraGain.click();
+  await expect(cameraGainInput).toHaveValue("100");
+
+  await decreaseCameraGain.click();
+  await expect(cameraGainInput).toHaveValue("99");
+
+  await cameraGainInput.fill("-10");
+  await cameraGainInput.press("Enter");
+  await expect(cameraGainInput).toHaveValue("0");
+
+  await decreaseCameraGain.click();
+  await expect(cameraGainInput).toHaveValue("0");
+
+  await increaseCameraGain.click();
+  await expect(cameraGainInput).toHaveValue("1");
+
+  await decreaseCameraGain.click();
+  await decreaseCameraGain.click();
+  await expect(cameraGainInput).toHaveValue("0");
+});

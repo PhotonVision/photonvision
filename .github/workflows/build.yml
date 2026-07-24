@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2027.0.0
+  IMAGE_VERSION: v2027.1.0
 
 jobs:
 
@@ -154,19 +154,6 @@ jobs:
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage
         run: ./gradlew test jacocoTestReport --stacktrace
-      - name: Cancel on failure
-        if: failure()
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const runId = context.runId;
-
-            await github.rest.actions.cancelWorkflowRun({
-              owner,
-              repo,
-              run_id: runId
-            });
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-24.04
@@ -512,6 +499,13 @@ jobs:
             plat_override: LINUX_RK3588_64
             image_name: photonvision_opi5.img.xz
             minimum_free_mb: 1024
+          - os: ubuntu-24.04-arm
+            image_suffix: orangepi5_armbian
+            plat_override: LINUX_RK3588_64
+            image_name: photonvision_opi5_armbian.img.xz
+            root_location: 'partition=1'
+            minimum_free_mb: 1024
+            shrink_image: 'no'
           - os: ubuntu-24.04-arm
             image_suffix: orangepi5b
             plat_override: LINUX_RK3588_64

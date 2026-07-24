@@ -19,6 +19,8 @@ package org.photonvision.common.dataflow.websocket;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -46,11 +48,11 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         // only update the UI at 10hz
         if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) return;
 
-        var dataMap = new HashMap<String, Object>();
+        Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("sequenceID", result.sequenceID);
         dataMap.put("fps", result.fps);
         dataMap.put("latency", result.getLatencyMillis());
-        var uiTargets = new ArrayList<HashMap<String, Object>>(result.targets.size());
+        List<Map<String, Object>> uiTargets = new ArrayList<>(result.targets.size());
 
         // We don't actually need to send targets during calibration and it can take up a lot (up to
         // 1.2Mbps for 60 snapshots) of target results with no pitch/yaw/etc set
@@ -75,7 +77,7 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
             dataMap.put("multitagResult", multitagData);
         }
 
-        var uiMap = new HashMap<String, HashMap<String, Object>>();
+        Map<String, Map<String, Object>> uiMap = new HashMap<>();
         uiMap.put(uniqueName, dataMap);
 
         if (result instanceof FocusPipelineResult focusResult) {
