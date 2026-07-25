@@ -132,7 +132,6 @@ const calibrationImageURL = (index: number) =>
 
 const tab = ref(0);
 const viewingImg = ref(0);
-const expandedObservations = ref<Array<string | number>>([]);
 const tabItems: TabItem[] = [
   { label: "Details", value: "details" },
   { label: "Observations", value: "observations" }
@@ -307,7 +306,6 @@ const tabItems: TabItem[] = [
           <div v-else-if="tab === 1">
             <pv-data-table
               id="observations-table"
-              v-model:expanded="expandedObservations"
               style="width: 100%"
               :columns="[
                 { header: 'Id', accessorKey: 'index' },
@@ -317,7 +315,7 @@ const tabItems: TabItem[] = [
               item-value="index"
               show-expand
             >
-              <template #item.data-table-expand="{ internalItem, toggleExpand }">
+              <template #item.data-table-expand="{ internalItem }">
                 <pv-button
                   size="icon"
                   variant="text"
@@ -326,10 +324,7 @@ const tabItems: TabItem[] = [
                       ? 'text-pv-button-active'
                       : 'text-pv-on-surface/70'
                   "
-                  @click="
-                    viewingImg = (internalItem as { index: number }).index;
-                    toggleExpand();
-                  "
+                  @click="viewingImg = (internalItem as { index: number }).index"
                 >
                   <IconEye class="size-5" aria-hidden="true" />
                 </pv-button>
