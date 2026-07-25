@@ -163,17 +163,17 @@ const handleBulkImport = async () => {
 
 <template>
   <pv-card class="mb-3">
-    <div class="pb-2 text-lg font-semibold">Object Detection</div>
+    <div class="pb-3 text-lg font-semibold">Object Detection</div>
     <div class="pt-0">
-      <div class="-mx-3 flex flex-wrap">
-        <div class="w-full px-3 sm:w-1/2">
+      <div class="flex items-center justify-between gap-3 pb-4 max-sm:flex-col max-sm:items-stretch">
+        <div class="flex flex-wrap gap-3 max-sm:grid max-sm:grid-cols-1">
           <pv-button
             variant="primary"
             :icon="IconImport"
             class="justify-center"
             @click="() => (showImportDialog = true)"
           >
-            <span class="open-label">Import Model</span>
+            <span class="max-[351px]:hidden">Import Model</span>
           </pv-button>
           <pv-dialog
             v-model="showImportDialog"
@@ -250,21 +250,19 @@ const handleBulkImport = async () => {
                     "
                     @click="handleImport()"
                   >
-                    <span class="open-label">Import Object Detection Model</span>
+                    <span class="max-[351px]:hidden">Import Object Detection Model</span>
                   </pv-button>
                 </div>
               </div>
             </pv-card>
           </pv-dialog>
-        </div>
-        <div class="w-full px-3 sm:w-1/2">
           <pv-button
-            variant="primary"
+            variant="passive"
             :icon="IconImport"
             class="justify-center"
             @click="() => (showBulkImportDialog = true)"
           >
-            <span class="open-label">Bulk Import</span>
+            <span class="max-[351px]:hidden">Bulk Import</span>
           </pv-button>
           <pv-dialog v-model="showBulkImportDialog" width="600">
             <pv-card>
@@ -281,16 +279,14 @@ const handleBulkImport = async () => {
                     :disabled="importFile === null"
                     @click="handleBulkImport()"
                   >
-                    <span class="open-label">Bulk Import</span>
+                    <span class="max-[351px]:hidden">Bulk Import</span>
                   </pv-button>
                 </div>
               </div>
             </pv-card>
           </pv-dialog>
-        </div>
-        <div class="w-full px-3 sm:w-1/2">
           <pv-button variant="passive" :icon="IconExport" @click="openExportPrompt">
-            <span class="open-label">Export Models</span>
+            <span class="max-[351px]:hidden">Export Models</span>
           </pv-button>
           <a
             ref="exportModels"
@@ -300,52 +296,75 @@ const handleBulkImport = async () => {
             target="_blank"
           />
         </div>
-        <div class="w-full px-3 sm:w-1/2">
+        <div class="flex-none max-sm:grid max-sm:grid-cols-1">
           <pv-button variant="danger" :icon="IconTrash" @click="() => (showNukeDialog = true)">
-            <span class="open-label">Clear and reset models</span>
+            <span class="max-[351px]:hidden">Reset Models</span>
           </pv-button>
         </div>
       </div>
       <div class="flex flex-wrap">
         <div class="flex-1">
-          <pv-table fixed-header height="100%" dark>
-            <thead style="font-size: 1.25rem">
+          <pv-table
+            fixed-header
+            height="100%"
+            dark
+            class="h-full w-full text-left [&_table]:table-fixed [&_td]:!text-left [&_td]:!text-base [&_th]:!text-left [&_th]:!text-base"
+          >
+            <colgroup>
+              <col class="w-[clamp(9rem,22%,16rem)] max-sm:w-32" />
+              <col />
+              <col class="w-46 max-sm:w-17" />
+            </colgroup>
+            <thead>
               <tr>
-                <th>Model Nicknames</th>
+                <th>Model</th>
                 <th>Labels</th>
-                <th>Delete</th>
-                <th>Edit</th>
-                <th>Info</th>
+                <th class="!text-center">Actions</th>
               </tr>
             </thead>
             <tbody data-testid="model-table">
               <tr v-for="model in supportedModels" :key="model.modelPath">
-                <td>{{ model.nickname }}</td>
-                <td>{{ model.labels.join(", ") }}</td>
-                <td class="text-right">
-                  <pv-button
-                    size="icon"
-                    variant="danger"
-                    title="Delete Model"
-                    @click="() => (confirmDeleteDialog = { show: true, model })"
+                <td class="font-semibold [overflow-wrap:anywhere]">{{ model.nickname }}</td>
+                <td>
+                  <div
+                    class="line-clamp-3 overflow-hidden leading-[1.4] [overflow-wrap:anywhere] text-[var(--pv-on-surface-muted)]"
+                    :title="model.labels.join(', ')"
                   >
-                    <IconTrashCanOutline class="size-5" aria-hidden="true" />
-                  </pv-button>
+                    {{ model.labels.join(", ") }}
+                  </div>
                 </td>
-                <td class="text-right">
-                  <pv-button
-                    size="icon"
-                    variant="primary"
-                    title="Rename Model"
-                    @click="() => (showRenameDialog = { show: true, model, newName: '' })"
-                  >
-                    <IconPencil class="size-5" aria-hidden="true" />
-                  </pv-button>
+                <td>
+                  <div class="flex justify-center gap-2 max-sm:flex-col max-sm:items-center">
+                    <pv-button
+                      size="icon"
+                      variant="danger"
+                      title="Delete Model"
+                      @click="() => (confirmDeleteDialog = { show: true, model })"
+                    >
+                      <IconTrashCanOutline class="size-5" aria-hidden="true" />
+                    </pv-button>
+                    <pv-button
+                      size="icon"
+                      variant="primary"
+                      title="Rename Model"
+                      @click="() => (showRenameDialog = { show: true, model, newName: '' })"
+                    >
+                      <IconPencil class="size-5" aria-hidden="true" />
+                    </pv-button>
+                    <pv-button
+                      size="icon"
+                      variant="passive"
+                      title="Model Info"
+                      @click="() => (showInfo = { show: true, model })"
+                    >
+                      <IconInformation class="size-5" aria-hidden="true" />
+                    </pv-button>
+                  </div>
                 </td>
-                <td class="text-right">
-                  <pv-button size="icon" variant="passive" @click="() => (showInfo = { show: true, model })">
-                    <IconInformation class="size-5" aria-hidden="true" />
-                  </pv-button>
+              </tr>
+              <tr v-if="supportedModels.length === 0">
+                <td colspan="3" class="!p-8 !text-center text-[var(--pv-on-surface-muted)]">
+                  No compatible object detection models found.
                 </td>
               </tr>
             </tbody>
@@ -387,7 +406,7 @@ const handleBulkImport = async () => {
               <div class="pb-2 text-lg font-semibold">Object Detection Model Info</div>
               <div class="pt-0">
                 <pv-button variant="passive" :icon="IconExport" block @click="openExportIndividualModelPrompt">
-                  <span class="open-label">Export Model</span>
+                  <span class="max-[351px]:hidden">Export Model</span>
                 </pv-button>
                 <a
                   ref="exportIndividualModel"
@@ -424,29 +443,7 @@ const handleBulkImport = async () => {
 </template>
 
 <style scoped>
-@media only screen and (max-width: 351px) {
-  .open-icon {
-    margin: 0 !important;
-  }
-  .open-label {
-    display: none;
-  }
-}
 .pv-table {
-  width: 100%;
-  height: 100%;
-  text-align: center;
-
-  th,
-  td {
-    font-size: 1rem !important;
-    text-align: center !important;
-  }
-
-  td {
-    font-family: monospace !important;
-  }
-
   ::-webkit-scrollbar {
     width: 0;
     height: 0.55em;
