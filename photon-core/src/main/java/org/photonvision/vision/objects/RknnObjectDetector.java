@@ -61,9 +61,10 @@ public class RknnObjectDetector implements ObjectDetector {
      * @param inputSize The required image dimensions for the model. Images will be {@link
      *     Letterbox}ed to this shape.
      */
-    public RknnObjectDetector(RknnModel model, Size inputSize) {
+    public RknnObjectDetector(RknnModel model) {
         this.model = model;
-        this.inputSize = inputSize;
+        this.inputSize =
+                new Size(model.properties.resolutionWidth(), model.properties.resolutionHeight());
 
         // Create the detector
         objPointer =
