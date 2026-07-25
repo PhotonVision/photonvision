@@ -10,6 +10,17 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
 
+const targetRowHeight = 24;
+
+const displayedTargets = computed(() => {
+  const targets = useStateStore().currentPipelineResults?.targets ?? [];
+  return targets.slice(0, currentPipelineSettings.value.outputMaximumTargets);
+});
+
+const placeholderTargetRowCount = computed(() => {
+  return Math.max(0, currentPipelineSettings.value.outputMaximumTargets - displayedTargets.value.length);
+});
+
 const calculateStdDev = (values: number[]): number => {
   if (values.length < 2) return 0;
 
@@ -34,6 +45,13 @@ const resetCurrentBuffer = () => {
 <template>
   <div>
     <div class="flex flex-wrap pb-4">
+      <div
+        class="target-table-wrapper"
+        :style="{
+          '--target-row-height': `${targetRowHeight}px`,
+          '--target-row-count': currentPipelineSettings.outputMaximumTargets,
+        }"
+      >
       <pv-table class="tabular-nums">
         <template #default>
           <thead>
@@ -73,9 +91,9 @@ const resetCurrentBuffer = () => {
               </template>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="target-results-body">
             <tr
-              v-for="(target, index) in useStateStore().currentPipelineResults?.targets"
+              v-for="(target, index) in displayedTargets"
               :key="index"
               class="text-pv-on-surface"
             >
@@ -86,30 +104,30 @@ const resetCurrentBuffer = () => {
                 "
                 class="text-center"
               >
-                {{ target.fiducialId }}
+                <div class="cell-inner">{{ target.fiducialId }}</div>
               </td>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
                 class="text-pv-on-surface text-center"
               >
-                {{ useStateStore().currentPipelineResults?.classNames[target.classId] }}
+                <div class="cell-inner">{{ useStateStore().currentPipelineResults?.classNames[target.classId] }}</div>
               </td>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
                 class="text-pv-on-surface text-center"
               >
-                {{ target.confidence.toFixed(2) }}
+                <div class="cell-inner">{{ target.confidence.toFixed(2) }}</div>
               </td>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
-                <td class="text-center">{{ target.pitch.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.yaw.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.skew.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.area.toFixed(2) }}%</td>
+                <td class="text-center"><div class="cell-inner">{{ target.pitch.toFixed(2) }}&deg;</div></td>
+                <td class="text-center"><div class="cell-inner">{{ target.yaw.toFixed(2) }}&deg;</div></td>
+                <td class="text-center"><div class="cell-inner">{{ target.skew.toFixed(2) }}&deg;</div></td>
+                <td class="text-center"><div class="cell-inner">{{ target.area.toFixed(2) }}%</div></td>
               </template>
               <template v-else>
-                <td class="text-center">{{ target.pose?.x.toFixed(3) }}&nbsp;m</td>
-                <td class="text-center">{{ target.pose?.y.toFixed(3) }}&nbsp;m</td>
-                <td class="text-center">{{ toDeg(target.pose?.angle_z || 0).toFixed(2) }}&deg;</td>
+                <td class="text-center"><div class="cell-inner">{{ target.pose?.x.toFixed(3) }}&nbsp;m</div></td>
+                <td class="text-center"><div class="cell-inner">{{ target.pose?.y.toFixed(3) }}&nbsp;m</div></td>
+                <td class="text-center"><div class="cell-inner">{{ toDeg(target.pose?.angle_z || 0).toFixed(2) }}&deg;</div></td>
               </template>
               <template
                 v-if="
@@ -119,13 +137,63 @@ const resetCurrentBuffer = () => {
                 "
               >
                 <td class="text-center">
-                  {{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}
+                  <div class="cell-inner">{{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}</div>
+                </td>
+              </template>
+            </tr>
+            <tr
+              v-for="index in placeholderTargetRowCount"
+              :key="`placeholder-${index}`"
+              class="placeholder-row text-pv-on-surface"
+            >
+              <td
+                v-if="
+                  currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                  currentPipelineSettings.pipelineType === PipelineType.Aruco
+                "
+                class="text-center"
+              >
+                <div class="cell-inner"></div>
+              </td>
+              <td
+                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                class="text-pv-on-surface text-center"
+              >
+                <div class="cell-inner"></div>
+              </td>
+              <td
+                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                class="text-pv-on-surface text-center"
+              >
+                <div class="cell-inner"></div>
+              </td>
+              <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
+                <td class="text-center"><div class="cell-inner"></div></td>
+                <td class="text-center"><div class="cell-inner"></div></td>
+                <td class="text-center"><div class="cell-inner"></div></td>
+                <td class="text-center"><div class="cell-inner"></div></td>
+              </template>
+              <template v-else>
+                <td class="text-center"><div class="cell-inner"></div></td>
+                <td class="text-center"><div class="cell-inner"></div></td>
+                <td class="text-center"><div class="cell-inner"></div></td>
+              </template>
+              <template
+                v-if="
+                  (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                  useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+                "
+              >
+                <td class="text-center">
+                  <div class="cell-inner"></div>
                 </td>
               </template>
             </tr>
           </tbody>
         </template>
       </pv-table>
+      </div>
     </div>
     <div
       v-if="
@@ -155,37 +223,49 @@ const resetCurrentBuffer = () => {
             <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
               <tr>
                 <td class="text-pv-on-surface text-center">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(3) }}&nbsp;m
+                  <div class="cell-inner">
+                    {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(3) }}&nbsp;m
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(3) }}&nbsp;m
+                  <div class="cell-inner">
+                    {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(3) }}&nbsp;m
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(3) }}&nbsp;m
+                  <div class="cell-inner">
+                    {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(3) }}&nbsp;m
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(
-                      2
-                    )
-                  }}&deg;
+                  <div class="cell-inner">
+                    {{
+                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(
+                        2
+                      )
+                    }}&deg;
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0).toFixed(
-                      2
-                    )
-                  }}&deg;
+                  <div class="cell-inner">
+                    {{
+                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0).toFixed(
+                        2
+                      )
+                    }}&deg;
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0).toFixed(
-                      2
-                    )
-                  }}&deg;
+                  <div class="cell-inner">
+                    {{
+                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0).toFixed(
+                        2
+                      )
+                    }}&deg;
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}
+                  <div class="cell-inner">{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</div>
                 </td>
               </tr>
             </tbody>
@@ -213,46 +293,58 @@ const resetCurrentBuffer = () => {
             <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
               <tr>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x) || []).toFixed(
-                      5
-                    )
-                  }}&nbsp;m
+                  <div class="cell-inner">
+                    {{
+                      calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x) || []).toFixed(
+                        5
+                      )
+                    }}&nbsp;m
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y) || []).toFixed(
-                      5
-                    )
-                  }}&nbsp;m
+                  <div class="cell-inner">
+                    {{
+                      calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y) || []).toFixed(
+                        5
+                      )
+                    }}&nbsp;m
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z) || []).toFixed(
-                      5
-                    )
-                  }}&nbsp;m
+                  <div class="cell-inner">
+                    {{
+                      calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z) || []).toFixed(
+                        5
+                      )
+                    }}&nbsp;m
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    calculateStdDev(
-                      useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
-                    ).toFixed(5)
-                  }}&deg;
+                  <div class="cell-inner">
+                    {{
+                      calculateStdDev(
+                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
+                      ).toFixed(5)
+                    }}&deg;
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    calculateStdDev(
-                      useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
-                    ).toFixed(5)
-                  }}&deg;
+                  <div class="cell-inner">
+                    {{
+                      calculateStdDev(
+                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
+                      ).toFixed(5)
+                    }}&deg;
+                  </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  {{
-                    calculateStdDev(
-                      useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []
-                    ).toFixed(5)
-                  }}&deg;
+                  <div class="cell-inner">
+                    {{
+                      calculateStdDev(
+                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []
+                      ).toFixed(5)
+                    }}&deg;
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -268,6 +360,26 @@ th {
   padding-left: 8px !important;
   padding-right: 8px !important;
 }
+
+.target-table-wrapper {
+  width: 100%;
+  max-height: calc(var(--target-row-height) * var(--target-row-count));
+  overflow-y: auto;
+}
+
+.cell-inner {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.placeholder-row td {
+  border-color: transparent;
+}
+
 .pv-table {
   width: 100%;
   font-size: 1rem !important;
