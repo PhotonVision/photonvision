@@ -30,7 +30,7 @@ const resetTempSettingsStruct = () => {
 };
 
 const settingsValid = computed(() => {
-  const network = useSettingsStore().network;
+  const network = tempSettingsStruct.value;
 
   const ntServerValid = network.runNTServer || isValidNetworkTablesIP(network.ntServerAddress);
   const staticIpValid =
