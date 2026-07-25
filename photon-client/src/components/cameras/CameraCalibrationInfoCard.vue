@@ -5,7 +5,7 @@ import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes"
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref, useTemplateRef } from "vue";
-import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import { axiosPost, getResolutionString, parseJsonFile, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import IconImport from "~icons/mdi/import";
 import IconExport from "~icons/mdi/export";
 import IconEye from "~icons/mdi/eye";
@@ -96,13 +96,23 @@ const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>((
   useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
 
-const totalOutlierPoints = computed<number>(() =>
-  currentCalibrationCoeffs.value?.numOutliers.reduce((a, b) => a + b, 0) ?? 0
+// the prop object can become stale after importing calibration data. Using props.videoFormat directly may not be reactive
+const reactiveVideoFormat = computed<VideoFormat>(() => {
+  const matchingFormat = useCameraSettingsStore().currentCameraSettings.validVideoFormats.find((format) =>
+    resolutionsAreEqual(format.resolution, props.videoFormat.resolution)
+  );
+  return matchingFormat ?? props.videoFormat;
+});
+
+const totalOutlierPoints = computed<number>(
+  () => currentCalibrationCoeffs.value?.numOutliers.reduce((a, b) => a + b, 0) ?? 0
 );
 
 const totalObservationPoints = computed<number>(() => {
   const coefficients = currentCalibrationCoeffs.value;
-  return coefficients ? coefficients.calobjectSize.width * coefficients.calobjectSize.height * coefficients.numSnapshots : 0;
+  return coefficients
+    ? coefficients.calobjectSize.width * coefficients.calobjectSize.height * coefficients.numSnapshots
+    : 0;
 });
 
 const totalInlierPoints = computed<number>(() => totalObservationPoints.value - totalOutlierPoints.value);
@@ -252,13 +262,13 @@ const tabItems: TabItem[] = [
                     </td>
                   </tr>
                   <tr>
-                    <td>Mean Err</td>
+                    <td>Mean Error</td>
                     <td>
                       {{
-                        videoFormat.mean !== undefined
-                          ? isNaN(videoFormat.mean)
+                        reactiveVideoFormat.mean !== undefined
+                          ? isNaN(reactiveVideoFormat.mean)
                             ? "NaN"
-                            : videoFormat.mean.toFixed(2) + "px"
+                            : reactiveVideoFormat.mean.toFixed(2) + "px"
                           : "-"
                       }}
                     </td>
@@ -266,19 +276,31 @@ const tabItems: TabItem[] = [
                   <tr>
                     <td>Horizontal FOV</td>
                     <td>
-                      {{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}
+                      {{
+                        reactiveVideoFormat.horizontalFOV !== undefined
+                          ? reactiveVideoFormat.horizontalFOV.toFixed(2) + "°"
+                          : "-"
+                      }}
                     </td>
                   </tr>
                   <tr>
                     <td>Vertical FOV</td>
                     <td>
-                      {{ videoFormat.verticalFOV !== undefined ? videoFormat.verticalFOV.toFixed(2) + "°" : "-" }}
+                      {{
+                        reactiveVideoFormat.verticalFOV !== undefined
+                          ? reactiveVideoFormat.verticalFOV.toFixed(2) + "°"
+                          : "-"
+                      }}
                     </td>
                   </tr>
                   <tr>
                     <td>Diagonal FOV</td>
                     <td>
-                      {{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}
+                      {{
+                        reactiveVideoFormat.diagonalFOV !== undefined
+                          ? reactiveVideoFormat.diagonalFOV.toFixed(2) + "°"
+                          : "-"
+                      }}
                     </td>
                   </tr>
                   <!-- Board warp, only shown for mrcal-calibrated cameras -->
