@@ -6,37 +6,7 @@ import IconFolder from "~icons/mdi/folder";
 import IconInformationOutline from "~icons/mdi/information-outline";
 import IconEye from "~icons/mdi/eye";
 import IconDownload from "~icons/mdi/download";
-
-interface SnapshotMetadata {
-  snapshotName: string;
-  cameraNickname: string;
-  streamType: "input" | "output";
-  timeCreated: Date;
-}
-const getSnapshotMetadataFromName = (snapshotName: string): SnapshotMetadata => {
-  snapshotName = snapshotName.replace(/\.[^/.]+$/, "");
-
-  const data = snapshotName.split("_");
-
-  const cameraName = data.slice(0, data.length - 2).join("_");
-  const streamType = data[data.length - 2] as "input" | "output";
-  const dateStr = data[data.length - 1];
-
-  const year = parseInt(dateStr.substring(0, 4), 10);
-  const month = parseInt(dateStr.substring(5, 7), 10) - 1; // Months are zero-based
-  const day = parseInt(dateStr.substring(8, 10), 10);
-  const hours = parseInt(dateStr.substring(11, 13), 10);
-  const minutes = parseInt(dateStr.substring(13, 15), 10);
-  const seconds = parseInt(dateStr.substring(15, 17), 10);
-  const milliseconds = parseInt(dateStr.substring(17), 10);
-
-  return {
-    snapshotName: snapshotName,
-    cameraNickname: cameraName,
-    streamType: streamType,
-    timeCreated: new Date(year, month, day, hours, minutes, seconds, milliseconds)
-  };
-};
+import { getSnapshotMetadataFromName } from "./snapshotMetadata";
 
 interface Snapshot {
   index: number;
@@ -48,12 +18,13 @@ interface Snapshot {
   timeCreated: Date;
   snapshotSrc: string;
 }
+const emptyGroupedCell = () => "";
 const imgData = ref<Snapshot[]>([]);
 const fetchSnapshots = () => {
   axios
     .get("/utils/getImageSnapshots")
     .then((response) => {
-      imgData.value = response.data.map(
+      imgData.value = response.data.snapshots.map(
         (snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string }, index: number) => {
           const metadata = getSnapshotMetadataFromName(snapshotData.snapshotName);
 
@@ -125,15 +96,14 @@ const expanded = ref([]);
           <pv-data-table
             v-model:expanded="expanded"
             :columns="[
-              { header: 'Snapshot Name', accessorKey: 'snapshotShortName', enableSorting: false },
-              { header: 'Camera Unique Name', accessorKey: 'cameraUniqueName' },
+              { header: 'Snapshot Name', accessorKey: 'snapshotShortName', enableSorting: false, aggregatedCell: emptyGroupedCell },
               { header: 'Camera Nickname', accessorKey: 'cameraNickname' },
-              { header: 'Stream Type', accessorKey: 'streamType' },
-              { header: 'Time Created', accessorKey: 'timeCreated' },
-              { header: 'Actions', accessorKey: 'actions', enableSorting: false }
+              { header: 'Stream Type', accessorKey: 'streamType', aggregatedCell: emptyGroupedCell },
+              { header: 'Time Created', accessorKey: 'timeCreated', aggregatedCell: emptyGroupedCell },
+              { header: 'Actions', accessorKey: 'actions', enableSorting: false, aggregatedCell: emptyGroupedCell }
             ]"
             :data="imgData"
-            :grouping="['cameraUniqueName']"
+            :grouping="['cameraNickname']"
             item-value="index"
             show-expand
           >
