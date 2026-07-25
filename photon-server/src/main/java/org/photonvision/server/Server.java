@@ -125,7 +125,6 @@ public class Server {
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
-        app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
         app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
 
         // Utilities
