@@ -96,6 +96,23 @@ const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>((
   useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
 
+const totalOutlierPoints = computed<number>(() =>
+  currentCalibrationCoeffs.value?.numOutliers.reduce((a, b) => a + b, 0) ?? 0
+);
+
+const totalObservationPoints = computed<number>(() => {
+  const coefficients = currentCalibrationCoeffs.value;
+  return coefficients ? coefficients.calobjectSize.width * coefficients.calobjectSize.height * coefficients.numSnapshots : 0;
+});
+
+const totalInlierPoints = computed<number>(() => totalObservationPoints.value - totalOutlierPoints.value);
+
+const inlierRatioPercent = computed<string>(() => {
+  const total = totalObservationPoints.value;
+  if (total === 0) return "0.00";
+  return ((totalInlierPoints.value / total) * 100).toPrecision(2);
+});
+
 const getObservationDetails = (): ObservationDetails[] | undefined => {
   const coefficients = currentCalibrationCoeffs.value;
 
@@ -272,6 +289,15 @@ const tabItems: TabItem[] = [
                       {{
                         currentCalibrationCoeffs?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm").join(" / ")
                       }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Inliers</td>
+                    <td>
+                      <template v-if="currentCalibrationCoeffs">
+                        {{ totalInlierPoints }} / {{ totalObservationPoints }} points ({{ inlierRatioPercent }}%)
+                      </template>
+                      <template v-else>-</template>
                     </td>
                   </tr>
                 </tbody>
