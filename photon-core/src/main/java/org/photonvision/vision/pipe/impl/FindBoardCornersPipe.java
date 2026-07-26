@@ -139,6 +139,18 @@ public class FindBoardCornersPipe
                 .orElseGet(() -> new MatOfPoint3f());
     }
 
+    public static boolean hasValidCharucoDetections(Mat detectedCorners, MatOfInt ids) {
+        if (detectedCorners == null || ids == null) {
+            return false;
+        }
+
+        // We need at least 4 corners to be used for calibration but we force 10 just to ensure the user
+        // cant get away with a garbage calibration.
+        long cornerCount = detectedCorners.total();
+        long idCount = ids.total();
+        return cornerCount >= 10 && cornerCount == idCount;
+    }
+
     /**
      * Finds the corners in a given image and returns them
      *
@@ -298,23 +310,22 @@ public class FindBoardCornersPipe
                     detectedCornersList.add(detectedCorners.row(i));
                 }
 
-                if (detectedCornersList.size()
-                        >= 10) { // We need at least 4 corners to be used for calibration but we
-                    // force 10 just to
-                    // ensure the user cant get away with a garbage calibration.
-                    boardFound = true;
-                }
+                boardFound = hasValidCharucoDetections(detectedCorners, ids);
 
                 if (!boardFound) {
                     // If we can't find a board, give up
                     objectPoints.release();
                     imagePoints.release();
                     ids.release();
+                    detectedCornersList.forEach(row -> row.release());
                     return null;
                 }
-                board.matchImagePoints(detectedCornersList, ids, objectPoints, imagePoints);
 
-                detectedCornersList.forEach(row -> row.release());
+                try {
+                    board.matchImagePoints(detectedCornersList, ids, objectPoints, imagePoints);
+                } finally {
+                    detectedCornersList.forEach(row -> row.release());
+                }
 
                 // Draw the ChArUco board
                 Objdetect.drawDetectedCornersCharuco(

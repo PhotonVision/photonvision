@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,11 +25,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfInt;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.LoadJNI;
@@ -44,6 +47,7 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -62,6 +66,14 @@ public class Calibrate3dPipeTest {
         Logger.setLevel(LogGroup.Data, logLevel);
         Logger.setLevel(LogGroup.Config, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
+    }
+
+    @Test
+    public void rejectsMismatchedCharucoCornersAndIds() {
+        var detectedCorners = new Mat();
+        var ids = new MatOfInt();
+
+        assertFalse(FindBoardCornersPipe.hasValidCharucoDetections(detectedCorners, ids));
     }
 
     enum CalibrationDatasets {

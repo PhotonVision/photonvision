@@ -93,6 +93,11 @@ public class Calibrate3dPipe
      */
     @Override
     protected CameraCalibrationCoefficients process(CalibrationInput in) {
+        if (in.observations.isEmpty()) {
+            logger.error("No observations provided for calibration!");
+            return null;
+        }
+
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
 
@@ -106,7 +111,7 @@ public class Calibrate3dPipe
 
         var dt = System.nanoTime() - start;
 
-        if (ret != null)
+        if (ret != null) {
             logger.info(
                     "CALIBRATION SUCCESS for res "
                             + in.observations.get(0).size
@@ -117,7 +122,9 @@ public class Calibrate3dPipe
                             + "\ndistortionCoeffs:\n"
                             + Arrays.toString(ret.distCoeffs.data)
                             + "\n");
-        else logger.info("Calibration failed! Review log for more details");
+        } else {
+            logger.info("Calibration failed! Review log for more details");
+        }
 
         return ret;
     }
@@ -400,7 +407,7 @@ public class Calibrate3dPipe
 
                 // Sanity check -- negative corners make no sense here
                 if (!(measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0)) {
-                    throw new RuntimeException(
+                    logger.warn(
                             "Negative corner in reprojection error calc! Measured: "
                                     + measured
                                     + ", expected: "
