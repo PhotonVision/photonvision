@@ -65,25 +65,23 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     }
 
     public R run(Frame frame, QuirkyCamera cameraQuirks) {
-        synchronized (this) {
-            if (released) {
-                throw new RuntimeException("Pipeline use-after-free!");
-            }
-            if (settings == null) {
-                throw new RuntimeException("No settings provided for pipeline!");
-            }
-            setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
-
-            // if (frame.image.getMat().empty()) {
-            //     //noinspection unchecked
-            //     return (R) new CVPipelineResult(0, 0, List.of(), frame);
-            // }
-            R result = process(frame, settings);
-
-            result.setImageCaptureTimestampNanos(frame.timestampNanos);
-
-            return result;
+        if (released) {
+            throw new RuntimeException("Pipeline use-after-free!");
         }
+        if (settings == null) {
+            throw new RuntimeException("No settings provided for pipeline!");
+        }
+        setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
+
+        // if (frame.image.getMat().empty()) {
+        //     //noinspection unchecked
+        //     return (R) new CVPipelineResult(0, 0, List.of(), frame);
+        // }
+        R result = process(frame, settings);
+
+        result.setImageCaptureTimestampNanos(frame.timestampNanos);
+
+        return result;
     }
 
     /**
@@ -92,8 +90,6 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
      */
     @Override
     public void release() {
-        synchronized (this) {
-            released = true;
-        }
+        released = true;
     }
 }

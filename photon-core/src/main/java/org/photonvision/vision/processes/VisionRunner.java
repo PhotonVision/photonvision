@@ -57,7 +57,6 @@ public class VisionRunner implements AutoCloseable {
     private final Supplier<Boolean> enabledSupplier;
 
     private long loopCount;
-    private long lastPipelineReleaseWarningMs;
 
     /**
      * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
@@ -284,26 +283,6 @@ public class VisionRunner implements AutoCloseable {
                     acceptPipelineResultSafely(pipelineResult);
                     // If acceptPipelineResultSafely throws, the result (and its frame) were already
                     // released inside the helper.
-                } catch (RuntimeException ex) {
-                    if (ex.getMessage() != null && ex.getMessage().contains("Pipeline use-after-free")) {
-                        long nowMs = System.currentTimeMillis();
-                        if (nowMs - lastPipelineReleaseWarningMs > 5000) {
-                            logger.warn(() -> "Pipeline was released while switching; skipping this frame");
-                            lastPipelineReleaseWarningMs = nowMs;
-                        }
-                        if (!frameConsumed) {
-                            frame.release();
-                            frameConsumed = true;
-                        }
-                        continue;
-                    }
-
-                    logger.error("Exception on loop " + loopCount, ex);
-                    if (!frameConsumed) {
-                        // Pipeline.run threw before the frame was transferred into the result.
-                        frame.release();
-                        frameConsumed = true;
-                    }
                 } catch (Exception ex) {
                     logger.error("Exception on loop " + loopCount, ex);
                     if (!frameConsumed) {
