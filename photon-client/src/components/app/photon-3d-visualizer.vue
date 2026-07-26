@@ -4,7 +4,8 @@ import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
 import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
 import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
-import { onBeforeUnmount, onMounted, watchEffect } from "vue";
+import { onMounted, useTemplateRef, watch, watchEffect } from "vue";
+import { useTheme } from "@/composables/useTheme";
 const {
   ArrowHelper,
   BoxGeometry,
@@ -24,10 +25,6 @@ const { TrackballControls } = await import("three/examples/jsm/controls/Trackbal
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { createPerspectiveCamera } from "@/lib/ThreeUtils";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
-
 const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
   useCameraSettingsStore().currentCameraSettings.validVideoFormats[
     useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex
@@ -37,6 +34,8 @@ const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
 const props = defineProps<{
   targets: PhotonTarget[];
 }>();
+
+const theme = useTheme();
 
 let scene: Scene | undefined;
 let camera: PerspectiveCamera | undefined;
@@ -50,8 +49,8 @@ const drawTargets = async (targets: PhotonTarget[]) => {
     return;
   }
 
-  if (theme.global.current.value.dark) scene.background = new Color(0x000000);
-  else scene.background = new Color(0xa9a9a9);
+  if (theme.isDark.value) scene.background = new Color(0x151515);
+  else scene.background = new Color(0x232c37);
 
   scene.remove(...previousTargets);
   previousTargets = [];
@@ -107,20 +106,25 @@ const drawTargets = async (targets: PhotonTarget[]) => {
     scene.add(...previousTargets);
   }
 };
-const onWindowResize = () => {
-  const container = document.getElementById("container");
-  const canvas = document.getElementById("view");
+const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
+const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
+
+const onResize = () => {
+  const container = containerRef.value;
+  const canvas = canvasRef.value;
 
   if (!container || !canvas || !camera || !renderer) {
     return;
   }
 
-  canvas.style.width = container.clientWidth * 0.75 + "px";
-  canvas.style.height = container.clientWidth * 0.35 + "px";
+  // keeping this very very slightly smaller than the container prevents some weird overexpansion that happen during resizing
+  canvas.style.width = container.clientWidth * 0.999 + "px";
+  canvas.style.height = container.clientWidth * 0.55 + "px";
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 };
+
 const resetCamFirstPerson = () => {
   if (!scene || !camera || !controls) {
     return;
@@ -154,15 +158,16 @@ onMounted(async () => {
   scene = new Scene();
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 
-  const canvas = document.getElementById("view");
+  const canvas = canvasRef.value;
   if (!canvas) return;
-  renderer = new WebGLRenderer({ canvas: canvas });
+  renderer = new WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
 
-  if (theme.global.current.value.dark) scene.background = new Color(0x000000);
-  else scene.background = new Color(0xa9a9a9);
+  if (theme.isDark.value) scene.background = new Color(0x151515);
+  else scene.background = new Color(0x232c37);
 
-  onWindowResize();
-  window.addEventListener("resize", onWindowResize);
+  onResize();
+  window.addEventListener("resize", onResize);
 
   const referenceFrameCues: Object3D[] = [];
   referenceFrameCues.push(
@@ -216,41 +221,30 @@ onMounted(async () => {
   await drawTargets(props.targets);
   animate();
 });
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onWindowResize);
-});
+
 watchEffect(() => {
   void drawTargets(props.targets);
 });
+
+watch(
+  () => theme.isDark.value,
+  () => {
+    if (!scene) return;
+    scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
+  }
+);
 </script>
 
 <template>
-  <div id="container" style="width: 100%">
-    <div class="d-flex flex-wrap pt-0 pb-2">
-      <v-col cols="12" md="6" class="pl-0">
-        <v-card-title class="pa-0"> Target Visualization </v-card-title>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCamFirstPerson"
-        >
-          First Person
-        </v-btn>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCamThirdPerson"
-        >
-          Third Person
-        </v-btn>
-      </v-col>
+  <div ref="containerRef" class="flex w-full flex-col items-center">
+    <canvas ref="canvasRef" class="w-full rounded-xl border border-white/10" />
+    <div class="flex w-full gap-2 md:pt-3">
+      <div class="flex w-full items-center">
+        <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
+      </div>
+      <div class="flex w-full items-center">
+        <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
+      </div>
     </div>
-    <canvas id="view" class="w-100" />
   </div>
 </template>

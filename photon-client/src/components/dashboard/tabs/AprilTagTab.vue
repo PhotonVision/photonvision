@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { PipelineType, type AprilTagPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvSlider from "@/components/common/pv-slider.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
+
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useDisplay } from "vuetify";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
 const currentPipelineSettings = computed<AprilTagPipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
-const { mdAndDown } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
@@ -29,7 +28,9 @@ const interactiveCols = computed(() =>
         { value: AprilTagFamily.Family16h5, name: 'AprilTag 16h5 (6in)' }
       ]"
       :select-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
+      @update:modelValue="
+        (value: AprilTagFamily) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.decimate"
@@ -38,7 +39,9 @@ const interactiveCols = computed(() =>
       tooltip="Increases FPS at the expense of range by reducing image resolution initially"
       :min="1"
       :max="8"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimate: value }, false)"
+      @update:modelValue="
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimate: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.blur"
@@ -48,7 +51,9 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="5"
       :step="0.1"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ blur: value }, false)"
+      @update:modelValue="
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ blur: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.threads"
@@ -57,7 +62,9 @@ const interactiveCols = computed(() =>
       tooltip="Number of threads spawned by the AprilTag detector"
       :min="1"
       :max="8"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threads: value }, false)"
+      @update:modelValue="
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ threads: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.decisionMargin"
@@ -67,7 +74,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="250"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decisionMargin: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ decisionMargin: value }, false)
       "
     />
     <pv-slider
@@ -78,7 +85,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="500"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)
       "
     />
     <pv-switch
@@ -87,7 +94,8 @@ const interactiveCols = computed(() =>
       label="Refine Edges"
       tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
       "
     />
   </div>

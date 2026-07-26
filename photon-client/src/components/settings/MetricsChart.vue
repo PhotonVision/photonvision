@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
-import { useTheme } from "vuetify";
-
+import { computed, onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
+import { useTheme, type ThemeColors } from "@/composables/useTheme";
 // Color  -  original        (adjusted)
 // blue   -   59, 130, 246   (r:  92, g: 154, b: 255)
 // purple -  154, 100, 180   (r: 167, g: 104, b: 196)
@@ -26,8 +25,11 @@ const typeLabels = {
 };
 
 const theme = useTheme();
+
+const themeColors = computed<ThemeColors>(() => theme.colors.value);
 const chartRef = useTemplateRef("chartRef");
-let chart: echarts.ECharts | null = null;
+type EChartsInstance = import("echarts/core").ECharts;
+let chart: EChartsInstance | null = null;
 
 interface TooltipSeriesParam {
   value: [number, number];
@@ -42,7 +44,7 @@ const getOptions = (data: ChartData[] = []) => {
     tooltip: {
       trigger: "axis",
       formatter: (params: TooltipSeriesParam[]) => {
-        const p = params[0];
+        const p = Array.isArray(params) ? params[0] : params;
         const append = typeLabels[props.type];
         const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";
 
@@ -57,9 +59,11 @@ const getOptions = (data: ChartData[] = []) => {
 
         return `${tooltip}</div>`;
       },
-      backgroundColor: theme.global.current.value.colors.background,
+      backgroundColor: themeColors.value.background,
+      extraCssText: "border-color: #ffffff14;",
       textStyle: {
-        color: theme.global.current.value.colors.onBackground
+        color: themeColors.value.onBackground,
+        fontFamily: "var(--font-family-sans)"
       },
       axisPointer: {
         animation: false
@@ -84,12 +88,12 @@ const getOptions = (data: ChartData[] = []) => {
       min: now - 55 * 1000,
       axisLine: {
         lineStyle: {
-          color: theme.global.current.value.dark ? "#777" : "#aaa"
+          color: theme.isDark.value ? "#777" : "#aaa"
         }
       },
       axisLabel: {
         align: "left",
-        color: theme.global.current.value.dark ? "#ddd" : "#fff",
+        color: theme.isDark.value ? "#ddd" : "#fff",
         formatter: (value: number) => {
           const date = new Date(value);
           return date.toLocaleTimeString([], {
@@ -122,7 +126,7 @@ const getOptions = (data: ChartData[] = []) => {
         }
       },
       axisLabel: {
-        color: theme.global.current.value.dark ? "#ddd" : "#fff"
+        color: theme.isDark.value ? "#ddd" : "#fff"
       }
     },
     series: getSeries(data),
@@ -131,7 +135,7 @@ const getOptions = (data: ChartData[] = []) => {
 };
 
 const getSeries = (data: ChartData[] = []) => {
-  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.current.value.dark ? "dark" : "light"}`];
+  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.isDark.value ? "dark" : "light"}`];
   return [
     {
       type: "line",
@@ -153,9 +157,7 @@ const getSeries = (data: ChartData[] = []) => {
           : null,
       lineStyle: {
         width: 1.5,
-        color: theme.global.current.value.dark
-          ? `rgb(${color.r}, ${color.g}, ${color.b})`
-          : theme.global.current.value.colors.primary
+        color: theme.isDark.value ? `rgb(${color.r}, ${color.g}, ${color.b})` : themeColors.value.primary
       },
       areaStyle: {
         color: {
@@ -167,15 +169,15 @@ const getSeries = (data: ChartData[] = []) => {
           colorStops: [
             {
               offset: 0,
-              color: theme.global.current.value.dark
+              color: theme.isDark.value
                 ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
-                : `${theme.global.current.value.colors.primary}40`
+                : `${themeColors.value.primary}40`
             },
             {
               offset: 1,
-              color: theme.global.current.value.dark
+              color: theme.isDark.value
                 ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
-                : `${theme.global.current.value.colors.primary}40`
+                : `${themeColors.value.primary}40`
             }
           ]
         }
@@ -199,7 +201,12 @@ const props = defineProps<{
 }>();
 
 onMounted(async () => {
-  const echarts = await import("echarts");
+  const echarts = await import("echarts/core");
+  const { LineChart } = await import("echarts/charts");
+  const { GridComponent, TooltipComponent, TitleComponent } = await import("echarts/components");
+  const { CanvasRenderer } = await import("echarts/renderers");
+  echarts.use([GridComponent, TooltipComponent, TitleComponent, LineChart, CanvasRenderer]);
+
   chart = echarts.init(chartRef.value);
   chart.setOption(getOptions(props.data));
 
@@ -222,6 +229,13 @@ watch(
   },
   { deep: true }
 );
+
+watch(
+  () => [theme.isDark.value, themeColors.value.background, themeColors.value.onBackground, themeColors.value.primary],
+  () => {
+    chart?.setOption(getOptions(props.data));
+  }
+);
 </script>
 
 <template>
@@ -230,8 +244,10 @@ watch(
 
 <style scoped>
 div {
-  width: calc(100% + 20px);
   height: 100px;
+  overflow: clip;
+  width: calc(100% + 20px);
   margin-right: -20px;
+  max-width: calc(50vw);
 }
 </style>

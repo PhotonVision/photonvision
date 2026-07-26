@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
-import PvNumberInput from "@/components/common/pv-number-input.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
+import IconContentSave from "~icons/mdi/content-save";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
-import { useTheme } from "vuetify";
 import { axiosPost } from "@/lib/PhotonUtils";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-
-const theme = useTheme();
+import type { SelectItem } from "@/components/common/form/pv-select.vue";
 
 const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
   fov: useCameraSettingsStore().currentCameraSettings.fov.value,
@@ -135,9 +131,9 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
 </script>
 
 <template>
-  <v-card class="mb-3 rounded-12" color="surface" dark>
-    <v-card-title class="pb-0">Camera Settings</v-card-title>
-    <v-card-text class="pt-3">
+  <pv-card class="mb-2">
+    <div class="pb-2 text-xl font-semibold">Camera Settings</div>
+    <div class="pt-1 pb-4">
       <pv-select
         v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
@@ -171,36 +167,22 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
         v-model="focusMode"
         tooltip="Enable Focus Mode to start focusing the lens on your camera"
         label="Focus Mode"
-      ></pv-switch>
-    </v-card-text>
-    <v-card-text class="d-flex pt-0">
-      <v-col cols="6" class="pa-0 pr-2">
-        <v-btn
-          block
-          size="small"
-          color="buttonActive"
-          :disabled="!settingsHaveChanged()"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="saveCameraSettings"
-        >
-          <v-icon start size="large"> mdi-content-save </v-icon>
-          Save Changes
-        </v-btn>
-      </v-col>
-      <v-col cols="6" class="pa-0 pl-2">
-        <v-btn
-          block
-          size="small"
-          color="error"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="() => (showDeleteCamera = true)"
-        >
-          <v-icon start size="large"> mdi-trash-can-outline </v-icon>
-          Delete Camera
-        </v-btn>
-      </v-col>
-    </v-card-text>
-
+      />
+    </div>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <pv-button
+        variant="primary"
+        :icon="IconContentSave"
+        block
+        :disabled="!settingsHaveChanged()"
+        @click="saveCameraSettings"
+      >
+        Save Changes
+      </pv-button>
+      <pv-button variant="danger" :icon="IconTrashCanOutline" block @click="() => (showDeleteCamera = true)">
+        Delete Camera
+      </pv-button>
+    </div>
     <pv-delete-modal
       v-model="showDeleteCamera"
       title="Delete Camera"
@@ -208,11 +190,5 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
       :expected-confirmation-text="useCameraSettingsStore().currentCameraSettings.nickname"
       :on-confirm="deleteThisCamera"
     />
-  </v-card>
+  </pv-card>
 </template>
-
-<style scoped>
-.v-divider {
-  border-color: white !important;
-}
-</style>

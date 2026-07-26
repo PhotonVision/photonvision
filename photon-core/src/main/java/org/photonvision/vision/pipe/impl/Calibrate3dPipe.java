@@ -91,6 +91,12 @@ public class Calibrate3dPipe
                                                 && it.size != null)
                         .toList();
 
+        // Make sure we have something
+        if (filteredIn.isEmpty()) {
+            logger.error("I got zero observations?");
+            return null;
+        }
+
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
 
