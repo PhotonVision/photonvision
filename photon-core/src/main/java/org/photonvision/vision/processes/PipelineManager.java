@@ -47,8 +47,8 @@ public class PipelineManager implements AutoCloseable {
     /** Index of the currently active pipeline. Defaults to 0. */
     private int currentPipelineIndex = DRIVERMODE_INDEX;
 
-    /** The currently active pipeline. */
-    private CVPipeline currentUserPipeline = driverModePipeline;
+    /** The currently active user-created pipeline. Built-in pipelines are tracked separately. */
+    private CVPipeline currentUserPipeline;
 
     /**
      * Index of the last active user-created pipeline. <br>
@@ -235,8 +235,14 @@ public class PipelineManager implements AutoCloseable {
      * recreation after changing pipeline type
      */
     private void recreateUserPipeline() {
-        // Cleanup potential old native resources before swapping over from a user pipeline
-        if (currentUserPipeline != null && !(currentPipelineIndex < 0)) {
+        // Cleanup potential old native resources before swapping over from a user pipeline.
+        // Built-in pipelines such as driver mode are tracked separately and must not be released
+        // here.
+        if (currentUserPipeline != null
+                && currentPipelineIndex >= 0
+                && currentUserPipeline != driverModePipeline
+                && currentUserPipeline != focusPipeline
+                && currentUserPipeline != calibration3dPipeline) {
             currentUserPipeline.release();
         }
 

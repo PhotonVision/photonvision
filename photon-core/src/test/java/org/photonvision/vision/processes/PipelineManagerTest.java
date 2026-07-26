@@ -18,13 +18,17 @@
 package org.photonvision.vision.processes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 
@@ -78,5 +82,30 @@ public class PipelineManagerTest {
         manager.getCurrentPipeline();
         // and change
         manager.changePipelineType(PipelineType.Aruco.baseIndex);
+    }
+
+    @Test
+    public void testRecreateUserPipelineDoesNotReleaseBuiltInDriverPipeline() throws Exception {
+        PipelineManager manager = new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
+
+        Field driverModePipelineField = PipelineManager.class.getDeclaredField("driverModePipeline");
+        driverModePipelineField.setAccessible(true);
+        CVPipeline driverModePipeline = (CVPipeline) driverModePipelineField.get(manager);
+
+        Field currentUserPipelineField = PipelineManager.class.getDeclaredField("currentUserPipeline");
+        currentUserPipelineField.setAccessible(true);
+        currentUserPipelineField.set(manager, driverModePipeline);
+
+        Field currentPipelineIndexField = PipelineManager.class.getDeclaredField("currentPipelineIndex");
+        currentPipelineIndexField.setAccessible(true);
+        currentPipelineIndexField.setInt(manager, 0);
+
+        Method recreateUserPipeline = PipelineManager.class.getDeclaredMethod("recreateUserPipeline");
+        recreateUserPipeline.setAccessible(true);
+        recreateUserPipeline.invoke(manager);
+
+        Field releasedField = CVPipeline.class.getDeclaredField("released");
+        releasedField.setAccessible(true);
+        assertFalse(releasedField.getBoolean(driverModePipeline));
     }
 }
