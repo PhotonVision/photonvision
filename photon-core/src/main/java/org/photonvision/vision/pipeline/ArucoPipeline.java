@@ -128,6 +128,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
+        if (frame.type != FrameThresholdType.GREYSCALE) {
+            // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
+            return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
+        }
+
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult =
                 arucoDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
