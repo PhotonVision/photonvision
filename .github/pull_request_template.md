@@ -1,17 +1,19 @@
 ## Description
 
 **What changed?**
-<!-- Describe the change concisely -->
+
+Describe the change concisely
 
 **Why?**
-<!-- Explain the reasoning and any issues this addresses -->
+
+Explain the reasoning and any issues this addresses
 
 ## Testing
 
 - [ ] I have tested this change locally
 - [ ] Test evidence (screenshots, videos, or test results):
 
-<!-- Paste screenshots or video links here -->
+Paste screenshots or video links here
 
 ## Related Issues
 
@@ -26,7 +28,7 @@ Closes #<!-- issue number -->
   - [ ] If yes, I have reviewed all AI-generated code for correctness
   - [ ] If yes, please describe which parts were AI-assisted:
 
-<!-- Describe AI involvement here if applicable -->
+Describe AI involvement here if applicable
 
 ---
 
