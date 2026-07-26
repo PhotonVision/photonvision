@@ -58,14 +58,6 @@ public class Packet {
         writePos = 0;
     }
 
-    public int getNumBytesWritten() {
-        return writePos + 1;
-    }
-
-    public int getNumBytesRead() {
-        return readPos + 1;
-    }
-
     public int getSize() {
         return packetData.length;
     }
@@ -291,7 +283,7 @@ public class Packet {
      * @return A decoded byte from the packet.
      */
     public byte decodeByte() {
-        if (packetData.length < readPos) {
+        if (readPos >= packetData.length) {
             return '\0';
         }
         return packetData[readPos++];
@@ -303,7 +295,7 @@ public class Packet {
      * @return A decoded int from the packet.
      */
     public int decodeInt() {
-        if (packetData.length < readPos + 3) {
+        if (readPos + 3 >= packetData.length) {
             return 0;
         }
         return (0xff & packetData[readPos++])
@@ -313,7 +305,7 @@ public class Packet {
     }
 
     public long decodeLong() {
-        if (packetData.length < (readPos + 7)) {
+        if (readPos + 7 >= packetData.length) {
             return 0;
         }
         long data =
@@ -335,7 +327,7 @@ public class Packet {
      * @return A decoded double from the packet.
      */
     public double decodeDouble() {
-        if (packetData.length < (readPos + 7)) {
+        if (readPos + 7 >= packetData.length) {
             return 0;
         }
         long data =
@@ -357,7 +349,7 @@ public class Packet {
      * @return A decoded float from the packet.
      */
     public float decodeFloat() {
-        if (packetData.length < (readPos + 3)) {
+        if (readPos + 3 >= packetData.length) {
             return 0;
         }
 
@@ -375,7 +367,7 @@ public class Packet {
      * @return A decoded boolean from the packet.
      */
     public boolean decodeBoolean() {
-        if (packetData.length < readPos) {
+        if (readPos >= packetData.length) {
             return false;
         }
         return packetData[readPos++] == 1;
@@ -396,7 +388,7 @@ public class Packet {
     }
 
     public short decodeShort() {
-        if (packetData.length < readPos + 1) {
+        if (readPos + 1 >= packetData.length) {
             return 0;
         }
         return (short) ((0xff & packetData[readPos++]) | (0xff & packetData[readPos++]) << 8);
