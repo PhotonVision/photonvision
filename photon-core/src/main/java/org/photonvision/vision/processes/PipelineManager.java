@@ -48,7 +48,7 @@ public class PipelineManager implements AutoCloseable {
     private int currentPipelineIndex = DRIVERMODE_INDEX;
 
     /** The currently active pipeline. */
-    private CVPipeline currentUserPipeline = driverModePipeline;
+    private CVPipeline currentUserPipeline = null;
 
     /**
      * Index of the last active user-created pipeline. <br>
@@ -159,7 +159,7 @@ public class PipelineManager implements AutoCloseable {
             case DRIVERMODE_INDEX -> driverModePipeline;
             case FOCUS_INDEX -> focusPipeline;
             // Just return the current user pipeline, we're not on a built-in one
-            default -> currentUserPipeline;
+            default -> (currentUserPipeline != null) ? currentUserPipeline : driverModePipeline;
         };
     }
 
