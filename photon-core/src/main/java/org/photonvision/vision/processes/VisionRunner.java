@@ -33,6 +33,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
@@ -167,6 +168,19 @@ public class VisionRunner implements AutoCloseable {
         }
     }
 
+    /**
+     * Try to send pipeline result to consumers. If it throws, release the result before re-throwing
+     */
+    private void acceptPipelineResultSafely(CVPipelineResult pipelineResult) {
+        try {
+            pipelineResultConsumer.accept(pipelineResult);
+        } catch (Exception ex) {
+            logger.error("Exception consuming pipeline result", ex);
+            pipelineResult.release();
+            throw ex;
+        }
+    }
+
     private void update() {
         // wait for the camera to connect
         while (!frameSupplier.isConnected() && !Thread.interrupted()) {
@@ -222,39 +236,69 @@ public class VisionRunner implements AutoCloseable {
 
             // Grab the new camera frame
             var frame = frameSupplier.get();
+            boolean frameConsumed = false;
 
-            // Frame empty -- no point in trying to do anything more?
-            if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
-                // give up without increasing loop count
-                // Still feed with blank frames just dont run any pipelines
-
-                frame.release();
-                pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-            } else if (pipeline == pipelineSupplier.get()) {
-                if (!enabledSupplier.get()) {
-                    // If we are skipping processing due to the camera being disabled, we still want to send a
-                    // result with the new frame and settings, just with a null pipeline result
-                    pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+            try {
+                // Frame empty -- no point in trying to do anything more?
+                if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
+                    // give up without increasing loop count
+                    // Still feed with blank frames just dont run any pipelines.
+                    // The original frame is released here, so mark it consumed before sending the
+                    // blank result. If the consumer throws, the helper will release the blank
+                    // result's owned frame and the outer finally will not double-release.
                     frame.release();
+                    frameConsumed = true;
+                    acceptPipelineResultSafely(new CVPipelineResult(0l, 0, 0, null, new Frame()));
                     continue;
                 }
 
-                // If the pipeline has changed while we are getting our frame we should scrap
-                // that frame it may result in incorrect frame settings like hsv values
+                if (!enabledSupplier.get()) {
+                    // If we are skipping processing due to the camera being disabled, we still want to send a
+                    // result with the new frame and settings, just with a null pipeline result
+                    acceptPipelineResultSafely(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+                    frame.release();
+                    frameConsumed = true;
+                    continue;
+                }
 
-                // There's no guarantee the processing type change will occur this tick, so
-                // pipelines should check themselves
+                // The pipeline will validate the supplied frame type itself and return an empty result if
+                // the frame does not match its threshold requirement.
 
                 // If we have an FPS limit, check if it's 0, in which case we skip processing and just send
                 // a blank frame, otherwise we sleep until the next tick
                 waitUntilNextTick(start);
+
+                if (pipeline.getThresholdType() != FrameThresholdType.NONE
+                        && frame.type != pipeline.getThresholdType()) {
+                    acceptPipelineResultSafely(
+                            new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame));
+                    frameConsumed = true;
+                    continue;
+                }
+
                 try {
-                    var pipelineResult = pipeline.run(frame, cameraQuirks);
-                    pipelineResultConsumer.accept(pipelineResult);
+                    CVPipelineResult pipelineResult = pipeline.run(frame, cameraQuirks);
+                    // Frame ownership transfers to the pipeline result here.
+                    frameConsumed = true;
+                    acceptPipelineResultSafely(pipelineResult);
+                    // If acceptPipelineResultSafely throws, the result (and its frame) were already
+                    // released inside the helper.
                 } catch (Exception ex) {
                     logger.error("Exception on loop " + loopCount, ex);
+                    if (!frameConsumed) {
+                        // Pipeline.run threw before the frame was transferred into the result.
+                        frame.release();
+                        frameConsumed = true;
+                    }
                 }
                 loopCount++;
+            } finally {
+                // Safety net: if any branch above failed to consume or explicitly release the
+                // frame, release it here to prevent a native memory leak.
+                if (!frameConsumed) {
+                    logger.error("Frame was not consumed; releasing it to avoid memory leak");
+                    frame.release();
+                }
             }
         }
     }
