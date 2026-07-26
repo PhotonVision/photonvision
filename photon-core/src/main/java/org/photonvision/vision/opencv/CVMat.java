@@ -38,7 +38,6 @@ public class CVMat implements Releasable {
     private static final ReferenceQueue<CVMat> refQueue = new ReferenceQueue<>();
 
     private static boolean shouldPrint;
-    public static boolean shouldStacktrace;
 
     private Mat mat;
     private RawFrame backingFrame;
@@ -57,7 +56,7 @@ public class CVMat implements Releasable {
             super(cvmat, queue);
             this.id = id;
             this.nativePtr = cvmat.mat.nativeObj;
-            this.allocTrace = (shouldPrint || shouldStacktrace) ? getStackTrace() : "";
+            this.allocTrace = shouldPrint ? getStackTrace() : "";
         }
 
         private static String getStackTrace() {
