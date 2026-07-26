@@ -73,7 +73,12 @@ public class Calibrate3dPipeTest {
         var detectedCorners = new Mat();
         var ids = new MatOfInt();
 
-        assertFalse(FindBoardCornersPipe.hasValidCharucoDetections(detectedCorners, ids));
+        try {
+            assertFalse(FindBoardCornersPipe.hasValidCharucoDetections(detectedCorners, ids));
+        } finally {
+            detectedCorners.release();
+            ids.release();
+        }
     }
 
     enum CalibrationDatasets {
