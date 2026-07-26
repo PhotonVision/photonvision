@@ -264,6 +264,9 @@ public class VisionModule implements AutoCloseable {
                 if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
                     this.latestFrame.release();
+                    if (this.targets != null) {
+                        this.targets.forEach(TrackedTarget::release);
+                    }
                 }
 
                 this.latestFrame = inputOutputFrame;
@@ -271,10 +274,6 @@ public class VisionModule implements AutoCloseable {
                 this.targets = targets;
 
                 shouldRun = inputOutputFrame != null;
-                // && inputOutputFrame.colorImage != null
-                // && !inputOutputFrame.colorImage.getMat().empty()
-                // && inputOutputFrame.processedImage != null
-                // && !inputOutputFrame.processedImage.getMat().empty();
             }
         }
 
@@ -299,15 +298,18 @@ public class VisionModule implements AutoCloseable {
                     try {
                         CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
-
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
-                    }
-                    try {
-                        m_frame.release();
-                    } catch (Exception e) {
-                        logger.error("Exception freeing frames", e);
+                    } finally {
+                        if (targets != null) {
+                            targets.forEach(TrackedTarget::release);
+                        }
+                        try {
+                            m_frame.release();
+                        } catch (Exception e) {
+                            logger.error("Exception freeing frames", e);
+                        }
                     }
                 } else {
                     // busy wait! hurray!
