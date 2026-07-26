@@ -304,6 +304,7 @@ public class Main {
         }
 
         CVMat.enablePrint(false);
+        CVMat.shouldStacktrace = true;
         PipelineProfiler.enablePrint(false);
 
         // Add Linux kernel log->Photon logger
