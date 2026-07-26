@@ -251,8 +251,9 @@ public class VisionRunner implements AutoCloseable {
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
                     pipelineResultConsumer.accept(pipelineResult);
-                } catch (Exception ex) {
+                } catch (RuntimeException ex) {
                     logger.error("Exception on loop " + loopCount, ex);
+                    frame.release();
                 }
                 loopCount++;
             }
