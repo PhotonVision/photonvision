@@ -62,7 +62,7 @@ public class TargetCalculationsTest {
                     null);
 
     @BeforeAll
-    public static void setup() {
+    public static void init() {
         LoadJNI.loadLibraries();
     }
 

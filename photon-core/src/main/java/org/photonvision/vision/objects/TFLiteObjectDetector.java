@@ -30,9 +30,9 @@ import org.photonvision.tflite.TFLiteJNI;
 import org.photonvision.tflite.TFLiteJNI.TFLiteSource;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
-/** Manages an object detector using the rubik backend. */
-public class RubikObjectDetector implements ObjectDetector {
-    private static final Logger logger = new Logger(RubikObjectDetector.class, LogGroup.General);
+/** Manages an object detector using the TFLite backend. */
+public class TFLiteObjectDetector implements ObjectDetector {
+    private static final Logger logger = new Logger(TFLiteObjectDetector.class, LogGroup.General);
 
     private static final Cleaner cleaner = Cleaner.create();
 
@@ -45,26 +45,26 @@ public class RubikObjectDetector implements ObjectDetector {
     /** Pointer to the native object */
     private final long ptr;
 
-    private final RubikModel model;
+    private final TFLiteModel model;
 
     private final Size inputSize;
 
     /** Returns the model in use by this detector. */
     @Override
-    public RubikModel getModel() {
+    public TFLiteModel getModel() {
         return model;
     }
 
     /**
-     * Creates a new rubikObjectDetector from the given model.
+     * Creates a new TFLite detector from the given model.
      *
      * @param model The model to create the detector from.
-     * @param inputSize The required image dimensions for the model. Images will be {@link
-     *     Letterbox}ed to this shape.
+     * @param source The backend to run the detector on.
      */
-    public RubikObjectDetector(RubikModel model, Size inputSize) {
+    public TFLiteObjectDetector(TFLiteModel model, TFLiteSource backend) {
         this.model = model;
-        this.inputSize = inputSize;
+        this.inputSize =
+                new Size(model.properties.resolutionWidth(), model.properties.resolutionHeight());
 
         // Create the detector
         try {
@@ -72,7 +72,7 @@ public class RubikObjectDetector implements ObjectDetector {
                     TFLiteJNI.create(
                             model.modelFile.getPath().toString(),
                             model.properties.version().ordinal(),
-                            TFLiteSource.RUBIK.value());
+                            backend.value());
         } catch (Exception e) {
             logger.error("Failed to create detector from path " + model.modelFile.getPath(), e);
             throw new RuntimeException(
@@ -83,7 +83,7 @@ public class RubikObjectDetector implements ObjectDetector {
             logger.error(
                     "Failed to create detector from path "
                             + model.modelFile.getPath()
-                            + ". Please ensure the model is valid and compatible with the Rubik backend.");
+                            + ". Please ensure the model is valid and compatible with the TFLite backend.");
             throw new RuntimeException(
                     "Failed to create detector from path " + model.modelFile.getPath());
         } else if (!TFLiteJNI.isQuantized(ptr)) {
@@ -107,7 +107,7 @@ public class RubikObjectDetector implements ObjectDetector {
     }
 
     /**
-     * Detects objects in the given input image using the rubikDetector.
+     * Detects objects in the given input image using the TFLite detector.
      *
      * @param in The input image to perform object detection on.
      * @param nmsThresh The threshold value for non-maximum suppression.

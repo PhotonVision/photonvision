@@ -20,7 +20,7 @@ package org.photonvision.vision.target;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
@@ -30,8 +30,8 @@ import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TrackedTargetTest {
-    @BeforeEach
-    public void Init() {
+    @BeforeAll
+    public static void init() {
         LoadJNI.loadLibraries();
     }
 

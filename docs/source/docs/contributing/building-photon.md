@@ -8,7 +8,9 @@ This section contains the build instructions from the source code available at [
 
 **Java Development Kit:**
 
- This project requires Java Development Kit (JDK) 25 to be compiled. This is the same Java version that comes with WPILib for 2027. **Windows Users must use the JDK that ships with WPILib.** For other platforms, you can follow the instructions to install JDK 25 for your platform [here](https://bell-sw.com/pages/downloads/#jdk-25-lts).
+ Building PhotonVision requires Java Development Kit (JDK) 25. *Windows Users must use the JDK that ships with WPILib.* See the {ref}`Installing Java <java-on-windows>` section of the Windows PC installation instructions for configuring Windows to use the WPILib JDK.
+
+ For other platforms, you can follow the instructions to install JDK 25 for your platform [here](https://adoptium.net/temurin/releases?version=25).
 
 **Node JS:**
 

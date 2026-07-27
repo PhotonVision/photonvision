@@ -30,6 +30,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
@@ -55,12 +56,13 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
+import org.photonvision.tflite.TFLiteJNI.TFLiteSource;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.objects.ObjectDetector;
 import org.photonvision.vision.objects.RknnModel;
-import org.photonvision.vision.objects.RubikModel;
+import org.photonvision.vision.objects.TFLiteModel;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -395,7 +397,7 @@ public class RequestHandler {
 
     @Json
     record CameraSettingsRequest(
-            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
+            double fov, Map<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
@@ -403,7 +405,7 @@ public class RequestHandler {
                     Jsonb.instance().type(CameraSettingsRequest.class).fromJson(ctx.body());
             // Extract the settings from the request
             double fov = request.fov;
-            HashMap<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
+            Map<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
             String cameraUniqueName = request.cameraUniqueName;
 
             if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
@@ -679,7 +681,7 @@ public class RequestHandler {
                 try {
                     objDetector =
                             switch (family) {
-                                case RUBIK -> new RubikModel(modelProperties).load();
+                                case RUBIK -> new TFLiteModel(modelProperties, TFLiteSource.RUBIK).load();
                                 case RKNN -> new RknnModel(modelProperties).load();
                             };
                 } catch (RuntimeException e) {
@@ -1169,7 +1171,7 @@ public class RequestHandler {
     }
 
     public static void onImageSnapshotsRequest(Context ctx) {
-        var snapshots = new ArrayList<HashMap<String, Object>>();
+        var snapshots = new ArrayList<Map<String, Object>>();
         var cameraDirs = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
 
         if (cameraDirs != null) {
@@ -1207,19 +1209,18 @@ public class RequestHandler {
 
     public static void onCameraCalibImagesRequest(Context ctx) {
         try {
-            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots =
-                    new HashMap<>();
+            Map<String, Map<String, ArrayList<Map<String, Object>>>> snapshots = new HashMap<>();
 
             var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
             if (cameraDirs != null) {
-                var camData = new HashMap<String, ArrayList<HashMap<String, Object>>>();
+                var camData = new HashMap<String, ArrayList<Map<String, Object>>>();
                 for (var cameraDir : cameraDirs) {
                     var resolutionDirs = cameraDir.listFiles();
                     if (resolutionDirs == null) continue;
                     for (var resolutionDir : resolutionDirs) {
                         var calibImages = resolutionDir.listFiles();
                         if (calibImages == null) continue;
-                        var resolutionImages = new ArrayList<HashMap<String, Object>>();
+                        var resolutionImages = new ArrayList<Map<String, Object>>();
                         for (var calibImg : calibImages) {
                             var snapshotData = new HashMap<String, Object>();
 

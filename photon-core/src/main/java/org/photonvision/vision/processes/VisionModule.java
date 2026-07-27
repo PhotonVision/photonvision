@@ -55,7 +55,6 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.math.util.Units;
 import org.wpilib.vision.camera.CameraServerJNI;
 import org.wpilib.vision.camera.VideoException;
 
@@ -391,8 +390,8 @@ public class VisionModule {
                         + data.videoModeIndex
                         + " and settings "
                         + data);
-        settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
-        settings.markerSize = Units.inchesToMeters(data.markerSizeIn);
+        settings.gridSize = data.squareSizeMeters;
+        settings.markerSize = data.markerSizeMeters;
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
@@ -545,8 +544,8 @@ public class VisionModule {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
 
-        HashMap<String, Object> map = new HashMap<>();
-        HashMap<String, Object> subMap = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> subMap = new HashMap<>();
         subMap.put(propertyName, value);
         map.put("mutatePipelineSettings", subMap);
 
@@ -752,7 +751,7 @@ public class VisionModule {
      *
      * @param quirksToChange map of true/false for quirks we should change
      */
-    public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
+    public void changeCameraQuirks(Map<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
         visionSource.remakeSettables();
         saveAndBroadcastAll();
