@@ -156,7 +156,7 @@ def get_python_default_factory(
     if "vla" in field and field["vla"] == True:
         return "list"
     if is_intrinsic_type(field["type"]):
-        return f"lambda: {PYTHON_INTRINSIC_DEFAULTS[data_types[field["type"]]["python_type"]]}"
+        return f"lambda: {PYTHON_INTRINSIC_DEFAULTS[data_types[field['type']]['python_type']]}"
     else:
         return f"lambda: {field['type']}()"
 
@@ -214,7 +214,7 @@ def get_includes(db, message: MessageType) -> str:
                 includes.append(field_msg["cpp_include"])
             else:
                 # must be a photon type.
-                includes.append(f"\"photon/targeting/{field_msg['name']}.h\"")
+                includes.append(f'"photon/targeting/{field_msg["name"]}.h"')
 
         if "optional" in field and field["optional"] == True:
             includes.append("<optional>")
@@ -338,8 +338,8 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
     env.filters["get_python_qualified_name"] = lambda field: get_python_qualified_name(
         messages, extended_data_types, field
     )
-    env.filters["get_python_default_factory"] = (
-        lambda field: get_python_default_factory(messages, extended_data_types, field)
+    env.filters["get_python_default_factory"] = lambda field: (
+        get_python_default_factory(messages, extended_data_types, field)
     )
 
     for message in messages:
@@ -484,12 +484,11 @@ def generate_tests(cpp_java_test_root, py_test_root, template_root):
     env.filters["get_python_qualified_name"] = lambda field: get_python_qualified_name(
         message_db, extended_data_types, field
     )
-    env.filters["get_python_default_factory"] = (
-        lambda field: get_python_default_factory(message_db, extended_data_types, field)
+    env.filters["get_python_default_factory"] = lambda field: (
+        get_python_default_factory(message_db, extended_data_types, field)
     )
 
     for test_message in test_messages:
-
         # don't generate shimmed types. TODO: Probably unnecessary for test messages
         if get_shimmed_filter(message_db)(test_message["name"]):
             continue

@@ -98,14 +98,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest mypy
           pip install -r photon-serde-tests/requirements.txt
-      
+
       - name: Generate Python Serde Tests
         working-directory: photon-serde
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python generate_messages.py --tests
-      
+
       - name: Upload Python Serde Tests
         uses: actions/upload-artifact@v7
         with:
