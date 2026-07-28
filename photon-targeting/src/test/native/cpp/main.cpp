@@ -20,7 +20,7 @@
 #include "gtest/gtest.h"
 
 int main(int argc, char** argv) {
-  HAL_Initialize(500, 0);
+  HAL_Initialize();
   ::testing::InitGoogleTest(&argc, argv);
   int ret = RUN_ALL_TESTS();
   HAL_Shutdown();
