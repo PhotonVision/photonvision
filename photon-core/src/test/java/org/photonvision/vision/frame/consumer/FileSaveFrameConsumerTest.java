@@ -62,7 +62,7 @@ public class FileSaveFrameConsumerTest {
     public void setup() {
         assertNull(inst);
 
-        HAL.initialize(500, 0);
+        HAL.initialize();
 
         inst = NetworkTablesManager.getInstance().getNTInst();
         inst.stopClient();

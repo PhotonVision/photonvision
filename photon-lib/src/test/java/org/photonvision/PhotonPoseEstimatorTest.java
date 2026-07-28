@@ -76,7 +76,7 @@ class PhotonPoseEstimatorTest {
         }
         RuntimeLoader.loadLibrary("photontargetingJNI");
 
-        HAL.initialize(1000, 0);
+        HAL.initialize();
 
         List<AprilTag> tagList = new ArrayList<>(2);
         tagList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));

@@ -80,7 +80,7 @@ class VisionSystemSimTest {
 
     @BeforeEach
     public void setup() {
-        HAL.initialize(500, 0);
+        HAL.initialize();
 
         inst = NetworkTableInstance.create();
         inst.stopClient();

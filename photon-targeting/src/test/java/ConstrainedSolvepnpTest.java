@@ -38,7 +38,7 @@ public class ConstrainedSolvepnpTest {
         }
         RuntimeLoader.loadLibrary("photontargetingJNI");
 
-        HAL.initialize(1000, 0);
+        HAL.initialize();
     }
 
     @AfterAll
