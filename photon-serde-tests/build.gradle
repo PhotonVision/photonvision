@@ -3,6 +3,18 @@ ext {
     includePhotonTargeting = true
 }
 
+// Kinda jank but it should work. If there are no native sources, disable all tasks in this subproject so it doesn't fail the build.
+def hasSources = !fileTree("src/main/native/cpp") {
+    include "**/*.cpp", "**/*.cc"
+}.isEmpty()
+
+if (!hasSources) {
+    println "Skipping photon-serde-tests"
+    tasks.configureEach {
+        enabled = false
+    }
+}
+
 apply plugin: 'cpp'
 apply plugin: 'c'
 apply plugin: 'google-test-test-suite'
