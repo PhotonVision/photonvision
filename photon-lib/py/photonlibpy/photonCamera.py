@@ -328,9 +328,9 @@ class PhotonCamera:
             # Look for only cameras with rawBytes entry that exists
             cameraNames = list(
                 filter(
-                    lambda it: self._cameraTable.getSubTable(it)
-                    .getEntry("rawBytes")
-                    .exists(),
+                    lambda it: (
+                        self._cameraTable.getSubTable(it).getEntry("rawBytes").exists()
+                    ),
                     cameraNames,
                 )
             )
@@ -342,7 +342,7 @@ class PhotonCamera:
                 )
             else:
                 wpilib.reportError(
-                    f"PhotonVision coprocessor at path {self._path} not found in Network Tables. Double check that your camera names match! Only the following camera names were found: { ''.join(cameraNames)}",
+                    f"PhotonVision coprocessor at path {self._path} not found in Network Tables. Double check that your camera names match! Only the following camera names were found: {''.join(cameraNames)}",
                     True,
                 )
 

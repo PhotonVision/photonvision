@@ -82,7 +82,7 @@ def get_shimmed_filter(message_db):
             return False
 
         message = get_message_by_name(message_db, message_name)
-        return "shimmed" in message and message["shimmed"] == True
+        return "shimmed" in message and message["shimmed"]
 
     return is_shimmed
 
@@ -101,9 +101,9 @@ def get_qualified_cpp_name(
     else:
         base_type = data_types[field["type"]]["cpp_type"]
 
-    if "optional" in field and field["optional"] == True:
+    if "optional" in field and field["optional"]:
         typestr = f"std::optional<{base_type}>"
-    elif "vla" in field and field["vla"] == True:
+    elif "vla" in field and field["vla"]:
         typestr = f"std::vector<{base_type}>"
     else:
         typestr = base_type
@@ -160,15 +160,15 @@ def get_includes(db, message: MessageType) -> str:
         if not is_intrinsic_type(field["type"]):
             field_msg = get_message_by_name(db, field["type"])
 
-            if "shimmed" in field_msg and field_msg["shimmed"] == True:
+            if "shimmed" in field_msg and field_msg["shimmed"]:
                 includes.append(field_msg["cpp_include"])
             else:
                 # must be a photon type.
-                includes.append(f"\"photon/targeting/{field_msg['name']}.h\"")
+                includes.append(f'"photon/targeting/{field_msg["name"]}.h"')
 
-        if "optional" in field and field["optional"] == True:
+        if "optional" in field and field["optional"]:
             includes.append("<optional>")
-        if "vla" in field and field["vla"] == True:
+        if "vla" in field and field["vla"]:
             includes.append("<vector>")
 
     # stdint types
@@ -220,9 +220,9 @@ def get_struct_schema_str(message: MessageType, message_db: List[MessageType]):
     for field in message["fields"]:
         if (
             "optional" in field
-            and field["optional"] == True
+            and field["optional"]
             and "vla" in field
-            and field["vla"] == True
+            and field["vla"]
         ):
             raise Exception(f"Field {field} must be optional OR vla!")
 
@@ -230,9 +230,9 @@ def get_struct_schema_str(message: MessageType, message_db: List[MessageType]):
 
         array_modifier = ""
 
-        if "optional" in field and field["optional"] == True:
+        if "optional" in field and field["optional"]:
             typestr = "optional " + typestr
-        if "vla" in field and field["vla"] == True:
+        if "vla" in field and field["vla"]:
             array_modifier = "[?]"
 
         ret += f"{typestr} {field['name']}{array_modifier};"
