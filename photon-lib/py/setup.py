@@ -39,7 +39,8 @@ if m:
 
 else:
     print("Warning, no valid version found")
-    versionString = gitDescribeResult
+    # Last-ditch fallback so tests still run
+    versionString = f"0.0.0.dev0+{gitDescribeResult}"
 
 print(f"Building version {versionString}")
 
