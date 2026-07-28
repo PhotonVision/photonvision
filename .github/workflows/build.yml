@@ -150,6 +150,14 @@ jobs:
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
           node-version: 24
+      - name: Install photon-serde dependencies
+        working-directory: photon-serde
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Generate autotests
+        working-directory: photon-serde
+        run: python generate_messages.py --tests
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage
