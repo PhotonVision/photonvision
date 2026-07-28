@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
+import os
 
 import casadi as ca
-from casadi import *
-from numpy import *
+from casadi import CodeGenerator
 
 
 def generate_costs(num_tags, robot_heading_free):
