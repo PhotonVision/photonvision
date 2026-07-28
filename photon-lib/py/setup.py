@@ -38,8 +38,8 @@ if m:
 
 
 else:
-    print("Warning, no valid version found")
-    # Last-ditch fallback so tests still run
+    print("Warning, no valid version found, falling back to 0.0.0.dev0")
+    # Last-ditch fallback, if git describe fails, use a PEP440 compliant dev version with the full git describe result
     versionString = f"0.0.0.dev0+{gitDescribeResult}"
 
 print(f"Building version {versionString}")
