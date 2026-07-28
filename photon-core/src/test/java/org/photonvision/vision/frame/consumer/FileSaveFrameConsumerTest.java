@@ -39,6 +39,7 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.wpilib.driverstation.MatchType;
 import org.wpilib.driverstation.internal.DriverStationBackend;
 import org.wpilib.hardware.hal.HAL;
+import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.simulation.DriverStationSim;
 import org.wpilib.simulation.SimHooks;
@@ -105,6 +106,14 @@ public class FileSaveFrameConsumerTest {
             DriverStationSim.setMatchNumber(matchNumber);
             DriverStationSim.setEventName(eventName);
             DriverStationBackend.refreshData();
+
+            // ALSO publish to NetworkTables FMSInfo table (what FileSaveFrameConsumer reads)
+            NetworkTable fmsTable = inst.getTable("FMSInfo");
+            fmsTable.getStringTopic("EventName").publish().accept(eventName);
+            fmsTable.getIntegerTopic("MatchNumber").publish().accept(matchNumber);
+            fmsTable.getIntegerTopic("MatchType").publish().accept(matchType.ordinal());
+            // Also publish FMSControlData to indicate FMS is attached (bit 4 = 1<<4 = 16)
+            fmsTable.getIntegerTopic("FMSControlData").publish().accept(16);
 
             // WHEN we save the image
             currentTime = new Date();
