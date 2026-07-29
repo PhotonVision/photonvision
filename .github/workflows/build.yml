@@ -150,6 +150,17 @@ jobs:
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
           node-version: 24
+      - name: Generate Java/cpp Serde Tests
+        working-directory: photon-serde
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python generate_messages.py --tests
+      - name: Upload Java/cpp Serde Tests
+        uses: actions/upload-artifact@v7
+        with:
+          name: photon-serde-tests-javacpp
+          path: photon-serde-tests/src/
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage

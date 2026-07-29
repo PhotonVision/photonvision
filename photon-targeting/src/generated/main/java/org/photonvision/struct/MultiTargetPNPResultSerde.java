@@ -28,9 +28,14 @@ package org.photonvision.struct;
 
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.utils.PacketUtils;
 
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
+
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
@@ -53,14 +58,13 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, MultiTargetPNPResult value) {
         // field estimatedPose is of non-intrinsic type PnpResult
         PnpResult.photonStruct.pack(packet, value.estimatedPose);
 
-        // fiducialIDsUsed is a intrinsic VLA!
-        packet.encode(value.fiducialIDsUsed);
+        // fiducialIDsUsed is an intrinsic VLA!
+        packet.encodeListImpl(value.fiducialIDsUsed,PacketUtils::packShort);
     }
 
     @Override
@@ -70,8 +74,8 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
         // estimatedPose is of non-intrinsic type PnpResult
         ret.estimatedPose = PnpResult.photonStruct.unpack(packet);
 
-        // fiducialIDsUsed is a custom VLA!
-        ret.fiducialIDsUsed = packet.decodeShortList();
+        // fiducialIDsUsed is an intrinsic VLA!
+        ret.fiducialIDsUsed = packet.decodeListImpl(PacketUtils::unpackShort);
 
         return ret;
     }

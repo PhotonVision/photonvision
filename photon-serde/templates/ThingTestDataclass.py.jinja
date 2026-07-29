@@ -27,49 +27,40 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, ClassVar
+from dataclasses import dataclass, field
 
-
-from ..packet import Packet
-from ..targeting import *  # noqa
-
-
+from photonlibpy.targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult  # noqa
+    from .{{ name }}Serde import {{ name }}Serde  # noqa
+{%- set ns = namespace(types=[]) -%}
+{%- for field in fields|unique(attribute="type")-%}
+    {%- set _ = ns.types.append(field.type) -%}
+{%- endfor -%}
+{%- for type in ns.types|sort%}
+{%- if not type | is_shimmed and not type | is_intrinsic %}
+{%- if type | is_test %}
+    from .{{ type }} import {{ type }}  # noqa
+{%- else %}
+    from ..targeting import {{ type }}  # noqa
+{% endif -%}
+{%- endif %}
+{%- endfor%}
 
-    from ..targeting import PnpResult  # noqa
+{% for type in nested_wpilib_types -%}
+from {{ get_message_by_name(type).python_module }} import {{ type }}
+{%- if not loop.last %},{% endif -%}
+{%- endfor%}
 
+@dataclass(kw_only=True)
+class {{ name }}:
+    {% for field in fields -%}
+    {{ field.name }}: {{ field | get_python_qualified_name }} = field(
+        default_factory={{ field | get_python_default_factory }}
+    )
+    {%- if not loop.last %}
+    {% endif -%}
+{%- endfor %}
+    photonStruct: ClassVar["{{ name }}Serde"]
 
-
-class MultiTargetPNPResultSerde:
-    # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "541096947e9f3ca2d3f425ff7b04aa7b"
-    MESSAGE_FORMAT = "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"
-
-    @staticmethod
-    def pack(value: "MultiTargetPNPResult") -> "Packet":
-        ret = Packet()
-
-        # estimatedPose is of non-intrinsic type PnpResult
-        ret.encodeBytes(PnpResult.photonStruct.pack(value.estimatedPose).getData())
-
-        # fiducialIDsUsed is a custom VLA!
-        ret.encodeListShimmed(value.fiducialIDsUsed, ret.encode16)
-        return ret
-
-    @staticmethod
-    def unpack(packet: "Packet") -> "MultiTargetPNPResult":
-        ret = MultiTargetPNPResult()
-
-        # estimatedPose is of non-intrinsic type PnpResult
-        ret.estimatedPose = PnpResult.photonStruct.unpack(packet)
-
-        # fiducialIDsUsed is an intrinsic VLA!
-        ret.fiducialIDsUsed = packet.decodeListShimmed(packet.decode16)
-
-        return ret
-
-
-# Hack ourselves into the base class
-MultiTargetPNPResult.photonStruct = MultiTargetPNPResultSerde()

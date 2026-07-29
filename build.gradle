@@ -65,7 +65,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/src/generated/**', "**/bin/generated-sources/**"
+            exclude '**/build/**', '**/build-*/**', '**/src/generated/**', '**/src/generated-test/**', "**/bin/generated-sources/**", "photon-serde-tests/src/**"
         }
         toggleOffOn()
         googleJavaFormat()

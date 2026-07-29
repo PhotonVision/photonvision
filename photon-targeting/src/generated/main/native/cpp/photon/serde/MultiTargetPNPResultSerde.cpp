@@ -26,6 +26,7 @@
 
 #include "photon/serde/MultiTargetPNPResultSerde.h"
 
+
 namespace photon {
 
 using StructType = SerdeType<MultiTargetPNPResult>;

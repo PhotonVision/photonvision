@@ -29,11 +29,15 @@
 
 from typing import TYPE_CHECKING
 
+
 from ..packet import Packet
 from ..targeting import *  # noqa
 
+
+
 if TYPE_CHECKING:
     from ..targeting import TargetCorner  # noqa
+
 
 
 class TargetCornerSerde:
