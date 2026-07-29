@@ -118,8 +118,7 @@ jobs:
               pnpm install
               pnpm test-setup
           - name: Prebuild Gradle
-            run: |
-              ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
+            run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Run Playwright tests
         working-directory: photon-client
         run: pnpm test
@@ -135,15 +134,11 @@ jobs:
     container: wpilib/systemcore-cross-debian:trixie
     needs: [validation]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Config Git
-        run: |
-          git config --global --add safe.directory /__w/photonvision/photonvision
-      - name: Fetch tags
-        run: git fetch --tags --force
+      - run: git config --global --add safe.directory /__w/photonvision/photonvision
+      - run: git fetch --tags --force
       - uses: actions/setup-java@v5
         with:
           java-version: 25
