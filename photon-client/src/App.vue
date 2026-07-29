@@ -7,6 +7,7 @@ import { inject, onBeforeMount } from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
+import ReplayBanner from "@/components/common/ReplayBanner.vue";
 import { useTheme } from "vuetify";
 import { restoreThemeConfig } from "@/lib/ThemeManager";
 
@@ -68,6 +69,7 @@ onBeforeMount(() => {
 <template>
   <v-app>
     <photon-sidebar />
+    <replay-banner />
     <v-main>
       <v-container class="main-container" fluid fill-height>
         <v-layout>

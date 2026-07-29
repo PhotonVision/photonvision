@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.camera;
 
-import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;

@@ -23,7 +23,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.LibcameraGpuFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -48,11 +47,7 @@ public class LibcameraGpuSource extends VisionSource {
 
         settables = new LibcameraGpuSettables(configuration);
         frameProvider = new LibcameraGpuFrameProvider(settables);
-    }
-
-    @Override
-    public FrameProvider getFrameProvider() {
-        return frameProvider;
+        setFrameProvider(frameProvider);
     }
 
     @Override
@@ -107,5 +102,8 @@ public class LibcameraGpuSource extends VisionSource {
     public void release() {
         frameProvider.release();
         frameProvider = null;
+        // Intentionally don't setFrameProvider(null): see USBCameraSource.release() for the
+        // same reasoning — VisionRunner reads the provider every tick and joins on stop()
+        // before this runs, so the stale volatile reference has no live consumer.
     }
 }

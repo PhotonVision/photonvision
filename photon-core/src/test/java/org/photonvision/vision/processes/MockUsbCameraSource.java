@@ -39,6 +39,9 @@ public class MockUsbCameraSource extends USBCameraSource {
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV);
+        // Replaces the live USB provider that super(config) registered with the file-frame
+        // stand-in so getFrameProvider() (read by VisionRunner each tick) sees the mock.
+        setFrameProvider(usbFrameProvider);
 
         this.settables = createSettables(config, null);
     }

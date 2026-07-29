@@ -17,11 +17,18 @@
 
 package org.photonvision.vision.frame.provider;
 
+import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 import org.opencv.core.Mat;
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.PathManager;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.PathSafety;
 import org.photonvision.jni.CscoreExtras;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipeline.FrameRecorder;
 import org.photonvision.vision.processes.VisionSourceSettables;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.util.RawFrame;
@@ -79,6 +86,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                 logger.error("Error grabbing image: " + error);
             }
 
+            offerToRecorder(mat, captureTimeNs);
             return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
         } else {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
@@ -115,7 +123,18 @@ public class USBFrameProvider extends CpuImageProcessor {
                 ret = new CVMat(mat, frame);
             }
 
+            offerToRecorder(ret, captureTimeUs * 1000);
             return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);
+        }
+    }
+
+    // Snapshot the volatile recorder once: the NT listener thread can null it between the read
+    // and the use. recordFrame self-guards on its AtomicBooleans, so late submissions during
+    // release() drop cleanly.
+    private void offerToRecorder(CVMat mat, long captureNs) {
+        FrameRecorder rec = frameRecorder;
+        if (rec != null && rec.isRecording()) {
+            rec.recordFrame(mat, captureNs);
         }
     }
 
@@ -124,11 +143,17 @@ public class USBFrameProvider extends CpuImageProcessor {
         return "USBFrameProvider - " + cvSink.getName();
     }
 
+    // Synchronized for symmetry with setRecording: a concurrent setRecording(true) mid-
+    // construction would otherwise leave an orphan recorder (created after release saw null).
     @Override
-    public void release() {
+    public synchronized void release() {
         CameraServer.removeServer(cvSink.getName());
         cvSink.close();
         cvSink = null;
+        if (frameRecorder != null) {
+            frameRecorder.release();
+            frameRecorder = null;
+        }
     }
 
     @Override
@@ -147,5 +172,64 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     public void updateSettables(VisionSourceSettables settables) {
         this.settables = settables;
+    }
+
+    // Synchronized to serialize start/stop transitions: without it, two concurrent
+    // setRecording(true) calls can both pass the getRecording() check while frameRecorder
+    // is null, both construct a FrameRecorder, and the second assignment orphans the first
+    // (writer thread + file handles leaked forever, no path to release).
+    @Override
+    public synchronized void setRecording(boolean shouldRecord) {
+        if (shouldRecord) {
+            String camPath = settables.getConfiguration().uniqueName;
+
+            // Timestamp first so names never collide within a match; match data (if any) is
+            // FMS-supplied over an unauthenticated NT topic, so sanitize it before letting it
+            // become part of a path segment.
+            String recordingName =
+                    DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
+                            .format(java.time.LocalDateTime.now());
+            String matchData = NetworkTablesManager.getInstance().getMatchData();
+            if (matchData != null && !matchData.isBlank()) {
+                recordingName += "_" + matchData.replaceAll("[^A-Za-z0-9_-]", "_");
+            }
+
+            Path outputPath;
+            try {
+                outputPath =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                camPath,
+                                recordingName);
+            } catch (SecurityException e) {
+                logger.error("Refusing to start recording at unsafe path: " + e.getMessage());
+                return;
+            }
+
+            if (frameRecorder != null && frameRecorder.isRecording()) {
+                logger.warn("Frame recorder is already recording!");
+                return;
+            }
+
+            try {
+                frameRecorder = new FrameRecorder(outputPath);
+                frameRecorder.startRecording();
+            } catch (Exception e) {
+                logger.error("Exception creating FrameRecorder", e);
+                return;
+            }
+        } else {
+            if (frameRecorder != null) {
+                frameRecorder.stopRecording();
+                frameRecorder.release();
+                frameRecorder = null;
+            }
+        }
+    }
+
+    @Override
+    public boolean getRecording() {
+        FrameRecorder rec = frameRecorder;
+        return rec != null && rec.isRecording();
     }
 }

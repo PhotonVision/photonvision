@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -53,6 +52,7 @@ public class FileVisionSource extends VisionSource {
 
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+        setFrameProvider(frameProvider);
     }
 
     public FileVisionSource(String name, String imagePath, double fov) {
@@ -65,11 +65,7 @@ public class FileVisionSource extends VisionSource {
         frameProvider = new FileFrameProvider(imagePath, fov);
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
-    }
-
-    @Override
-    public FrameProvider getFrameProvider() {
-        return frameProvider;
+        setFrameProvider(frameProvider);
     }
 
     @Override

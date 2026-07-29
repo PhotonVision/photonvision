@@ -18,11 +18,17 @@
 package org.photonvision.vision.processes;
 
 import io.javalin.websocket.WsContext;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -46,9 +52,12 @@ import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
+import org.photonvision.vision.frame.provider.FileLogFrameProvider;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.JsonResultExporter;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -96,6 +105,30 @@ public class VisionModule {
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
 
+    // Lazy: built on the first pipeline result for File Log Camera sources; null otherwise.
+    // Volatile so stop() (caller thread) sees writes made by the vision thread on first frame.
+    private volatile JsonResultExporter jsonResultExporter;
+    // Latches true on first open failure so we log + skip silently rather than spamming on
+    // every subsequent frame. Volatile: set on the vision thread, reset by the replayWorker
+    // in finishReplay.
+    private volatile boolean jsonExporterDisabled;
+    // Settings hashCode the live exporter was created with. Only touched on the vision thread
+    // (the tee path); a mismatch means the pipeline changed mid-replay and the exporter must be
+    // recreated against the new settings' file.
+    private int jsonExporterSettingsHash;
+
+    // Replay state — all guarded by the replayLock. The active replay provider's EOF / cancel
+    // callback dispatches the swap-back onto a single-thread executor so we never run cleanup on
+    // the vision thread mid-getInputMat.
+    private final Object replayLock = new Object();
+    private volatile boolean isReplaying;
+    private volatile long replayCurrentFrame;
+    private volatile long replayTotalFrames;
+    private volatile String replayRecordingName = "";
+    private FrameProvider savedFrameProvider;
+    private FileLogFrameProvider activeReplayProvider;
+    private java.util.concurrent.ExecutorService replayWorker;
+
     boolean mismatch;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
@@ -133,7 +166,7 @@ public class VisionModule {
         changeSubscriber = new VisionModuleChangeSubscriber(this);
         this.visionRunner =
                 new VisionRunner(
-                        this.visionSource.getFrameProvider(),
+                        this.visionSource::getFrameProvider,
                         this.pipelineManager::getCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks,
@@ -154,6 +187,10 @@ public class VisionModule {
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode,
+                        // Re-read the provider per call (not a bound method reference) so the NT
+                        // recording callbacks track in-place provider swaps (live → replay → live).
+                        () -> visionSource.getFrameProvider().getRecording(),
+                        (b) -> visionSource.getFrameProvider().setRecording(b),
                         this::getFPSLimit,
                         this::setFPSLimit,
                         this::getEnabled,
@@ -167,6 +204,7 @@ public class VisionModule {
         addResultConsumer(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        addResultConsumer(this::teeToJsonResultExporter);
 
         // Sync VisionModule state with the first pipeline index
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
@@ -237,6 +275,28 @@ public class VisionModule {
                 });
     }
 
+    private List<String> getRecordingsList() {
+        List<String> recordings = new ArrayList<>();
+        Path cameraRecordingDir =
+                ConfigManager.getInstance()
+                        .getRecordingsDirectory()
+                        .toPath()
+                        .resolve(visionSource.getSettables().getConfiguration().uniqueName);
+
+        if (cameraRecordingDir.toFile().exists() && cameraRecordingDir.toFile().isDirectory()) {
+            try {
+                java.nio.file.Files.list(cameraRecordingDir)
+                        .filter(java.nio.file.Files::isDirectory)
+                        .map(Path::getFileName)
+                        .map(Path::toString)
+                        .forEach(recordings::add);
+            } catch (Exception e) {
+                logger.error("Exception listing recordings", e);
+            }
+        }
+        return recordings;
+    }
+
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
@@ -290,9 +350,8 @@ public class VisionModule {
                 }
                 if (shouldRun) {
                     try {
-                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
+                        outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
-
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
@@ -322,6 +381,27 @@ public class VisionModule {
     }
 
     public void stop() {
+        // If a replay is in flight, end it cleanly before tearing the runner down so the
+        // saved provider is restored on the source — otherwise a subsequent start() of this
+        // module would resume against the file-log provider. cancelReplay() dispatches the
+        // swap-back to replayWorker; spin briefly so we don't race teardown against it.
+        if (isReplaying) {
+            try {
+                cancelReplay();
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+                while (isReplaying && System.nanoTime() < deadline) {
+                    Thread.sleep(20);
+                }
+                if (isReplaying) {
+                    logger.warn("Replay swap-back did not complete within 3s during stop()");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                logger.error("Exception cancelling replay during stop()", e);
+            }
+        }
+
         visionSource.cameraConfiguration.deactivated = true;
         visionRunner.stopProcess();
 
@@ -338,9 +418,197 @@ public class VisionModule {
         outputVideoStreamer.close();
         inputFrameSaver.close();
         outputFrameSaver.close();
-
+        var exporter = jsonResultExporter;
+        if (exporter != null) exporter.close();
+        synchronized (replayLock) {
+            if (replayWorker != null) {
+                replayWorker.shutdownNow();
+                replayWorker = null;
+            }
+        }
         changeSubscriberHandle.stop();
         setVisionLEDs(false);
+    }
+
+    /**
+     * @return true if this module's frame provider is currently a file-log replay source.
+     */
+    public boolean isReplaying() {
+        return isReplaying;
+    }
+
+    /** Snapshot of replay progress for polling-based UIs. Zeroed when not replaying. */
+    public ReplayStatus getReplayStatus() {
+        return new ReplayStatus(
+                isReplaying, replayRecordingName, replayCurrentFrame, replayTotalFrames);
+    }
+
+    public record ReplayStatus(
+            boolean isReplaying, String recordingName, long currentFrame, long totalFrames) {}
+
+    /**
+     * Swap this module's frame provider for a {@link FileLogFrameProvider} pointed at the given
+     * recording directory. The live provider is parked (its CvSink / GPU pipe keeps its connection,
+     * but VisionRunner stops pulling from it). On EOF or {@link #cancelReplay()} the live provider is
+     * restored automatically and the file-log provider is released. Only one replay can be active at
+     * a time per module.
+     *
+     * @throws IOException if the recording dir is missing the required structure (frames/000000.jpg +
+     *     metadata.jsonl).
+     * @throws IllegalStateException if a replay is already in flight on this module.
+     */
+    public void startReplay(Path recordingDir) throws IOException {
+        synchronized (replayLock) {
+            if (isReplaying) {
+                throw new IllegalStateException(
+                        "Replay already active on " + uniqueName() + "; cancel it before starting another");
+            }
+
+            // Open the provider first — IOExceptions surface to the caller, and we release on any
+            // later failure so the sidecar reader / frame count don't leak. setOnProgress / setOnEof
+            // MUST run before setFrameProvider; otherwise a natural EOF on the very first vision-tick
+            // could fire through an unwired callback and skip the swap-back.
+            var newProvider = new FileLogFrameProvider(recordingDir);
+            try {
+                String recordingName = recordingDir.getFileName().toString();
+                this.replayCurrentFrame = 0L;
+                this.replayTotalFrames = newProvider.getTotalFrames();
+                this.replayRecordingName = recordingName;
+                // Zero-out progress topics up front so an old replay's last-frame numbers don't
+                // linger visible in NT between this call and the first frame.
+                ntConsumer.publishReplayProgress(0L, newProvider.getTotalFrames(), recordingName);
+
+                newProvider.setOnProgress(
+                        current -> {
+                            this.replayCurrentFrame = current;
+                            ntConsumer.publishReplayProgress(
+                                    current, newProvider.getTotalFrames(), recordingName);
+                        });
+                // EOF fires on the vision thread inside getInputMat. Dispatch the swap-back to a
+                // dedicated worker so the vision thread can return its empty frame and pick up the
+                // restored provider on its next tick without us holding it inside cleanup.
+                newProvider.setOnEof(() -> dispatchReplayEnded("eof"));
+
+                this.savedFrameProvider = visionSource.getFrameProvider();
+                this.activeReplayProvider = newProvider;
+                if (this.replayWorker == null) {
+                    this.replayWorker =
+                            Executors.newSingleThreadExecutor(
+                                    r -> {
+                                        Thread t = new Thread(r, "ReplayWorker - " + uniqueName());
+                                        t.setDaemon(true);
+                                        return t;
+                                    });
+                }
+
+                visionSource.setFrameProvider(newProvider);
+                this.isReplaying = true;
+                ntConsumer.publishReplayState(true);
+                logger.info(
+                        "Started replay from "
+                                + recordingDir
+                                + " ("
+                                + newProvider.getTotalFrames()
+                                + " frames)");
+            } catch (RuntimeException e) {
+                // Roll back any partial state and release the now-orphaned sidecar reader.
+                this.savedFrameProvider = null;
+                this.activeReplayProvider = null;
+                try {
+                    newProvider.release();
+                } catch (Exception releaseEx) {
+                    logger.warn(
+                            "Failed to release file-log provider after startReplay failure: "
+                                    + releaseEx.getMessage());
+                }
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Force the active replay to end. Idempotent; no-op if not replaying. The actual swap-back runs
+     * on the replay worker thread and is fenced through {@code VisionRunner.runSynchronously} so the
+     * file-log provider is only released after the vision thread has moved off it.
+     */
+    public void cancelReplay() {
+        FileLogFrameProvider provider;
+        synchronized (replayLock) {
+            if (!isReplaying || activeReplayProvider == null) return;
+            provider = activeReplayProvider;
+        }
+        // requestStop fires the EOF callback synchronously via the same CAS that the natural-EOF
+        // path uses, so dispatchReplayEnded enqueues the swap-back exactly once.
+        provider.requestStop();
+    }
+
+    private void dispatchReplayEnded(String reason) {
+        java.util.concurrent.ExecutorService worker;
+        synchronized (replayLock) {
+            worker = replayWorker;
+            if (worker == null) return;
+        }
+        try {
+            worker.submit(() -> finishReplay(reason));
+        } catch (java.util.concurrent.RejectedExecutionException ex) {
+            // The worker was shut down between snapshot and submit (e.g. stop() racing
+            // cancelReplay() from another thread). Run the cleanup inline so isReplaying still
+            // flips false and the live provider is restored.
+            logger.warn(
+                    "Replay worker rejected swap-back submit ("
+                            + reason
+                            + "); running inline: "
+                            + ex.getMessage());
+            finishReplay(reason);
+        }
+    }
+
+    private void finishReplay(String reason) {
+        FrameProvider toRestore;
+        FileLogFrameProvider toRelease;
+        synchronized (replayLock) {
+            if (!isReplaying || activeReplayProvider == null) return;
+            toRestore = savedFrameProvider;
+            toRelease = activeReplayProvider;
+            savedFrameProvider = null;
+            activeReplayProvider = null;
+        }
+
+        // Restore the live provider first so VisionRunner re-reads it on the very next tick.
+        visionSource.setFrameProvider(toRestore);
+        // Fence: the runSynchronously task is drained at the top of the runner loop, before that
+        // tick's provider re-read. Its resolution proves the vision thread is at loop-top —
+        // outside any getInputMat() call on toRelease — and every provider read from there on
+        // sees the restored provider (the volatile write above), so the runner never re-enters
+        // toRelease.
+        try {
+            visionRunner.runSynchronously(() -> {}).get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warn("Interrupted while fencing replay swap-back");
+        } catch (ExecutionException | TimeoutException e) {
+            logger.warn(
+                    "Could not fence replay swap-back within 2s; releasing anyway: " + e.getMessage());
+        }
+        try {
+            toRelease.release();
+        } catch (Exception e) {
+            logger.warn("Exception releasing file-log replay provider: " + e.getMessage());
+        }
+
+        // Close + null the JSON exporter BEFORE isReplaying flips false: a poll that observes
+        // "replay ended" must be able to download a complete, flushed results file. The fence
+        // above guarantees the vision thread is done teeing to it.
+        var exporter = jsonResultExporter;
+        if (exporter != null) {
+            exporter.close();
+            jsonResultExporter = null;
+        }
+        jsonExporterDisabled = false;
+
+        isReplaying = false;
+        ntConsumer.publishReplayState(false);
+        logger.info("Replay ended (" + reason + ")");
     }
 
     public void setFov(double fov) {
@@ -559,6 +827,22 @@ public class VisionModule {
         inputFrameSaver.updateCameraNickname(newName);
         outputFrameSaver.updateCameraNickname(newName);
 
+        // updateCameraNickname() closes + recreates every per-camera NT publisher under the new
+        // subtable, including the replay-state publishers. Re-publish current replay state so a
+        // dashboard observing /photonvision/<newName>/* doesn't see false / 0 / "" while a replay
+        // is still in flight.
+        synchronized (replayLock) {
+            if (isReplaying) {
+                ntConsumer.publishReplayState(true);
+                if (activeReplayProvider != null) {
+                    ntConsumer.publishReplayProgress(
+                            0L,
+                            activeReplayProvider.getTotalFrames(),
+                            activeReplayProvider.getRecordingDir().getFileName().toString());
+                }
+            }
+        }
+
         // Push new data to the UI
         saveAndBroadcastAll();
     }
@@ -627,6 +911,8 @@ public class VisionModule {
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
+
+        ret.recordings = getRecordingsList();
 
         return ret;
     }
@@ -713,6 +999,71 @@ public class VisionModule {
         for (var c : streamResultConsumers) {
             c.accept(frame, targets);
         }
+    }
+
+    /**
+     * Tee pipeline results to a {@link JsonResultExporter} while this module's source is backed by a
+     * {@link FileLogFrameProvider} (the swap installed by {@link #startReplay}). Built lazily on the
+     * first replayed result and closed by {@code finishReplay} on swap-back; gating on the current
+     * frame provider rather than matchedCameraInfo lets the live camera's identity stay intact for
+     * the entire replay.
+     */
+    private void teeToJsonResultExporter(CVPipelineResult result) {
+        if (jsonExporterDisabled) return;
+        var replayDirOpt = visionSource.getReplayRecordingDir();
+        if (replayDirOpt.isEmpty()) return;
+        Path recordingDir = replayDirOpt.get();
+
+        var settings = pipelineManager.getCurrentPipelineSettings();
+        if (settings == null) return; // pre-init: skip and try again on the next frame.
+        int settingsHash = settings.hashCode();
+
+        var exporter = jsonResultExporter;
+        // A pipeline switch mid-replay invalidates the exporter: its file name and header carry
+        // the settings hash it was created with, so the new settings' results must not be
+        // appended to it. Close it here and lazily recreate below — all on the vision thread.
+        if (exporter != null && settingsHash != jsonExporterSettingsHash) {
+            exporter.close();
+            jsonResultExporter = null;
+            exporter = null;
+        }
+
+        if (exporter == null) {
+            Path outputFile =
+                    recordingDir.resolve("results").resolve(Integer.toHexString(settingsHash) + ".jsonl");
+
+            var snapshot = JsonResultExporter.readSnapshot(recordingDir);
+            if (snapshot.isEmpty() || !snapshot.get().tssActiveAtRecord()) {
+                logger.warn(
+                        "JsonResultExporter: tss snapshot missing or inactive in "
+                                + recordingDir
+                                + " — embedded packet timestamps will not be TSS-aligned");
+            }
+
+            // Frame-window bounds drop the NT4 last-published snapshot at replay start and the
+            // swap-back frame at replay end. Falls back to no-filter when metadata.jsonl is
+            // missing/unreadable; that case is logged inside readFrameWindow.
+            var frameWindow = JsonResultExporter.readFrameWindow(recordingDir);
+
+            try {
+                exporter =
+                        new JsonResultExporter(
+                                outputFile,
+                                visionSource.getSettables().getConfiguration().uniqueName,
+                                recordingDir.getFileName().toString(),
+                                settings,
+                                snapshot,
+                                frameWindow);
+            } catch (IOException e) {
+                logger.error("Failed to open JsonResultExporter at " + outputFile + ": " + e.getMessage());
+                jsonExporterDisabled = true; // latch: don't spam-retry on every subsequent frame.
+                return;
+            }
+            jsonExporterSettingsHash = settingsHash;
+            jsonResultExporter = exporter;
+        }
+
+        exporter.accept(result);
     }
 
     public void setTargetModel(TargetModel targetModel) {

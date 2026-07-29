@@ -63,6 +63,8 @@ public class PhotonCamera implements AutoCloseable {
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
+    BooleanPublisher recordingPublisher;
+    BooleanSubscriber recordingSubscriber;
     IntegerPublisher fpsLimitPublisher;
     IntegerSubscriber fpsLimitSubscriber;
     BooleanSubscriber enabledSubscriber;
@@ -82,6 +84,8 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
+        recordingPublisher.close();
+        recordingSubscriber.close();
         fpsLimitPublisher.close();
         fpsLimitSubscriber.close();
         enabledPublisher.close();
@@ -93,7 +97,6 @@ public class PhotonCamera implements AutoCloseable {
         pipelineIndexState.close();
         ledModeRequest.close();
         ledModeState.close();
-        pipelineIndexRequest.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
         topicNameSubscriber.close();
@@ -157,6 +160,8 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
+        recordingPublisher = cameraTable.getBooleanTopic("recordingRequest").publish();
+        recordingSubscriber = cameraTable.getBooleanTopic("recording").subscribe(false);
         fpsLimitPublisher = cameraTable.getIntegerTopic("fpsLimitRequest").publish();
         fpsLimitSubscriber = cameraTable.getIntegerTopic("fpsLimit").subscribe(-1);
         enabledPublisher = cameraTable.getBooleanTopic("enabledRequest").publish();
@@ -353,6 +358,26 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
+     * Returns whether the camera is recording.
+     *
+     * @return Whether the camera is recording.
+     */
+    public boolean getRecording() {
+        return recordingSubscriber.get();
+    }
+
+    /**
+     * Sets whether the camera is recording.
+     *
+     * @param recording Whether to set recording.
+     */
+    public void setRecording(boolean recording) {
+        recordingPublisher.set(recording);
+    }
+
+    /**
+     * Gets the FPS limit set on the camera.
+     *
      * @return The current FPS limit.
      */
     public int getFPSLimit() {

@@ -52,18 +52,11 @@ public class VisionModuleManagerTest {
     }
 
     private static class TestSource extends VisionSource {
-        private final FrameProvider provider;
-
         public TestSource(FrameProvider provider, CameraConfiguration cameraConfiguration) {
             super(cameraConfiguration);
-            this.provider = provider;
+            setFrameProvider(provider);
             if (getCameraConfiguration().cameraQuirks == null)
                 getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
-        }
-
-        @Override
-        public FrameProvider getFrameProvider() {
-            return provider;
         }
 
         @Override
