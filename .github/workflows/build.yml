@@ -154,8 +154,8 @@ jobs:
       - name: Generate Java/cpp Serde Tests
         working-directory: photon-serde
         run: |
-          python3 -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python3 -m pip install --upgrade pip --break-system-packages
+          pip install -r requirements.txt --break-system-packages
           python3 generate_messages.py --tests
       - name: Upload Java/cpp Serde Tests
         uses: actions/upload-artifact@v7
