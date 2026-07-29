@@ -39,12 +39,10 @@ jobs:
   #     needs: [build-photonlib-host, build-photonlib-docker]
 
   #     steps:
-  #       - name: Checkout code
-  #         uses: actions/checkout@v6
+  #       - uses: actions/checkout@v6
   #         with:
   #           fetch-depth: 0
-  #       - name: Fetch tags
-  #         run: git fetch --tags --force
+  #       - run: git fetch --tags --force
   #       - uses: actions/setup-java@v5
   #         with:
   #           java-version: 25
@@ -97,8 +95,7 @@ jobs:
     needs: [validation]
     # container: wpilib/systemcore-cross-debian:trixie
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
         with:
           java-version: 25
@@ -564,8 +561,7 @@ jobs:
     name: "Build image - ${{ matrix.image_suffix }}"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v8
