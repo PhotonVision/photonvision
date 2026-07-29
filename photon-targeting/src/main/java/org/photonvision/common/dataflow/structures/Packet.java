@@ -276,7 +276,7 @@ public class Packet {
     public <T extends PhotonStructSerializable<T>> void encodeList(List<T> data) {
         // Hack
         BiConsumer<Packet, T> encoder;
-        if (data.size() < 1) {
+        if (data.isEmpty()) {
             encoder =
                     (packet, value) -> {
                         ;
