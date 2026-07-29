@@ -45,7 +45,7 @@ public class ColoredShapePipeline
     private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
-    private final Draw2dTargetsPipe draw2DTargetsPipe = new Draw2dTargetsPipe();
+    private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -132,7 +132,7 @@ public class ColoredShapePipeline
         draw2DTargetsParams.showShape = true;
         draw2DTargetsParams.showMaximumBox = false;
         draw2DTargetsParams.showRotatedBox = false;
-        draw2DTargetsPipe.setParams(draw2DTargetsParams);
+        draw2dTargetsPipe.setParams(draw2DTargetsParams);
 
         draw2dCrosshairPipe.setParams(
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
@@ -214,5 +214,23 @@ public class ColoredShapePipeline
         var fps = fpsResult.output;
 
         return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
+    }
+
+    @Override
+    public void release() {
+        speckleRejectPipe.release();
+        findContoursPipe.release();
+        findPolygonPipe.release();
+        findCirclesPipe.release();
+        filterShapesPipe.release();
+        sortContoursPipe.release();
+        collect2dTargetsPipe.release();
+        cornerDetectionPipe.release();
+        solvePNPPipe.release();
+        draw2dCrosshairPipe.release();
+        draw2dTargetsPipe.release();
+        draw3dTargetsPipe.release();
+        calculateFPSPipe.release();
+        super.release();
     }
 }

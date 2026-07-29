@@ -61,9 +61,15 @@ public class FindPolygonPipe
                                 * Imgproc.arcLength(contour.getMat2f(), true),
                         true);
 
+        var corners = (int) approx.size().height;
+        approx.release();
+
         // The height of the resultant approximation is the number of vertices
-        return (int) approx.size().height;
+        return corners;
     }
+
+    @Override
+    public void release() {}
 
     /**
      * @param accuracyPercentage Accuracy percentage, 0-100

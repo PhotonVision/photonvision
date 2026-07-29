@@ -17,6 +17,11 @@
 
 package org.photonvision.vision.opencv;
 
-public interface Releasable {
+public interface Releasable extends AutoCloseable {
     void release();
+
+    @Override
+    default void close() {
+        release();
+    }
 }

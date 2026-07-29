@@ -93,23 +93,27 @@ public class FileSaveFrameConsumerTest {
                 new FileSaveFrameConsumer(camNickname, cameraUniqueName, streamPrefix);
 
         // AND a frameProvider giving a random test mode image
-        var frameProvider =
+        String eventName;
+        Date currentTime;
+        try (var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in, false),
-                        TestUtils.WPI2019Image.FOV);
+                        TestUtils.WPI2019Image.FOV)) {
+            // AND fake FMS data
+            eventName = "CASJ";
+            DriverStationSim.setMatchType(matchType);
+            DriverStationSim.setMatchNumber(matchNumber);
+            DriverStationSim.setEventName(eventName);
+            DriverStationBackend.refreshData();
 
-        // AND fake FMS data
-        String eventName = "CASJ";
-        DriverStationSim.setMatchType(matchType);
-        DriverStationSim.setMatchNumber(matchNumber);
-        DriverStationSim.setEventName(eventName);
-        DriverStationBackend.refreshData();
-
-        // WHEN we save the image
-        var currentTime = new Date();
-        var counterPublisher = consumer.saveFrameEntry.getTopic().publish();
-        counterPublisher.accept(1);
-        consumer.accept(frameProvider.get().colorImage, currentTime);
+            // WHEN we save the image
+            currentTime = new Date();
+            var counterPublisher = consumer.saveFrameEntry.getTopic().publish();
+            counterPublisher.accept(1);
+            try (var frame = frameProvider.get()) {
+                consumer.accept(frame.colorImage, currentTime);
+            }
+        }
 
         // THEN an image will be created on disk
         File expectedSnapshot =
