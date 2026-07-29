@@ -103,6 +103,11 @@ public class SolvePNPPipe
         target.setAltCameraToTarget3d(new Transform3d());
     }
 
+    @Override
+    public void release() {
+        imagePoints.release();
+    }
+
     public static record SolvePNPPipeParams(
             CameraCalibrationCoefficients cameraCoefficients, TargetModel targetModel) {}
 }

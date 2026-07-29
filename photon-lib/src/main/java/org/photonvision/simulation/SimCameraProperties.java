@@ -399,9 +399,10 @@ public class SimCameraProperties {
      * @return The percentage
      */
     public double getContourAreaPercent(Point[] points) {
-        return Imgproc.contourArea(new MatOfPoint2f(OpenCVHelp.getConvexHull(points)))
-                / getResArea()
-                * 100;
+        var contour = new MatOfPoint2f(OpenCVHelp.getConvexHull(points));
+        var percent = Imgproc.contourArea(contour) / getResArea() * 100;
+        contour.release();
+        return percent;
     }
 
     /** The yaw from the principal point of this camera to the pixel x value. Positive values left. */

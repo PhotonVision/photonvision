@@ -133,7 +133,11 @@ public class ObjectDetectionPipeline
 
     @Override
     public void release() {
+        calculateFPSPipe.release();
         objectDetectorPipe.release();
+        sortContoursPipe.release();
+        collect2dTargetsPipe.release();
+        filterContoursPipe.release();
         super.release();
     }
 }

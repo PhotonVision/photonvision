@@ -62,4 +62,7 @@ public class Collect2dTargetsPipe
             TargetOffsetPointEdge targetOffsetPointEdge,
             TargetOrientation targetOrientation,
             FrameStaticProperties frameStaticProperties) {}
+
+    @Override
+    public void release() {}
 }
