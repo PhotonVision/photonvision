@@ -32,7 +32,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
-public class PipelineManager {
+public class PipelineManager implements AutoCloseable {
     private static final Logger logger = new Logger(PipelineManager.class, LogGroup.VisionModule);
 
     public static final int DRIVERMODE_INDEX = -1;
@@ -48,7 +48,7 @@ public class PipelineManager {
     private int currentPipelineIndex = DRIVERMODE_INDEX;
 
     /** The currently active pipeline. */
-    private CVPipeline currentUserPipeline = driverModePipeline;
+    private CVPipeline currentUserPipeline = null;
 
     /**
      * Index of the last active user-created pipeline. <br>
@@ -159,7 +159,7 @@ public class PipelineManager {
             case DRIVERMODE_INDEX -> driverModePipeline;
             case FOCUS_INDEX -> focusPipeline;
             // Just return the current user pipeline, we're not on a built-in one
-            default -> currentUserPipeline;
+            default -> (currentUserPipeline != null) ? currentUserPipeline : driverModePipeline;
         };
     }
 
@@ -518,5 +518,13 @@ public class PipelineManager {
         setPipelineInternal(idx);
         reassignIndexes();
         recreateUserPipeline();
+    }
+
+    @Override
+    public void close() {
+        calibration3dPipeline.release();
+        focusPipeline.release();
+        driverModePipeline.release();
+        currentUserPipeline.release();
     }
 }

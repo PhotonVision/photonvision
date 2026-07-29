@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,7 +65,7 @@ import org.wpilib.vision.camera.VideoException;
  * <p>VisionModule has a pipeline manager, vision runner, and data providers. The data providers
  * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
  */
-public class VisionModule {
+public class VisionModule implements AutoCloseable {
     private final Logger logger;
     protected final PipelineManager pipelineManager;
     protected final VisionSource visionSource;
@@ -98,7 +99,10 @@ public class VisionModule {
 
     boolean mismatch;
 
-    public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
+    public VisionModule(
+            PipelineManager pipelineManager,
+            VisionSource visionSource,
+            Collection<CVPipelineResultConsumer> extraConsumers) {
         logger =
                 new Logger(
                         VisionModule.class,
@@ -161,12 +165,13 @@ public class VisionModule {
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
-        addResultConsumer(ntConsumer);
-        addResultConsumer(uiDataConsumer);
-        addResultConsumer(statusLEDsConsumer);
-        addResultConsumer(
+        resultConsumers.add(ntConsumer);
+        resultConsumers.add(uiDataConsumer);
+        resultConsumers.add(statusLEDsConsumer);
+        resultConsumers.add(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        resultConsumers.addAll(extraConsumers);
 
         // Sync VisionModule state with the first pipeline index
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
@@ -189,7 +194,9 @@ public class VisionModule {
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
+        getCameraConfiguration().deactivated = false;
         saveAndBroadcastAll();
+        start();
     }
 
     private void createStreams() {
@@ -257,6 +264,9 @@ public class VisionModule {
                 if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
                     this.latestFrame.release();
+                    if (this.targets != null) {
+                        this.targets.forEach(TrackedTarget::release);
+                    }
                 }
 
                 this.latestFrame = inputOutputFrame;
@@ -264,10 +274,6 @@ public class VisionModule {
                 this.targets = targets;
 
                 shouldRun = inputOutputFrame != null;
-                // && inputOutputFrame.colorImage != null
-                // && !inputOutputFrame.colorImage.getMat().empty()
-                // && inputOutputFrame.processedImage != null
-                // && !inputOutputFrame.processedImage.getMat().empty();
             }
         }
 
@@ -292,15 +298,18 @@ public class VisionModule {
                     try {
                         CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
-
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
-                    }
-                    try {
-                        m_frame.release();
-                    } catch (Exception e) {
-                        logger.error("Exception freeing frames", e);
+                    } finally {
+                        if (targets != null) {
+                            targets.forEach(TrackedTarget::release);
+                        }
+                        try {
+                            m_frame.release();
+                        } catch (Exception e) {
+                            logger.error("Exception freeing frames", e);
+                        }
                     }
                 } else {
                     // busy wait! hurray!
@@ -315,14 +324,12 @@ public class VisionModule {
         }
     }
 
-    public void start() {
-        visionSource.cameraConfiguration.deactivated = false;
+    private void start() {
         visionRunner.startProcess();
         streamRunnable.start();
     }
 
-    public void stop() {
-        visionSource.cameraConfiguration.deactivated = true;
+    private void stop() {
         visionRunner.stopProcess();
 
         try {
@@ -331,16 +338,6 @@ public class VisionModule {
         } catch (InterruptedException e) {
             logger.error("Exception killing process thread", e);
         }
-
-        visionSource.release();
-
-        inputVideoStreamer.close();
-        outputVideoStreamer.close();
-        inputFrameSaver.close();
-        outputFrameSaver.close();
-
-        changeSubscriberHandle.stop();
-        setVisionLEDs(false);
     }
 
     public void setFov(double fov) {
@@ -681,10 +678,6 @@ public class VisionModule {
         return config;
     }
 
-    public void addResultConsumer(CVPipelineResultConsumer dataConsumer) {
-        resultConsumers.add(dataConsumer);
-    }
-
     private void consumeResult(CVPipelineResult result) {
         consumePipelineResult(result);
 
@@ -763,5 +756,28 @@ public class VisionModule {
 
     public CameraConfiguration getCameraConfiguration() {
         return this.visionSource.cameraConfiguration;
+    }
+
+    @Override
+    public void close() {
+        if (visionRunner.isRunning()) {
+            stop();
+        }
+
+        // Ensure config is saved and synced before closing
+        saveAndBroadcastAll();
+
+        inputVideoStreamer.close();
+        outputVideoStreamer.close();
+        inputFrameSaver.close();
+        outputFrameSaver.close();
+
+        changeSubscriberHandle.stop();
+        setVisionLEDs(false);
+
+        visionRunner.close();
+        pipelineManager.close();
+        visionSource.close();
+        if (lastPipelineResultBestTarget != null) lastPipelineResultBestTarget.close();
     }
 }
