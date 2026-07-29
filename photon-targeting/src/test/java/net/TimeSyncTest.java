@@ -18,9 +18,11 @@
 package net;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.TimeSyncClient;
 import org.photonvision.jni.TimeSyncServer;
@@ -42,6 +44,7 @@ public class TimeSyncTest {
     }
 
     @Test
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
     public void smoketest() throws InterruptedException {
         // NetworkTableInstance.getDefault().stopClient();
         // NetworkTableInstance.getDefault().startServer();
