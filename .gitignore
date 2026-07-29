@@ -162,4 +162,8 @@ shell.nix
 flake.nix
 flake.lock
 
+# Auto Serde Tests
+photon-serde-tests/src/
+photon-serde-tests/py/
+
 /workspace

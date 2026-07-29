@@ -396,14 +396,14 @@ public class FindBoardCornersPipe
         }
 
         // enforce preconditions
-        if (outBoardCorners.total() != level.total() || level.total() != objPts.total()) {
+        if (imagePoints.total() != objectPoints.total() || (ids != null && imagePoints.total() != ids.total())) {
             logger.error(
-                    "Output board corners, levels, and object points must all be the same size. Got board corners of size "
-                            + outBoardCorners.size()
-                            + ", levels of size "
-                            + level.size()
-                            + ", and object points of size "
-                            + objPts.size());
+                    "Output image points, object points, and corner ids must all be the same size. Got image points of size "
+                            + imagePoints.size()
+                            + ", object points of size "
+                            + objectPoints.size()
+                            + ", and corner ids of size "
+                            + ids.size());
             return null;
         }
 

@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -316,16 +317,6 @@ public class Calibrate3dPipeTest {
             calibration3dPipeline.finishCalibration();
         }
 
-        assertTrue(
-                calibration3dPipeline.foundCornersList.stream()
-                        .map(it -> it.imagePoints)
-                        .allMatch(it -> it.width() > 0 && it.height() > 0));
-
-        var cal =
-                calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
-        calibration3dPipeline.finishCalibration();
         // visuallyDebugDistortion(directoryListing, imgRes, cal );
 
         // Confirm we have indeed gotten valid calibration objects

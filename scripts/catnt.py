@@ -31,7 +31,7 @@ def print_topic(inst: ntcore.NetworkTableInstance, topic: str):
     )
     print("")
     print(f"Subscribed to {topic}, typestring '{sub.getTopic().getTypeString()}'")
-    print(f"Properties:")
+    print("Properties:")
     print(sub.getTopic().getProperties())
     print("")
 

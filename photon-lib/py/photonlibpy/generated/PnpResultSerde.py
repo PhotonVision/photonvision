@@ -29,11 +29,15 @@
 
 from typing import TYPE_CHECKING
 
+
 from ..packet import Packet
 from ..targeting import *  # noqa
 
+
+
 if TYPE_CHECKING:
     from ..targeting import PnpResult  # noqa
+
 
 
 class PnpResultSerde:
@@ -45,8 +49,10 @@ class PnpResultSerde:
     def pack(value: "PnpResult") -> "Packet":
         ret = Packet()
 
+        # best is of shimmed type Transform3d
         ret.encodeTransform(value.best)
 
+        # alt is of shimmed type Transform3d
         ret.encodeTransform(value.alt)
 
         # bestReprojErr is of intrinsic type float64
