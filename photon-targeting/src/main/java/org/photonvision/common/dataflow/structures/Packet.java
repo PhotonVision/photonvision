@@ -183,6 +183,20 @@ public class Packet {
     }
 
     /**
+     * Encodes the float into the packet.
+     *
+     * @param src The float to encode.
+     */
+    public void encode(float src) {
+        ensureCapacity(4);
+        int data = Float.floatToIntBits(src);
+        packetData[writePos++] = (byte) (data & 0xff);
+        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
+        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
+    }
+
+    /**
      * Encodes the long into the packet.
      *
      * @param src The long to encode.
@@ -197,20 +211,6 @@ public class Packet {
         packetData[writePos++] = (byte) ((src >> 40) & 0xff);
         packetData[writePos++] = (byte) ((src >> 48) & 0xff);
         packetData[writePos++] = (byte) ((src >> 56) & 0xff);
-    }
-
-    /**
-     * Encodes the float into the packet.
-     *
-     * @param src The float to encode.
-     */
-    public void encode(float src) {
-        ensureCapacity(4);
-        int data = Float.floatToIntBits(src);
-        packetData[writePos++] = (byte) (data & 0xff);
-        packetData[writePos++] = (byte) ((data >> 8) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 16) & 0xff);
-        packetData[writePos++] = (byte) ((data >> 24) & 0xff);
     }
 
     /**
