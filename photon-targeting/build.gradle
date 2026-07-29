@@ -160,6 +160,14 @@ model {
     }
 }
 
+tasks.matching { it.name.startsWith('check') && it.name.contains('GoogleTestExe') }.configureEach {
+    timeout = java.time.Duration.ofMinutes(10)
+}
+
+test {
+    timeout = java.time.Duration.ofMinutes(10)
+}
+
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
 
 // Add photon serde headers to our published sources
