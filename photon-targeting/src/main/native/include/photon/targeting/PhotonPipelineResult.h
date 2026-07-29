@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <format>
 #include <span>
 #include <utility>
 
