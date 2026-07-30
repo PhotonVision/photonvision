@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.jni.ConstrainedSolvepnpJni;
@@ -39,11 +38,6 @@ public class ConstrainedSolvepnpTest {
         RuntimeLoader.loadLibrary("photontargetingJNI");
 
         HAL.initialize();
-    }
-
-    @AfterAll
-    public static void teardown() {
-        HAL.shutdown();
     }
 
     @Test
