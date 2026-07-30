@@ -127,8 +127,8 @@ jobs:
           retention-days: 30
   build-gradle:
     name: "Gradle Build"
-    runs-on: ubuntu-24.04
-    container: wpilib/systemcore-cross-debian:trixie
+    runs-on: ubuntu-26.04
+    # container: wpilib/systemcore-cross-debian:trixie
     needs: [validation]
     steps:
       - uses: actions/checkout@v6
