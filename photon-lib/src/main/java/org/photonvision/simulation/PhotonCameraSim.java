@@ -49,7 +49,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Transform3d;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 import org.wpilib.system.RobotController;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.util.WPIUtilJNI;

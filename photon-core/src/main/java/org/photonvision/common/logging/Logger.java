@@ -27,7 +27,7 @@ import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 /** TODO: get rid of static {} blocks and refactor to singleton pattern */
 public class Logger {

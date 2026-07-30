@@ -43,7 +43,7 @@ import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.math.numbers.N8;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
 /**
