@@ -19,9 +19,9 @@ package org.photonvision.vision.pipe.impl;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.opencv.calib3d.Calib3d;
@@ -221,27 +221,32 @@ public class Calibrate3dPipe
             List<FindBoardCornersPipe.FindBoardCornersPipeResult> observationCorners,
             FrameStaticProperties imageProps,
             Path imageSavePath) {
-        Iterator<MrCalObservation> observationData =
-                observationCorners.stream()
-                        .map(
-                                it -> {
-                                    var corners = it.imagePoints.toArray();
+        List<MrCalObservation> observationData =
+                new AbstractList<MrCalJNI.MrCalObservation>() {
+                    @Override
+                    public int size() {
+                        return observationCorners.size();
+                    }
 
-                                    var levels = new float[(int) it.imagePoints.total()];
-                                    Arrays.fill(levels, it.level);
+                    @Override
+                    public MrCalObservation get(int index) {
+                        var observation = observationCorners.get(index);
+                        var corners = observation.imagePoints.toArray();
 
-                                    var ids = it.ids != null ? it.ids.toArray() : null;
+                        var levels = new float[(int) observation.imagePoints.total()];
+                        Arrays.fill(levels, observation.level);
 
-                                    return new MrCalObservation(corners, levels, ids);
-                                })
-                        .iterator();
+                        var ids = observation.ids != null ? observation.ids.toArray() : null;
+
+                        return new MrCalObservation(corners, levels, ids);
+                    }
+                };
 
         int imageWidth = (int) observationCorners.get(0).size.width;
         int imageHeight = (int) observationCorners.get(0).size.height;
 
         MrCalResult result =
                 MrCalJNI.calibrateCamera(
-                        observationCorners.size(),
                         observationData,
                         params.boardWidth,
                         params.boardHeight,
