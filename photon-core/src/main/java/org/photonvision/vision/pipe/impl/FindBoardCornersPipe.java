@@ -396,7 +396,8 @@ public class FindBoardCornersPipe
         }
 
         // enforce preconditions
-        if (imagePoints.total() != objectPoints.total() || (ids != null && imagePoints.total() != ids.total())) {
+        if (imagePoints.total() != objectPoints.total()
+                || (ids != null && imagePoints.total() != ids.total())) {
             logger.error(
                     "Output image points, object points, and corner ids must all be the same size. Got image points of size "
                             + imagePoints.size()
