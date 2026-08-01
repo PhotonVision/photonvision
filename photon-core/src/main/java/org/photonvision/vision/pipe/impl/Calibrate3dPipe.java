@@ -428,12 +428,16 @@ public class Calibrate3dPipe
                 Imgcodecs.imwrite(image_path.toString(), inputImage);
             }
 
+            var cornerIdsMat = observationData.get(snapshotId).ids;
+            var cornerIds = cornerIdsMat != null ? cornerIdsMat.toArray() : null;
+
             observations.add(
                     new BoardObservation(
                             objectPoints.toList(),
                             iPoints,
                             reprojectionError,
                             camToBoard,
+                            cornerIds,
                             cornersUsed.get(snapshotId),
                             snapshotName,
                             image_path));
