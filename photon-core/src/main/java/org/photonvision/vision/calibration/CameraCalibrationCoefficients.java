@@ -18,17 +18,18 @@
 package org.photonvision.vision.calibration;
 
 import io.avaje.jsonb.Json;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
+import org.opencv.core.Point;
 import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.mrcal.MrCalJNI;
+import org.photonvision.mrcal.MrCalJNI.MrCalObservation;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 import org.wpilib.math.geometry.Pose3d;
@@ -341,34 +342,31 @@ public class CameraCalibrationCoefficients implements Releasable {
         int boardWidth = (int) calobjectSize.width;
         int boardHeight = (int) calobjectSize.height;
 
-        double[] xylevels = new double[boardWidth * boardHeight * 3 * observations.size()];
-        var rt_ref_frames = optimizationInputsRtToRef();
+        List<MrCalObservation> observationData =
+                observations.stream()
+                        .map(
+                                observation -> {
+                                    if (observation.locationInImageSpace.size() != observation.cornersUsed.length) {
+                                        throw new RuntimeException(
+                                                "Length mismatch! Got "
+                                                        + observation.locationInImageSpace.size()
+                                                        + " corners but "
+                                                        + observation.cornersUsed.length
+                                                        + " used flags");
+                                    }
 
-        int xylevelsIdx = 0;
-        for (var board : observations) {
-            if (board.locationInImageSpace.size() != board.cornersUsed.length) {
-                throw new RuntimeException(
-                        "Length mismatch! Got "
-                                + board.locationInImageSpace.size()
-                                + " corners but "
-                                + board.cornersUsed.length
-                                + " used flags");
-            }
+                                    var corners = observation.locationInImageSpace.toArray(new Point[0]);
+                                    var levels = new float[observation.cornersUsed.length];
 
-            var corners = board.locationInImageSpace;
+                                    for (int corner = 0; corner < observation.cornersUsed.length; corner++) {
+                                        levels[corner] = observation.cornersUsed[corner] ? 0.0f : -1.0f;
+                                    }
 
-            // xylevels is row-major per chessboard
-            for (int boardCornerIdx = 0; boardCornerIdx < corners.size(); boardCornerIdx++) {
-                var corner = corners.get(boardCornerIdx);
-                double level = board.cornersUsed[boardCornerIdx] ? 0.0 : -1.0;
+                                    var ids = observation.cornerIds;
 
-                xylevels[xylevelsIdx * 3 + 0] = corner.x;
-                xylevels[xylevelsIdx * 3 + 1] = corner.y;
-                xylevels[xylevelsIdx * 3 + 2] = level;
-
-                xylevelsIdx += 1;
-            }
-        }
+                                    return new MrCalObservation(corners, levels, ids);
+                                })
+                        .toList();
 
         double warpX, warpY;
         if (calobjectWarp == null || calobjectWarp.length != 2) {
@@ -392,10 +390,10 @@ public class CameraCalibrationCoefficients implements Releasable {
                 this.getDistCoeffsArr(), 0, mrcalIntrinsics, 4, this.getDistCoeffsArr().length);
 
         var uncertainty = // x, y, uncertainty
-                MrCalJNI.compute_uncertainty(
-                        xylevels,
+                MrCalJNI.computeUncertainty(
+                        observationData,
                         mrcalIntrinsics,
-                        rt_ref_frames,
+                        optimizationInputs.rt_cam_ref,
                         boardWidth,
                         boardHeight,
                         calobjectSpacing,
@@ -410,11 +408,6 @@ public class CameraCalibrationCoefficients implements Releasable {
             throw new RuntimeException("Failed to compute uncertainty");
         }
 
-        var ret = new ArrayList<Point3>();
-        for (int j = 0; j < uncertainty.length; j += 3) {
-            ret.add(new Point3(uncertainty[j + 0], uncertainty[j + 1], uncertainty[j + 2]));
-        }
-
-        return ret;
+        return Arrays.asList(uncertainty);
     }
 }
