@@ -51,7 +51,7 @@ node {
     pnpmVersion = "11.0.9"
 }
 
-tasks.register('copyClientUIToResources', Copy) {
+tasks.register('copyClientUIToResources', Sync) {
     from "${projectDir}/../photon-client/dist/"
     into "${projectDir}/src/main/resources/web/"
 }
