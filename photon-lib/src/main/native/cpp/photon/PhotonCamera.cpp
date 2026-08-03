@@ -119,11 +119,13 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
       cameraName(cameraName),
-      disconnectAlert(PHOTON_ALERT_GROUP, "disconnected",
+      disconnectAlert(PHOTON_ALERT_GROUP,
+                      "disconnected-" + std::to_string(InstanceCount),
                       std::string{"PhotonCamera '"} + std::string{cameraName} +
                           "' is disconnected.",
                       wpi::util::Alert::Level::MEDIUM),
-      timesyncAlert(PHOTON_ALERT_GROUP, "timesync", "",
+      timesyncAlert(PHOTON_ALERT_GROUP,
+                    "timesync-" + std::to_string(InstanceCount), "",
                     wpi::util::Alert::Level::MEDIUM) {
   InstanceCount++;
   HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
