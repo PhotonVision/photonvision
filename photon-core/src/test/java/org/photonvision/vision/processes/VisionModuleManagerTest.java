@@ -140,16 +140,6 @@ public class VisionModuleManagerTest {
         public void setSaturation(int saturation) {}
 
         @Override
-        public int getMinSaturation() {
-            return 1;
-        }
-
-        @Override
-        public int getMaxSaturation() {
-            return 1234;
-        }
-
-        @Override
         public void setAutoWhiteBalance(boolean autowb) {}
 
         @Override

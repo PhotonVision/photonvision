@@ -158,16 +158,6 @@ public class FileVisionSource extends VisionSource {
         }
 
         @Override
-        public int getMinSaturation() {
-            return 1;
-        }
-
-        @Override
-        public int getMaxSaturation() {
-            return 100;
-        }
-
-        @Override
         public void setAutoWhiteBalance(boolean autowb) {}
 
         @Override

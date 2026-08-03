@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
 import org.wpilib.util.PixelFormat;
@@ -50,8 +51,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     protected double minExposure = 1;
     protected double maxExposure = 80000;
 
-    protected int minSaturation = 0;
-    protected int maxSaturation = 100;
+    protected int minSaturationRaw = 0;
+    protected int maxSaturationRaw = 100;
 
     protected double minWhiteBalanceTemp = 1;
     protected double maxWhiteBalanceTemp = 4000;
@@ -118,8 +119,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             return;
         } else {
             saturationProp = satProp.get();
-            this.minSaturation = saturationProp.getMin();
-            this.maxSaturation = saturationProp.getMax();
+            this.minSaturationRaw = saturationProp.getMin();
+            this.maxSaturationRaw = saturationProp.getMax();
         }
     }
 
@@ -241,34 +242,26 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     @Override
-    public int getMinSaturation() {
-        return minSaturation;
-    }
-
-    @Override
-    public int getMaxSaturation() {
-        return maxSaturation;
-    }
-
-    @Override
     public void setSaturation(int saturation) {
-        if (saturation >= 0.0) {
-            try {
-                int propVal = Math.clamp(saturation, minSaturation, maxSaturation);
+        if (saturationProp == null) {
+            return;
+        }
 
-                logger.debug(
-                        "Setting property "
-                                + saturationProp.getName()
-                                + " to "
-                                + propVal
-                                + " (user requested "
-                                + saturation
-                                + ")");
+        try {
+            int propVal = MathUtils.map(saturation, 0, 100, minSaturationRaw, maxSaturationRaw);
 
-                saturationProp.set(propVal);
-            } catch (VideoException e) {
-                logger.error("Failed to set camera saturation!", e);
-            }
+            logger.debug(
+                    "Setting property "
+                            + saturationProp.getName()
+                            + " to "
+                            + propVal
+                            + " (user requested "
+                            + saturation
+                            + "%)");
+
+            saturationProp.set(propVal);
+        } catch (VideoException e) {
+            logger.error("Failed to set camera saturation!", e);
         }
     }
 

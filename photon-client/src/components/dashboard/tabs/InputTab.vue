@@ -163,9 +163,9 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraSaturation"
-      label="Saturation Temperature"
-      :min="useCameraSettingsStore().minSaturation"
-      :max="useCameraSettingsStore().maxSaturation"
+      label="Saturation"
+      :min="0"
+      :max="100"
       :slider-cols="interactiveCols"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraSaturation: args }, false)

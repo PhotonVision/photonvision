@@ -117,8 +117,6 @@ export interface PipelineSettings {
   cameraMinExposureRaw: number;
   cameraMaxExposureRaw: number;
   cameraSaturation: number;
-  cameraMinSaturation: number;
-  cameraMaxSaturation: number;
   offsetSinglePoint: { x: number; y: number };
   cameraBrightness: number;
   offsetDualPointAArea: number;
@@ -203,8 +201,6 @@ export const DefaultPipelineSettings: Omit<
   cameraMinExposureRaw: 1,
   cameraMaxExposureRaw: 2,
   cameraSaturation: 50,
-  cameraMinSaturation: 0,
-  cameraMaxSaturation: 100,
   crosshair: true,
   blockForFrames: true
 };
