@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: dev
+  IMAGE_VERSION: Dev
 
 jobs:
 
