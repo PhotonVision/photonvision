@@ -47,7 +47,6 @@ public class CVPipelineSettings implements Cloneable {
     public double cameraExposureRaw = 20;
     public double cameraMinExposureRaw = 1;
     public double cameraMaxExposureRaw = 100;
-    // Saturation is always on a 0-100 scale; camera backends rescale it as needed
     public int cameraSaturation = 50;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
