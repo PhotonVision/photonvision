@@ -229,6 +229,8 @@ jobs:
             artifact-name: Win64
           - os: macos-26
             artifact-name: macOS
+          - os: ubuntu-26.04
+            artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
