@@ -6,7 +6,7 @@ test("Camera Gain Slider won't go past max or min", async ({ page }) => {
 
   const cameraGainInput = page
     .locator("div.d-flex", { has: page.locator("span", { hasText: "Camera Gain" }) })
-    .locator('input[type="number"]');
+    .locator("input[type=\"number\"]");
 
   // Fill in Camera Gain text field with 1000
   await cameraGainInput.fill("1000");
