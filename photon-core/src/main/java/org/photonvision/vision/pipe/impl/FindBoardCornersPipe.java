@@ -350,6 +350,13 @@ public class FindBoardCornersPipe
                 // Decimation was not used
                 level = 0.0f;
 
+                if (ids.rows() == params.boardWidth * params.boardHeight) {
+                    // OpenCV detector always outputs corners sorted by ID, so it is safe to not sort the
+                    // corners
+                    ids.release();
+                    ids = null;
+                }
+
                 break;
             case CHESSBOARD:
                 // Reduce the image size to be much more manageable
