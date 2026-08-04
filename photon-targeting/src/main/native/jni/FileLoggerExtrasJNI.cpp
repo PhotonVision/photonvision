@@ -15,7 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <filesystem>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -30,12 +32,19 @@ struct QueuedFileLogger {
 
   std::mutex m_mutex;
 
-  wpi::log::FileLogger logger;
+  // TODO: revert when upstream fix gets merged
+  // wpi::log::FileLogger spawns a reader thread that blocks forever in read()
+  // (and whose destructor then hangs joining it) when the watched file does
+  // not exist, so only create one when the file is actually present.
+  std::unique_ptr<wpi::log::FileLogger> logger;
 
-  explicit QueuedFileLogger(std::string_view file)
-      : logger{file, std::bind(&QueuedFileLogger::callback, this,
-                               std::placeholders::_1)} {
-    // wpi::util::println("Watching {}", file);
+  explicit QueuedFileLogger(std::string_view file) {
+    if (std::filesystem::exists(file)) {
+      // wpi::util::println("Watching {}", file);
+      logger = std::make_unique<wpi::log::FileLogger>(
+          file, std::bind(&QueuedFileLogger::callback, this,
+                          std::placeholders::_1));
+    }
   }
 
   void callback(std::string_view newline) {
