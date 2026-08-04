@@ -42,8 +42,8 @@ struct QueuedFileLogger {
     if (std::filesystem::exists(file)) {
       // wpi::util::println("Watching {}", file);
       logger = std::make_unique<wpi::log::FileLogger>(
-          file, std::bind(&QueuedFileLogger::callback, this,
-                          std::placeholders::_1));
+          file,
+          std::bind(&QueuedFileLogger::callback, this, std::placeholders::_1));
     }
   }
 
