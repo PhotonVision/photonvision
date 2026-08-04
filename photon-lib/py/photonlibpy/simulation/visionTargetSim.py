@@ -88,17 +88,17 @@ class VisionTargetSim:
     def __eq__(self, other) -> bool:
         # Use 1 inch and 1 degree tolerance
         return (
-            abs(self.pose.translation().X() - other.getPose().translation().X())
+            abs(self.pose.translation().x - other.getPose().translation().x)
             < 0.0254
-            and abs(self.pose.translation().Y() - other.getPose().translation().Y())
+            and abs(self.pose.translation().y - other.getPose().translation().y)
             < 0.0254
-            and abs(self.pose.translation().Z() - other.getPose().translation().Z())
+            and abs(self.pose.translation().z - other.getPose().translation().z)
             < 0.0254
-            and abs(self.pose.rotation().X() - other.getPose().rotation().X())
+            and abs(self.pose.rotation().x - other.getPose().rotation().x)
             < math.radians(1)
-            and abs(self.pose.rotation().Y() - other.getPose().rotation().Y())
+            and abs(self.pose.rotation().y - other.getPose().rotation().y)
             < math.radians(1)
-            and abs(self.pose.rotation().Z() - other.getPose().rotation().Z())
+            and abs(self.pose.rotation().z - other.getPose().rotation().z)
             < math.radians(1)
             and self.model.getIsPlanar() == other.getModel().getIsPlanar()
         )

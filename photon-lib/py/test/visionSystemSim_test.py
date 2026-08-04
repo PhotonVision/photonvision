@@ -14,7 +14,7 @@ from wpimath import (
     Translation2d,
     Translation3d,
 )
-from wpimath.units import feetToMeters, meters
+from wpimath.units import feet_to_meters, meters
 
 
 def test_VisibilityCupidShuffle() -> None:
@@ -25,7 +25,7 @@ def test_VisibilityCupidShuffle() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
 
     visionSysSim.addVisionTargets(
         [
@@ -36,37 +36,37 @@ def test_VisibilityCupidShuffle() -> None:
     )
 
     # To the right, to the right
-    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(-70.0))
+    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.from_degrees(-70.0))
     visionSysSim.update(robotPose)
     assert not camera.getLatestResult().hasTargets()
 
     # To the right, to the right
-    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(-95.0))
+    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.from_degrees(-95.0))
     visionSysSim.update(robotPose)
     assert not camera.getLatestResult().hasTargets()
 
     # To the left, to the left
-    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(90.0))
+    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.from_degrees(90.0))
     visionSysSim.update(robotPose)
     assert not camera.getLatestResult().hasTargets()
 
     # To the left, to the left
-    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(65.0))
+    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.from_degrees(65.0))
     visionSysSim.update(robotPose)
     assert not camera.getLatestResult().hasTargets()
 
     # Now kick, now kick
-    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.from_degrees(5.0))
     visionSysSim.update(robotPose)
     assert camera.getLatestResult().hasTargets()
 
     # Now kick, now kick
-    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.fromDegrees(-5.0))
+    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.from_degrees(-5.0))
     visionSysSim.update(robotPose)
     assert camera.getLatestResult().hasTargets()
 
     # Now walk it by yourself
-    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.fromDegrees(-179.0))
+    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.from_degrees(-179.0))
     visionSysSim.update(robotPose)
     assert not camera.getLatestResult().hasTargets()
 
@@ -84,7 +84,7 @@ def test_bunchaTargets() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
 
     for i in range(100):
         targetPose = Pose3d(
@@ -100,7 +100,7 @@ def test_bunchaTargets() -> None:
             ]
         )
 
-    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.from_degrees(5.0))
 
     visionSysSim.update(robotPose)
 
@@ -115,7 +115,7 @@ def test_NotVisibleVert1() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
 
     visionSysSim.addVisionTargets(
         [
@@ -125,7 +125,7 @@ def test_NotVisibleVert1() -> None:
         ]
     )
 
-    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(5.0, 0.0), Rotation2d.from_degrees(5.0))
 
     visionSysSim.update(robotPose)
     assert camera.getLatestResult().hasTargets()
@@ -151,7 +151,7 @@ def test_NotVisibleVert2() -> None:
     visionSysSim.addCamera(cameraSim, robotToCamera)
 
     cameraSim.prop.setCalibrationFromFOV(
-        4774, 4774, fovDiag=Rotation2d.fromDegrees(80.0)
+        4774, 4774, fovDiag=Rotation2d.from_degrees(80.0)
     )
     visionSysSim.addVisionTargets(
         [
@@ -161,11 +161,11 @@ def test_NotVisibleVert2() -> None:
         ]
     )
 
-    robotPose = Pose2d(Translation2d(13.98, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(13.98, 0.0), Rotation2d.from_degrees(5.0))
     visionSysSim.update(robotPose)
     assert camera.getLatestResult().hasTargets()
 
-    robotPose = Pose2d(Translation2d(0.0, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(0.0, 0.0), Rotation2d.from_degrees(5.0))
     visionSysSim.update(robotPose)
     assert not camera.getLatestResult().hasTargets()
 
@@ -178,7 +178,7 @@ def test_NotVisibleTargetSize() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
     cameraSim.setMinTargetAreaPixels(20.0)
     visionSysSim.addVisionTargets(
         [
@@ -188,11 +188,11 @@ def test_NotVisibleTargetSize() -> None:
         ]
     )
 
-    robotPose = Pose2d(Translation2d(12.0, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(12.0, 0.0), Rotation2d.from_degrees(5.0))
     visionSysSim.update(robotPose)
     assert camera.getLatestResult().hasTargets()
 
-    robotPose = Pose2d(Translation2d(0.0, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(0.0, 0.0), Rotation2d.from_degrees(5.0))
     visionSysSim.update(robotPose)
     assert not camera.getLatestResult().hasTargets()
 
@@ -205,7 +205,7 @@ def test_NotVisibleTooFarLeds() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
     cameraSim.setMinTargetAreaPixels(1.0)
     cameraSim.setMaxSightRange(10.0)
     visionSysSim.addVisionTargets(
@@ -216,11 +216,11 @@ def test_NotVisibleTooFarLeds() -> None:
         ]
     )
 
-    robotPose = Pose2d(Translation2d(10.0, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(10.0, 0.0), Rotation2d.from_degrees(5.0))
     visionSysSim.update(robotPose)
     assert camera.getLatestResult().hasTargets()
 
-    robotPose = Pose2d(Translation2d(0.0, 0.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(0.0, 0.0), Rotation2d.from_degrees(5.0))
     visionSysSim.update(robotPose)
     assert not camera.getLatestResult().hasTargets()
 
@@ -239,7 +239,7 @@ def test_YawAngles(expected_yaw) -> None:
 
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
     cameraSim.setMinTargetAreaPixels(0.0)
     visionSysSim.addVisionTargets(
         [
@@ -249,7 +249,7 @@ def test_YawAngles(expected_yaw) -> None:
         ]
     )
 
-    robotPose = Pose2d(Translation2d(10.0, 0.0), Rotation2d.fromDegrees(expected_yaw))
+    robotPose = Pose2d(Translation2d(10.0, 0.0), Rotation2d.from_degrees(expected_yaw))
     visionSysSim.update(robotPose)
 
     result = camera.getLatestResult()
@@ -267,7 +267,7 @@ def test_PitchAngles(expected_pitch) -> None:
         Translation3d(15.98, 0.0, 0.0), Rotation3d(0, 0, 3.0 * math.pi / 4.0)
     )
     robotPose = Pose2d(
-        Translation2d(10.0, 0.0), Rotation2d.fromDegrees(-expected_pitch)
+        Translation2d(10.0, 0.0), Rotation2d.from_degrees(-expected_pitch)
     )
     visionSysSim = VisionSystemSim("Test")
     camera = PhotonCamera("camera")
@@ -275,7 +275,7 @@ def test_PitchAngles(expected_pitch) -> None:
     visionSysSim.addCamera(cameraSim, Transform3d())
 
     cameraSim.prop.setCalibrationFromFOV(
-        640, 480, fovDiag=Rotation2d.fromDegrees(120.0)
+        640, 480, fovDiag=Rotation2d.from_degrees(120.0)
     )
     cameraSim.setMinTargetAreaPixels(0.0)
     visionSysSim.addVisionTargets(
@@ -323,9 +323,9 @@ def test_PitchAngles(expected_pitch) -> None:
     ],
 )
 def test_distanceCalc(distParam, pitchParam, heightParam) -> None:
-    distParam = feetToMeters(distParam)
+    distParam = feet_to_meters(distParam)
     pitchParam = math.radians(pitchParam)
-    heightParam = feetToMeters(heightParam)
+    heightParam = feet_to_meters(heightParam)
 
     targetPose = Pose3d(
         Translation3d(15.98, 0.0, 1.0), Rotation3d(0.0, 0.0, 0.98 * math.pi)
@@ -343,7 +343,7 @@ def test_distanceCalc(distParam, pitchParam, heightParam) -> None:
     visionSysSim.addCamera(cameraSim, Transform3d())
 
     cameraSim.prop.setCalibrationFromFOV(
-        640, 480, fovDiag=Rotation2d.fromDegrees(160.0)
+        640, 480, fovDiag=Rotation2d.from_degrees(160.0)
     )
     cameraSim.setMinTargetAreaPixels(0.0)
     visionSysSim.adjustCamera(cameraSim, robotToCamera)
@@ -379,83 +379,83 @@ def test_MultipleTargets() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
     visionSysSim.addVisionTargets(
         [
             VisionTargetSim(
-                targetPoseL.transformBy(
+                targetPoseL.transform_by(
                     Transform3d(Translation3d(0, 0, 0), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 1,
             ),
             VisionTargetSim(
-                targetPoseC.transformBy(
+                targetPoseC.transform_by(
                     Transform3d(Translation3d(0, 0, 0), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 2,
             ),
             VisionTargetSim(
-                targetPoseR.transformBy(
+                targetPoseR.transform_by(
                     Transform3d(Translation3d(0, 0, 0), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 3,
             ),
             VisionTargetSim(
-                targetPoseL.transformBy(
+                targetPoseL.transform_by(
                     Transform3d(Translation3d(0, 0, 1), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 4,
             ),
             VisionTargetSim(
-                targetPoseC.transformBy(
+                targetPoseC.transform_by(
                     Transform3d(Translation3d(0, 0, 1), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 5,
             ),
             VisionTargetSim(
-                targetPoseR.transformBy(
+                targetPoseR.transform_by(
                     Transform3d(Translation3d(0, 0, 1), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 6,
             ),
             VisionTargetSim(
-                targetPoseL.transformBy(
+                targetPoseL.transform_by(
                     Transform3d(Translation3d(0, 0, 0.5), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 7,
             ),
             VisionTargetSim(
-                targetPoseC.transformBy(
+                targetPoseC.transform_by(
                     Transform3d(Translation3d(0, 0, 0.5), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 8,
             ),
             VisionTargetSim(
-                targetPoseL.transformBy(
+                targetPoseL.transform_by(
                     Transform3d(Translation3d(0, 0, 0.75), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 9,
             ),
             VisionTargetSim(
-                targetPoseR.transformBy(
+                targetPoseR.transform_by(
                     Transform3d(Translation3d(0, 0, 0.75), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
                 10,
             ),
             VisionTargetSim(
-                targetPoseL.transformBy(
+                targetPoseL.transform_by(
                     Transform3d(Translation3d(0, 0, 0.25), Rotation3d())
                 ),
                 TargetModel.AprilTag16h5(),
@@ -463,7 +463,7 @@ def test_MultipleTargets() -> None:
             ),
         ]
     )
-    robotPose = Pose2d(Translation2d(6.0, 0.0), Rotation2d.fromDegrees(0.25))
+    robotPose = Pose2d(Translation2d(6.0, 0.0), Rotation2d.from_degrees(0.25))
     visionSysSim.update(robotPose)
     res = camera.getLatestResult()
     assert res.hasTargets()
@@ -477,27 +477,27 @@ def test_PoseEstimation() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(90.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
     tagList: list[AprilTag] = []
     at0 = AprilTag()
-    at0.ID = 0
+    at0.id = 0
     at0.pose = Pose3d(12.0, 3.0, 1.0, Rotation3d(0.0, 0.0, math.pi))
     tagList.append(at0)
     at1 = AprilTag()
-    at1.ID = 1
+    at1.id = 1
     at1.pose = Pose3d(12.0, 1.0, -1.0, Rotation3d(0.0, 0.0, math.pi))
     tagList.append(at1)
     at2 = AprilTag()
-    at2.ID = 2
+    at2.id = 2
     at2.pose = Pose3d(11.0, 0.0, 2.0, Rotation3d(0.0, 0.0, math.pi))
     tagList.append(at2)
 
     fieldLength: meters = 54.0
     fieldWidth: meters = 27.0
     layout = AprilTagFieldLayout(tagList, fieldLength, fieldWidth)
-    robotPose = Pose2d(Translation2d(5.0, 1.0), Rotation2d.fromDegrees(5.0))
+    robotPose = Pose2d(Translation2d(5.0, 1.0), Rotation2d.from_degrees(5.0))
     visionSysSim.addVisionTargets(
         [VisionTargetSim(tagList[0].pose, TargetModel.AprilTag16h5(), 0)]
     )
@@ -514,10 +514,10 @@ def test_PoseEstimation() -> None:
     )
     assert results is not None
     pose: Pose3d = Pose3d() + results.best
-    assert pose.X() == pytest.approx(5.0, abs=0.01)
-    assert pose.Y() == pytest.approx(1.0, abs=0.01)
-    assert pose.Z() == pytest.approx(0.0, abs=0.01)
-    assert pose.rotation().Z() == pytest.approx(math.radians(5.0), abs=0.01)
+    assert pose.x == pytest.approx(5.0, abs=0.01)
+    assert pose.y == pytest.approx(1.0, abs=0.01)
+    assert pose.z == pytest.approx(0.0, abs=0.01)
+    assert pose.rotation().z == pytest.approx(math.radians(5.0), abs=0.01)
 
     visionSysSim.addVisionTargets(
         [VisionTargetSim(tagList[1].pose, TargetModel.AprilTag16h5(), 1)]
@@ -535,10 +535,10 @@ def test_PoseEstimation() -> None:
     assert results2 is not None
     pose2 = Pose3d() + results2.best
 
-    assert pose2.X() == pytest.approx(robotPose.X(), abs=0.01)
-    assert pose2.Y() == pytest.approx(robotPose.Y(), abs=0.01)
-    assert pose2.Z() == pytest.approx(0.0, abs=0.01)
-    assert pose2.rotation().Z() == pytest.approx(math.radians(5.0), abs=0.01)
+    assert pose2.x == pytest.approx(robotPose.x, abs=0.01)
+    assert pose2.y == pytest.approx(robotPose.y, abs=0.01)
+    assert pose2.z == pytest.approx(0.0, abs=0.01)
+    assert pose2.rotation().z == pytest.approx(math.radians(5.0), abs=0.01)
 
 
 def test_PoseEstimationRotated() -> None:
@@ -552,27 +552,27 @@ def test_PoseEstimationRotated() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, robotToCamera)
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(90.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
     tagList: list[AprilTag] = []
     at0 = AprilTag()
-    at0.ID = 0
+    at0.id = 0
     at0.pose = Pose3d(12.0, 3.0, 1.0, Rotation3d(0.0, 0.0, math.pi))
     tagList.append(at0)
     at1 = AprilTag()
-    at1.ID = 1
+    at1.id = 1
     at1.pose = Pose3d(12.0, 1.0, -1.0, Rotation3d(0.0, 0.0, math.pi))
     tagList.append(at1)
     at2 = AprilTag()
-    at2.ID = 2
+    at2.id = 2
     at2.pose = Pose3d(11.0, 0.0, 2.0, Rotation3d(0.0, 0.0, math.pi))
     tagList.append(at2)
 
     fieldLength: meters = 54.0
     fieldWidth: meters = 27.0
     layout = AprilTagFieldLayout(tagList, fieldLength, fieldWidth)
-    robotPose = Pose2d(Translation2d(5.0, 1.0), Rotation2d.fromDegrees(-5.0))
+    robotPose = Pose2d(Translation2d(5.0, 1.0), Rotation2d.from_degrees(-5.0))
     visionSysSim.addVisionTargets(
         [VisionTargetSim(tagList[0].pose, TargetModel.AprilTag36h11(), 0)]
     )
@@ -589,11 +589,11 @@ def test_PoseEstimationRotated() -> None:
     )
     assert results is not None
     pose: Pose3d = Pose3d() + results.best
-    pose = pose.transformBy(robotToCamera.inverse())
-    assert pose.X() == pytest.approx(5.0, abs=0.01)
-    assert pose.Y() == pytest.approx(1.0, abs=0.01)
-    assert pose.Z() == pytest.approx(0.0, abs=0.01)
-    assert pose.rotation().Z() == pytest.approx(math.radians(-5.0), abs=0.01)
+    pose = pose.transform_by(robotToCamera.inverse())
+    assert pose.x == pytest.approx(5.0, abs=0.01)
+    assert pose.y == pytest.approx(1.0, abs=0.01)
+    assert pose.z == pytest.approx(0.0, abs=0.01)
+    assert pose.rotation().z == pytest.approx(math.radians(-5.0), abs=0.01)
 
     visionSysSim.addVisionTargets(
         [VisionTargetSim(tagList[1].pose, TargetModel.AprilTag36h11(), 1)]
@@ -610,12 +610,12 @@ def test_PoseEstimationRotated() -> None:
     )
     assert results2 is not None
     pose2 = Pose3d() + results2.best
-    pose2 = pose2.transformBy(robotToCamera.inverse())
+    pose2 = pose2.transform_by(robotToCamera.inverse())
 
-    assert pose2.X() == pytest.approx(robotPose.X(), abs=0.01)
-    assert pose2.Y() == pytest.approx(robotPose.Y(), abs=0.01)
-    assert pose2.Z() == pytest.approx(0.0, abs=0.01)
-    assert pose2.rotation().Z() == pytest.approx(math.radians(-5.0), abs=0.01)
+    assert pose2.x == pytest.approx(robotPose.x, abs=0.01)
+    assert pose2.y == pytest.approx(robotPose.y, abs=0.01)
+    assert pose2.z == pytest.approx(0.0, abs=0.01)
+    assert pose2.rotation().z == pytest.approx(math.radians(-5.0), abs=0.01)
 
 
 def test_TagAmbiguity() -> None:
@@ -623,7 +623,7 @@ def test_TagAmbiguity() -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
     targetPose = Pose3d(Translation3d(2.0, 0.0, 0.0), Rotation3d(0, 0, math.pi))
@@ -638,7 +638,7 @@ def test_TagAmbiguity() -> None:
     ambiguity = tgt.getPoseAmbiguity()
     assert ambiguity > 0.5, "Tag ambiguity expected to be high"
 
-    robotPose = Pose2d(Translation2d(-2.0, -2.0), Rotation2d.fromDegrees(30.0))
+    robotPose = Pose2d(Translation2d(-2.0, -2.0), Rotation2d.from_degrees(30.0))
     visionSysSim.update(robotPose)
     tgt = camera.getLatestResult().getBestTarget()
     assert tgt is not None

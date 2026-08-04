@@ -15,10 +15,10 @@ class VisionEstimation:
         retVal: list[AprilTag] = []
         for tag in visTags:
             id = tag.getFiducialId()
-            maybePose = layout.getTagPose(id)
+            maybePose = layout.get_tag_pose(id)
             if maybePose:
                 aprilTag = AprilTag()
-                aprilTag.ID = id
+                aprilTag.id = id
                 aprilTag.pose = maybePose
                 retVal.append(aprilTag)
         return retVal
@@ -58,10 +58,10 @@ class VisionEstimation:
         # ensure these are AprilTags in our layout
         for tgt in visTags:
             id = tgt.getFiducialId()
-            maybePose = layout.getTagPose(id)
+            maybePose = layout.get_tag_pose(id)
             if maybePose:
                 tag = AprilTag()
-                tag.ID = id
+                tag.id = id
                 tag.pose = maybePose
                 knownTags.append(tag)
                 currentCorners = tgt.getDetectedCorners()
@@ -81,10 +81,10 @@ class VisionEstimation:
             if not camToTag:
                 return None
 
-            bestPose = knownTags[0].pose.transformBy(camToTag.best.inverse())
+            bestPose = knownTags[0].pose.transform_by(camToTag.best.inverse())
             altPose = Pose3d()
             if camToTag.ambiguity != 0:
-                altPose = knownTags[0].pose.transformBy(camToTag.alt.inverse())
+                altPose = knownTags[0].pose.transform_by(camToTag.alt.inverse())
 
             o = Pose3d()
             result = PnpResult(

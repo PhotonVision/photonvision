@@ -49,7 +49,7 @@ def fakeAprilTagFieldLayout() -> AprilTagFieldLayout:
     )
     for id_, pose in enumerate(tagPoses):
         aprilTag = AprilTag()
-        aprilTag.ID = id_
+        aprilTag.id = id_
         aprilTag.pose = pose
         tagList.append(aprilTag)
 
@@ -164,19 +164,19 @@ def test_pnpDistanceTrigSolve():
 
     cameraOneSim = PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG())
     simTargets = [
-        VisionTargetSim(tag.pose, TargetModel.AprilTag36h11(), tag.ID)
-        for tag in aprilTags.getTags()
+        VisionTargetSim(tag.pose, TargetModel.AprilTag36h11(), tag.id)
+        for tag in aprilTags.get_tags()
     ]
 
     # Compound Rolled + Pitched + Yaw
     compoundTestTransform = Transform3d(
-        -wpimath.units.inchesToMeters(12),
-        -wpimath.units.inchesToMeters(11),
+        -wpimath.units.inches_to_meters(12),
+        -wpimath.units.inches_to_meters(11),
         3,
         Rotation3d(
-            wpimath.units.degreesToRadians(37),
-            wpimath.units.degreesToRadians(6),
-            wpimath.units.degreesToRadians(60),
+            wpimath.units.degrees_to_radians(37),
+            wpimath.units.degrees_to_radians(6),
+            wpimath.units.degrees_to_radians(60),
         ),
     )
 
@@ -187,7 +187,7 @@ def test_pnpDistanceTrigSolve():
 
     realPose = Pose3d(7.3, 4.42, 0, Rotation3d(0, 0, 2.197))  # Pose to compare with
     result = cameraOneSim.process(
-        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transform_by(estimator.robotToCamera), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
@@ -197,7 +197,7 @@ def test_pnpDistanceTrigSolve():
     result.ntReceiveTimestampMicros = int(fakeTimestampSecs * 1e6)
 
     estimator.addHeadingData(
-        result.getTimestampSeconds(), realPose.rotation().toRotation2d()
+        result.getTimestampSeconds(), realPose.rotation().to_rotation2d()
     )
     estimatedRobotPose = estimator.estimatePnpDistanceTrigSolvePose(result)
 
@@ -216,7 +216,7 @@ def test_pnpDistanceTrigSolve():
     estimator.robotToCamera = straightOnTestTransform
     realPose = Pose3d(4.81, 2.38, 0, Rotation3d(0, 0, 2.818))  # Pose to compare with
     result = cameraOneSim.process(
-        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transform_by(estimator.robotToCamera), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
@@ -226,7 +226,7 @@ def test_pnpDistanceTrigSolve():
     result.ntReceiveTimestampMicros = int(fakeTimestampSecs * 1e6)
 
     estimator.addHeadingData(
-        result.getTimestampSeconds(), realPose.rotation().toRotation2d()
+        result.getTimestampSeconds(), realPose.rotation().to_rotation2d()
     )
     estimatedRobotPose = estimator.estimatePnpDistanceTrigSolvePose(result)
 
