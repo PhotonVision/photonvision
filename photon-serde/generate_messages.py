@@ -99,7 +99,7 @@ def get_shimmed_filter(message_db):
 def get_test_filter(message_db):
     def is_test(message_name: str):
         message = get_message_by_name(message_db, message_name)
-        return "test" in message and message["test"] == True
+        return "test" in message and message["test"]
 
     return is_test
 
@@ -138,9 +138,9 @@ def get_python_qualified_name(
 
     base_type = data_types[field["type"]]["python_type"]
 
-    if "optional" in field and field["optional"] == True:
+    if "optional" in field and field["optional"]:
         typestr = f"Optional[{base_type}]"
-    elif "vla" in field and field["vla"] == True:
+    elif "vla" in field and field["vla"]:
         typestr = f"list[{base_type}]"
     else:
         typestr = base_type
@@ -151,9 +151,9 @@ def get_python_qualified_name(
 def get_python_default_factory(
     message_db: List[MessageType], data_types, field: SerdeField
 ) -> str:
-    if "optional" in field and field["optional"] == True:
+    if "optional" in field and field["optional"]:
         return "lambda: None"
-    if "vla" in field and field["vla"] == True:
+    if "vla" in field and field["vla"]:
         return "list"
     if is_intrinsic_type(field["type"]):
         return f"lambda: {PYTHON_INTRINSIC_DEFAULTS[data_types[field['type']]['python_type']]}"
