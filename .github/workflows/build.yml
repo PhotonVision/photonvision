@@ -128,7 +128,7 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-26.04
-    # container: wpilib/systemcore-cross-debian:trixie
+    container: wpilib/systemcore-cross-debian:trixie
     needs: [validation]
     steps:
       - uses: actions/checkout@v6
@@ -229,8 +229,6 @@ jobs:
             artifact-name: Win64
           - os: macos-26
             artifact-name: macOS
-          - os: ubuntu-26.04
-            artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -244,11 +242,6 @@ jobs:
           java-version: 25
           distribution: temurin
       - run: git fetch --tags --force
-      - name: Make GCC 14 the default toolchain (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
