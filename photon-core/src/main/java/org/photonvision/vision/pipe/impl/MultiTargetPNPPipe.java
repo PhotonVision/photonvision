@@ -28,7 +28,7 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.fields.Field;
 
 /** Estimate the camera pose given multiple Apriltag observations */
 public class MultiTargetPNPPipe
@@ -89,7 +89,5 @@ public class MultiTargetPNPPipe
     public void release() {}
 
     public static record MultiTargetPNPPipeParams(
-            CameraCalibrationCoefficients cameraCoefficients,
-            AprilTagFieldLayout atfl,
-            TargetModel targetModel) {}
+            CameraCalibrationCoefficients cameraCoefficients, Field atfl, TargetModel targetModel) {}
 }

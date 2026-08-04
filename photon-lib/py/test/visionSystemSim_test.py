@@ -4,7 +4,7 @@ import pytest
 from photonlibpy.estimation import TargetModel, VisionEstimation
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.simulation import PhotonCameraSim, VisionSystemSim, VisionTargetSim
-from robotpy_apriltag import AprilTag, AprilTagFieldLayout
+from robotpy_fields import Field, FieldTag
 from wpimath import (
     Pose2d,
     Pose3d,
@@ -25,7 +25,9 @@ def test_VisibilityCupidShuffle() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(80.0)
+    )
 
     visionSysSim.addVisionTargets(
         [
@@ -84,7 +86,9 @@ def test_bunchaTargets() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(80.0)
+    )
 
     for i in range(100):
         targetPose = Pose3d(
@@ -115,7 +119,9 @@ def test_NotVisibleVert1() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(80.0)
+    )
 
     visionSysSim.addVisionTargets(
         [
@@ -178,7 +184,9 @@ def test_NotVisibleTargetSize() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(80.0)
+    )
     cameraSim.setMinTargetAreaPixels(20.0)
     visionSysSim.addVisionTargets(
         [
@@ -205,7 +213,9 @@ def test_NotVisibleTooFarLeds() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(80.0)
+    )
     cameraSim.setMinTargetAreaPixels(1.0)
     cameraSim.setMaxSightRange(10.0)
     visionSysSim.addVisionTargets(
@@ -239,7 +249,9 @@ def test_YawAngles(expected_yaw) -> None:
 
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(80.0)
+    )
     cameraSim.setMinTargetAreaPixels(0.0)
     visionSysSim.addVisionTargets(
         [
@@ -379,7 +391,9 @@ def test_MultipleTargets() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(80.0)
+    )
     cameraSim.setMinTargetAreaPixels(20.0)
 
     visionSysSim.addVisionTargets(
@@ -477,26 +491,22 @@ def test_PoseEstimation() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(90.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(90.0)
+    )
     cameraSim.setMinTargetAreaPixels(20.0)
 
-    tagList: list[AprilTag] = []
-    at0 = AprilTag()
-    at0.id = 0
-    at0.pose = Pose3d(12.0, 3.0, 1.0, Rotation3d(0.0, 0.0, math.pi))
-    tagList.append(at0)
-    at1 = AprilTag()
-    at1.id = 1
-    at1.pose = Pose3d(12.0, 1.0, -1.0, Rotation3d(0.0, 0.0, math.pi))
-    tagList.append(at1)
-    at2 = AprilTag()
-    at2.id = 2
-    at2.pose = Pose3d(11.0, 0.0, 2.0, Rotation3d(0.0, 0.0, math.pi))
-    tagList.append(at2)
+    tagList: list[FieldTag] = [
+        FieldTag(0, Pose3d(12.0, 3.0, 1.0, Rotation3d(0.0, 0.0, math.pi))),
+        FieldTag(1, Pose3d(12.0, 1.0, -1.0, Rotation3d(0.0, 0.0, math.pi))),
+        FieldTag(2, Pose3d(11.0, 0.0, 2.0, Rotation3d(0.0, 0.0, math.pi))),
+    ]
 
     fieldLength: meters = 54.0
     fieldWidth: meters = 27.0
-    layout = AprilTagFieldLayout(tagList, fieldLength, fieldWidth)
+    layout = Field(
+        "test", "test", "test", None, fieldLength, fieldWidth, "frc", tagList
+    )
     robotPose = Pose2d(Translation2d(5.0, 1.0), Rotation2d.from_degrees(5.0))
     visionSysSim.addVisionTargets(
         [VisionTargetSim(tagList[0].pose, TargetModel.AprilTag16h5(), 0)]
@@ -552,26 +562,22 @@ def test_PoseEstimationRotated() -> None:
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, robotToCamera)
 
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(90.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(90.0)
+    )
     cameraSim.setMinTargetAreaPixels(20.0)
 
-    tagList: list[AprilTag] = []
-    at0 = AprilTag()
-    at0.id = 0
-    at0.pose = Pose3d(12.0, 3.0, 1.0, Rotation3d(0.0, 0.0, math.pi))
-    tagList.append(at0)
-    at1 = AprilTag()
-    at1.id = 1
-    at1.pose = Pose3d(12.0, 1.0, -1.0, Rotation3d(0.0, 0.0, math.pi))
-    tagList.append(at1)
-    at2 = AprilTag()
-    at2.id = 2
-    at2.pose = Pose3d(11.0, 0.0, 2.0, Rotation3d(0.0, 0.0, math.pi))
-    tagList.append(at2)
+    tagList: list[FieldTag] = [
+        FieldTag(0, Pose3d(12.0, 3.0, 1.0, Rotation3d(0.0, 0.0, math.pi))),
+        FieldTag(1, Pose3d(12.0, 1.0, -1.0, Rotation3d(0.0, 0.0, math.pi))),
+        FieldTag(2, Pose3d(11.0, 0.0, 2.0, Rotation3d(0.0, 0.0, math.pi))),
+    ]
 
     fieldLength: meters = 54.0
     fieldWidth: meters = 27.0
-    layout = AprilTagFieldLayout(tagList, fieldLength, fieldWidth)
+    layout = Field(
+        "test", "test", "test", None, fieldLength, fieldWidth, "frc", tagList
+    )
     robotPose = Pose2d(Translation2d(5.0, 1.0), Rotation2d.from_degrees(-5.0))
     visionSysSim.addVisionTargets(
         [VisionTargetSim(tagList[0].pose, TargetModel.AprilTag36h11(), 0)]
@@ -623,7 +629,9 @@ def test_TagAmbiguity() -> None:
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
-    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.from_degrees(80.0))
+    cameraSim.prop.setCalibrationFromFOV(
+        640, 480, fovDiag=Rotation2d.from_degrees(80.0)
+    )
     cameraSim.setMinTargetAreaPixels(20.0)
 
     targetPose = Pose3d(Translation3d(2.0, 0.0, 0.0), Rotation3d(0, 0, math.pi))

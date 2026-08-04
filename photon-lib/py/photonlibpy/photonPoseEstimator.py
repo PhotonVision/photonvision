@@ -20,7 +20,7 @@ from typing import Optional
 import hal
 import wpilib
 import wpimath.units
-from robotpy_apriltag import AprilTagFieldLayout
+from robotpy_fields import Field
 from wpimath import (
     Pose2d,
     Pose3d,
@@ -47,12 +47,12 @@ class PhotonPoseEstimator:
 
     def __init__(
         self,
-        fieldTags: AprilTagFieldLayout,
+        fieldTags: Field,
         robotToCamera: Transform3d,
     ):
         """Create a new PhotonPoseEstimator.
 
-        :param fieldTags: A WPILib AprilTagFieldLayout linking AprilTag IDs to Pose3d objects
+        :param fieldTags: A WPILib Field linking AprilTag IDs to Pose3d objects
                            with respect to the FIRST field using the Field Coordinate System.
                            Note that setting the origin of this layout object will affect the
                            results from this class.
@@ -73,22 +73,22 @@ class PhotonPoseEstimator:
         PhotonPoseEstimator.instance_count += 1
 
     @property
-    def fieldTags(self) -> AprilTagFieldLayout:
-        """Get the AprilTagFieldLayout being used by the PositionEstimator.
+    def fieldTags(self) -> Field:
+        """Get the Field being used by the PositionEstimator.
 
         Note: Setting the origin of this layout will affect the results from this class.
 
-        :returns: the AprilTagFieldLayout
+        :returns: the Field
         """
         return self._fieldTags
 
     @fieldTags.setter
-    def fieldTags(self, fieldTags: AprilTagFieldLayout):
-        """Set the AprilTagFieldLayout being used by the PositionEstimator.
+    def fieldTags(self, fieldTags: Field):
+        """Set the Field being used by the PositionEstimator.
 
         Note: Setting the origin of this layout will affect the results from this class.
 
-        :param fieldTags: the AprilTagFieldLayout
+        :param fieldTags: the Field
         """
         self._fieldTags = fieldTags
 

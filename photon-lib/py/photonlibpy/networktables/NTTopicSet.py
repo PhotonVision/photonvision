@@ -40,7 +40,9 @@ class NTTopicSet:
             "pipelineIndexRequest"
         ).subscribe(0)
 
-        self.driverModePublisher = self.subTable.get_boolean_topic("driverMode").publish()
+        self.driverModePublisher = self.subTable.get_boolean_topic(
+            "driverMode"
+        ).publish()
         self.driverModeSubscriber = self.subTable.get_boolean_topic(
             "driverModeRequest"
         ).subscribe(False)

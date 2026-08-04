@@ -98,9 +98,9 @@ class PhotonCamera:
         self._pipelineIndexState = self._cameraTable.get_integer_topic(
             "pipelineIndexState"
         ).subscribe(0)
-        self._heartbeatEntry = self._cameraTable.get_integer_topic("heartbeat").subscribe(
-            -1
-        )
+        self._heartbeatEntry = self._cameraTable.get_integer_topic(
+            "heartbeat"
+        ).subscribe(-1)
 
         self._ledModeRequest = photonvision_root_table.get_integer_topic(
             "ledModeRequest"
@@ -108,9 +108,9 @@ class PhotonCamera:
         self._ledModeState = photonvision_root_table.get_integer_topic(
             "ledModeState"
         ).subscribe(-1)
-        self.versionEntry = photonvision_root_table.get_string_topic("version").subscribe(
-            ""
-        )
+        self.versionEntry = photonvision_root_table.get_string_topic(
+            "version"
+        ).subscribe("")
 
         # Existing is enough to make this multisubscriber do its thing
         self.topicNameSubscriber = ntcore.MultiSubscriber(
@@ -323,13 +323,17 @@ class PhotonCamera:
         # assume that a camera with that name was never connected in the first place.
         if not self._heartbeatEntry.exists():
             cameraNames = (
-                self._cameraTable.get_instance().get_table(self._tableName).get_sub_tables()
+                self._cameraTable.get_instance()
+                .get_table(self._tableName)
+                .get_sub_tables()
             )
             # Look for only cameras with rawBytes entry that exists
             cameraNames = list(
                 filter(
                     lambda it: (
-                        self._cameraTable.get_sub_table(it).get_entry("rawBytes").exists()
+                        self._cameraTable.get_sub_table(it)
+                        .get_entry("rawBytes")
+                        .exists()
                     ),
                     cameraNames,
                 )

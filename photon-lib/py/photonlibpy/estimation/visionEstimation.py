@@ -1,5 +1,5 @@
 import numpy as np
-from robotpy_apriltag import AprilTag, AprilTagFieldLayout
+from robotpy_fields import Field, FieldTag
 from wpimath import Pose3d, Transform3d, Translation3d
 
 from ..targeting import PhotonTrackedTarget, PnpResult, TargetCorner
@@ -9,18 +9,15 @@ from . import OpenCVHelp, TargetModel
 class VisionEstimation:
     @staticmethod
     def getVisibleLayoutTags(
-        visTags: list[PhotonTrackedTarget], layout: AprilTagFieldLayout
-    ) -> list[AprilTag]:
-        """Get the visible :class:`.AprilTag`s which are in the tag layout using the visible tag IDs."""
-        retVal: list[AprilTag] = []
+        visTags: list[PhotonTrackedTarget], layout: Field
+    ) -> list[FieldTag]:
+        """Get the visible :class:`.FieldTag`s which are in the field layout using the visible tag IDs."""
+        retVal: list[FieldTag] = []
         for tag in visTags:
             id = tag.getFiducialId()
             maybePose = layout.get_tag_pose(id)
             if maybePose:
-                aprilTag = AprilTag()
-                aprilTag.id = id
-                aprilTag.pose = maybePose
-                retVal.append(aprilTag)
+                retVal.append(FieldTag(id, maybePose))
         return retVal
 
     @staticmethod
@@ -28,7 +25,7 @@ class VisionEstimation:
         cameraMatrix: np.ndarray,
         distCoeffs: np.ndarray,
         visTags: list[PhotonTrackedTarget],
-        layout: AprilTagFieldLayout,
+        layout: Field,
         tagModel: TargetModel,
     ) -> PnpResult | None:
         """Performs solvePNP using 3d-2d point correspondences of visible AprilTags to estimate the
@@ -53,17 +50,14 @@ class VisionEstimation:
             return None
 
         corners: list[TargetCorner] = []
-        knownTags: list[AprilTag] = []
+        knownTags: list[FieldTag] = []
 
-        # ensure these are AprilTags in our layout
+        # ensure these are FieldTags in our layout
         for tgt in visTags:
             id = tgt.getFiducialId()
             maybePose = layout.get_tag_pose(id)
             if maybePose:
-                tag = AprilTag()
-                tag.id = id
-                tag.pose = maybePose
-                knownTags.append(tag)
+                knownTags.append(FieldTag(id, maybePose))
                 currentCorners = tgt.getDetectedCorners()
                 if currentCorners:
                     corners += currentCorners

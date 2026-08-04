@@ -28,6 +28,8 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/FieldTag.hpp>
 #include <wpi/util/deprecated.hpp>
 
 #include "photon/PhotonUtils.h"
@@ -459,25 +461,26 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   cameraSim.prop.SetCalibration(640, 480, wpi::math::Rotation2d{90_deg});
   cameraSim.SetMinTargetAreaPixels(20.0);
 
-  std::vector<wpi::apriltag::AprilTag> tagList;
-  tagList.emplace_back(wpi::apriltag::AprilTag{
+  std::vector<wpi::fields::FieldTag> tagList;
+  tagList.emplace_back(wpi::fields::FieldTag{
       0, wpi::math::Pose3d{
              12_m, 3_m, 1_m,
              wpi::math::Rotation3d{0_rad, 0_rad,
                                    wpi::units::radian_t{std::numbers::pi}}}});
-  tagList.emplace_back(wpi::apriltag::AprilTag{
+  tagList.emplace_back(wpi::fields::FieldTag{
       1, wpi::math::Pose3d{
              12_m, 1_m, -1_m,
              wpi::math::Rotation3d{0_rad, 0_rad,
                                    wpi::units::radian_t{std::numbers::pi}}}});
-  tagList.emplace_back(wpi::apriltag::AprilTag{
+  tagList.emplace_back(wpi::fields::FieldTag{
       2, wpi::math::Pose3d{
              11_m, 0_m, 2_m,
              wpi::math::Rotation3d{0_rad, 0_rad,
                                    wpi::units::radian_t{std::numbers::pi}}}});
   wpi::units::meter_t fieldLength{54};
   wpi::units::meter_t fieldWidth{27};
-  wpi::apriltag::AprilTagFieldLayout layout{tagList, fieldLength, fieldWidth};
+  wpi::fields::Field layout{"Test",      "Test",     "Test", std::nullopt,
+                            fieldLength, fieldWidth, "frc",  tagList};
   wpi::math::Pose2d robotPose{wpi::math::Translation2d{5_m, 1_m},
                               wpi::math::Rotation2d{5_deg}};
   visionSysSim.AddVisionTargets(
@@ -540,25 +543,26 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   cameraSim.prop.SetCalibration(640, 480, wpi::math::Rotation2d{90_deg});
   cameraSim.SetMinTargetAreaPixels(20.0);
 
-  std::vector<wpi::apriltag::AprilTag> tagList;
-  tagList.emplace_back(wpi::apriltag::AprilTag{
+  std::vector<wpi::fields::FieldTag> tagList;
+  tagList.emplace_back(wpi::fields::FieldTag{
       0, wpi::math::Pose3d{
              12_m, 3_m, 1_m,
              wpi::math::Rotation3d{0_rad, 0_rad,
                                    wpi::units::radian_t{std::numbers::pi}}}});
-  tagList.emplace_back(wpi::apriltag::AprilTag{
+  tagList.emplace_back(wpi::fields::FieldTag{
       1, wpi::math::Pose3d{
              12_m, 1_m, -1_m,
              wpi::math::Rotation3d{0_rad, 0_rad,
                                    wpi::units::radian_t{std::numbers::pi}}}});
-  tagList.emplace_back(wpi::apriltag::AprilTag{
+  tagList.emplace_back(wpi::fields::FieldTag{
       2, wpi::math::Pose3d{
              11_m, 0_m, 2_m,
              wpi::math::Rotation3d{0_rad, 0_rad,
                                    wpi::units::radian_t{std::numbers::pi}}}});
   wpi::units::meter_t fieldLength{54};
   wpi::units::meter_t fieldWidth{27};
-  wpi::apriltag::AprilTagFieldLayout layout{tagList, fieldLength, fieldWidth};
+  wpi::fields::Field layout{"Test",      "Test",     "Test", std::nullopt,
+                            fieldLength, fieldWidth, "frc",  tagList};
   wpi::math::Pose2d robotPose{wpi::math::Translation2d{5_m, 1_m},
                               wpi::math::Rotation2d{-5_deg}};
   visionSysSim.AddVisionTargets(

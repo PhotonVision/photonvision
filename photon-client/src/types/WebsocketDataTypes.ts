@@ -10,7 +10,7 @@ import type {
   VsmState
 } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
-import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
+import type { Field, PipelineResult } from "@/types/PhotonTrackingTypes";
 
 export interface WebsocketLogMessage {
   logMessage: {
@@ -22,7 +22,7 @@ export interface WebsocketSettingsUpdate {
   general: Required<GeneralSettings>;
   lighting: Required<LightingSettings>;
   networkSettings: NetworkSettings;
-  atfl: AprilTagFieldLayout;
+  atfl: Field;
 }
 
 export interface WebsocketNumberPair {

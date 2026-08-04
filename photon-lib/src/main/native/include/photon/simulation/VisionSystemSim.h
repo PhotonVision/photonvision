@@ -29,6 +29,8 @@
 #include <utility>
 #include <vector>
 
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/FieldTag.hpp>
 #include <wpi/math/interpolation/TimeInterpolatableBuffer.hpp>
 #include <wpi/smartdashboard/Field2d.hpp>
 #include <wpi/smartdashboard/FieldObject2d.hpp>
@@ -315,9 +317,9 @@ class VisionSystemSim {
    *
    * @param layout The field tag layout to get Apriltag poses and IDs from
    */
-  void AddAprilTags(const wpi::apriltag::AprilTagFieldLayout& layout) {
+  void AddAprilTags(const wpi::fields::Field& layout) {
     std::vector<VisionTargetSim> targets;
-    for (const wpi::apriltag::AprilTag& tag : layout.GetTags()) {
+    for (const wpi::fields::FieldTag& tag : layout.GetTags()) {
       targets.emplace_back(VisionTargetSim{layout.GetTagPose(tag.ID).value(),
                                            photon::kAprilTag36h11, tag.ID});
     }

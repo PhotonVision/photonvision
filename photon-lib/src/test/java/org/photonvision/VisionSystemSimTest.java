@@ -49,6 +49,8 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
@@ -61,8 +63,6 @@ import org.wpilib.math.util.Units;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.util.runtime.RuntimeLoader;
-import org.wpilib.vision.apriltag.AprilTag;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.camera.OpenCvLoader;
 
 class VisionSystemSimTest {
@@ -532,17 +532,17 @@ class VisionSystemSimTest {
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(90));
         cameraSim.setMinTargetAreaPixels(20.0);
 
-        List<AprilTag> tagList = new ArrayList<>();
-        tagList.add(new AprilTag(0, new Pose3d(12, 3, 1, new Rotation3d(0, 0, Math.PI))));
-        tagList.add(new AprilTag(1, new Pose3d(12, 1, -1, new Rotation3d(0, 0, Math.PI))));
-        tagList.add(new AprilTag(2, new Pose3d(11, 0, 2, new Rotation3d(0, 0, Math.PI))));
+        List<FieldTag> tagList = new ArrayList<>();
+        tagList.add(new FieldTag(0, new Pose3d(12, 3, 1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new FieldTag(1, new Pose3d(12, 1, -1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new FieldTag(2, new Pose3d(11, 0, 2, new Rotation3d(0, 0, Math.PI))));
         double fieldLength = Units.feetToMeters(54.0);
         double fieldWidth = Units.feetToMeters(27.0);
-        AprilTagFieldLayout layout = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
+        Field layout = new Field("test", "test", "test", null, fieldLength, fieldWidth, "frc", tagList);
         Pose2d robotPose = new Pose2d(5, 1, Rotation2d.fromDegrees(5));
 
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(tagList.get(0).pose, TargetModel.kAprilTag16h5, 0));
+                new VisionTargetSim(tagList.get(0).getPose(), TargetModel.kAprilTag16h5, 0));
 
         visionSysSim.update(robotPose);
 
@@ -561,9 +561,9 @@ class VisionSystemSimTest {
         assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
 
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(tagList.get(1).pose, TargetModel.kAprilTag16h5, 1));
+                new VisionTargetSim(tagList.get(1).getPose(), TargetModel.kAprilTag16h5, 1));
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(tagList.get(2).pose, TargetModel.kAprilTag16h5, 2));
+                new VisionTargetSim(tagList.get(2).getPose(), TargetModel.kAprilTag16h5, 2));
 
         visionSysSim.update(robotPose);
 

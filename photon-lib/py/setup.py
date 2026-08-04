@@ -61,6 +61,7 @@ setup(
         "wpilib==2027.0.0a6.post4",
         "robotpy-wpimath==2027.0.0a6.post4",
         "robotpy-apriltag==2027.0.0a6.post4",
+        "robotpy-fields==2027.0.0a6.post4",
         "robotpy-cscore==2027.0.0a6.post4",
         "pyntcore==2027.0.0a6.post4",
         "opencv-python;platform_machine!='roborio'",

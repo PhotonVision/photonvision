@@ -30,6 +30,7 @@ import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.fields.Field;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
@@ -44,7 +45,6 @@ import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.math.numbers.N8;
 import org.wpilib.util.Pair;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
 /**
  * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
@@ -120,7 +120,7 @@ public class PhotonPoseEstimator {
     public static final record ConstrainedSolvepnpParams(
             boolean headingFree, double headingScaleFactor) {}
 
-    private AprilTagFieldLayout fieldTags;
+    private Field fieldTags;
     private TargetModel tagModel = TargetModel.kAprilTag36h11;
     private Transform3d robotToCamera;
     private final Set<Integer> reportedErrors = new HashSet<>();
@@ -131,8 +131,8 @@ public class PhotonPoseEstimator {
     /**
      * Create a new PhotonPoseEstimator.
      *
-     * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
-     *     with respect to the FIRST field using the <a href=
+     * @param fieldTags A WPILib {@link Field} linking AprilTag IDs to Pose3d objects with respect to
+     *     the FIRST field using the <a href=
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
      *     Coordinate System</a>. Note that setting the origin of this layout object will affect the
      *     results from this class.
@@ -141,7 +141,7 @@ public class PhotonPoseEstimator {
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
      *     Coordinate System</a>.
      */
-    public PhotonPoseEstimator(AprilTagFieldLayout fieldTags, Transform3d robotToCamera) {
+    public PhotonPoseEstimator(Field fieldTags, Transform3d robotToCamera) {
         this.fieldTags = fieldTags;
         this.robotToCamera = robotToCamera;
 
@@ -150,24 +150,24 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Get the AprilTagFieldLayout being used by the PositionEstimator.
+     * Get the Field being used by the PositionEstimator.
      *
      * <p>Note: Setting the origin of this layout will affect the results from this class.
      *
-     * @return the AprilTagFieldLayout
+     * @return the Field
      */
-    public AprilTagFieldLayout getFieldTags() {
+    public Field getFieldTags() {
         return fieldTags;
     }
 
     /**
-     * Set the AprilTagFieldLayout being used by the PositionEstimator.
+     * Set the Field being used by the PositionEstimator.
      *
      * <p>Note: Setting the origin of this layout will affect the results from this class.
      *
-     * @param fieldTags the AprilTagFieldLayout
+     * @param fieldTags the Field
      */
-    public void setFieldTags(AprilTagFieldLayout fieldTags) {
+    public void setFieldTags(Field fieldTags) {
         this.fieldTags = fieldTags;
     }
 

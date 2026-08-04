@@ -53,6 +53,7 @@ model {
 
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
@@ -95,6 +96,7 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
@@ -373,6 +375,7 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("datalog")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("fields")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("mrclib", mrclibVersion)
 nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)

@@ -4,7 +4,7 @@ plugins {
     id "cpp"
     id "com.diffplug.spotless" version "8.1.0"
     id "org.wpilib.WPILibRepositoriesPlugin" version "2027.0.0"
-    id 'org.wpilib.NativeUtils' version '2027.13.0' apply false
+    id 'org.wpilib.NativeUtils' version '2027.67.0' apply false
     id 'org.wpilib.DeployUtils' version '2027.2.0' apply false
     id 'org.photonvision.tools.WpilibTools' version 'v5.0.1'
     id 'com.google.protobuf' version '0.9.5' apply false
@@ -31,7 +31,7 @@ ext.localMavenURL = file("$project.buildDir/outputs/maven")
 ext.allOutputsFolder = file("$project.buildDir/outputs")
 
 ext {
-    wpilibVersion = "2027.0.0-alpha-6-256-g2793c4771"
+    wpilibVersion = "2027.0.0-alpha-6-270-g038c581f4"
     mrclibVersion = "2027.1.0-alpha-1-91-gb154ee9"
     openCVversion = "2027-4.13.0-3"
     ejmlVersion = "0.46.0";

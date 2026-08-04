@@ -5,7 +5,7 @@ import cscore as cs
 import cv2 as cv
 import numpy as np
 import wpilib
-from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
+from robotpy_fields import Field, FieldId, get_field
 from wpimath import Pose3d, Transform3d
 from wpimath.units import meters, seconds
 from wpiutil import PixelFormat
@@ -37,9 +37,7 @@ class PhotonCameraSim:
         self,
         camera: PhotonCamera,
         props: SimCameraProperties = SimCameraProperties.PERFECT_90DEG(),
-        tagLayout: AprilTagFieldLayout = AprilTagFieldLayout.load_field(
-            AprilTagField.DEFAULT_FIELD
-        ),
+        tagLayout: Field = get_field(FieldId.DEFAULT_FIELD),
         minTargetAreaPercent: float | None = None,
         maxSightRange: meters | None = None,
     ):

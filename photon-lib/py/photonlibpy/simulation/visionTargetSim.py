@@ -88,8 +88,7 @@ class VisionTargetSim:
     def __eq__(self, other) -> bool:
         # Use 1 inch and 1 degree tolerance
         return (
-            abs(self.pose.translation().x - other.getPose().translation().x)
-            < 0.0254
+            abs(self.pose.translation().x - other.getPose().translation().x) < 0.0254
             and abs(self.pose.translation().y - other.getPose().translation().y)
             < 0.0254
             and abs(self.pose.translation().z - other.getPose().translation().z)

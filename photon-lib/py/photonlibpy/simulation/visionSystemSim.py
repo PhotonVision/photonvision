@@ -1,7 +1,7 @@
 import typing
 
 import wpilib
-from robotpy_apriltag import AprilTagFieldLayout
+from robotpy_fields import Field
 from wpilib import Field2d
 
 # TODO(auscompgeek): update import path when RobotPy re-exports are fixed
@@ -202,7 +202,7 @@ class VisionSystemSim:
         else:
             self.targetSets[targetType] += targets
 
-    def addAprilTags(self, layout: AprilTagFieldLayout) -> None:
+    def addAprilTags(self, layout: Field) -> None:
         """Adds targets on the field which your vision system is designed to detect. The {@link
         PhotonCamera}s simulated from this system will report the location of the camera relative to
         the subset of these targets which are visible from the given camera position.
@@ -259,7 +259,9 @@ class VisionSystemSim:
         assert type(robotPose) is Pose3d
 
         self.robotPoseBuffer.clear()
-        self.robotPoseBuffer.add_sample(wpilib.Timer.get_monotonic_timestamp(), robotPose)
+        self.robotPoseBuffer.add_sample(
+            wpilib.Timer.get_monotonic_timestamp(), robotPose
+        )
 
     def getDebugField(self) -> Field2d:
         return self.dbgField

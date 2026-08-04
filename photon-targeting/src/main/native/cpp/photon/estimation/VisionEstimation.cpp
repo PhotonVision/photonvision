@@ -25,15 +25,15 @@
 namespace photon {
 namespace VisionEstimation {
 
-std::vector<wpi::apriltag::AprilTag> GetVisibleLayoutTags(
+std::vector<wpi::fields::FieldTag> GetVisibleLayoutTags(
     const std::vector<PhotonTrackedTarget>& visTags,
-    const wpi::apriltag::AprilTagFieldLayout& layout) {
-  std::vector<wpi::apriltag::AprilTag> retVal{};
+    const wpi::fields::Field& layout) {
+  std::vector<wpi::fields::FieldTag> retVal{};
   for (const auto& tag : visTags) {
     int id = tag.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      retVal.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
+      retVal.emplace_back(wpi::fields::FieldTag{id, maybePose.value()});
     }
   }
   return retVal;
@@ -43,20 +43,19 @@ std::optional<PnpResult> EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<PhotonTrackedTarget>& visTags,
-    const wpi::apriltag::AprilTagFieldLayout& layout,
-    const TargetModel& tagModel) {
+    const wpi::fields::Field& layout, const TargetModel& tagModel) {
   if (visTags.size() == 0) {
     return PnpResult();
   }
 
   std::vector<photon::TargetCorner> corners{};
-  std::vector<wpi::apriltag::AprilTag> knownTags{};
+  std::vector<wpi::fields::FieldTag> knownTags{};
 
   for (const auto& tgt : visTags) {
     int id = tgt.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      knownTags.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
+      knownTags.emplace_back(wpi::fields::FieldTag{id, maybePose.value()});
       auto currentCorners = tgt.GetDetectedCorners();
       corners.insert(corners.end(), currentCorners.begin(),
                      currentCorners.end());
@@ -111,8 +110,7 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<photon::PhotonTrackedTarget>& visTags,
     const wpi::math::Transform3d& robot2Camera,
-    const wpi::math::Pose3d& robotPoseSeed,
-    const wpi::apriltag::AprilTagFieldLayout& layout,
+    const wpi::math::Pose3d& robotPoseSeed, const wpi::fields::Field& layout,
     const photon::TargetModel& tagModel, bool headingFree,
     wpi::math::Rotation2d gyroTheta, double gyroErrorScaleFac) {
   if (visTags.size() == 0) {
@@ -120,13 +118,13 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
   }
 
   std::vector<photon::TargetCorner> corners{};
-  std::vector<wpi::apriltag::AprilTag> knownTags{};
+  std::vector<wpi::fields::FieldTag> knownTags{};
 
   for (const auto& tgt : visTags) {
     int id = tgt.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      knownTags.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
+      knownTags.emplace_back(wpi::fields::FieldTag{id, maybePose.value()});
       auto currentCorners = tgt.GetDetectedCorners();
       corners.insert(corners.end(), currentCorners.begin(),
                      currentCorners.end());

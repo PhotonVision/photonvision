@@ -28,7 +28,8 @@
 #include <vector>
 
 #include <gtest/gtest.h>
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/fields.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
@@ -46,13 +47,14 @@
 #include "photon/targeting/PhotonTrackedTarget.h"
 #include "photon/targeting/PnpResult.h"
 
-static std::vector<wpi::apriltag::AprilTag> tags = {
+static std::vector<wpi::fields::FieldTag> tags = {
     {0, wpi::math::Pose3d(wpi::units::meter_t(3), wpi::units::meter_t(3),
                           wpi::units::meter_t(3), wpi::math::Rotation3d())},
     {1, wpi::math::Pose3d(wpi::units::meter_t(5), wpi::units::meter_t(5),
                           wpi::units::meter_t(5), wpi::math::Rotation3d())}};
 
-static wpi::apriltag::AprilTagFieldLayout aprilTags{tags, 54_ft, 27_ft};
+static wpi::fields::Field aprilTags{"test", "test", "test", std::nullopt,
+                                    54_ft,  27_ft,  "frc",  tags};
 
 static std::vector<photon::TargetCorner> corners{
     photon::TargetCorner{1., 2.}, photon::TargetCorner{3., 4.},
@@ -151,13 +153,14 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityIgnoresNonFiducialTargets) {
 }
 
 TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
-  std::vector<wpi::apriltag::AprilTag> tags = {
+  std::vector<wpi::fields::FieldTag> tags = {
       {0, wpi::math::Pose3d(wpi::units::meter_t(3), wpi::units::meter_t(3),
                             wpi::units::meter_t(3), wpi::math::Rotation3d())},
       {1, wpi::math::Pose3d(wpi::units::meter_t(5), wpi::units::meter_t(5),
                             wpi::units::meter_t(5), wpi::math::Rotation3d())},
   };
-  auto aprilTags = wpi::apriltag::AprilTagFieldLayout(tags, 54_ft, 27_ft);
+  auto aprilTags = wpi::fields::Field("test", "test", "test", std::nullopt,
+                                      54_ft, 27_ft, "frc", tags);
 
   std::vector<std::pair<photon::PhotonCamera, wpi::math::Transform3d>> cameras;
 
@@ -607,8 +610,7 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 
 TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
   photon::PhotonPoseEstimator estimator(
-      wpi::apriltag::AprilTagFieldLayout::LoadField(
-          wpi::apriltag::AprilTagField::k2024Crescendo),
+      wpi::fields::GetField(wpi::fields::FieldId::FRC_2024_CRESCENDO),
       wpi::math::Transform3d());
 
   photon::PhotonPipelineResult result;
@@ -664,8 +666,7 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       wpi::math::Rotation3d(0_rad, -camPitch, 0_rad)};
 
   photon::PhotonPoseEstimator estimator(
-      wpi::apriltag::AprilTagFieldLayout::LoadField(
-          wpi::apriltag::AprilTagField::k2024Crescendo),
+      wpi::fields::GetField(wpi::fields::FieldId::FRC_2024_CRESCENDO),
       kRobotToCam);
 
   auto estimatedMultiTagPose =

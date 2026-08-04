@@ -27,7 +27,7 @@ from photonlibpy.targeting import (
 )
 from photonlibpy.targeting.multiTargetPNPResult import MultiTargetPNPResult, PnpResult
 from photonlibpy.targeting.photonPipelineResult import PhotonPipelineResult
-from robotpy_apriltag import AprilTag, AprilTagFieldLayout
+from robotpy_fields import Field, FieldTag
 from wpimath import Pose3d, Rotation3d, Transform3d, Translation3d
 
 
@@ -41,22 +41,19 @@ class PhotonCameraInjector(PhotonCamera):
         return self.result
 
 
-def fakeAprilTagFieldLayout() -> AprilTagFieldLayout:
+def fakeAprilTagFieldLayout() -> Field:
     tagList = []
     tagPoses = (
         Pose3d(3, 3, 3, Rotation3d()),
         Pose3d(5, 5, 5, Rotation3d()),
     )
     for id_, pose in enumerate(tagPoses):
-        aprilTag = AprilTag()
-        aprilTag.id = id_
-        aprilTag.pose = pose
-        tagList.append(aprilTag)
+        tagList.append(FieldTag(id_, pose))
 
     fieldLength = 54 / 3.281  # 54 ft -> meters
     fieldWidth = 27 / 3.281  # 24 ft -> meters
 
-    return AprilTagFieldLayout(tagList, fieldLength, fieldWidth)
+    return Field("test", "test", "test", None, fieldLength, fieldWidth, "frc", tagList)
 
 
 def test_lowestAmbiguityStrategy():
@@ -277,7 +274,7 @@ def test_multiTagOnCoprocStrategy():
     )
 
     estimator = PhotonPoseEstimator(
-        AprilTagFieldLayout(),
+        Field(),
         Transform3d(),
     )
 

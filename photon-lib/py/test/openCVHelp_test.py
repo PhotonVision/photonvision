@@ -123,15 +123,9 @@ def test_SolvePNP_SQUARE():
     assert pnpSim is not None
 
     # check solvePNP estimation accuracy
-    assert relTarget.rotation().x == pytest.approx(
-        pnpSim.best.rotation().x, abs=0.25
-    )
-    assert relTarget.rotation().y == pytest.approx(
-        pnpSim.best.rotation().y, abs=0.25
-    )
-    assert relTarget.rotation().z == pytest.approx(
-        pnpSim.best.rotation().z, abs=0.25
-    )
+    assert relTarget.rotation().x == pytest.approx(pnpSim.best.rotation().x, abs=0.25)
+    assert relTarget.rotation().y == pytest.approx(pnpSim.best.rotation().y, abs=0.25)
+    assert relTarget.rotation().z == pytest.approx(pnpSim.best.rotation().z, abs=0.25)
 
     assert relTarget.translation().x == pytest.approx(
         pnpSim.best.translation().x, abs=0.005
@@ -184,15 +178,9 @@ def test_SolvePNP_SQPNP():
     assert pnpSim is not None
 
     # check solvePNP estimation accuracy
-    assert relTarget.rotation().x == pytest.approx(
-        pnpSim.best.rotation().x, abs=0.25
-    )
-    assert relTarget.rotation().y == pytest.approx(
-        pnpSim.best.rotation().y, abs=0.25
-    )
-    assert relTarget.rotation().z == pytest.approx(
-        pnpSim.best.rotation().z, abs=0.25
-    )
+    assert relTarget.rotation().x == pytest.approx(pnpSim.best.rotation().x, abs=0.25)
+    assert relTarget.rotation().y == pytest.approx(pnpSim.best.rotation().y, abs=0.25)
+    assert relTarget.rotation().z == pytest.approx(pnpSim.best.rotation().z, abs=0.25)
 
     assert relTarget.translation().x == pytest.approx(
         pnpSim.best.translation().x, abs=0.005

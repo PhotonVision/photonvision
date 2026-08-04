@@ -36,6 +36,7 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
+import org.wpilib.fields.Field;
 import org.wpilib.networktables.LogMessage;
 import org.wpilib.networktables.MultiSubscriber;
 import org.wpilib.networktables.NetworkTable;
@@ -46,7 +47,6 @@ import org.wpilib.networktables.StringSubscriber;
 import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.util.Alert;
 import org.wpilib.util.Alert.Level;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.camera.CameraServerJNI;
 
 public class NetworkTablesManager {
@@ -196,7 +196,7 @@ public class NetworkTablesManager {
         var atfl_json = event.valueData.value.getString();
         try {
             System.out.println("Got new field layout!");
-            var atfl = Jsonb.instance().type(AprilTagFieldLayout.class).fromJson(atfl_json);
+            var atfl = Jsonb.instance().type(Field.class).fromJson(atfl_json);
             ConfigManager.getInstance().getConfig().setApriltagFieldLayout(atfl);
             ConfigManager.getInstance().requestSave();
             DataChangeService.getInstance()
