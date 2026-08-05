@@ -176,7 +176,7 @@ export const useSettingsStore = defineStore("settings", {
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
-      this.currentFieldLayout = data.atfl;
+      this.currentFieldLayout = { ...data.atfl, "field-image": null };
     },
     updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
       return axios.post("/settings/general", payload);

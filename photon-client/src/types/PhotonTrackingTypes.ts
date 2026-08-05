@@ -34,14 +34,6 @@ export interface Transform3d {
   angle_z: number;
 }
 
-export interface FieldImage {
-  path: string;
-  top: number;
-  left: number;
-  bottom: number;
-  right: number;
-}
-
 export interface FieldDimensions {
   length: number;
   width: number;
@@ -56,7 +48,7 @@ export interface Field {
   name: string;
   season: string;
   game: string;
-  "field-image": FieldImage | null;
+  "field-image": null;
   "field-dimensions": FieldDimensions;
   program: string;
   "field-tags": FieldTag[] | null;
