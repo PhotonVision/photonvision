@@ -118,15 +118,10 @@ export const useSettingsStore = defineStore("settings", {
       recvBitRate: undefined
     },
     currentFieldLayout: {
-      name: "",
-      season: "",
-      game: "",
-      "field-image": null,
       "field-dimensions": {
         length: 16.4592,
         width: 8.2296
       },
-      program: "",
       "field-tags": []
     }
   }),
@@ -176,7 +171,10 @@ export const useSettingsStore = defineStore("settings", {
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
-      this.currentFieldLayout = { ...data.atfl, "field-image": null };
+      this.currentFieldLayout = {
+        "field-dimensions": data.atfl["field-dimensions"],
+        "field-tags": data.atfl["field-tags"]
+      };
     },
     updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
       return axios.post("/settings/general", payload);

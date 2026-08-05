@@ -45,12 +45,7 @@ export interface FieldTag {
 }
 
 export interface Field {
-  name: string;
-  season: string;
-  game: string;
-  "field-image": null;
   "field-dimensions": FieldDimensions;
-  program: string;
   "field-tags": FieldTag[] | null;
 }
 
