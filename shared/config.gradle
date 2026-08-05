@@ -7,6 +7,7 @@ nativeUtils.withCrossSystemCore()
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
     opencvVersion = openCVversion
+    mrcLibVersion = "2027.1.0-alpha-1-93-g7293eb0"
 }
 
 // Configure warnings and errors
