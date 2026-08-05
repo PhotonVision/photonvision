@@ -19,16 +19,38 @@ package org.photonvision.common.hardware.statusLED;
 
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
-import java.util.Collections;
-import java.util.List;
+import org.photonvision.common.configuration.StatusLedConfig;
 import org.photonvision.common.hardware.PhotonStatus;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 
 /** A pair of green and yellow LEDs, as used on the Limelight cameras */
 public class GreenYellowStatusLED implements StatusLED {
-    private final Logger logger = new Logger(GreenYellowStatusLED.class, LogGroup.General);
+    public static class Config implements StatusLedConfig {
+        public int greenPin = -1;
+        public int yellowPin = -1;
+        public boolean activeHigh = false;
+
+        @Override
+        public StatusLED create(NativeDeviceFactoryInterface deviceFactory) {
+            return new GreenYellowStatusLED(deviceFactory, greenPin, yellowPin, activeHigh);
+        }
+
+        @Override
+        public int[] pins() {
+            return new int[] {greenPin, yellowPin};
+        }
+
+        @Override
+        public String toString() {
+            return "GreenYellowStatusLED.Config[greenPin="
+                    + greenPin
+                    + ", yellowPin="
+                    + yellowPin
+                    + ", activeHigh="
+                    + activeHigh
+                    + "]";
+        }
+    }
 
     public final LED greenLED;
     public final LED yellowLED;
@@ -37,19 +59,10 @@ public class GreenYellowStatusLED implements StatusLED {
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
     public GreenYellowStatusLED(
-            NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
-        if (statusLedPins.size() != 2) {
-            logger.warn(
-                    pinErrorTemplate.formatted(2, "Green and Yellow status LEDs", statusLedPins.size()));
-        }
-        // fill unassigned pins with -1 to disable
-        if (statusLedPins.size() < 2) {
-            statusLedPins.addAll(Collections.nCopies(statusLedPins.size() - 2, -1));
-        }
-
+            NativeDeviceFactoryInterface deviceFactory, int greenPin, int yellowPin, boolean activeHigh) {
         // Outputs are active-low for a common-anode RGB LED
-        greenLED = new LED(deviceFactory, statusLedPins.get(0), activeHigh, false);
-        yellowLED = new LED(deviceFactory, statusLedPins.get(1), activeHigh, false);
+        greenLED = new LED(deviceFactory, greenPin, activeHigh, false);
+        yellowLED = new LED(deviceFactory, yellowPin, activeHigh, false);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 75);
     }

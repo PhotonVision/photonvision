@@ -20,7 +20,8 @@ package org.photonvision.common.configuration;
 import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.List;
-import org.photonvision.common.hardware.statusLED.StatusLEDType;
+import java.util.Optional;
+import org.photonvision.common.hardware.statusLED.RGBStatusLED;
 
 @Json
 public class HardwareConfig {
@@ -31,15 +32,8 @@ public class HardwareConfig {
     public boolean ledsCanDim;
     public List<Integer> ledBrightnessRange;
     public int ledPWMFrequency;
-    public StatusLEDType statusLEDType;
 
-    // MIGRATION: 2026
-    @Json.Alias("statusRGBPins")
-    public List<Integer> statusLEDPins;
-
-    // MIGRATION: 2026
-    @Json.Alias("statusRGBActiveHigh")
-    public boolean statusLEDActiveHigh;
+    public Optional<StatusLedConfig> statusLEDConfig;
 
     // Custom GPIO
     public String getGPIOCommand;
@@ -58,9 +52,7 @@ public class HardwareConfig {
             boolean ledsCanDim,
             List<Integer> ledBrightnessRange,
             int ledPwmFrequency,
-            StatusLEDType statusLEDType,
-            List<Integer> statusLEDPins,
-            boolean statusLEDActiveHigh,
+            Optional<StatusLedConfig> statusLEDConfig,
             String getGPIOCommand,
             String setGPIOCommand,
             String setPWMCommand,
@@ -73,9 +65,7 @@ public class HardwareConfig {
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
         this.ledPWMFrequency = ledPwmFrequency;
-        this.statusLEDType = statusLEDType;
-        this.statusLEDPins = statusLEDPins;
-        this.statusLEDActiveHigh = statusLEDActiveHigh;
+        this.statusLEDConfig = statusLEDConfig;
         this.getGPIOCommand = getGPIOCommand;
         this.setGPIOCommand = setGPIOCommand;
         this.setPWMCommand = setPWMCommand;
@@ -91,9 +81,7 @@ public class HardwareConfig {
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
         ledPWMFrequency = 0;
-        statusLEDType = StatusLEDType.RGB;
-        statusLEDPins = new ArrayList<>();
-        statusLEDActiveHigh = false;
+        statusLEDConfig = Optional.empty();
         getGPIOCommand = "";
         setGPIOCommand = "";
         setPWMCommand = "";
@@ -101,6 +89,36 @@ public class HardwareConfig {
         releaseGPIOCommand = "";
         restartHardwareCommand = "";
         vendorFOV = -1;
+    }
+
+    // MIGRATION: 2026
+    @Json.Property("statusRGBPins")
+    void importStatusRGBPins(List<Integer> statusRGBPins) {
+        if (statusRGBPins.size() < 3) {
+            // Missing pins are unsupported
+            return;
+        }
+        if (statusLEDConfig.isEmpty()) {
+            statusLEDConfig = Optional.of(new RGBStatusLED.Config());
+        }
+        if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
+            var config = (RGBStatusLED.Config) statusLEDConfig.get();
+            config.redPin = statusRGBPins.get(0);
+            config.greenPin = statusRGBPins.get(1);
+            config.bluePin = statusRGBPins.get(2);
+        }
+    }
+
+    // MIGRATION: 2026
+    @Json.Property("statusRGBActiveHigh")
+    void importStatusRGBActiveHigh(boolean statusRGBActiveHigh) {
+        if (statusLEDConfig.isEmpty()) {
+            statusLEDConfig = Optional.of(new RGBStatusLED.Config());
+        }
+        if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
+            var config = (RGBStatusLED.Config) statusLEDConfig.get();
+            config.activeHigh = statusRGBActiveHigh;
+        }
     }
 
     /**
@@ -133,12 +151,8 @@ public class HardwareConfig {
                 + ledBrightnessRange
                 + ", ledPWMFrequency="
                 + ledPWMFrequency
-                + ", statusLEDType="
-                + statusLEDType
-                + ", statusLEDPins="
-                + statusLEDPins
-                + ", statusLEDActiveHigh"
-                + statusLEDActiveHigh
+                + ", statusLEDConfig="
+                + statusLEDConfig
                 + ", getGPIOCommand="
                 + getGPIOCommand
                 + ", setGPIOCommand="
