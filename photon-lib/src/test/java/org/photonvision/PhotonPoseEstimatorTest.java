@@ -24,6 +24,7 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -939,6 +940,53 @@ class PhotonPoseEstimatorTest {
                         result, cameraMat, distortion, multiTagEstimate.get().estimatedPose, true, 0);
         Pose3d pose = estimatedPose.get().estimatedPose;
         System.out.println(pose);
+    }
+
+    @Test
+    public void testConstrainedPnpHeadingFreeEmptyHeadingBuffer() {
+        var distortion = VecBuilder.fill(0, 0, 0, 0, 0, 0, 0, 0);
+        var cameraMat =
+                MatBuilder.fill(
+                        Nat.N3(),
+                        Nat.N3(),
+                        399.37500000000006,
+                        0,
+                        319.5,
+                        0,
+                        399.16666666666674,
+                        239.5,
+                        0,
+                        0,
+                        1);
+
+        List<TargetCorner> corners8 =
+                List.of(
+                        new TargetCorner(98.09875447066685, 331.0093220119495),
+                        new TargetCorner(122.20226758624413, 335.50083894738486),
+                        new TargetCorner(127.17118732489361, 313.81406314178633),
+                        new TargetCorner(104.28543773760417, 309.6516557438994));
+
+        var result =
+                new PhotonPipelineResult(
+                        new PhotonPipelineMetadata(10000, 2000, 1, 100),
+                        List.of(
+                                new PhotonTrackedTarget(0, 0, 0, 0, 8, 0, 0, null, null, 0, corners8, corners8)),
+                        Optional.empty());
+
+        final double camPitch = Units.degreesToRadians(30.0);
+        final Transform3d kRobotToCam =
+                new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));
+
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
+                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo), kRobotToCam);
+
+        // No addHeadingData calls -- in heading-free mode an empty heading buffer must
+        // not throw (the estimate may still be empty for other reasons)
+        assertDoesNotThrow(
+                () ->
+                        estimator.estimateConstrainedSolvepnpPose(
+                                result, cameraMat, distortion, new Pose3d(), true, 0));
     }
 
     private static class PhotonCameraInjector extends PhotonCamera {
