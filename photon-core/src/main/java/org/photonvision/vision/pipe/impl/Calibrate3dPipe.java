@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -222,25 +221,19 @@ public class Calibrate3dPipe
             FrameStaticProperties imageProps,
             Path imageSavePath) {
         List<MrCalObservation> observationData =
-                new AbstractList<MrCalJNI.MrCalObservation>() {
-                    @Override
-                    public int size() {
-                        return observationCorners.size();
-                    }
+                observationCorners.stream()
+                        .map(
+                                observation -> {
+                                    var corners = observation.imagePoints.toArray();
 
-                    @Override
-                    public MrCalObservation get(int index) {
-                        var observation = observationCorners.get(index);
-                        var corners = observation.imagePoints.toArray();
+                                    var levels = new float[(int) observation.imagePoints.total()];
+                                    Arrays.fill(levels, observation.level);
 
-                        var levels = new float[(int) observation.imagePoints.total()];
-                        Arrays.fill(levels, observation.level);
+                                    var ids = observation.ids != null ? observation.ids.toArray() : null;
 
-                        var ids = observation.ids != null ? observation.ids.toArray() : null;
-
-                        return new MrCalObservation(corners, levels, ids);
-                    }
-                };
+                                    return new MrCalObservation(corners, levels, ids);
+                                })
+                        .toList();
 
         int imageWidth = (int) observationCorners.get(0).size.width;
         int imageHeight = (int) observationCorners.get(0).size.height;
