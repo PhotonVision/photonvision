@@ -34,7 +34,6 @@
 #include <photon/simulation/VisionSystemSim.h>
 #include <photon/simulation/VisionTargetSim.h>
 #include <photon/targeting/PhotonPipelineResult.h>
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
 #include <wpi/apriltag/AprilTagFields.hpp>
 
 #include "Constants.h"

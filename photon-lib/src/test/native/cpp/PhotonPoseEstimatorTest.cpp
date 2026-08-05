@@ -27,11 +27,10 @@
 #include <utility>
 #include <vector>
 
-#include <wpi/fields/Field.hpp>
-#include <wpi/fields/fields.hpp>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/fields.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
@@ -162,17 +161,9 @@ TEST_CASE("PhotonPoseEstimatorTest LowestAmbiguityIgnoresNonFiducialTargets",
         Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
 }
 
-<<<<<<< HEAD
-TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
-  std::vector<wpi::fields::FieldTag> tags = {
-||||||| 1402feea9
-TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
-  std::vector<wpi::apriltag::AprilTag> tags = {
-=======
 TEST_CASE("PhotonPoseEstimatorTest ClosestToCameraHeightStrategy",
           "[poseest]") {
-  std::vector<wpi::apriltag::AprilTag> tags = {
->>>>>>> catch2
+  std::vector<wpi::fields::FieldTag> tags = {
       {0, wpi::math::Pose3d(wpi::units::meter_t(3), wpi::units::meter_t(3),
                             wpi::units::meter_t(3), wpi::math::Rotation3d())},
       {1, wpi::math::Pose3d(wpi::units::meter_t(5), wpi::units::meter_t(5),

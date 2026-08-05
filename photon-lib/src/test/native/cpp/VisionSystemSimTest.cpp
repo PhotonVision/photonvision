@@ -27,11 +27,11 @@
 #include <tuple>
 #include <vector>
 
-#include <wpi/fields/Field.hpp>
-#include <wpi/fields/FieldTag.hpp>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_all.hpp>
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/FieldTag.hpp>
 #include <wpi/util/deprecated.hpp>
 
 #include "photon/PhotonUtils.h"

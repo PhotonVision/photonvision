@@ -26,7 +26,6 @@
 #include <vector>
 
 #include <catch2/catch_test_macros.hpp>
-#include <fmt/ranges.h>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
 #include <photon/PhotonCamera.h>

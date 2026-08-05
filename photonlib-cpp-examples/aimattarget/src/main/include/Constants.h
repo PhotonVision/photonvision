@@ -26,7 +26,6 @@
 
 #include <numbers>
 
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
 #include <wpi/apriltag/AprilTagFields.hpp>
 #include <wpi/math/controller/SimpleMotorFeedforward.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
