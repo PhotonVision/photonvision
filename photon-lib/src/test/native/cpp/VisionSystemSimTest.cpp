@@ -27,9 +27,11 @@
 #include <tuple>
 #include <vector>
 
-#include <gtest/gtest.h>
 #include <wpi/fields/Field.hpp>
 #include <wpi/fields/FieldTag.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_all.hpp>
 #include <wpi/util/deprecated.hpp>
 
 #include "photon/PhotonUtils.h"
@@ -38,24 +40,19 @@
 // Ignore GetLatestResult warnings
 WPI_IGNORE_DEPRECATED
 
-class VisionSystemSimTest : public ::testing::Test {
-  void SetUp() override {
+class VisionSystemSimTest {
+ public:
+  VisionSystemSimTest() {
     wpi::nt::NetworkTableInstance::GetDefault().StartServer();
     photon::PhotonCamera::SetVersionCheckEnabled(false);
   }
-
-  void TearDown() override {}
 };
 
-class VisionSystemSimTestWithParamsTest
-    : public VisionSystemSimTest,
-      public testing::WithParamInterface<wpi::units::degree_t> {};
-class VisionSystemSimTestDistanceParamsTest
-    : public VisionSystemSimTest,
-      public testing::WithParamInterface<std::tuple<
-          wpi::units::foot_t, wpi::units::degree_t, wpi::units::foot_t>> {};
+class VisionSystemSimTestWithParamsTest : public VisionSystemSimTest {};
+class VisionSystemSimTestDistanceParamsTest : public VisionSystemSimTest {};
 
-TEST_F(VisionSystemSimTest, TestVisibilityCupidShuffle) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestVisibilityCupidShuffle",
+                 "[photonlib]") {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 2_m},
       wpi::math::Rotation3d{0_rad, 0_rad,
@@ -73,43 +70,43 @@ TEST_F(VisionSystemSimTest, TestVisibilityCupidShuffle) {
   wpi::math::Pose2d robotPose{wpi::math::Translation2d{5_m, 0_m},
                               wpi::math::Rotation2d{-70_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 
   // To the right, to the right
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{5_m, 0_m},
                                 wpi::math::Rotation2d{-95_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 
   // To the left, to the left
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{5_m, 0_m},
                                 wpi::math::Rotation2d{90_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 
   // To the left, to the left
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{5_m, 0_m},
                                 wpi::math::Rotation2d{65_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 
   // Now kick, now kick
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{2_m, 0_m},
                                 wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
+  REQUIRE(camera.GetLatestResult().HasTargets());
 
   // Now kick, now kick
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{2_m, 0_m},
                                 wpi::math::Rotation2d{-5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
+  REQUIRE(camera.GetLatestResult().HasTargets());
 
   // Now walk it by yourself
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{2_m, 0_m},
                                 wpi::math::Rotation2d{-179_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 
   // Now walk it by yourself
   visionSysSim.AdjustCamera(
@@ -119,10 +116,10 @@ TEST_F(VisionSystemSimTest, TestVisibilityCupidShuffle) {
           wpi::math::Rotation3d{0_deg, 0_deg,
                                 wpi::units::radian_t{std::numbers::pi}}});
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
+  REQUIRE(camera.GetLatestResult().HasTargets());
 }
 
-TEST_F(VisionSystemSimTest, TestBunchaTargets) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestBunchaTargets", "[photonlib]") {
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
@@ -144,10 +141,10 @@ TEST_F(VisionSystemSimTest, TestBunchaTargets) {
                               wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
 
-  ASSERT_EQ(camera.GetLatestResult().targets.size(), 50u);
+  REQUIRE(camera.GetLatestResult().targets.size() == 50u);
 }
 
-TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestNotVisibleVert1", "[photonlib]") {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 1_m},
       wpi::math::Rotation3d{0_rad, 0_rad,
@@ -164,7 +161,7 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
   wpi::math::Pose2d robotPose{wpi::math::Translation2d{5_m, 0_m},
                               wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
+  REQUIRE(camera.GetLatestResult().HasTargets());
 
   visionSysSim.AdjustCamera(
       &cameraSim,
@@ -173,10 +170,10 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
           wpi::math::Rotation3d{0_deg, 0_deg,
                                 wpi::units::radian_t{std::numbers::pi}}});
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 }
 
-TEST_F(VisionSystemSimTest, TestNotVisibleVert2) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestNotVisibleVert2", "[photonlib]") {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 2_m},
       wpi::math::Rotation3d{0_rad, 0_rad,
@@ -198,15 +195,16 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert2) {
   wpi::math::Pose2d robotPose{wpi::math::Translation2d{13.98_m, 0_m},
                               wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
+  REQUIRE(camera.GetLatestResult().HasTargets());
 
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{0_m, 0_m},
                                 wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 }
 
-TEST_F(VisionSystemSimTest, TestNotVisibleTargetSize) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestNotVisibleTargetSize",
+                 "[photonlib]") {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 1_m},
       wpi::math::Rotation3d{0_rad, 0_rad,
@@ -224,15 +222,16 @@ TEST_F(VisionSystemSimTest, TestNotVisibleTargetSize) {
   wpi::math::Pose2d robotPose{wpi::math::Translation2d{12_m, 0_m},
                               wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
+  REQUIRE(camera.GetLatestResult().HasTargets());
 
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{0_m, 0_m},
                                 wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 }
 
-TEST_F(VisionSystemSimTest, TestNotVisibleTooFarLeds) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestNotVisibleTooFarLeds",
+                 "[photonlib]") {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 1_m},
       wpi::math::Rotation3d{0_rad, 0_rad,
@@ -251,19 +250,23 @@ TEST_F(VisionSystemSimTest, TestNotVisibleTooFarLeds) {
   wpi::math::Pose2d robotPose{wpi::math::Translation2d{10_m, 0_m},
                               wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
+  REQUIRE(camera.GetLatestResult().HasTargets());
 
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{0_m, 0_m},
                                 wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
-  ASSERT_FALSE(camera.GetLatestResult().HasTargets());
+  REQUIRE_FALSE(camera.GetLatestResult().HasTargets());
 }
 
-TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
+TEST_CASE_METHOD(VisionSystemSimTestWithParamsTest, "YawAngles",
+                 "[photonlib]") {
   const wpi::math::Pose3d targetPose{
       {15.98_m, 0_m, 0_m},
       wpi::math::Rotation3d{0_deg, 0_deg,
                             wpi::units::radian_t{3 * std::numbers::pi / 4}}};
+  auto param = GENERATE(-10_deg, -5_deg, -0_deg, -1_deg, -2_deg, 5_deg, 7_deg,
+                        10.23_deg);
+
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
@@ -275,21 +278,25 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
 
   // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
   wpi::math::Pose2d robotPose{wpi::math::Translation2d{10_m, 0_m},
-                              wpi::math::Rotation2d{GetParam()}};
+                              wpi::math::Rotation2d{param}};
   visionSysSim.Update(robotPose);
 
   const auto result = camera.GetLatestResult();
-  ASSERT_TRUE(result.HasTargets());
-  ASSERT_NEAR(GetParam().to<double>(), result.GetBestTarget().GetYaw(), 0.25);
+  REQUIRE(result.HasTargets());
+  REQUIRE(param.to<double>() ==
+          Catch::Approx(result.GetBestTarget().GetYaw()).margin(0.25));
 }
 
-TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
+TEST_CASE_METHOD(VisionSystemSimTestWithParamsTest, "PitchAngles",
+                 "[photonlib]") {
   const wpi::math::Pose3d targetPose{
       {15.98_m, 0_m, 0_m},
       wpi::math::Rotation3d{0_deg, 0_deg,
                             wpi::units::radian_t{3 * std::numbers::pi / 4}}};
-  wpi::math::Pose2d robotPose{{10_m, 0_m},
-                              wpi::math::Rotation2d{GetParam() * -1.0}};
+  auto param = GENERATE(-10_deg, -5_deg, -0_deg, -1_deg, -2_deg, 5_deg, 7_deg,
+                        10.23_deg);
+
+  wpi::math::Pose2d robotPose{{10_m, 0_m}, wpi::math::Rotation2d{param * -1.0}};
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
@@ -300,28 +307,40 @@ TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
       targetPose, photon::TargetModel{0.5_m, 0.5_m}, 3}});
 
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{10_m, 0_m},
-                                wpi::math::Rotation2d{-1 * GetParam()}};
+                                wpi::math::Rotation2d{-1 * param}};
   visionSysSim.AdjustCamera(
-      &cameraSim, wpi::math::Transform3d{
-                      wpi::math::Translation3d{},
-                      wpi::math::Rotation3d{
-                          0_rad, wpi::units::degree_t{GetParam()}, 0_rad}});
+      &cameraSim,
+      wpi::math::Transform3d{
+          wpi::math::Translation3d{},
+          wpi::math::Rotation3d{0_rad, wpi::units::degree_t{param}, 0_rad}});
   visionSysSim.Update(robotPose);
 
   const auto result = camera.GetLatestResult();
-  ASSERT_TRUE(result.HasTargets());
-  ASSERT_NEAR(GetParam().to<double>(), result.GetBestTarget().GetPitch(), 0.25);
+  REQUIRE(result.HasTargets());
+  REQUIRE(param.to<double>() ==
+          Catch::Approx(result.GetBestTarget().GetPitch()).margin(0.25));
 }
 
-INSTANTIATE_TEST_SUITE_P(AnglesTests, VisionSystemSimTestWithParamsTest,
-                         testing::Values(-10_deg, -5_deg, -0_deg, -1_deg,
-                                         -2_deg, 5_deg, 7_deg, 10.23_deg));
-
-TEST_P(VisionSystemSimTestDistanceParamsTest, DistanceCalc) {
-  wpi::units::foot_t distParam;
-  wpi::units::degree_t pitchParam;
-  wpi::units::foot_t heightParam;
-  std::tie(distParam, pitchParam, heightParam) = GetParam();
+TEST_CASE_METHOD(VisionSystemSimTestDistanceParamsTest, "DistanceCalc",
+                 "[photonlib]") {
+  auto [distParam, pitchParam, heightParam] =
+      GENERATE(std::make_tuple(5_ft, -15.98_deg, 0_ft),
+               std::make_tuple(6_ft, -15.98_deg, 1_ft),
+               std::make_tuple(10_ft, -15.98_deg, 0_ft),
+               std::make_tuple(15_ft, -15.98_deg, 2_ft),
+               std::make_tuple(19.95_ft, -15.98_deg, 0_ft),
+               std::make_tuple(20_ft, -15.98_deg, 0_ft),
+               std::make_tuple(5_ft, -42_deg, 1_ft),
+               std::make_tuple(6_ft, -42_deg, 0_ft),
+               std::make_tuple(10_ft, -42_deg, 2_ft),
+               std::make_tuple(15_ft, -42_deg, 0.5_ft),
+               std::make_tuple(19.42_ft, -15.98_deg, 0_ft),
+               std::make_tuple(20_ft, -42_deg, 0_ft),
+               std::make_tuple(5_ft, -55_deg, 2_ft),
+               std::make_tuple(6_ft, -55_deg, 0_ft),
+               std::make_tuple(10_ft, -54_deg, 2.2_ft),
+               std::make_tuple(15_ft, -53_deg, 0_ft),
+               std::make_tuple(19.52_ft, -15.98_deg, 1.1_ft));
 
   const wpi::math::Pose3d targetPose{
       {15.98_m, 0_m, 1_m},
@@ -346,39 +365,20 @@ TEST_P(VisionSystemSimTestDistanceParamsTest, DistanceCalc) {
   visionSysSim.Update(robotPose);
 
   photon::PhotonPipelineResult res = camera.GetLatestResult();
-  ASSERT_TRUE(res.HasTargets());
+  REQUIRE(res.HasTargets());
   photon::PhotonTrackedTarget target = res.GetBestTarget();
 
-  ASSERT_NEAR(0.0, target.GetYaw(), 0.5);
+  REQUIRE(0.0 == Catch::Approx(target.GetYaw()).margin(0.5));
 
   wpi::units::meter_t dist = photon::PhotonUtils::CalculateDistanceToTarget(
       robotToCamera.Z(), targetPose.Z(), -pitchParam,
       wpi::units::degree_t{target.GetPitch()});
-  ASSERT_NEAR(dist.to<double>(),
-              distParam.convert<wpi::units::meters>().to<double>(), 0.25);
+  REQUIRE(dist.to<double>() ==
+          Catch::Approx(distParam.convert<wpi::units::meters>().to<double>())
+              .margin(0.25));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    DistanceParamsTests, VisionSystemSimTestDistanceParamsTest,
-    testing::Values(std::make_tuple(5_ft, -15.98_deg, 0_ft),
-                    std::make_tuple(6_ft, -15.98_deg, 1_ft),
-                    std::make_tuple(10_ft, -15.98_deg, 0_ft),
-                    std::make_tuple(15_ft, -15.98_deg, 2_ft),
-                    std::make_tuple(19.95_ft, -15.98_deg, 0_ft),
-                    std::make_tuple(20_ft, -15.98_deg, 0_ft),
-                    std::make_tuple(5_ft, -42_deg, 1_ft),
-                    std::make_tuple(6_ft, -42_deg, 0_ft),
-                    std::make_tuple(10_ft, -42_deg, 2_ft),
-                    std::make_tuple(15_ft, -42_deg, 0.5_ft),
-                    std::make_tuple(19.42_ft, -15.98_deg, 0_ft),
-                    std::make_tuple(20_ft, -42_deg, 0_ft),
-                    std::make_tuple(5_ft, -55_deg, 2_ft),
-                    std::make_tuple(6_ft, -55_deg, 0_ft),
-                    std::make_tuple(10_ft, -54_deg, 2.2_ft),
-                    std::make_tuple(15_ft, -53_deg, 0_ft),
-                    std::make_tuple(19.52_ft, -15.98_deg, 1.1_ft)));
-
-TEST_F(VisionSystemSimTest, TestMultipleTargets) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestMultipleTargets", "[photonlib]") {
   wpi::math::Pose3d targetPoseL{
       wpi::math::Translation3d{15.98_m, 2_m, 0_m},
       wpi::math::Rotation3d{0_rad, 0_rad,
@@ -448,12 +448,12 @@ TEST_F(VisionSystemSimTest, TestMultipleTargets) {
                               wpi::math::Rotation2d{.25_deg}};
   visionSysSim.Update(robotPose);
   photon::PhotonPipelineResult res = camera.GetLatestResult();
-  ASSERT_TRUE(res.HasTargets());
+  REQUIRE(res.HasTargets());
   std::span<const photon::PhotonTrackedTarget> tgtList = res.GetTargets();
-  ASSERT_EQ(static_cast<size_t>(11), tgtList.size());
+  REQUIRE(static_cast<size_t>(11) == tgtList.size());
 }
 
-TEST_F(VisionSystemSimTest, TestPoseEstimation) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestPoseEstimation", "[photonlib]") {
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
@@ -498,14 +498,13 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   }
   auto results = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets, layout, photon::kAprilTag16h5);
-  ASSERT_TRUE(results);
+  REQUIRE(results);
   wpi::math::Pose3d pose = wpi::math::Pose3d{} + results->best;
-  ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
-  ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
-  ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
-  ASSERT_NEAR(
-      wpi::units::degree_t{5}.convert<wpi::units::radians>().to<double>(),
-      pose.Rotation().Z().to<double>(), 0.01);
+  REQUIRE(5 == Catch::Approx(pose.X().to<double>()).margin(0.01));
+  REQUIRE(1 == Catch::Approx(pose.Y().to<double>()).margin(0.01));
+  REQUIRE(0 == Catch::Approx(pose.Z().to<double>()).margin(0.01));
+  REQUIRE(wpi::units::degree_t{5}.convert<wpi::units::radians>().to<double>() ==
+          Catch::Approx(pose.Rotation().Z().to<double>()).margin(0.01));
 
   visionSysSim.AddVisionTargets(
       {photon::VisionTargetSim{tagList[1].pose, photon::kAprilTag16h5, 1}});
@@ -521,17 +520,19 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   }
   auto results2 = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets2, layout, photon::kAprilTag16h5);
-  ASSERT_TRUE(results2);
+  REQUIRE(results2);
   wpi::math::Pose3d pose2 = wpi::math::Pose3d{} + results2->best;
-  ASSERT_NEAR(robotPose.X().to<double>(), pose2.X().to<double>(), 0.01);
-  ASSERT_NEAR(robotPose.Y().to<double>(), pose2.Y().to<double>(), 0.01);
-  ASSERT_NEAR(0, pose2.Z().to<double>(), 0.01);
-  ASSERT_NEAR(
-      wpi::units::degree_t{5}.convert<wpi::units::radians>().to<double>(),
-      pose2.Rotation().Z().to<double>(), 0.01);
+  REQUIRE(robotPose.X().to<double>() ==
+          Catch::Approx(pose2.X().to<double>()).margin(0.01));
+  REQUIRE(robotPose.Y().to<double>() ==
+          Catch::Approx(pose2.Y().to<double>()).margin(0.01));
+  REQUIRE(0 == Catch::Approx(pose2.Z().to<double>()).margin(0.01));
+  REQUIRE(wpi::units::degree_t{5}.convert<wpi::units::radians>().to<double>() ==
+          Catch::Approx(pose2.Rotation().Z().to<double>()).margin(0.01));
 }
 
-TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestPoseEstimationRotated",
+                 "[photonlib]") {
   wpi::math::Transform3d robotToCamera{
       wpi::math::Translation3d{6_in, 6_in, 6_in},
       wpi::math::Rotation3d{0_deg, -30_deg, 25.5_deg}};
@@ -576,7 +577,7 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   auto targetSpan = camResults.GetTargets();
 
   // We need to see at least one target
-  ASSERT_GT(targetSpan.size(), static_cast<size_t>(0));
+  REQUIRE(targetSpan.size() > static_cast<size_t>(0));
 
   std::vector<photon::PhotonTrackedTarget> targets;
   for (photon::PhotonTrackedTarget tar : targetSpan) {
@@ -584,15 +585,15 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   }
   auto results = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets, layout, photon::kAprilTag36h11);
-  ASSERT_TRUE(results);
+  REQUIRE(results);
   wpi::math::Pose3d pose = wpi::math::Pose3d{} + results->best;
   pose = pose.TransformBy(robotToCamera.Inverse());
-  ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
-  ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
-  ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
-  ASSERT_NEAR(
-      wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>(),
-      pose.Rotation().Z().to<double>(), 0.01);
+  REQUIRE(5 == Catch::Approx(pose.X().to<double>()).margin(0.01));
+  REQUIRE(1 == Catch::Approx(pose.Y().to<double>()).margin(0.01));
+  REQUIRE(0 == Catch::Approx(pose.Z().to<double>()).margin(0.01));
+  REQUIRE(
+      wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>() ==
+      Catch::Approx(pose.Rotation().Z().to<double>()).margin(0.01));
 
   visionSysSim.AddVisionTargets(
       {photon::VisionTargetSim{tagList[1].pose, photon::kAprilTag36h11, 1}});
@@ -608,18 +609,20 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   }
   auto results2 = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets2, layout, photon::kAprilTag36h11);
-  ASSERT_TRUE(results2);
+  REQUIRE(results2);
   wpi::math::Pose3d pose2 = wpi::math::Pose3d{} + results2->best;
   pose2 = pose2.TransformBy(robotToCamera.Inverse());
-  ASSERT_NEAR(robotPose.X().to<double>(), pose2.X().to<double>(), 0.01);
-  ASSERT_NEAR(robotPose.Y().to<double>(), pose2.Y().to<double>(), 0.01);
-  ASSERT_NEAR(0, pose2.Z().to<double>(), 0.01);
-  ASSERT_NEAR(
-      wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>(),
-      pose2.Rotation().Z().to<double>(), 0.01);
+  REQUIRE(robotPose.X().to<double>() ==
+          Catch::Approx(pose2.X().to<double>()).margin(0.01));
+  REQUIRE(robotPose.Y().to<double>() ==
+          Catch::Approx(pose2.Y().to<double>()).margin(0.01));
+  REQUIRE(0 == Catch::Approx(pose2.Z().to<double>()).margin(0.01));
+  REQUIRE(
+      wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>() ==
+      Catch::Approx(pose2.Rotation().Z().to<double>()).margin(0.01));
 }
 
-TEST_F(VisionSystemSimTest, TestTagAmbiguity) {
+TEST_CASE_METHOD(VisionSystemSimTest, "TestTagAmbiguity", "[photonlib]") {
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
@@ -639,11 +642,11 @@ TEST_F(VisionSystemSimTest, TestTagAmbiguity) {
   visionSysSim.Update(robotPose);
   double ambiguity =
       camera.GetLatestResult().GetBestTarget().GetPoseAmbiguity();
-  ASSERT_TRUE(ambiguity > 0.5);
+  REQUIRE(ambiguity > 0.5);
 
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{-2_m, -2_m},
                                 wpi::math::Rotation2d{30_deg}};
   visionSysSim.Update(robotPose);
   ambiguity = camera.GetLatestResult().GetBestTarget().GetPoseAmbiguity();
-  ASSERT_TRUE(0 < ambiguity && ambiguity < 0.2);
+  REQUIRE((0 < ambiguity && ambiguity < 0.2));
 }

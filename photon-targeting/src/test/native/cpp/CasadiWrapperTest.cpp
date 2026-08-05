@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 #include <wpi/math/fmt/Eigen.hpp>
 #include <wpi/util/print.hpp>
 #include <wpi/util/timestamp.h>
@@ -180,4 +180,6 @@ void print_cost(casadi_real robot_x, casadi_real robot_y,
   }
 }
 
-TEST(CasadiWrapperTest, smoketest) { print_cost(0.1, 0.1, 0.0); }
+TEST_CASE("CasadiWrapperTest smoketest", "[casadi]") {
+  print_cost(0.1, 0.1, 0.0);
+}

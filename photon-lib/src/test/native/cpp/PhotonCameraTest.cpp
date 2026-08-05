@@ -25,7 +25,8 @@
 #include <string>
 #include <vector>
 
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <fmt/ranges.h>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
 #include <photon/PhotonCamera.h>
@@ -35,7 +36,7 @@
 #include <wpi/simulation/AlertSim.hpp>
 #include <wpi/smartdashboard/SmartDashboard.hpp>
 
-TEST(TimeSyncProtocolTest, Smoketest) {
+TEST_CASE("TimeSyncProtocolTest Smoketest", "[timesync]") {
   using namespace wpi::tsp;
   using namespace std::chrono_literals;
 
@@ -51,15 +52,15 @@ TEST(TimeSyncProtocolTest, Smoketest) {
 
     // give us time to warm up
     if (i > 5) {
-      EXPECT_TRUE(m.rtt2 > 0);
-      EXPECT_TRUE(m.pongsReceived > 0);
+      CHECK(m.rtt2 > 0);
+      CHECK(m.pongsReceived > 0);
     }
   }
 
   client.Stop();
 }
 
-TEST(PhotonCameraTest, Alerts) {
+TEST_CASE("PhotonCameraTest Alerts", "[photonlib]") {
   // GIVEN a local-only NT instance
   auto inst = wpi::nt::NetworkTableInstance::GetDefault();
   inst.StopClient();
@@ -72,7 +73,7 @@ TEST(PhotonCameraTest, Alerts) {
 
   // AND a PhotonCamera that is disconnected
   photon::PhotonCamera camera(inst, cameraName);
-  EXPECT_FALSE(camera.IsConnected());
+  CHECK_FALSE(camera.IsConnected());
   std::string disconnectedCameraString =
       "PhotonCamera '" + cameraName + "' is disconnected.";
 
@@ -94,11 +95,11 @@ TEST(PhotonCameraTest, Alerts) {
 
     // The alert state will be set (hard-coded here)
     auto alerts = getActiveAlerts();
-    EXPECT_TRUE(std::any_of(alerts.begin(), alerts.end(),
-                            [&disconnectedCameraString](
-                                const wpi::sim::AlertSim::AlertInfo& alert) {
-                              return alert.text == disconnectedCameraString;
-                            }));
+    CHECK(std::any_of(alerts.begin(), alerts.end(),
+                      [&disconnectedCameraString](
+                          const wpi::sim::AlertSim::AlertInfo& alert) {
+                        return alert.text == disconnectedCameraString;
+                      }));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
@@ -119,20 +120,20 @@ TEST(PhotonCameraTest, Alerts) {
 
     // THEN the camera isn't disconnected
     auto alerts = getActiveAlerts();
-    EXPECT_TRUE(std::none_of(alerts.begin(), alerts.end(),
-                             [&disconnectedCameraString](
-                                 const wpi::sim::AlertSim::AlertInfo& alert) {
-                               return alert.text == disconnectedCameraString;
-                             }));
+    CHECK(std::none_of(alerts.begin(), alerts.end(),
+                       [&disconnectedCameraString](
+                           const wpi::sim::AlertSim::AlertInfo& alert) {
+                         return alert.text == disconnectedCameraString;
+                       }));
 
     // AND the alert string looks like a timesync warning
-    EXPECT_EQ(1, std::count_if(
-                     alerts.begin(), alerts.end(),
-                     [](const wpi::sim::AlertSim::AlertInfo& alert) {
-                       return alert.text.find(
-                                  "is not connected to the TimeSyncServer") !=
-                              std::string::npos;
-                     }));
+    CHECK(1 == std::count_if(
+                   alerts.begin(), alerts.end(),
+                   [](const wpi::sim::AlertSim::AlertInfo& alert) {
+                     return alert.text.find(
+                                "is not connected to the TimeSyncServer") !=
+                            std::string::npos;
+                   }));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
