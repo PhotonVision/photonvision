@@ -25,8 +25,10 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 /**
- * Migrates legacy {@code AprilTagFieldLayout} JSON into the newer {@code org.wpilib.fields.Field}
- * format.
+ * MIGRATION: 2026
+ *
+ * <p>Migrates legacy {@code AprilTagFieldLayout} JSON into the newer {@code
+ * org.wpilib.fields.Field} format.
  *
  * <p>Older versions of PhotonVision stored the field layout with the top-level keys {@code field}
  * (a {@code {length, width}} object) and {@code tags} (a list of {@code {ID, pose}} objects). The

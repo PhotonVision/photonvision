@@ -539,6 +539,13 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
+    /**
+     * MIGRATION: 2026
+     *
+     * <p>When we migrate the atfl, we get the result as a string. Everything else has a path though,
+     * so we need this overload to maintain the prior behavior. To remove this migration, we'll want
+     * to delete this overload then make the other function accept a path again.
+     */
     private boolean saveOneFile(String fname, Path path) {
         try {
             return saveOneFile(fname, Files.readString(path));
