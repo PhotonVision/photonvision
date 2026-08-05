@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -145,7 +146,6 @@ public class Calibrate3dPipeTest {
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
             @Values(booleans = {true, false}) boolean useMrCal) {
-        // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
 
@@ -170,14 +170,46 @@ public class Calibrate3dPipeTest {
                     dataset.useOldPattern);
     }
 
-    public static void calibrateCommon(
+    /**
+     * Check that the uncertainty works and returns reasonable looking numbers for a good calibration
+     * dataset. Our other datasets are of questionable quality (not enough pictures, not enough
+     * angles, etc)
+     */
+    @Test
+    public void testCalibrationUncertaintyWithGoodData() throws IOException {
+        var dataset = CalibrationDatasets.CHARUCO_LIFECAM_1280;
+        String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
+        File charucoDir = Path.of(charucoBase, dataset.path).toFile();
+        var data =
+                calibrateCommon(
+                        dataset.size,
+                        charucoDir,
+                        dataset.boardSize,
+                        dataset.boardType,
+                        true,
+                        dataset.useOldPattern);
+
+        var uncertainty = data.estimateUncertainty();
+        assertNotNull(uncertainty);
+
+        // sanity check that minimum is low
+        var minUncertainty = uncertainty.stream().mapToDouble(p -> p.z).min();
+        assertTrue(minUncertainty.isPresent());
+        assertEquals(1.5, minUncertainty.getAsDouble(), 1.5);
+
+        // print mean uncertainty
+        var meanUncertainty = uncertainty.stream().mapToDouble(p -> p.z).average().orElse(Double.NaN);
+        System.out.println("Mean uncertainty: " + meanUncertainty);
+    }
+
+    public static CameraCalibrationCoefficients calibrateCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
             BoardType boardType,
             boolean useMrCal,
             boolean useOldPattern) {
-        calibrateCommon(
+        return calibrateCommon(
                 imgRes,
                 rootFolder,
                 boardDim,
@@ -191,7 +223,7 @@ public class Calibrate3dPipeTest {
                 useOldPattern);
     }
 
-    public static void calibrateCommon(
+    public static CameraCalibrationCoefficients calibrateCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
@@ -202,7 +234,7 @@ public class Calibrate3dPipeTest {
             double expectedYCenter,
             boolean useMrCal,
             boolean useOldPattern) {
-        calibrateCommon(
+        return calibrateCommon(
                 imgRes,
                 rootFolder,
                 boardDim,
@@ -216,7 +248,7 @@ public class Calibrate3dPipeTest {
                 useOldPattern);
     }
 
-    public static void calibrateCommon(
+    public static CameraCalibrationCoefficients calibrateCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
@@ -284,6 +316,16 @@ public class Calibrate3dPipeTest {
             calibration3dPipeline.finishCalibration();
         }
 
+        assertTrue(
+                calibration3dPipeline.foundCornersList.stream()
+                        .map(it -> it.imagePoints)
+                        .allMatch(it -> it.width() > 0 && it.height() > 0));
+
+        var cal =
+                calibration3dPipeline.tryCalibration(
+                        ConfigManager.getInstance()
+                                .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
+        calibration3dPipeline.finishCalibration();
         // visuallyDebugDistortion(directoryListing, imgRes, cal );
 
         // Confirm we have indeed gotten valid calibration objects
@@ -321,6 +363,8 @@ public class Calibrate3dPipeTest {
         // doesn't
         // work in CI
         System.out.println("CVMats left: " + CVMat.getMatCount() + " Start: " + startMatCount);
+
+        return cal;
     }
 
     /**

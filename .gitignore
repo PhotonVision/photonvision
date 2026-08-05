@@ -126,7 +126,7 @@ compile_commands.json
 *.bin
 .gradle
 .gradle/*
-photonvision_config
+photonvision_config*
 bin*/
 build*/
 

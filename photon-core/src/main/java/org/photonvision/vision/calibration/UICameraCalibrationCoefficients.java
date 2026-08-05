@@ -34,7 +34,7 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
         return (int) obs.locationInImageSpace.stream().filter(it -> it.x < 0 || it.y < 0).count();
     }
 
-    public UICameraCalibrationCoefficients(
+    UICameraCalibrationCoefficients(
             Size resolution,
             JsonMatOfDouble cameraIntrinsics,
             JsonMatOfDouble distCoeffs,
@@ -42,8 +42,9 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
             List<BoardObservation> observations,
             Size calobjectSize,
             double calobjectSpacing,
-            CameraLensModel lensmodel) {
-        // yeet observations, keep all else
+            CameraLensModel lensmodel,
+            OptimizationInputs optimizationInputs) {
+        // yeet observations + optimization inputs, keep all else
         super(
                 resolution,
                 cameraIntrinsics,
@@ -52,7 +53,8 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
                 List.of(),
                 calobjectSize,
                 calobjectSpacing,
-                lensmodel);
+                lensmodel,
+                optimizationInputs);
 
         this.numSnapshots = observations.size();
         this.meanErrors = observations.stream().map(BoardObservation::meanReprojectionError).toList();
