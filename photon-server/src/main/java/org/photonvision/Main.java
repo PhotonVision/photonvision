@@ -81,11 +81,6 @@ public class Main implements Callable<Integer> {
     private boolean testMode;
 
     @Option(
-            names = {"-f", "--folder"},
-            description = "Point test mode to a specific folder")
-    private Optional<Path> testModeFolder;
-
-    @Option(
             names = {"-n", "--disable-networking"},
             description = "Disables control device network settings")
     private boolean disableNetworking;
@@ -220,10 +215,6 @@ public class Main implements Callable<Integer> {
 
         if (testMode) {
             logger.info("Running in test mode - Cameras will not be used");
-
-            if (testModeFolder.isPresent()) {
-                logger.info("Loading from Path " + testModeFolder.get().toAbsolutePath().toString());
-            }
         }
 
         if (disableNetworking) {
@@ -332,9 +323,7 @@ public class Main implements Callable<Integer> {
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
         } else {
-            if (!testModeFolder.isPresent()) {
-                addTestModeSources();
-            }
+            addTestModeSources();
         }
 
         VisionSourceManager.getInstance().registerTimedTasks();
