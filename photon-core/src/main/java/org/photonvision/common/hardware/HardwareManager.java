@@ -124,10 +124,11 @@ public class HardwareManager {
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
-        visionLED.ifPresent(led -> {
-            led.setBrightness(hardwareSettings.ledBrightnessPercentage);
-            led.blink(85, 4); // bootup blink
-        });
+        visionLED.ifPresent(
+                led -> {
+                    led.setBrightness(hardwareSettings.ledBrightnessPercentage);
+                    led.blink(85, 4); // bootup blink
+                });
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
