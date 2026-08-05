@@ -184,7 +184,7 @@ public class Main implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         var logLevel = debugMode ? LogLevel.TRACE : LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
         Logger.setLevel(LogGroup.WebServer, logLevel);
@@ -252,7 +252,7 @@ public class Main implements Callable<Integer> {
 
         if (!HAL.initialize(500, 0)) {
             logger.error("Failed to initialize the HAL! Giving up :(");
-            System.exit(1);
+            return 1;
         }
 
         if (Platform.isRaspberryPi()) {
@@ -307,7 +307,7 @@ public class Main implements Callable<Integer> {
 
         if (smoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
-            System.exit(0);
+            return 0;
         }
 
         logger.debug("Loading SystemMonitor...");
@@ -315,8 +315,7 @@ public class Main implements Callable<Integer> {
         SystemMonitor.getInstance().startMonitor(500, 1000);
 
         // todo - should test mode just add test mode sources, but still allow local usb
-        // cameras to be
-        // added?
+        // cameras to be added?
         if (!testMode) {
             logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
