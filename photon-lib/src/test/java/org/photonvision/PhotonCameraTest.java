@@ -125,7 +125,7 @@ class PhotonCameraTest {
 
                 var res = camera.getLatestResult();
                 var captureTime = res.getTimestampSeconds();
-                var now = Timer.getFPGATimestamp();
+                var now = Timer.getMonotonicTimestamp();
 
                 // expectTrue(captureTime < now);
 

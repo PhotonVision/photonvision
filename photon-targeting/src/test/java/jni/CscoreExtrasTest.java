@@ -59,7 +59,7 @@ public class CscoreExtrasTest {
 
         UsbCamera camera = CameraServer.startAutomaticCapture(2);
 
-        camera.setVideoMode(PixelFormat.kMJPEG, 1280, 720, 30);
+        camera.setVideoMode(PixelFormat.MJPEG, 1280, 720, 30);
         var cameraMode = camera.getVideoMode();
 
         CvSink cvSink = CameraServer.getVideo(camera);
@@ -74,7 +74,7 @@ public class CscoreExtrasTest {
                     cameraMode.height,
                     // hard-coded 3 channel
                     cameraMode.width * 3,
-                    PixelFormat.kBGR);
+                    PixelFormat.BGR);
             final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;
             long time =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(

@@ -17,8 +17,10 @@
 
 package org.photonvision.server;
 
+import io.avaje.jsonb.javalin.JavalinJsonb;
 import io.javalin.Javalin;
 import io.javalin.plugin.bundled.CorsPlugin;
+import io.javalin.plugin.bundled.CorsPluginConfig.CorsRule;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.StringJoiner;
@@ -41,7 +43,7 @@ public class Server {
         }
 
         @Override
-        public void onDataChangeEvent(DataChangeEvent<?> event) {
+        public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
             if (event.propertyName.equals("restartServer")) {
                 Server.restart();
             }
@@ -60,14 +62,7 @@ public class Server {
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
-                            javalinConfig.registerPlugin(
-                                    new CorsPlugin(
-                                            cors -> {
-                                                cors.addRule(
-                                                        it -> {
-                                                            it.anyHost();
-                                                        });
-                                            }));
+                            javalinConfig.registerPlugin(new CorsPlugin(cors -> cors.addRule(CorsRule::anyHost)));
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -103,6 +98,7 @@ public class Server {
                                                                     return "Got WebSockets binary message from host: " + host;
                                                                 }));
                                     });
+                            javalinConfig.jsonMapper(new JavalinJsonb());
                         });
 
         /* Web Socket Events for Data Exchange */

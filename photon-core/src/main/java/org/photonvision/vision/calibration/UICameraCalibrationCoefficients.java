@@ -17,10 +17,12 @@
 
 package org.photonvision.vision.calibration;
 
+import io.avaje.jsonb.Json;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.opencv.core.Size;
 
+@Json
 public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficients {
     public int numSnapshots;
 

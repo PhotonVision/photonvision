@@ -33,7 +33,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
     private MjpegServer mjpegServer;
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
-        this.cvSource = new CvSource(sourceName, PixelFormat.kMJPEG, width, height, 30);
+        this.cvSource = new CvSource(sourceName, PixelFormat.MJPEG, width, height, 30);
 
         this.mjpegServer = new MjpegServer("serve_" + cvSource.getName(), port);
         mjpegServer.setSource(cvSource);

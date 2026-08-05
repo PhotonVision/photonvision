@@ -32,6 +32,5 @@ namespace photon {
 
     // Versions of dependant libraries
     const char* wpilibTargetVersion = "${wpilibVersion}";
-    const char* opencvTargetVersion = "${opencvVersion}";
   }
 }

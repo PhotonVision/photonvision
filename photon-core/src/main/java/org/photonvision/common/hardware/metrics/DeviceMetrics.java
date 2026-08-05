@@ -17,8 +17,10 @@
 
 package org.photonvision.common.hardware.metrics;
 
+import io.avaje.jsonb.Json;
 import org.photonvision.common.hardware.metrics.proto.DeviceMetricsProto;
 
+@Json
 public record DeviceMetrics(
         double cpuTemp,
         double cpuUtil,

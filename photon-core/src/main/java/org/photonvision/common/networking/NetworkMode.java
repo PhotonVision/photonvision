@@ -17,13 +17,14 @@
 
 package org.photonvision.common.networking;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import io.avaje.jsonb.Json;
 
+@Json
 public enum NetworkMode {
     DHCP,
     STATIC;
 
-    @JsonValue
+    @Json.Value
     public int toValue() {
         return ordinal();
     }

@@ -20,8 +20,8 @@ package org.photonvision.common.configuration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.avaje.jsonb.Jsonb;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +32,6 @@ import org.photonvision.common.LoadJNI;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -135,60 +134,31 @@ public class ConfigTest {
     }
 
     @Test
-    public void testJacksonHandlesOldVersions() throws IOException {
-        var str =
+    public void testJsonbHandlesOldVersions() throws IOException {
+        var json =
                 "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"cameraLEDs\":[]}";
-        File tempFile = File.createTempFile("test", ".json");
-        tempFile.deleteOnExit();
-        var writer = new FileWriter(tempFile);
-        writer.write(str);
-        writer.flush();
-        writer.close();
-        CameraConfiguration result =
-                JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
 
-        tempFile.delete();
+        CameraConfiguration result = Jsonb.instance().type(CameraConfiguration.class).fromJson(json);
     }
 
     @Test
-    public void testJacksonAddUSBVIDPID() throws IOException {
-        var str =
+    public void testJsonbAddUSBVIDPID() throws IOException {
+        var json =
                 "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"usbVID\":3, \"usbPID\":4, \"cameraLEDs\":[]}";
-        File tempFile = File.createTempFile("test", ".json");
-        tempFile.deleteOnExit();
-        var writer = new FileWriter(tempFile);
-        writer.write(str);
-        writer.flush();
-        writer.close();
 
-        try {
-            CameraConfiguration result =
-                    JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
-            String ser = JacksonUtils.serializeToString(result);
-            System.out.println(ser);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        tempFile.delete();
+        CameraConfiguration result = Jsonb.instance().type(CameraConfiguration.class).fromJson(json);
+        String ser = Jsonb.instance().toJson(result);
+        System.out.println(ser);
     }
 
     @Test
-    public void testJacksonHandlesOldTargetEnum() throws IOException {
-        var str = "[ \"AprilTagPipelineSettings\", {\n  \"targetModel\" : \"k6in_16h5\"\n} ]\n";
+    public void testJsonbHandlesOldTargetEnum() throws IOException {
+        var json = "[ \"AprilTagPipelineSettings\", {\n  \"targetModel\" : \"k6in_16h5\"\n} ]\n";
 
-        File tempFile = File.createTempFile("test", ".json");
-        tempFile.deleteOnExit();
-        var writer = new FileWriter(tempFile);
-        writer.write(str);
-        writer.flush();
-        writer.close();
+        json = CVPipelineSettings.remapSettingsJson(json);
 
         AprilTagPipelineSettings settings =
-                (AprilTagPipelineSettings)
-                        JacksonUtils.deserialize(tempFile.toPath(), CVPipelineSettings.class);
+                (AprilTagPipelineSettings) Jsonb.instance().type(CVPipelineSettings.class).fromJson(json);
         assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);
-
-        tempFile.delete();
     }
 }

@@ -13,8 +13,6 @@ ext.licenseFile = file("$rootDir/LICENSE")
 apply from: "${rootDir}/shared/config.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
 
-apply from: "${rootDir}/versioningHelper.gradle"
-
 nativeUtils {
     exportsConfigs {
         "${nativeName}" {}
@@ -187,5 +185,5 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, openCVversion)
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")

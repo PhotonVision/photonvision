@@ -17,8 +17,10 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import io.avaje.jsonb.Json;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
+@Json
 public class UIProgramSettings {
     public UIProgramSettings(
             UINetConfig networkSettings,

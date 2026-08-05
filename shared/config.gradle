@@ -6,10 +6,7 @@ nativeUtils.withCrossSystemCore()
 // Configure WPI dependencies.
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
-    wpimathVersion = wpimathVersion
-    opencvYear = 'frc'+openCVYear
     opencvVersion = openCVversion
-    niLibVersion = "2026.1.0"
 }
 
 // Configure warnings and errors

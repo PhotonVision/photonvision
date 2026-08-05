@@ -25,7 +25,7 @@ from photonlibpy.photonCamera import setVersionCheckEnabled
 def test_roundTrip():
     ntcore.NetworkTableInstance.getDefault().stopServer()
     ntcore.NetworkTableInstance.getDefault().setServer("localhost")
-    ntcore.NetworkTableInstance.getDefault().startClient4("meme")
+    ntcore.NetworkTableInstance.getDefault().startClient("meme")
 
     camera = PhotonCamera("WPI2024")
 

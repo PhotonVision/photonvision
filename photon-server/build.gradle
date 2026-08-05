@@ -17,6 +17,10 @@ dependencies {
 
     // Needed for Javalin Runtime Logging
     implementation "org.slf4j:slf4j-simple:2.0.7"
+
+    implementation("org.photonvision:tflite_jni-java:$tfliteVersion") {
+        transitive = false
+    }
 }
 
 group = 'org.photonvision'
@@ -39,10 +43,12 @@ shadowJar {
     configurations = [
         project.configurations.runtimeClasspath
     ]
+    mergeServiceFiles()
 }
 
 node {
     nodeProjectDir = file("${projectDir}/../photon-client")
+    pnpmVersion = "11.0.9"
 }
 
 tasks.register('copyClientUIToResources', Copy) {

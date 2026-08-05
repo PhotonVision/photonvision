@@ -68,9 +68,9 @@ public class NTDriverStation {
 
         fmsTable.addListener(
                 "FMSControlData",
-                EnumSet.of(Kind.kValueAll),
+                EnumSet.of(Kind.VALUE_ALL),
                 (table, key, event) -> {
-                    if (event.is(Kind.kValueAll) && event.valueData.value.isInteger()) {
+                    if (event.is(Kind.VALUE_ALL) && event.valueData.value.isInteger()) {
                         // Logger totally isnt thread safe but whatevs
                         var word = NTDriverStation.getControlWord(event.valueData.value.getInteger());
 

@@ -18,8 +18,8 @@ dependencies {
 
     implementation "io.javalin:javalin:$javalinVersion"
 
-    implementation 'org.msgpack:msgpack-core:0.9.0'
-    implementation 'org.msgpack:jackson-dataformat-msgpack:0.9.0'
+    implementation "org.msgpack:msgpack-core:$msgpackVersion"
+    implementation "org.msgpack:jackson-dataformat-msgpack:$msgpackVersion"
 
     implementation "org.wpilib.wpiutil:wpiutil-java:$wpilibVersion"
     implementation "org.wpilib.datalog:datalog-java:$wpilibVersion"
@@ -32,11 +32,12 @@ dependencies {
     implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
     implementation "org.wpilib.apriltag:apriltag-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, openCVversion)
+    implementation wpilibTools.deps.wpilibOpenCvJava(openCVversion)
 
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: jacksonVersion
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: jacksonVersion
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
+    implementation group: "io.avaje", name: "avaje-jsonb", version: avajeJsonbVersion
+    annotationProcessor group: "io.avaje", name: "avaje-jsonb-generator", version: avajeJsonbVersion
+    implementation group: "io.avaje", name: "avaje-jsonb-jackson", version: avajeJsonbVersion
+    implementation group: "io.avaje", name: "avaje-jsonb-javalin-mapper", version: avajeJsonbVersion
 
     implementation group: "org.ejml", name: "ejml-simple", version: ejmlVersion
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: quickbufVersion;
@@ -53,6 +54,7 @@ dependencies {
 test {
     useJUnitPlatform()
     systemProperty("java.awt.headless", !project.hasProperty("enableTestUi"))
+    systemProperty 'jsonb.disableAdapterSpi', 'true'
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
         exceptionFormat = "full"

@@ -57,6 +57,9 @@ public class FilterObjectDetectionsPipe
         m_filteredContours.add(contour);
     }
 
+    @Override
+    public void release() {}
+
     public static record FilterContoursParams(
             DoubleCouple area,
             DoubleCouple ratio,

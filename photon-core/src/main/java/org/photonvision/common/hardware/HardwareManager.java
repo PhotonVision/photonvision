@@ -24,6 +24,7 @@ import com.diozero.sbc.DeviceFactoryHelper;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.photonvision.common.configuration.ConfigManager;
@@ -33,6 +34,7 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
 import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
+import org.photonvision.common.hardware.statusLED.StatusLED;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -48,22 +50,15 @@ public class HardwareManager {
     private HardwareConfig hardwareConfig;
     private HardwareSettings hardwareSettings;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private StatusLED statusLED;
+    private Optional<StatusLED> statusLED;
 
-    @SuppressWarnings("FieldCanBeLocal")
     private final IntegerSubscriber ledModeRequest;
 
     private final IntegerPublisher ledModeState;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private NTDataChangeListener ledModeListener;
+    private Optional<NTDataChangeListener> ledModeListener;
 
-    private VisionLED visionLED; // May be null if no LED is specified
-
-    public VisionLED getVisionLED() {
-        return visionLED;
-    }
+    public final Optional<VisionLED> visionLED;
 
     public static HardwareManager getInstance() {
         if (instance == null) {
@@ -96,51 +91,43 @@ public class HardwareManager {
                 };
 
         statusLED =
-                hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(
-                                lazyDeviceFactory.get(),
-                                hardwareConfig.statusRGBPins,
-                                hardwareConfig.statusRGBActiveHigh)
-                        : null;
+                hardwareConfig.statusLEDPins.isEmpty()
+                        ? Optional.empty()
+                        : Optional.of(
+                                StatusLED.ofType(
+                                        hardwareConfig.statusLEDType,
+                                        lazyDeviceFactory,
+                                        hardwareConfig.statusLEDPins,
+                                        hardwareConfig.statusLEDActiveHigh));
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
                 hardwareConfig.ledPins.isEmpty()
-                        ? null
-                        : new VisionLED(
-                                lazyDeviceFactory.get(),
-                                hardwareConfig.ledPins,
-                                hardwareConfig.ledsCanDim,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                hardwareConfig.ledPWMFrequency,
-                                ledModeState::set);
+                        ? Optional.empty()
+                        : Optional.of(
+                                new VisionLED(
+                                        lazyDeviceFactory.get(),
+                                        hardwareConfig.ledPins,
+                                        hardwareConfig.ledsCanDim,
+                                        hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
+                                        hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                        hardwareConfig.ledPWMFrequency,
+                                        ledModeState::set));
 
         ledModeListener =
-                visionLED == null
-                        ? null
-                        : new NTDataChangeListener(
-                                NetworkTablesManager.getInstance().kRootTable.getInstance(),
-                                ledModeRequest,
-                                visionLED::onLedModeChange);
-
-        if (visionLED != null) {
-            visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
-            visionLED.blink(85, 4); // bootup blink
-        }
-    }
-
-    private HardwareManager() {
-        ledModeRequest =
-                NetworkTablesManager.getInstance()
-                        .kRootTable
-                        .getIntegerTopic("ledModeRequest")
-                        .subscribe(-1);
-        ledModeState =
-                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
-        ledModeState.set(VisionLEDMode.kDefault.value);
+                visionLED.map(
+                        visionLED ->
+                                new NTDataChangeListener(
+                                        NetworkTablesManager.getInstance().kRootTable.getInstance(),
+                                        ledModeRequest,
+                                        visionLED::onLedModeChange));
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
+
+        visionLED.ifPresent(led -> {
+            led.setBrightness(hardwareSettings.ledBrightnessPercentage);
+            led.blink(85, 4); // bootup blink
+        });
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
@@ -166,7 +153,7 @@ public class HardwareManager {
                 pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
             }
         }
-        for (int pin : hardwareConfig.statusRGBPins) {
+        for (int pin : hardwareConfig.statusLEDPins) {
             pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
         }
 
@@ -180,7 +167,7 @@ public class HardwareManager {
         }
         if (percent != hardwareSettings.ledBrightnessPercentage) {
             hardwareSettings.ledBrightnessPercentage = percent;
-            if (visionLED != null) visionLED.setBrightness(percent);
+            visionLED.ifPresent(visionLED -> visionLED.setBrightness(percent));
             ConfigManager.getInstance().requestSave();
             logger.info("Setting led brightness to " + percent + "%");
         }
@@ -188,7 +175,7 @@ public class HardwareManager {
 
     private void onJvmExit() {
         logger.info("Shutting down LEDs...");
-        if (visionLED != null) visionLED.setState(false);
+        visionLED.ifPresent(visionLED -> visionLED.setState(false));
 
         ConfigManager.getInstance().onJvmExit();
     }
@@ -233,16 +220,16 @@ public class HardwareManager {
         updateStatus();
     }
 
-    public void setError(PhotonStatus status) {
-        if (status == null || !status.isError()) {
+    public void setError(Optional<PhotonStatus> status) {
+        if (status.isEmpty() || !status.get().isError()) {
             updateStatus();
-        } else if (statusLED != null) {
-            statusLED.setStatus(status);
+        } else {
+            statusLED.ifPresent(statusLED -> statusLED.setStatus(status.get()));
         }
     }
 
     private void updateStatus() {
-        if (statusLED == null) {
+        if (statusLED.isEmpty()) {
             return;
         }
         PhotonStatus status;
@@ -260,6 +247,6 @@ public class HardwareManager {
                 status = PhotonStatus.NT_DISCONNECTED_TARGETS_MISSING;
             }
         }
-        statusLED.setStatus(status);
+        statusLED.ifPresent(statusLED -> statusLED.setStatus(status));
     }
 }

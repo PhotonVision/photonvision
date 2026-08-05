@@ -150,14 +150,15 @@ public enum Platform {
     public static String getNativePlatform() {
         String platPath = CombinedRuntimeLoader.getPlatformPath();
 
-        if (platPath == "/linux/x86-64/") {
-            return "linuxx64";
-        } else if (platPath == "/windows/x86-64/") {
-            return "winx64";
-        } else if (platPath == "/linux/arm64/") {
-            return "linuxarm64";
-        } else {
-            return "";
+        switch (platPath) {
+            case "/linux/x86-64/":
+                return "linuxx86-64";
+            case "/windows/x86-64/":
+                return "winx86-64";
+            case "/linux/arm64/":
+                return "linuxarm64";
+            default:
+                return "";
         }
     }
 

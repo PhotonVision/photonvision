@@ -6,7 +6,7 @@ from photonlibpy.estimation import RotTrlTransform3d, TargetModel
 from photonlibpy.estimation.openCVHelp import OpenCVHelp
 from photonlibpy.photonCamera import setVersionCheckEnabled
 from photonlibpy.simulation import SimCameraProperties, VisionTargetSim
-from wpimath.geometry import Pose3d, Rotation3d, Translation3d
+from wpimath import Pose3d, Rotation3d, Translation3d
 
 
 @pytest.fixture(autouse=True)

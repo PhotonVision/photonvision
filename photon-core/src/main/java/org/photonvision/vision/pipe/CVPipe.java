@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipe;
 
+import org.photonvision.vision.opencv.Releasable;
+
 /**
  * Defines a pipe. A pipe is a single step in a pipeline. This class is to be extended, never used
  * on its own.
@@ -25,7 +27,7 @@ package org.photonvision.vision.pipe;
  * @param <O> Output type for the pipe
  * @param <P> Parameters type for the pipe
  */
-public abstract class CVPipe<I, O, P> {
+public abstract class CVPipe<I, O, P> implements Releasable {
     protected CVPipeResult<O> result = new CVPipeResult<>();
     protected P params;
 

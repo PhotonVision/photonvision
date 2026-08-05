@@ -17,7 +17,7 @@
 
 from dataclasses import dataclass
 
-from wpimath.geometry import Pose3d
+from wpimath import Pose3d
 
 from .targeting.photonTrackedTarget import PhotonTrackedTarget
 

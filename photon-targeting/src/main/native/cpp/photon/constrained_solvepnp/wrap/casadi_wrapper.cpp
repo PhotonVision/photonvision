@@ -169,8 +169,7 @@ constrained_solvepnp::do_optimization(
       point_observations.cols() != (nTags * 4)) {
     if constexpr (VERBOSE) fmt::println("Got unexpected num cols!");
     // TODO find a new error code
-    return wpi::util::unexpected{
-        slp::ExitStatus::NONFINITE_INITIAL_COST_OR_CONSTRAINTS};
+    return wpi::util::unexpected{slp::ExitStatus::NONFINITE_INITIAL_GUESS};
   }
 
   // rescale observations to homogenous pixel coordinates
@@ -199,8 +198,7 @@ constrained_solvepnp::do_optimization(
 
   auto problemOpt = createProblem(nTags, heading_free);
   if (!problemOpt) {
-    return wpi::util::unexpected{
-        slp::ExitStatus::NONFINITE_INITIAL_COST_OR_CONSTRAINTS};
+    return wpi::util::unexpected{slp::ExitStatus::NONFINITE_INITIAL_GUESS};
   }
 
   ProblemState<3> pState{robot2camera,     field2points, point_observations,

@@ -106,7 +106,7 @@ public class VisionSystemSim {
             camTrfMap.put(cameraSim, TimeInterpolatableBuffer.createBuffer(kBufferLengthSeconds));
             camTrfMap
                     .get(cameraSim)
-                    .addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
+                    .addSample(Timer.getMonotonicTimestamp(), new Pose3d().plus(robotToCamera));
         }
     }
 
@@ -137,7 +137,7 @@ public class VisionSystemSim {
      * @return The transform of this camera, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim) {
-        return getRobotToCamera(cameraSim, Timer.getFPGATimestamp());
+        return getRobotToCamera(cameraSim, Timer.getMonotonicTimestamp());
     }
 
     /**
@@ -164,7 +164,7 @@ public class VisionSystemSim {
      * @return The pose of this camera, or an empty optional if it is invalid
      */
     public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim) {
-        return getCameraPose(cameraSim, Timer.getFPGATimestamp());
+        return getCameraPose(cameraSim, Timer.getMonotonicTimestamp());
     }
 
     /**
@@ -191,7 +191,7 @@ public class VisionSystemSim {
     public boolean adjustCamera(PhotonCameraSim cameraSim, Transform3d robotToCamera) {
         var trfBuffer = camTrfMap.get(cameraSim);
         if (trfBuffer == null) return false;
-        trfBuffer.addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
+        trfBuffer.addSample(Timer.getMonotonicTimestamp(), new Pose3d().plus(robotToCamera));
         return true;
     }
 
@@ -207,7 +207,7 @@ public class VisionSystemSim {
      * @return If the cameraSim was valid and transforms were reset
      */
     public boolean resetCameraTransforms(PhotonCameraSim cameraSim) {
-        double now = Timer.getFPGATimestamp();
+        double now = Timer.getMonotonicTimestamp();
         var trfBuffer = camTrfMap.get(cameraSim);
         if (trfBuffer == null) return false;
         var lastTrf = new Transform3d(new Pose3d(), trfBuffer.getSample(now).orElse(new Pose3d()));
@@ -339,7 +339,7 @@ public class VisionSystemSim {
      * @return The latest robot pose
      */
     public Pose3d getRobotPose() {
-        return getRobotPose(Timer.getFPGATimestamp());
+        return getRobotPose(Timer.getMonotonicTimestamp());
     }
 
     /**
@@ -368,7 +368,7 @@ public class VisionSystemSim {
      */
     public void resetRobotPose(Pose3d robotPose) {
         robotPoseBuffer.clear();
-        robotPoseBuffer.addSample(Timer.getFPGATimestamp(), robotPose);
+        robotPoseBuffer.addSample(Timer.getMonotonicTimestamp(), robotPose);
     }
 
     public Field2d getDebugField() {
@@ -403,7 +403,7 @@ public class VisionSystemSim {
         if (robotPoseMeters == null) return;
 
         // save "real" robot poses over time
-        double now = Timer.getFPGATimestamp();
+        double now = Timer.getMonotonicTimestamp();
         robotPoseBuffer.addSample(now, robotPoseMeters);
         dbgField.setRobotPose(robotPoseMeters.toPose2d());
 

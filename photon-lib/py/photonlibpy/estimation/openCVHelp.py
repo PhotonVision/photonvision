@@ -4,7 +4,7 @@ from typing import Any
 
 import cv2 as cv
 import numpy as np
-from wpimath.geometry import Rotation3d, Transform3d, Translation3d
+from wpimath import Rotation3d, Transform3d, Translation3d
 
 from ..targeting import PnpResult, TargetCorner
 from .rotTrlTransform3d import RotTrlTransform3d
@@ -26,7 +26,7 @@ class OpenCVHelp:
 
     @staticmethod
     def rotationNWUtoEDN(rot: Rotation3d) -> Rotation3d:
-        return -NWU_TO_EDN + (rot + NWU_TO_EDN)
+        return NWU_TO_EDN.inverse().rotateBy(rot.rotateBy(NWU_TO_EDN))
 
     @staticmethod
     def translationToTVec(translations: list[Translation3d]) -> np.ndarray:
@@ -147,7 +147,7 @@ class OpenCVHelp:
         in NWU, this would be {0, 0, 1} in EDN.
         """
 
-        return -EDN_TO_NWU + (rot + EDN_TO_NWU)
+        return EDN_TO_NWU.inverse().rotateBy(rot.rotateBy(EDN_TO_NWU))
 
     @staticmethod
     def tVecToTranslation(tvecInput: np.ndarray) -> Translation3d:

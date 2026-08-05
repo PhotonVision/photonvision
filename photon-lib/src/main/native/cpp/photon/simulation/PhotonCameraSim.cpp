@@ -51,7 +51,7 @@ PhotonCameraSim::PhotonCameraSim(
   videoSimRaw =
       wpi::CameraServer::PutVideo(std::string{camera->GetCameraName()} + "-raw",
                                   prop.GetResWidth(), prop.GetResHeight());
-  videoSimRaw.SetPixelFormat(wpi::util::PixelFormat::kGray);
+  videoSimRaw.SetPixelFormat(wpi::util::PixelFormat::GRAY);
   videoSimProcessed = wpi::CameraServer::PutVideo(
       std::string{camera->GetCameraName()} + "-processed", prop.GetResWidth(),
       prop.GetResHeight());

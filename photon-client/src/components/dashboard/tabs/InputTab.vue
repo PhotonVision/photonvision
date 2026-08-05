@@ -61,10 +61,9 @@ const currentStreamResolutionIndex = computed<number>({
     return stored - skipped;
   },
   set: (index) => {
-    useCameraSettingsStore().changeCurrentPipelineSetting(
-      { streamingFrameDivisor: index + getNumberOfSkippedDivisors() },
-      false
-    );
+    useCameraSettingsStore().changeCurrentPipelineSetting({
+      streamingFrameDivisor: index + getNumberOfSkippedDivisors()
+    });
   }
 });
 const { mdAndDown } = useDisplay();
@@ -164,7 +163,7 @@ const interactiveCols = computed(() =>
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.blockForFrames"
-      :disabled="!useCameraSettingsStore().currentCameraSettings.matchedCameraInfo.PVUsbCameraInfo"
+      :disabled="useCameraSettingsStore().currentCameraSettings.matchedCameraInfo.type !== 'PVUsbCameraInfo'"
       label="Low Latency Mode"
       :switch-cols="interactiveCols"
       tooltip="When enabled, USB cameras wait for the next camera frame for lowest latency. When disabled, uses the most recent available frame for higher FPS."

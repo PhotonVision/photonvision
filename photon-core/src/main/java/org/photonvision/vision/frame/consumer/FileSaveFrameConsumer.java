@@ -29,7 +29,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
-import org.wpilib.driverstation.DriverStation.MatchType;
+import org.wpilib.driverstation.MatchType;
 import org.wpilib.networktables.IntegerEntry;
 import org.wpilib.networktables.IntegerSubscriber;
 import org.wpilib.networktables.NetworkTable;
@@ -165,7 +165,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
             logger.warn("Did not receive event name, defaulting to 'UNKNOWN'");
         }
 
-        MatchType wpiMatchType = MatchType.None; // Default is to be unknown
+        MatchType wpiMatchType = MatchType.NONE; // Default is to be unknown
         if (matchType.value < 0 || matchType.value >= MatchType.values().length) {
             logger.error("Invalid match type from FMS: " + matchType.value);
         } else {

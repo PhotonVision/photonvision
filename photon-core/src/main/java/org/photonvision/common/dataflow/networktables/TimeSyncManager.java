@@ -112,7 +112,7 @@ public class TimeSyncManager {
             var conns = ntInstance.getConnections();
 
             if (conns.length > 0) {
-                var newServer = conns[0].remote_ip;
+                var newServer = conns[0].remoteIp;
                 if (!m_client.getServer().equals(newServer)) {
                     logger.debug("Changing TimeSyncClient server to " + newServer);
                     m_client.setServer(newServer);

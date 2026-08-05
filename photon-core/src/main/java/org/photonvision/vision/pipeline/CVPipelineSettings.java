@@ -17,23 +17,25 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.avaje.jsonb.Json;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.ImageRotationMode;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.WRAPPER_ARRAY,
-        property = "type")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = ColoredShapePipelineSettings.class),
-    @JsonSubTypes.Type(value = ReflectivePipelineSettings.class),
-    @JsonSubTypes.Type(value = DriverModePipelineSettings.class),
-    @JsonSubTypes.Type(value = AprilTagPipelineSettings.class),
-    @JsonSubTypes.Type(value = ArucoPipelineSettings.class),
-    @JsonSubTypes.Type(value = ObjectDetectionPipelineSettings.class)
+@Json(typeProperty = "type")
+@Json.SubTypes({
+    @Json.SubType(type = ColoredShapePipelineSettings.class),
+    @Json.SubType(type = ReflectivePipelineSettings.class),
+    @Json.SubType(type = DriverModePipelineSettings.class),
+    @Json.SubType(type = AprilTagPipelineSettings.class),
+    @Json.SubType(type = ArucoPipelineSettings.class),
+    @Json.SubType(type = ObjectDetectionPipelineSettings.class)
 })
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
@@ -152,5 +154,23 @@ public class CVPipelineSettings implements Cloneable {
                 + ", outputShouldShow="
                 + outputShouldShow
                 + '}';
+    }
+
+    // MIGRATION: 2026
+    public static String remapSettingsJson(String pipelineJson) {
+        final JsonType<List<Object>> objListJsonb = Jsonb.instance().type(Types.listOf(Object.class));
+        final JsonType<Map<String, Object>> objMapJsonb =
+                Jsonb.instance().type(Types.mapOf(Object.class));
+
+        List<Object> pipelineMigrationIn = objListJsonb.fromJson(pipelineJson);
+
+        @SuppressWarnings("unchecked")
+        var pipelineData = (Map<String, Object>) pipelineMigrationIn.get(1);
+
+        Map<String, Object> pipelineMigrationOut = new HashMap<>();
+        pipelineMigrationOut.putAll(pipelineData);
+        pipelineMigrationOut.put("type", pipelineMigrationIn.get(0));
+
+        return objMapJsonb.toJson(pipelineMigrationOut);
     }
 }

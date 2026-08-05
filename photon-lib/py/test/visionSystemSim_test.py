@@ -5,7 +5,7 @@ from photonlibpy.estimation import TargetModel, VisionEstimation
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.simulation import PhotonCameraSim, VisionSystemSim, VisionTargetSim
 from robotpy_apriltag import AprilTag, AprilTagFieldLayout
-from wpimath.geometry import (
+from wpimath import (
     Pose2d,
     Pose3d,
     Rotation2d,

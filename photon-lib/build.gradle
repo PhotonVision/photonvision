@@ -17,8 +17,6 @@ apply plugin: 'org.wpilib.NativeUtils'
 apply from: "${rootDir}/shared/config.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
 
-apply from: "${rootDir}/versioningHelper.gradle"
-
 nativeUtils {
     exportsConfigs {
         "${nativeName}" {}
@@ -159,7 +157,7 @@ task generateVendorJson() {
 
     def read = photonlibFileInput.text
             .replace('${photon_version}', pubVersion)
-            .replace('${frc_year}', frcYear)
+            .replace('${wpilib_year}', wpilibYear)
     photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
@@ -375,4 +373,4 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, openCVversion)
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)

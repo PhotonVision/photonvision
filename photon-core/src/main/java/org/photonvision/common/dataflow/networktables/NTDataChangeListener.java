@@ -36,7 +36,7 @@ public class NTDataChangeListener {
         this.instance = instance;
         listenerID =
                 this.instance.addListener(
-                        watchedEntry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), dataChangeConsumer);
+                        watchedEntry, EnumSet.of(NetworkTableEvent.Kind.VALUE_ALL), dataChangeConsumer);
     }
 
     public void remove() {
