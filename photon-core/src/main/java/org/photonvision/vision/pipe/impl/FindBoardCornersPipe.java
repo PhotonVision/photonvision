@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.calib3d.Calib3d;
@@ -349,6 +350,39 @@ public class FindBoardCornersPipe
 
                 // Decimation was not used
                 level = 0.0f;
+
+                if (ids.rows() == params.boardWidth * params.boardHeight) {
+                    // All points are present, so ids are unnecessary
+                    // Ensure points are ordered by id, which OpenCV should guarantee
+                    int currentId = 0;
+                    // Scan for out of place elements first to determine if data conversion is necessary
+                    for (; currentId < ids.rows(); currentId++) {
+                        if (ids.at(int.class, currentId, 0).getV() != currentId) {
+                            break;
+                        }
+                    }
+                    if (currentId < ids.rows()) {
+                        // Continue sorting from end of scan if it did not complete
+                        var objectPointsList = objectPoints.toList();
+                        var imagePointsList = imagePoints.toList();
+                        var idsList = ids.toList();
+                        while (currentId < idsList.size()) {
+                            // While current id is not equal to current index, swap with the correct index
+                            if (idsList.get(currentId) != currentId) {
+                                Collections.swap(objectPointsList, idsList.get(currentId), currentId);
+                                Collections.swap(imagePointsList, idsList.get(currentId), currentId);
+                                Collections.swap(idsList, idsList.get(currentId), currentId);
+                            } else {
+                                currentId++;
+                            }
+                        }
+                        logger.debug("Sorted ids: " + idsList);
+                        objectPoints.fromList(objectPointsList);
+                        imagePoints.fromList(imagePointsList);
+                    }
+                    ids.release();
+                    ids = null;
+                }
 
                 break;
             case CHESSBOARD:
