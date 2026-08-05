@@ -332,7 +332,7 @@ public class Main implements Callable<Integer> {
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
         } else {
-            if (testModeFolder == null) {
+            if (!testModeFolder.isPresent()) {
                 addTestModeSources();
             }
         }
