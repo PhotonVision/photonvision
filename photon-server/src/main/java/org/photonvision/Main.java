@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
-
 import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.LoadJNI.JNITypes;
@@ -58,51 +57,69 @@ import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Rotation2d;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name="java -jar photonvision.jar", mixinStandardHelpOptions = true, version = PhotonVersion.versionString)
+@Command(
+        name = "java -jar photonvision.jar",
+        mixinStandardHelpOptions = true,
+        version = PhotonVersion.versionString)
 public class Main implements Callable<Integer> {
     public static final int DEFAULT_WEBPORT = 5800;
 
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
 
-    @Option(names = { "-d", "--debug" }, description = "Enable debug logging prints")
+    @Option(
+            names = {"-d", "--debug"},
+            description = "Enable debug logging prints")
     private boolean debugMode;
 
-    @Option(names = { "-t", "--test-mode"}, description = "Run in test mode with 2019 and 2020 WPI field images in place of cameras")
+    @Option(
+            names = {"-t", "--test-mode"},
+            description = "Run in test mode with 2019 and 2020 WPI field images in place of cameras")
     private boolean testMode;
 
-    @Option(names = { "-f", "--folder"}, description = "Point test mode to a specific folder")
+    @Option(
+            names = {"-f", "--folder"},
+            description = "Point test mode to a specific folder")
     private Optional<Path> testModeFolder;
 
-    @Option(names = { "-n", "--disable-networking"}, description = "Disables control device network settings")
+    @Option(
+            names = {"-n", "--disable-networking"},
+            description = "Disables control device network settings")
     private boolean disableNetworking;
 
-    @Option(names = { "-c", "--clear-config"}, description = "Clears PhotonVision pipeline and networking settings. Preserves log files")
+    @Option(
+            names = {"-c", "--clear-config"},
+            description = "Clears PhotonVision pipeline and networking settings. Preserves log files")
     private boolean clearConfig;
 
-    @Option(names = { "-s", "--smoketest"}, description = "Exit Photon after loading native libraries and camera configs, but before starting up camera runners")
+    @Option(
+            names = {"-s", "--smoketest"},
+            description =
+                    "Exit Photon after loading native libraries and camera configs, but before starting up camera runners")
     private boolean smoketest;
 
-    @Option(names = { "-p", "--platform"}, description = "Specify platform override, based on Platform enum")
+    @Option(
+            names = {"-p", "--platform"},
+            description = "Specify platform override, based on Platform enum")
     private Optional<Platform> platform;
 
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
 
-        CameraConfiguration camConf2026 = ConfigManager.getInstance().getConfig().getCameraConfigurations()
-                .get("WPI2026");
+        CameraConfiguration camConf2026 =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2026");
         if (camConf2026 == null) {
-            camConf2026 = new CameraConfiguration(
-                    PVCameraInfo.fromFileInfo(
-                            TestUtils.getResourcesFolderPath(true)
-                                    .resolve("testimages")
-                                    .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path)
-                                    .toString(),
-                            "WPI2026"));
+            camConf2026 =
+                    new CameraConfiguration(
+                            PVCameraInfo.fromFileInfo(
+                                    TestUtils.getResourcesFolderPath(true)
+                                            .resolve("testimages")
+                                            .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path)
+                                            .toString(),
+                                    "WPI2026"));
 
             camConf2026.FOV = TestUtils.WPI2026Images.FOV.getDegrees();
 
@@ -120,9 +137,9 @@ public class Main implements Callable<Integer> {
             double fx = cx / Math.tan(fovWidth.getRadians() / 2.0);
             double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
 
-            JsonMatOfDouble testCameraMatrix = new JsonMatOfDouble(3, 3,
-                    new double[] { fx, 0, cx, 0, fy, cy, 0, 0, 1 });
-            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] { 0, 0, 0, 0, 0 });
+            JsonMatOfDouble testCameraMatrix =
+                    new JsonMatOfDouble(3, 3, new double[] {fx, 0, cx, 0, fy, cy, 0, 0, 1});
+            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {0, 0, 0, 0, 0});
 
             camConf2026.calibrations.add(
                     new CameraCalibrationCoefficients(
