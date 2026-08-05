@@ -1,0 +1,19 @@
+classes:
+  photon::SerdeType:
+  photon::Packet:
+    methods:
+      Packet:
+        overloads:
+          int:
+          std::vector<uint8_t>:
+      Clear:
+      GetData:
+      GetDataSize:
+      Pack:
+        overloads:
+          const T&:
+      Unpack:
+        overloads:
+          "":
+      operator==:
+      operator!=:

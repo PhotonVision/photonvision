@@ -1,0 +1,50 @@
+classes:
+  photon::VisionSystemSim:
+    methods:
+      VisionSystemSim:
+      GetCameraSim:
+      GetCameraSims:
+      AddCamera:
+      ClearCameras:
+      RemoveCamera:
+      GetRobotToCamera:
+        overloads:
+          PhotonCameraSim*:
+          PhotonCameraSim*, wpi::units::second_t:
+      GetCameraPose:
+        overloads:
+          PhotonCameraSim*:
+          PhotonCameraSim*, wpi::units::second_t:
+      AdjustCamera:
+      ResetCameraTransforms:
+        overloads:
+          "":
+          PhotonCameraSim*:
+      GetVisionTargets:
+        overloads:
+          "":
+          std::string:
+      AddVisionTargets:
+        overloads:
+          const std::vector<VisionTargetSim>&:
+          std::string, const std::vector<VisionTargetSim>&:
+      AddAprilTags:
+      ClearVisionTargets:
+      ClearAprilTags:
+      RemoveVisionTargets:
+        overloads:
+          std::string:
+          const std::vector<VisionTargetSim>&:
+      GetRobotPose:
+        overloads:
+          "":
+          wpi::units::second_t:
+      ResetRobotPose:
+        overloads:
+          const wpi::math::Pose2d&:
+          const wpi::math::Pose3d&:
+      GetDebugField:
+      Update:
+        overloads:
+          const wpi::math::Pose2d&:
+          const wpi::math::Pose3d&:

@@ -1,0 +1,7 @@
+classes:
+  photon::TargetCorner:
+    methods:
+      TargetCorner:
+        overloads:
+          Base&&:
+          Args&&...:

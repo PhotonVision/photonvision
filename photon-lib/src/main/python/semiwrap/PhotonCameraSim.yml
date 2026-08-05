@@ -1,0 +1,31 @@
+classes:
+  photon::PhotonCameraSim:
+    attributes:
+      prop:
+    methods:
+      PhotonCameraSim:
+        overloads:
+          PhotonCamera*:
+          PhotonCamera*, const SimCameraProperties&, const wpi::apriltag::AprilTagFieldLayout&:
+          PhotonCamera*, const SimCameraProperties&, double, wpi::units::meter_t:
+      GetCamera:
+      GetMinTargetAreaPercent:
+      GetMinTargetAreaPixels:
+      GetMaxSightRange:
+      GetVideoSimRaw:
+      GetVideoSimFrameRaw:
+      CanSeeTargetPose:
+      CanSeeCorner:
+      ConsumeNextEntryTime:
+      SetMinTargetAreaPercent:
+      SetMinTargetAreaPixels:
+      SetMaxSightRange:
+      EnableRawStream:
+      EnableDrawWireframe:
+      SetWireframeResolution:
+      EnabledProcessedStream:
+      Process:
+      SubmitProcessedFrame:
+        overloads:
+          const PhotonPipelineResult&:
+          const PhotonPipelineResult&, uint64_t:

@@ -1,0 +1,20 @@
+classes:
+  photon::PhotonTrackedTarget:
+    methods:
+      PhotonTrackedTarget:
+        overloads:
+          "":
+          Base&&:
+          Args&&...:
+      GetYaw:
+      GetPitch:
+      GetArea:
+      GetSkew:
+      GetFiducialId:
+      GetDetectedObjectClassID:
+      GetDetectedObjectConfidence:
+      GetMinAreaRectCorners:
+      GetDetectedCorners:
+      GetPoseAmbiguity:
+      GetBestCameraToTarget:
+      GetAlternateCameraToTarget:

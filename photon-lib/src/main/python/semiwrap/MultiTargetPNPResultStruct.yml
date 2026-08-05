@@ -1,0 +1,5 @@
+classes:
+  photon::MultiTargetPNPResult_PhotonStruct:
+    attributes:
+      estimatedPose:
+      fiducialIDsUsed:
