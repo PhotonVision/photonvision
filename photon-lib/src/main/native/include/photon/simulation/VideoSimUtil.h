@@ -508,12 +508,13 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
  * diagonal length in pixels. Line segments will be subdivided if they exceed
  * this resolution.
  * @param wallThickness Thickness of the lines used for drawing the field walls
- * in pixels. This is scaled by #getScaledThickness(double, cv::Mat).
+ * in pixels. This is scaled by \ref GetScaledThickness "GetScaledThickness()".
  * @param wallColor Color of the lines used for drawing the field walls.
  * @param floorSubdivisions A NxN "grid" is created from the floor where this
  * parameter is N, which defines the floor lines.
  * @param floorThickness Thickness of the lines used for drawing the field floor
- * grid in pixels. This is scaled by #getScaledThickness(double, cv::Mat).
+ * grid in pixels. This is scaled by \ref GetScaledThickness
+ * "GetScaledThickness()".
  * @param floorColor Color of the lines used for drawing the field floor grid.
  * @param destination The destination image to draw to.
  */
