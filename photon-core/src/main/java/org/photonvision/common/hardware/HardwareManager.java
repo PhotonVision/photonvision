@@ -58,7 +58,7 @@ public class HardwareManager {
 
     private Optional<NTDataChangeListener> ledModeListener;
 
-    public  Optional<VisionLED> visionLED;
+    public Optional<VisionLED> visionLED;
 
     public static HardwareManager getInstance() {
         if (instance == null) {
