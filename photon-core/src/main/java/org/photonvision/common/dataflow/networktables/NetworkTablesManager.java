@@ -357,9 +357,9 @@ public class NetworkTablesManager {
         logger.debug("Starting NT Client with hostname: " + hostname);
         ntInstance.startClient(hostname);
         try {
-            int t = Integer.parseInt(config.ntServerAddress);
-            if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
-            ntInstance.setServerTeam(t);
+            if (!m_isRetryingConnection)
+                logger.info("Starting NT Client, server team is " + config.ntServerAddress);
+            ntInstance.setServerTeam(config.ntServerAddress);
         } catch (NumberFormatException e) {
             if (!m_isRetryingConnection)
                 logger.info("Starting NT Client, server IP is \"" + config.ntServerAddress + "\"");
