@@ -104,7 +104,9 @@ public class ConfigManager {
             var loadedConfig = legacy.getConfig();
 
             // yeet our current cameras directory, not needed anymore
-            if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
+            if (maybeCamsBak.exists()) {
+                FileUtils.deleteDirectory(maybeCamsBak.toPath());
+            }
             if (!maybeCams.canWrite()) {
                 maybeCams.setWritable(true);
             }
@@ -130,7 +132,9 @@ public class ConfigManager {
                 // Delete the directory because we were successfully able to load the config but
                 // were unable
                 // to save or copy the folder.
-                if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
+                if (maybeCams.exists()) {
+                    FileUtils.deleteDirectory(maybeCams.toPath());
+                }
             }
 
             // Save the same config out using SQL loader
@@ -284,20 +288,26 @@ public class ConfigManager {
 
     public Path getLogPath() {
         var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+        if (!logFile.getParentFile().exists()) {
+            logFile.getParentFile().mkdirs();
+        }
         return logFile.toPath();
     }
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        if (!imgFilePath.exists()) {
+            imgFilePath.mkdirs();
+        }
         return imgFilePath.toPath();
     }
 
     public Path getCalibrationImageSavePath(String uniqueCameraName) {
         var imgFilePath =
                 Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        if (!imgFilePath.exists()) {
+            imgFilePath.mkdirs();
+        }
         return imgFilePath.toPath();
     }
 
@@ -310,7 +320,9 @@ public class ConfigManager {
                                 "imgs",
                                 frameSize.toString())
                         .toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        if (!imgFilePath.exists()) {
+            imgFilePath.mkdirs();
+        }
         return imgFilePath.toPath();
     }
 
@@ -375,7 +387,9 @@ public class ConfigManager {
     /** Get (and create if not present) the subfolder where ML models are stored */
     public File getModelsDirectory() {
         var ret = new File(configDirectoryFile, "models");
-        if (!ret.exists()) ret.mkdirs();
+        if (!ret.exists()) {
+            ret.mkdirs();
+        }
         return ret;
     }
 

@@ -71,7 +71,9 @@ public class JsonMatOfDouble implements Releasable {
     }
 
     private Mat getAsMat() {
-        if (this.type != CvType.CV_64FC1) return null;
+        if (this.type != CvType.CV_64FC1) {
+            return null;
+        }
 
         if (wrappedMat == null) {
             this.wrappedMat = new Mat(this.rows, this.cols, this.type);

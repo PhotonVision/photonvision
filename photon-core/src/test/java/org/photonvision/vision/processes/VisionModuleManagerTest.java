@@ -48,7 +48,9 @@ public class VisionModuleManagerTest {
         System.out.print(classpathStr);
 
         LoadJNI.loadLibraries();
-        if (!LibraryLoader.loadTargeting()) fail();
+        if (!LibraryLoader.loadTargeting()) {
+            fail();
+        }
     }
 
     private static class TestSource extends VisionSource {
@@ -57,8 +59,9 @@ public class VisionModuleManagerTest {
         public TestSource(FrameProvider provider, CameraConfiguration cameraConfiguration) {
             super(cameraConfiguration);
             this.provider = provider;
-            if (getCameraConfiguration().cameraQuirks == null)
+            if (getCameraConfiguration().cameraQuirks == null) {
                 getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
+            }
         }
 
         @Override

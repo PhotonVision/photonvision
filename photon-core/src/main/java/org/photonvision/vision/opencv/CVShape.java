@@ -57,7 +57,9 @@ public class CVShape implements Releasable {
 
     @Override
     public void release() {
-        if (customTarget != null) customTarget.release();
+        if (customTarget != null) {
+            customTarget.release();
+        }
         approxCurve.release();
         contour.release();
     }

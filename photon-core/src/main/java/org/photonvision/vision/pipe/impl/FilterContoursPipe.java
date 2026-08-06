@@ -44,7 +44,9 @@ public class FilterContoursPipe
     }
 
     private void rejectOutliers(List<Contour> list, double xTol, double yTol) {
-        if (list.size() < 2) return; // Must have at least 2 points to reject outliers
+        if (list.size() < 2) {
+            return;
+        } // Must have at least 2 points to reject outliers
 
         double meanX = list.stream().mapToDouble(it -> it.getCenterPoint().x).sum() / list.size();
 
@@ -82,18 +84,24 @@ public class FilterContoursPipe
                 minAreaRect.size.area() / params.frameStaticProperties().imageArea * 100.0;
         double minAreaPercentage = params.area().getFirst();
         double maxAreaPercentage = params.area().getSecond();
-        if (areaPercentage < minAreaPercentage || areaPercentage > maxAreaPercentage) return;
+        if (areaPercentage < minAreaPercentage || areaPercentage > maxAreaPercentage) {
+            return;
+        }
 
         // Fullness Filtering.
         double contourArea = contour.getArea();
         double minFullness = params.fullness().getFirst() * minAreaRect.size.area() / 100.0;
         double maxFullness = params.fullness().getSecond() * minAreaRect.size.area() / 100.0;
-        if (contourArea <= minFullness || contourArea >= maxFullness) return;
+        if (contourArea <= minFullness || contourArea >= maxFullness) {
+            return;
+        }
 
         // Aspect Ratio Filtering.
         double aspectRatio =
                 TargetCalculations.getAspectRatio(contour.getMinAreaRect(), params.isLandscape());
-        if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond()) return;
+        if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond()) {
+            return;
+        }
 
         m_filteredContours.add(contour);
     }

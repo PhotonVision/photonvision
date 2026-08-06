@@ -105,6 +105,28 @@ ext.getCurrentArch = {
 }
 
 subprojects {
+    apply plugin: 'checkstyle'
+    checkstyle {
+        toolVersion = '13.5.0'
+        configDirectory = rootProject.file('config/checkstyle')
+        maxWarnings = 0
+        maxErrors = 0
+    }
+    tasks.withType(Checkstyle) {
+        exclude { element -> element.file.path.startsWith(project.buildDir.path) }
+        exclude '**/src/generated/**'
+        exclude '**/src/generated-test/**'
+    }
+
+    tasks.matching {
+        it.name in [
+            'checkstyleMain',
+            'checkstyleTest'
+        ]
+    }.configureEach {
+        enabled = project.name != 'photon-serde-tests'
+    }
+
     tasks.withType(JavaCompile) {
         options.compilerArgs.add '-XDstringConcat=inline'
         options.encoding = 'UTF-8'

@@ -74,8 +74,12 @@ public sealed interface PVCameraInfo {
      * method checks type compatibility first, then delegates to the actual implementation.
      */
     default boolean equals(PVCameraInfo other) {
-        if (other == null) return false;
-        if (this.type() != other.type()) return false;
+        if (other == null) {
+            return false;
+        }
+        if (this.type() != other.type()) {
+            return false;
+        }
         // Delegate to the actual equals(Object) implementation of this instance
         return this.equals((Object) other);
     }
@@ -122,9 +126,15 @@ public sealed interface PVCameraInfo {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (!(obj instanceof PVUsbCameraInfo info)) return false;
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof PVUsbCameraInfo info)) {
+                return false;
+            }
 
             return super.name.equals(info.name)
                     && super.vendorId == info.vendorId
@@ -195,9 +205,15 @@ public sealed interface PVCameraInfo {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (!(obj instanceof PVCSICameraInfo info)) return false;
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof PVCSICameraInfo info)) {
+                return false;
+            }
 
             return baseName.equals(info.baseName) && path.equals(info.path);
         }
@@ -257,9 +273,15 @@ public sealed interface PVCameraInfo {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (!(obj instanceof PVFileCameraInfo info)) return false;
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof PVFileCameraInfo info)) {
+                return false;
+            }
 
             return name.equals(info.name) && path.equals(info.path);
         }

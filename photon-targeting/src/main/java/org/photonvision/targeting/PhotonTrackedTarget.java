@@ -254,32 +254,68 @@ public class PhotonTrackedTarget
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         PhotonTrackedTarget other = (PhotonTrackedTarget) obj;
-        if (Double.doubleToLongBits(yaw) != Double.doubleToLongBits(other.yaw)) return false;
-        if (Double.doubleToLongBits(pitch) != Double.doubleToLongBits(other.pitch)) return false;
-        if (Double.doubleToLongBits(area) != Double.doubleToLongBits(other.area)) return false;
-        if (Double.doubleToLongBits(skew) != Double.doubleToLongBits(other.skew)) return false;
-        if (fiducialId != other.fiducialId) return false;
-        if (objDetectId != other.objDetectId) return false;
-        if (Float.floatToIntBits(objDetectConf) != Float.floatToIntBits(other.objDetectConf))
+        if (Double.doubleToLongBits(yaw) != Double.doubleToLongBits(other.yaw)) {
             return false;
+        }
+        if (Double.doubleToLongBits(pitch) != Double.doubleToLongBits(other.pitch)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(area) != Double.doubleToLongBits(other.area)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(skew) != Double.doubleToLongBits(other.skew)) {
+            return false;
+        }
+        if (fiducialId != other.fiducialId) {
+            return false;
+        }
+        if (objDetectId != other.objDetectId) {
+            return false;
+        }
+        if (Float.floatToIntBits(objDetectConf) != Float.floatToIntBits(other.objDetectConf)) {
+            return false;
+        }
         if (bestCameraToTarget == null) {
-            if (other.bestCameraToTarget != null) return false;
-        } else if (!bestCameraToTarget.equals(other.bestCameraToTarget)) return false;
-        if (altCameraToTarget == null) {
-            if (other.altCameraToTarget != null) return false;
-        } else if (!altCameraToTarget.equals(other.altCameraToTarget)) return false;
-        if (Double.doubleToLongBits(poseAmbiguity) != Double.doubleToLongBits(other.poseAmbiguity))
+            if (other.bestCameraToTarget != null) {
+                return false;
+            }
+        } else if (!bestCameraToTarget.equals(other.bestCameraToTarget)) {
             return false;
+        }
+        if (altCameraToTarget == null) {
+            if (other.altCameraToTarget != null) {
+                return false;
+            }
+        } else if (!altCameraToTarget.equals(other.altCameraToTarget)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(poseAmbiguity) != Double.doubleToLongBits(other.poseAmbiguity)) {
+            return false;
+        }
         if (minAreaRectCorners == null) {
-            if (other.minAreaRectCorners != null) return false;
-        } else if (!minAreaRectCorners.equals(other.minAreaRectCorners)) return false;
+            if (other.minAreaRectCorners != null) {
+                return false;
+            }
+        } else if (!minAreaRectCorners.equals(other.minAreaRectCorners)) {
+            return false;
+        }
         if (detectedCorners == null) {
-            if (other.detectedCorners != null) return false;
-        } else if (!detectedCorners.equals(other.detectedCorners)) return false;
+            if (other.detectedCorners != null) {
+                return false;
+            }
+        } else if (!detectedCorners.equals(other.detectedCorners)) {
+            return false;
+        }
         return true;
     }
 
