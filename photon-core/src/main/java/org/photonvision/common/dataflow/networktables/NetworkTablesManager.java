@@ -112,7 +112,9 @@ public class NetworkTablesManager {
     private static NetworkTablesManager INSTANCE;
 
     public static NetworkTablesManager getInstance() {
-        if (INSTANCE == null) INSTANCE = new NetworkTablesManager();
+        if (INSTANCE == null) {
+            INSTANCE = new NetworkTablesManager();
+        }
         return INSTANCE;
     }
 
@@ -358,11 +360,14 @@ public class NetworkTablesManager {
         ntInstance.startClient(hostname);
         try {
             int t = Integer.parseInt(config.ntServerAddress);
-            if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
+            if (!m_isRetryingConnection) {
+                logger.info("Starting NT Client, server team is " + t);
+            }
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {
-            if (!m_isRetryingConnection)
+            if (!m_isRetryingConnection) {
                 logger.info("Starting NT Client, server IP is \"" + config.ntServerAddress + "\"");
+            }
             ntInstance.setServer(config.ntServerAddress);
         }
         ntInstance.startDSClient();

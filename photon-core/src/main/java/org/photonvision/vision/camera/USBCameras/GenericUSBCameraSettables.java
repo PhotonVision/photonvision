@@ -196,7 +196,9 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 0);
             softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
             softSet("iso_sensitivity", 0); // Manual ISO adjustment
-            if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+            if (autoExposureProp != null) {
+                autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+            }
 
             // Most cameras leave exposure time absolute at the last value from their AE
             // algorithm.
@@ -208,7 +210,9 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 12);
             softSet("iso_sensitivity_auto", 1);
             softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
-            if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+            if (autoExposureProp != null) {
+                autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+            }
         }
     }
 
@@ -226,7 +230,9 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-                if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+                if (autoExposureProp != null) {
+                    autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+                }
 
                 int propVal = (int) Math.clamp(exposureRaw, minExposure, maxExposure);
 
@@ -278,7 +284,9 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                 logger.error("Got a null video mode! Doing nothing...");
                 return;
             }
-            if (camera.setVideoMode(videoMode)) logger.debug("Failed to set video mode!");
+            if (camera.setVideoMode(videoMode)) {
+                logger.debug("Failed to set video mode!");
+            }
         } catch (Exception e) {
             logger.error("Failed to set video mode!", e);
         }

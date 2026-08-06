@@ -111,14 +111,28 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         PhotonPipelineMetadata other = (PhotonPipelineMetadata) obj;
-        if (captureTimestampMicros != other.captureTimestampMicros) return false;
-        if (publishTimestampMicros != other.publishTimestampMicros) return false;
-        if (sequenceID != other.sequenceID) return false;
-        if (timeSinceLastPong != other.timeSinceLastPong) return false;
+        if (captureTimestampMicros != other.captureTimestampMicros) {
+            return false;
+        }
+        if (publishTimestampMicros != other.publishTimestampMicros) {
+            return false;
+        }
+        if (sequenceID != other.sequenceID) {
+            return false;
+        }
+        if (timeSinceLastPong != other.timeSinceLastPong) {
+            return false;
+        }
         return true;
     }
 

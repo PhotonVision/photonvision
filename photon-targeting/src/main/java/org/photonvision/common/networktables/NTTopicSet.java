@@ -139,33 +139,77 @@ public class NTTopicSet {
 
     @SuppressWarnings("DuplicatedCode")
     public void removeEntries() {
-        if (resultPublisher != null) resultPublisher.close();
-        if (pipelineIndexPublisher != null) pipelineIndexPublisher.close();
-        if (pipelineIndexRequestSub != null) pipelineIndexRequestSub.close();
+        if (resultPublisher != null) {
+            resultPublisher.close();
+        }
+        if (pipelineIndexPublisher != null) {
+            pipelineIndexPublisher.close();
+        }
+        if (pipelineIndexRequestSub != null) {
+            pipelineIndexRequestSub.close();
+        }
 
-        if (driverModePublisher != null) driverModePublisher.close();
-        if (driverModeSubscriber != null) driverModeSubscriber.close();
+        if (driverModePublisher != null) {
+            driverModePublisher.close();
+        }
+        if (driverModeSubscriber != null) {
+            driverModeSubscriber.close();
+        }
 
-        if (fpsLimitPublisher != null) fpsLimitPublisher.close();
-        if (fpsLimitSubscriber != null) fpsLimitSubscriber.close();
+        if (fpsLimitPublisher != null) {
+            fpsLimitPublisher.close();
+        }
+        if (fpsLimitSubscriber != null) {
+            fpsLimitSubscriber.close();
+        }
 
-        if (enabledPublisher != null) enabledPublisher.close();
-        if (enabledSubscriber != null) enabledSubscriber.close();
+        if (enabledPublisher != null) {
+            enabledPublisher.close();
+        }
+        if (enabledSubscriber != null) {
+            enabledSubscriber.close();
+        }
 
-        if (latencyMillisEntry != null) latencyMillisEntry.close();
-        if (fpsEntry != null) fpsEntry.close();
-        if (hasTargetEntry != null) hasTargetEntry.close();
-        if (targetPitchEntry != null) targetPitchEntry.close();
-        if (targetAreaEntry != null) targetAreaEntry.close();
-        if (targetYawEntry != null) targetYawEntry.close();
-        if (targetPoseEntry != null) targetPoseEntry.close();
-        if (targetSkewEntry != null) targetSkewEntry.close();
-        if (bestTargetPosX != null) bestTargetPosX.close();
-        if (bestTargetPosY != null) bestTargetPosY.close();
+        if (latencyMillisEntry != null) {
+            latencyMillisEntry.close();
+        }
+        if (fpsEntry != null) {
+            fpsEntry.close();
+        }
+        if (hasTargetEntry != null) {
+            hasTargetEntry.close();
+        }
+        if (targetPitchEntry != null) {
+            targetPitchEntry.close();
+        }
+        if (targetAreaEntry != null) {
+            targetAreaEntry.close();
+        }
+        if (targetYawEntry != null) {
+            targetYawEntry.close();
+        }
+        if (targetPoseEntry != null) {
+            targetPoseEntry.close();
+        }
+        if (targetSkewEntry != null) {
+            targetSkewEntry.close();
+        }
+        if (bestTargetPosX != null) {
+            bestTargetPosX.close();
+        }
+        if (bestTargetPosY != null) {
+            bestTargetPosY.close();
+        }
 
-        if (heartbeatPublisher != null) heartbeatPublisher.close();
+        if (heartbeatPublisher != null) {
+            heartbeatPublisher.close();
+        }
 
-        if (cameraIntrinsicsPublisher != null) cameraIntrinsicsPublisher.close();
-        if (cameraDistortionPublisher != null) cameraDistortionPublisher.close();
+        if (cameraIntrinsicsPublisher != null) {
+            cameraIntrinsicsPublisher.close();
+        }
+        if (cameraDistortionPublisher != null) {
+            cameraDistortionPublisher.close();
+        }
     }
 }

@@ -63,8 +63,9 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
 
     public FileFrameProvider(
             Path path, double fov, int maxFPS, CameraCalibrationCoefficients calibration) {
-        if (!Files.exists(path))
+        if (!Files.exists(path)) {
             throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath());
+        }
         this.path = path;
         this.millisDelay = 1000 / maxFPS;
 

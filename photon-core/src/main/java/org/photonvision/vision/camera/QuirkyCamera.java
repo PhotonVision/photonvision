@@ -217,8 +217,12 @@ public class QuirkyCamera {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         QuirkyCamera that = (QuirkyCamera) o;
         return usbVid == that.usbVid
                 && usbPid == that.usbPid

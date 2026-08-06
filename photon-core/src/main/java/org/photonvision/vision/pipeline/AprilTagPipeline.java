@@ -150,8 +150,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         // Filter out detections based on pipeline settings
         for (AprilTagDetection detection : detections) {
             // TODO this should be in a pipe, not in the top level here (Matt)
-            if (detection.getDecisionMargin() < settings.decisionMargin) continue;
-            if (detection.getHamming() > settings.hammingDist) continue;
+            if (detection.getDecisionMargin() < settings.decisionMargin) {
+                continue;
+            }
+            if (detection.getHamming() > settings.hammingDist) {
+                continue;
+            }
 
             usedDetections.add(detection);
 

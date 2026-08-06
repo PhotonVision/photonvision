@@ -294,7 +294,9 @@ public class PhotonCamera implements AutoCloseable {
         // this, latency compensated by the Time Sync Client
         var ret = resultSubscriber.get();
 
-        if (ret.timestamp == 0) return new PhotonPipelineResult();
+        if (ret.timestamp == 0) {
+            return new PhotonPipelineResult();
+        }
 
         var result = ret.value;
 
@@ -488,7 +490,9 @@ public class PhotonCamera implements AutoCloseable {
         var cameraMatrix = cameraIntrinsicsSubscriber.get();
         if (cameraMatrix != null && cameraMatrix.length == 9) {
             return Optional.of(MatBuilder.fill(Nat.N3(), Nat.N3(), cameraMatrix));
-        } else return Optional.empty();
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -507,7 +511,9 @@ public class PhotonCamera implements AutoCloseable {
             System.arraycopy(distCoeffs, 0, data, 0, distCoeffs.length);
 
             return Optional.of(MatBuilder.fill(Nat.N8(), Nat.N1(), data));
-        } else return Optional.empty();
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -519,9 +525,13 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     void verifyVersion() {
-        if (!VERSION_CHECK_ENABLED) return;
+        if (!VERSION_CHECK_ENABLED) {
+            return;
+        }
 
-        if ((Timer.getMonotonicTimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
+        if ((Timer.getMonotonicTimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) {
+            return;
+        }
         lastVersionCheckTime = Timer.getMonotonicTimestamp();
 
         // Heartbeat entry is assumed to always be present. If it's not present, we

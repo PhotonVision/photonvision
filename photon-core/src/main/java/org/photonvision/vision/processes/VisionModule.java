@@ -113,22 +113,29 @@ public class VisionModule implements AutoCloseable {
 
         cameraQuirks = visionSource.getCameraConfiguration().cameraQuirks;
 
-        if (visionSource.getCameraConfiguration().cameraQuirks == null)
+        if (visionSource.getCameraConfiguration().cameraQuirks == null) {
             visionSource.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
+        }
 
         // We don't show gain if the config says it's -1. So check here to make sure
         // it's non-negative if it _is_ supported
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
-                        if (it.cameraGain == -1) it.cameraGain = 75; // Sane default
+                        if (it.cameraGain == -1) {
+                            it.cameraGain = 75;
+                        } // Sane default
                     });
         }
         if (cameraQuirks.hasQuirk(CameraQuirk.AwbRedBlueGain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
-                        if (it.cameraRedGain == -1) it.cameraRedGain = 11; // Sane defaults
-                        if (it.cameraBlueGain == -1) it.cameraBlueGain = 20;
+                        if (it.cameraRedGain == -1) {
+                            it.cameraRedGain = 11;
+                        } // Sane defaults
+                        if (it.cameraBlueGain == -1) {
+                            it.cameraBlueGain = 20;
+                        }
                     });
         }
 
@@ -228,19 +235,27 @@ public class VisionModule implements AutoCloseable {
     private void recreateStreamResultConsumers() {
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) inputFrameSaver.accept(frame.colorImage);
+                    if (frame != null) {
+                        inputFrameSaver.accept(frame.colorImage);
+                    }
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) outputFrameSaver.accept(frame.processedImage);
+                    if (frame != null) {
+                        outputFrameSaver.accept(frame.processedImage);
+                    }
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
+                    if (frame != null) {
+                        inputVideoStreamer.accept(frame.colorImage);
+                    }
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) outputVideoStreamer.accept(frame.processedImage);
+                    if (frame != null) {
+                        outputVideoStreamer.accept(frame.processedImage);
+                    }
                 });
     }
 
@@ -465,8 +480,9 @@ public class VisionModule implements AutoCloseable {
 
                     // If manual exposure, force exposure slider to be valid
                     if (!pipelineSettings.cameraAutoExposure) {
-                        if (pipelineSettings.cameraExposureRaw < 0)
-                            pipelineSettings.cameraExposureRaw = 10; // reasonable default
+                        if (pipelineSettings.cameraExposureRaw < 0) {
+                            pipelineSettings.cameraExposureRaw = 10;
+                        } // reasonable default
                     }
 
                     settables.setExposureRaw(pipelineSettings.cameraExposureRaw);
@@ -478,7 +494,9 @@ public class VisionModule implements AutoCloseable {
                     }
                     if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
                         // If the gain is disabled for some reason, re-enable it
-                        if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 75;
+                        if (pipelineSettings.cameraGain == -1) {
+                            pipelineSettings.cameraGain = 75;
+                        }
                         settables.setGain(Math.max(0, pipelineSettings.cameraGain));
                     } else {
                         pipelineSettings.cameraGain = -1;
@@ -486,8 +504,12 @@ public class VisionModule implements AutoCloseable {
 
                     if (cameraQuirks.hasQuirk(CameraQuirk.AwbRedBlueGain)) {
                         // If the AWB gains are disabled for some reason, re-enable it
-                        if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 11;
-                        if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
+                        if (pipelineSettings.cameraRedGain == -1) {
+                            pipelineSettings.cameraRedGain = 11;
+                        }
+                        if (pipelineSettings.cameraBlueGain == -1) {
+                            pipelineSettings.cameraBlueGain = 20;
+                        }
                         settables.setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
                         settables.setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
                     } else {
@@ -778,6 +800,8 @@ public class VisionModule implements AutoCloseable {
         visionRunner.close();
         pipelineManager.close();
         visionSource.close();
-        if (lastPipelineResultBestTarget != null) lastPipelineResultBestTarget.close();
+        if (lastPipelineResultBestTarget != null) {
+            lastPipelineResultBestTarget.close();
+        }
     }
 }

@@ -38,7 +38,9 @@ public class Draw2dCrosshairPipe
                 Pair<Mat, List<TrackedTarget>>, Draw2dCrosshairPipe.Draw2dCrosshairParams> {
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        if (!params.shouldDraw()) return null;
+        if (!params.shouldDraw()) {
+            return null;
+        }
 
         var image = in.getFirst();
 

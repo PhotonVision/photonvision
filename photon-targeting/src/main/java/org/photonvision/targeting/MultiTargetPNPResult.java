@@ -53,16 +53,30 @@ public class MultiTargetPNPResult
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         MultiTargetPNPResult other = (MultiTargetPNPResult) obj;
         if (estimatedPose == null) {
-            if (other.estimatedPose != null) return false;
-        } else if (!estimatedPose.equals(other.estimatedPose)) return false;
+            if (other.estimatedPose != null) {
+                return false;
+            }
+        } else if (!estimatedPose.equals(other.estimatedPose)) {
+            return false;
+        }
         if (fiducialIDsUsed == null) {
-            if (other.fiducialIDsUsed != null) return false;
-        } else if (!fiducialIDsUsed.equals(other.fiducialIDsUsed)) return false;
+            if (other.fiducialIDsUsed != null) {
+                return false;
+            }
+        } else if (!fiducialIDsUsed.equals(other.fiducialIDsUsed)) {
+            return false;
+        }
         return true;
     }
 
