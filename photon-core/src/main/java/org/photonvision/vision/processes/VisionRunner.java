@@ -33,8 +33,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.ArucoPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
@@ -216,8 +218,19 @@ public class VisionRunner implements AutoCloseable {
                 // TODO who should deal with preventing this from happening _every single loop_?
                 frameSupplier.requestHsvSettings(hsvParams);
             }
+
+            // Use the pipeline threshold type to determine whether a color image is required,
+            // so we can request the correct frame copies for CSI cameras.
+            boolean needsColor = wantedProcessType == FrameThresholdType.NONE;
+
+            if (settings instanceof ArucoPipelineSettings ar) {
+                needsColor = ar.debugThreshold;
+            }
+
             frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
-            frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
+            frameSupplier.requestFrameCopies(
+                    settings.inputShouldShow || needsColor,
+                    settings.outputShouldShow || wantedProcessType != FrameThresholdType.NONE);
             frameSupplier.requestBlockForFrames(settings.blockForFrames);
 
             // Grab the new camera frame
