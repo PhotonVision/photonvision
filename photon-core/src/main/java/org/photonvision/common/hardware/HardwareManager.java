@@ -47,29 +47,31 @@ public class HardwareManager {
     private final ShellExec shellExec = new ShellExec(true, false);
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
-    private HardwareConfig hardwareConfig;
-    private HardwareSettings hardwareSettings;
+    private final HardwareConfig hardwareConfig;
+    private final HardwareSettings hardwareSettings;
 
-    private Optional<StatusLED> statusLED;
+    private final Optional<StatusLED> statusLED;
 
     private final IntegerSubscriber ledModeRequest;
 
     private final IntegerPublisher ledModeState;
 
-    private Optional<NTDataChangeListener> ledModeListener;
+    private final Optional<NTDataChangeListener> ledModeListener;
 
-    public Optional<VisionLED> visionLED;
+    public final Optional<VisionLED> visionLED;
 
-    public static HardwareManager getInstance() {
-        if (instance == null) {
-            instance = new HardwareManager();
-        }
-        return instance;
-    }
-
-    public void setConfig(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+    private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
+
+        ledModeRequest =
+                NetworkTablesManager.getInstance()
+                        .kRootTable
+                        .getIntegerTopic("ledModeRequest")
+                        .subscribe(-1);
+        ledModeState =
+                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
+        ledModeState.set(VisionLEDMode.kDefault.value);
 
         // Device factory is lazy to prevent creating one if it will go unused.
         Supplier<NativeDeviceFactoryInterface> lazyDeviceFactory =
@@ -125,13 +127,28 @@ public class HardwareManager {
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
         visionLED.ifPresent(
-                led -> {
-                    led.setBrightness(hardwareSettings.ledBrightnessPercentage);
-                    led.blink(85, 4); // bootup blink
+                visionLED -> {
+                    visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
+                    visionLED.blink(85, 4); // bootup blink
                 });
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+    }
+    
+    public static HardwareManager getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("HardwareManager not initialized! Call initialize() first.");
+        }
+        return instance;
+    }
+
+    public static void initialize(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+        if (instance == null) {
+            instance = new HardwareManager(hardwareConfig, hardwareSettings);
+        } else {
+            instance.logger.warn("HardwareManager already initialized!");
+        }
     }
 
     public static NativeDeviceFactoryInterface configureCustomGPIO(HardwareConfig hardwareConfig) {
