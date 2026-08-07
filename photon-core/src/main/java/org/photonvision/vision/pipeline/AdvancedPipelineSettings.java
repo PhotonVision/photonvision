@@ -106,9 +106,15 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AdvancedPipelineSettings)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AdvancedPipelineSettings)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
         return outputShouldDraw == that.outputShouldDraw
                 && outputMaximumTargets == that.outputMaximumTargets

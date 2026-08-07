@@ -269,7 +269,9 @@ public class TrackedTarget implements Releasable {
      * @param boundingPolygon List of points to copy. Not modified.
      */
     public void setApproximateBoundingPolygon(MatOfPoint2f boundingPolygon) {
-        if (m_approximateBoundingPolygon == null) m_approximateBoundingPolygon = new MatOfPoint2f();
+        if (m_approximateBoundingPolygon == null) {
+            m_approximateBoundingPolygon = new MatOfPoint2f();
+        }
         boundingPolygon.copyTo(m_approximateBoundingPolygon);
     }
 
@@ -346,9 +348,15 @@ public class TrackedTarget implements Releasable {
             }
         }
 
-        if (m_cameraRelativeTvec != null) m_cameraRelativeTvec.release();
-        if (m_cameraRelativeRvec != null) m_cameraRelativeRvec.release();
-        if (m_approximateBoundingPolygon != null) m_approximateBoundingPolygon.release();
+        if (m_cameraRelativeTvec != null) {
+            m_cameraRelativeTvec.release();
+        }
+        if (m_cameraRelativeRvec != null) {
+            m_cameraRelativeRvec.release();
+        }
+        if (m_approximateBoundingPolygon != null) {
+            m_approximateBoundingPolygon.release();
+        }
     }
 
     public void setTargetCorners(List<Point> targetCorners) {
@@ -384,7 +392,9 @@ public class TrackedTarget implements Releasable {
     }
 
     public void setCameraRelativeTvec(Mat cameraRelativeTvec) {
-        if (this.m_cameraRelativeTvec == null) m_cameraRelativeTvec = new Mat();
+        if (this.m_cameraRelativeTvec == null) {
+            m_cameraRelativeTvec = new Mat();
+        }
         cameraRelativeTvec.copyTo(this.m_cameraRelativeTvec);
     }
 
@@ -393,7 +403,9 @@ public class TrackedTarget implements Releasable {
     }
 
     public void setCameraRelativeRvec(Mat cameraRelativeRvec) {
-        if (this.m_cameraRelativeRvec == null) m_cameraRelativeRvec = new Mat();
+        if (this.m_cameraRelativeRvec == null) {
+            m_cameraRelativeRvec = new Mat();
+        }
         cameraRelativeRvec.copyTo(this.m_cameraRelativeRvec);
     }
 

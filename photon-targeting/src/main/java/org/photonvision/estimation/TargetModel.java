@@ -144,7 +144,9 @@ public class TargetModel {
         } else {
             boolean cornersPlanar = true;
             for (Translation3d corner : vertices) {
-                if (corner.getX() != 0) cornersPlanar = false;
+                if (corner.getX() != 0) {
+                    cornersPlanar = false;
+                }
             }
             this.isPlanar = cornersPlanar;
         }

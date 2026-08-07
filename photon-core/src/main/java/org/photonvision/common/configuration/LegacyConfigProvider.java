@@ -113,8 +113,11 @@ class LegacyConfigProvider extends ConfigProvider {
             logger.debug("Making root dir writeable...");
             try {
                 var success = configDirectoryFile.setWritable(true);
-                if (success) logger.debug("Set root dir writeable!");
-                else logger.error("Could not make root dir writeable!");
+                if (success) {
+                    logger.debug("Set root dir writeable!");
+                } else {
+                    logger.error("Could not make root dir writeable!");
+                }
             } catch (SecurityException e) {
                 logger.error("Could not make root dir writeable!", e);
             }
@@ -334,13 +337,17 @@ class LegacyConfigProvider extends ConfigProvider {
 
     public Path getLogPath() {
         var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+        if (!logFile.getParentFile().exists()) {
+            logFile.getParentFile().mkdirs();
+        }
         return logFile.toPath();
     }
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        if (!imgFilePath.exists()) {
+            imgFilePath.mkdirs();
+        }
         return imgFilePath.toPath();
     }
 

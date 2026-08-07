@@ -41,7 +41,9 @@ public class FilterShapesPipe
         outputList = new ArrayList<>();
 
         for (var shape : in) {
-            if (!shouldRemove(shape)) outputList.add(shape);
+            if (!shouldRemove(shape)) {
+                outputList.add(shape);
+            }
         }
 
         return outputList;

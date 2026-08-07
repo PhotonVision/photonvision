@@ -330,9 +330,13 @@ public class PhotonCameraSim implements AutoCloseable {
             }
         }
         // return the timestamp of the latest update
-        if (timestamp >= 0) return Optional.of(timestamp);
+        if (timestamp >= 0) {
+            return Optional.of(timestamp);
+        }
         // or this camera isn't ready to process yet
-        else return Optional.empty();
+        else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -371,7 +375,9 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param sortMode The target sorting order
      */
     public void setTargetSortMode(PhotonTargetSortMode sortMode) {
-        if (sortMode != null) this.sortMode = sortMode;
+        if (sortMode != null) {
+            this.sortMode = sortMode;
+        }
     }
 
     /**
@@ -424,7 +430,9 @@ public class PhotonCameraSim implements AutoCloseable {
                 (t1, t2) -> {
                     double dist1 = t1.getPose().getTranslation().getDistance(cameraPose.getTranslation());
                     double dist2 = t2.getPose().getTranslation().getDistance(cameraPose.getTranslation());
-                    if (dist1 == dist2) return 0;
+                    if (dist1 == dist2) {
+                        return 0;
+                    }
                     return dist1 < dist2 ? 1 : -1;
                 });
         // all targets visible before noise
@@ -446,7 +454,9 @@ public class PhotonCameraSim implements AutoCloseable {
             }
 
             // pose isn't visible, skip to next
-            if (!canSeeTargetPose(cameraPose, tgt)) continue;
+            if (!canSeeTargetPose(cameraPose, tgt)) {
+                continue;
+            }
 
             // find target's 3d corner points
             var fieldCorners = tgt.getFieldVertices();
@@ -468,7 +478,9 @@ public class PhotonCameraSim implements AutoCloseable {
                 int l = 0, t, b, r = 0;
                 // reference point (left side midpoint)
                 for (int i = 1; i < 4; i++) {
-                    if (imagePoints[i].x < imagePoints[l].x) l = i;
+                    if (imagePoints[i].x < imagePoints[l].x) {
+                        l = i;
+                    }
                 }
                 var lc = imagePoints[l];
                 // determine top, right, bottom midpoints
@@ -476,14 +488,22 @@ public class PhotonCameraSim implements AutoCloseable {
                 t = (l + 1) % 4;
                 b = (l + 1) % 4;
                 for (int i = 0; i < 4; i++) {
-                    if (i == l) continue;
+                    if (i == l) {
+                        continue;
+                    }
                     var ic = imagePoints[i];
                     angles[i] = Math.atan2(lc.y - ic.y, ic.x - lc.x);
-                    if (angles[i] >= angles[t]) t = i;
-                    if (angles[i] <= angles[b]) b = i;
+                    if (angles[i] >= angles[t]) {
+                        t = i;
+                    }
+                    if (angles[i] <= angles[b]) {
+                        b = i;
+                    }
                 }
                 for (int i = 0; i < 4; i++) {
-                    if (i != t && i != l && i != b) r = i;
+                    if (i != t && i != l && i != b) {
+                        r = i;
+                    }
                 }
                 // create RotatedRect from midpoints
                 var rect =
@@ -511,7 +531,9 @@ public class PhotonCameraSim implements AutoCloseable {
             double areaPercent = prop.getContourAreaPercent(noisyTargetCorners);
 
             // projected target can't be detected, skip to next
-            if (!(canSeeCorners(noisyTargetCorners) && areaPercent >= minTargetAreaPercent)) continue;
+            if (!(canSeeCorners(noisyTargetCorners) && areaPercent >= minTargetAreaPercent)) {
+                continue;
+            }
 
             var pnpSim = new PnpResult();
             if (tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
@@ -584,7 +606,9 @@ public class PhotonCameraSim implements AutoCloseable {
                 }
             }
             videoSimRaw.putFrame(videoSimFrameRaw);
-        } else videoSimRaw.setConnectionStrategy(ConnectionStrategy.kForceClose);
+        } else {
+            videoSimRaw.setConnectionStrategy(ConnectionStrategy.kForceClose);
+        }
         // draw/annotate target detection outline on processed view
         if (videoSimProcEnabled) {
             Imgproc.cvtColor(videoSimFrameRaw, videoSimFrameProcessed, Imgproc.COLOR_GRAY2BGR);
@@ -620,7 +644,9 @@ public class PhotonCameraSim implements AutoCloseable {
                 }
             }
             videoSimProcessed.putFrame(videoSimFrameProcessed);
-        } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
+        } else {
+            videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
+        }
 
         // calculate multitag results
         Optional<MultiTargetPNPResult> multitagResult = Optional.empty();

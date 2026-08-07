@@ -123,8 +123,10 @@ public class CornerDetectionPipe
         // we must have at least 4 corners for this strategy to work.
         // If we are looking for an exact side count that is handled here too.
         var pointList = new ArrayList<>(polyOutput.toList());
-        if (pointList.size() < 4 || (params.exactSideCount() && params.sideCount() != pointList.size()))
+        if (pointList.size() < 4
+                || (params.exactSideCount() && params.sideCount() != pointList.size())) {
             return null;
+        }
 
         target.setApproximateBoundingPolygon(polyOutput);
 
@@ -165,7 +167,9 @@ public class CornerDetectionPipe
                 }
             }
         }
-        if (leftList.isEmpty() || rightList.isEmpty()) return null;
+        if (leftList.isEmpty() || rightList.isEmpty()) {
+            return null;
+        }
         leftList.sort(compareCenterDist);
         rightList.sort(compareCenterDist);
         var bl = leftList.get(leftList.size() - 1);

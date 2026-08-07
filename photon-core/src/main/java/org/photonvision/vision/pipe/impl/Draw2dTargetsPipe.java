@@ -46,7 +46,9 @@ public class Draw2dTargetsPipe
         var textSize = params.kPixelsToText * imageSize;
         var thickness = params.kPixelsToThickness * imageSize;
 
-        if (!params.shouldDraw) return null;
+        if (!params.shouldDraw) {
+            return null;
+        }
 
         if (!in.getSecond().isEmpty()
                 && (params.showCentroid
@@ -65,7 +67,9 @@ public class Draw2dTargetsPipe
                 TrackedTarget target = in.getSecond().get(i);
                 RotatedRect r = target.getMinAreaRect();
 
-                if (r == null) continue;
+                if (r == null) {
+                    continue;
+                }
 
                 r.points(vertices);
                 dividePointArray(vertices);
@@ -90,8 +94,9 @@ public class Draw2dTargetsPipe
                     var poly = target.getApproximateBoundingPolygon();
 
                     // fall back on the shape's approx poly dp
-                    if (poly == null && target.getShape() != null)
+                    if (poly == null && target.getShape() != null) {
                         poly = target.getShape().getContour().getApproxPolyDp();
+                    }
                     if (poly != null) {
                         divideMat(poly, contourMat);
                         Imgproc.drawContours(

@@ -243,8 +243,12 @@ public class TestUtils {
             // Strip leading k
             var filename = this.toString().substring(1).toLowerCase();
             var extension = ".jpg";
-            if (filename.equals("tag1_16h5_1280")) extension = ".png";
-            if (filename.equals("36h11_stress_test")) extension = ".png";
+            if (filename.equals("tag1_16h5_1280")) {
+                extension = ".png";
+            }
+            if (filename.equals("36h11_stress_test")) {
+                extension = ".png";
+            }
             return Path.of("apriltag", filename + extension);
         }
 
@@ -376,7 +380,9 @@ public class TestUtils {
     private static final int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
-        if (frame.empty() || Boolean.getBoolean("java.awt.headless")) return;
+        if (frame.empty() || Boolean.getBoolean("java.awt.headless")) {
+            return;
+        }
         HighGui.imshow(title, frame);
         HighGui.waitKey(timeoutMs);
         HighGui.destroyAllWindows();

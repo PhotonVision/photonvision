@@ -290,7 +290,9 @@ public class PhotonPoseEstimator {
         }
         PhotonTrackedTarget bestTarget = cameraResult.getBestTarget();
 
-        if (bestTarget == null) return Optional.empty();
+        if (bestTarget == null) {
+            return Optional.empty();
+        }
 
         var headingSampleOpt = headingBuffer.getSample(cameraResult.getTimestampSeconds());
         if (headingSampleOpt.isEmpty()) {
@@ -390,7 +392,9 @@ public class PhotonPoseEstimator {
                         headingFree,
                         headingBuffer.getSample(cameraResult.getTimestampSeconds()).get(),
                         headingScaleFactor);
-        if (!pnpResult.isPresent()) return Optional.empty();
+        if (!pnpResult.isPresent()) {
+            return Optional.empty();
+        }
         var best = Pose3d.kZero.plus(pnpResult.get().best); // field-to-robot
 
         return Optional.of(
@@ -450,7 +454,9 @@ public class PhotonPoseEstimator {
         var pnpResult =
                 VisionEstimation.estimateCamPosePNP(
                         cameraMatrix, distCoeffs, cameraResult.getTargets(), fieldTags, tagModel);
-        if (!pnpResult.isPresent()) return Optional.empty();
+        if (!pnpResult.isPresent()) {
+            return Optional.empty();
+        }
 
         var best =
                 Pose3d.kZero
@@ -493,7 +499,9 @@ public class PhotonPoseEstimator {
 
         // Although there are confirmed to be targets, none of them may be fiducial
         // targets.
-        if (lowestAmbiguityTarget == null) return Optional.empty();
+        if (lowestAmbiguityTarget == null) {
+            return Optional.empty();
+        }
 
         int targetFiducialId = lowestAmbiguityTarget.getFiducialId();
 
@@ -538,7 +546,9 @@ public class PhotonPoseEstimator {
             // Don't report errors for non-fiducial targets. This could also be resolved by
             // adding -1 to
             // the initial HashSet.
-            if (targetFiducialId == -1) continue;
+            if (targetFiducialId == -1) {
+                continue;
+            }
 
             Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
@@ -584,7 +594,9 @@ public class PhotonPoseEstimator {
         }
 
         // Need to null check here in case none of the provided targets are fiducial.
-        if (bestTarget == null) return Optional.empty();
+        if (bestTarget == null) {
+            return Optional.empty();
+        }
         return Optional.of(
                 new EstimatedRobotPose(
                         bestPose,
@@ -624,7 +636,9 @@ public class PhotonPoseEstimator {
             // Don't report errors for non-fiducial targets. This could also be resolved by
             // adding -1 to
             // the initial HashSet.
-            if (targetFiducialId == -1) continue;
+            if (targetFiducialId == -1) {
+                continue;
+            }
 
             Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
@@ -658,7 +672,9 @@ public class PhotonPoseEstimator {
                 lowestDeltaTarget = target;
             }
         }
-        if (lowestDeltaTarget == null) return Optional.empty();
+        if (lowestDeltaTarget == null) {
+            return Optional.empty();
+        }
         return Optional.of(
                 new EstimatedRobotPose(
                         lowestDeltaPose,
@@ -688,7 +704,9 @@ public class PhotonPoseEstimator {
             // Don't report errors for non-fiducial targets. This could also be resolved by
             // adding -1 to
             // the initial HashSet.
-            if (targetFiducialId == -1) continue;
+            if (targetFiducialId == -1) {
+                continue;
+            }
 
             Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
@@ -728,7 +746,9 @@ public class PhotonPoseEstimator {
         Translation3d transform = new Translation3d();
         Rotation3d rotation = new Rotation3d();
 
-        if (estimatedRobotPoses.isEmpty()) return Optional.empty();
+        if (estimatedRobotPoses.isEmpty()) {
+            return Optional.empty();
+        }
 
         List<PhotonTrackedTarget> usedTargets = new ArrayList<>(estimatedRobotPoses.size());
         for (Pair<PhotonTrackedTarget, Pose3d> pair : estimatedRobotPoses) {

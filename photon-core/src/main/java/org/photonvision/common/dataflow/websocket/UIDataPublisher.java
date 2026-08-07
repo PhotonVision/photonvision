@@ -46,7 +46,9 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         long now = System.currentTimeMillis();
 
         // only update the UI at 10hz
-        if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) return;
+        if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) {
+            return;
+        }
 
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("sequenceID", result.sequenceID);

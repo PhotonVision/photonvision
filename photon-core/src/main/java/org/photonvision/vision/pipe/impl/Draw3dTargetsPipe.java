@@ -56,7 +56,9 @@ public class Draw3dTargetsPipe
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        if (!params.shouldDraw) return null;
+        if (!params.shouldDraw) {
+            return null;
+        }
         if (params.cameraCalibrationCoefficients == null
                 || params.cameraCalibrationCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCalibrationCoefficients.getDistCoeffsMat() == null) {

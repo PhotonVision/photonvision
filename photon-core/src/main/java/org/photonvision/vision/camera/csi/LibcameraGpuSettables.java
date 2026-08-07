@@ -152,7 +152,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         exposureRaw = Math.clamp(exposureRaw, minExposure, maxExposure);
 
         var success = LibCameraJNI.setExposure(r_ptr, (int) exposureRaw);
-        if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
+        if (!success) {
+            LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
+        }
     }
 
     @Override
@@ -160,7 +162,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         lastBrightness = brightness;
         double realBrightness = MathUtils.map(brightness, 0.0, 100.0, -1.0, 1.0);
         var success = LibCameraJNI.setBrightness(r_ptr, realBrightness);
-        if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera brightness");
+        if (!success) {
+            LibcameraGpuSource.logger.warn("Couldn't set Pi Camera brightness");
+        }
     }
 
     @Override
@@ -172,7 +176,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         var success =
                 LibCameraJNI.setAnalogGain(
                         r_ptr, Math.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
-        if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera gain");
+        if (!success) {
+            LibcameraGpuSource.logger.warn("Couldn't set Pi Camera gain");
+        }
     }
 
     @Override
@@ -194,7 +200,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     public void setAwbGain(int red, int blue) {
         if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
             var success = LibCameraJNI.setAwbGain(r_ptr, red / 10.0, blue / 10.0);
-            if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
+            if (!success) {
+                LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
+            }
         }
     }
 

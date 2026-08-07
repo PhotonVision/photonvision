@@ -71,8 +71,12 @@ public class ArucoDetectionPipeParams {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ArucoDetectionPipeParams that = (ArucoDetectionPipeParams) o;
         return tagFamily == that.tagFamily
                 && threshMinSize == that.threshMinSize

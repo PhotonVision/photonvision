@@ -80,7 +80,9 @@ public abstract class VisionSourceSettables {
     public abstract VideoMode getCurrentVideoMode();
 
     public void setVideoModeInternal(int index) {
-        if (!getAllVideoModes().isEmpty()) setVideoMode(getAllVideoModes().get(index));
+        if (!getAllVideoModes().isEmpty()) {
+            setVideoMode(getAllVideoModes().get(index));
+        }
     }
 
     public void setVideoMode(VideoMode mode) {
