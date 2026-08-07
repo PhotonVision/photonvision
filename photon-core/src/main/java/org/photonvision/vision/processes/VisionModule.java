@@ -184,7 +184,7 @@ public class VisionModule implements AutoCloseable {
         }
 
         // Configure LED's if supported by the underlying hardware
-        if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
+        if (HardwareManager.getInstance().getVisionLED() != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
                     .ifPresent(

@@ -60,14 +60,6 @@ public class HardwareManager {
 
     public final Optional<VisionLED> visionLED;
 
-    public static HardwareManager getInstance() {
-        if (instance == null) {
-            var conf = ConfigManager.getInstance().getConfig();
-            instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
-        }
-        return instance;
-    }
-
     private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
@@ -144,6 +136,21 @@ public class HardwareManager {
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
+    public static HardwareManager getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("HardwareManager not initialized! Call initialize() first.");
+        }
+        return instance;
+    }
+
+    public static void initialize(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+        if (instance == null) {
+            instance = new HardwareManager(hardwareConfig, hardwareSettings);
+        } else {
+            instance.logger.warn("HardwareManager already initialized!");
+        }
+    }
+
     public static NativeDeviceFactoryInterface configureCustomGPIO(HardwareConfig hardwareConfig) {
         // Create a new adapter and device factory using the commands from hardwareConfig
         CustomAdapter adapter =
@@ -172,6 +179,10 @@ public class HardwareManager {
     }
 
     public void setBrightnessPercent(int percent) {
+        if (hardwareSettings == null) {
+            logger.error("Could not set led brightness! No hardware settings found");
+            return;
+        }
         if (percent != hardwareSettings.ledBrightnessPercentage) {
             hardwareSettings.ledBrightnessPercentage = percent;
             visionLED.ifPresent(visionLED -> visionLED.setBrightness(percent));
@@ -197,6 +208,10 @@ public class HardwareManager {
             }
         }
         try {
+            if (hardwareConfig == null) {
+                logger.error("Could not restart device! No hardware configuration found");
+                return false;
+            }
             return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
         } catch (IOException e) {
             logger.error("Could not restart device!", e);
