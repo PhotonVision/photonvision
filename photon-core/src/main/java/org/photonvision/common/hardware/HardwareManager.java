@@ -135,7 +135,7 @@ public class HardwareManager {
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
-    
+
     public static HardwareManager getInstance() {
         if (instance == null) {
             throw new IllegalStateException("HardwareManager not initialized! Call initialize() first.");
