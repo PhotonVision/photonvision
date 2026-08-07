@@ -17,6 +17,7 @@
 
 package org.photonvision.common.networking;
 
+import java.io.IOException;
 import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -132,6 +133,9 @@ public class NetworkManager {
         } else if (config.connectionType == NetworkMode.STATIC) {
             setConnectionStatic(config);
         }
+
+        // Publish updated mDNS values after any networking changes
+        restartAvahi();
     }
 
     public void reinitialize() {
@@ -146,15 +150,27 @@ public class NetworkManager {
                                 true));
     }
 
+    private void restartAvahi() {
+        try {
+            var shell = new ShellExec(true, false);
+            shell.executeBashCommand("systemctl restart avahi-daemon.service");
+            logger.debug("Restarted avahi");
+        } catch (IOException e) {
+            logger.error("Failed to restart avahi daemon");
+        }
+    }
+
     private void setHostname(NetworkConfig config) {
         try {
             var shell = new ShellExec(true, false);
             shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
             var oldHostname = shell.getOutput().replace("\n", "");
-            logger.debug("Old host name: \"" + oldHostname + "\"");
-            logger.debug("New host name: \"" + config.hostname + "\"");
 
-            if (!oldHostname.equals(config.hostname)) {
+            if (oldHostname.equals(config.hostname)) {
+                logger.debug("Hostname is already set to \"" + oldHostname + "\"");
+            } else {
+                logger.debug(
+                        "Changing host name from \"" + oldHostname + "\" to \"" + config.hostname + "\"");
                 var setHostnameRetCode =
                         shell.executeBashCommand(
                                 "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));
@@ -167,8 +183,6 @@ public class NetworkManager {
                                 String.format(
                                         "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
                                         oldHostname, config.hostname));
-
-                shell.executeBashCommand("systemctl restart avahi-daemon.service");
 
                 // This resets the NetworkTables config to use the new hostname as the client ID
                 NetworkTablesManager.getInstance().setConfig(config);
