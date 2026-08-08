@@ -19,7 +19,7 @@ syntax = "proto3";
 
 package photonvision.proto;
 
-import "geometry3d.proto";
+import "wpimath/protobuf/geometry3d.proto";
 
 option java_package = "org.photonvision.proto";
 

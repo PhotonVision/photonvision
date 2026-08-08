@@ -11,7 +11,7 @@ from wpimath import Pose3d, Rotation3d, Translation3d
 
 @pytest.fixture(autouse=True)
 def setupCommon() -> None:
-    nt.NetworkTableInstance.getDefault().startServer()
+    nt.NetworkTableInstance.get_default().start_server()
     setVersionCheckEnabled(False)
 
 
@@ -20,9 +20,9 @@ def test_TrlConvert():
     tvec = OpenCVHelp.translationToTVec([trl])
     result = OpenCVHelp.tVecToTranslation(tvec[0])
 
-    assert result.X() == pytest.approx(trl.X(), 0.005)
-    assert result.Y() == pytest.approx(trl.Y(), 0.005)
-    assert result.Z() == pytest.approx(trl.Z(), 0.005)
+    assert result.x == pytest.approx(trl.x, 0.005)
+    assert result.y == pytest.approx(trl.y, 0.005)
+    assert result.z == pytest.approx(trl.z, 0.005)
 
 
 def test_RotConvert():
@@ -30,9 +30,9 @@ def test_RotConvert():
     rvec = OpenCVHelp.rotationToRVec(rot)
     result = OpenCVHelp.rVecToRotation(rvec[0])
 
-    assert result.X() == pytest.approx(rot.X(), 0.25)
-    assert result.Y() == pytest.approx(rot.Y(), 0.25)
-    assert result.Z() == pytest.approx(rot.Z(), 0.25)
+    assert result.x == pytest.approx(rot.x, 0.25)
+    assert result.y == pytest.approx(rot.y, 0.25)
+    assert result.z == pytest.approx(rot.z, 0.25)
 
 
 def test_Projection():
@@ -123,24 +123,18 @@ def test_SolvePNP_SQUARE():
     assert pnpSim is not None
 
     # check solvePNP estimation accuracy
-    assert relTarget.rotation().X() == pytest.approx(
-        pnpSim.best.rotation().X(), abs=0.25
-    )
-    assert relTarget.rotation().Y() == pytest.approx(
-        pnpSim.best.rotation().Y(), abs=0.25
-    )
-    assert relTarget.rotation().Z() == pytest.approx(
-        pnpSim.best.rotation().Z(), abs=0.25
-    )
+    assert relTarget.rotation().x == pytest.approx(pnpSim.best.rotation().x, abs=0.25)
+    assert relTarget.rotation().y == pytest.approx(pnpSim.best.rotation().y, abs=0.25)
+    assert relTarget.rotation().z == pytest.approx(pnpSim.best.rotation().z, abs=0.25)
 
-    assert relTarget.translation().X() == pytest.approx(
-        pnpSim.best.translation().X(), abs=0.005
+    assert relTarget.translation().x == pytest.approx(
+        pnpSim.best.translation().x, abs=0.005
     )
-    assert relTarget.translation().Y() == pytest.approx(
-        pnpSim.best.translation().Y(), abs=0.005
+    assert relTarget.translation().y == pytest.approx(
+        pnpSim.best.translation().y, abs=0.005
     )
-    assert relTarget.translation().Z() == pytest.approx(
-        pnpSim.best.translation().Z(), abs=0.005
+    assert relTarget.translation().z == pytest.approx(
+        pnpSim.best.translation().z, abs=0.005
     )
 
 
@@ -184,22 +178,16 @@ def test_SolvePNP_SQPNP():
     assert pnpSim is not None
 
     # check solvePNP estimation accuracy
-    assert relTarget.rotation().X() == pytest.approx(
-        pnpSim.best.rotation().X(), abs=0.25
-    )
-    assert relTarget.rotation().Y() == pytest.approx(
-        pnpSim.best.rotation().Y(), abs=0.25
-    )
-    assert relTarget.rotation().Z() == pytest.approx(
-        pnpSim.best.rotation().Z(), abs=0.25
-    )
+    assert relTarget.rotation().x == pytest.approx(pnpSim.best.rotation().x, abs=0.25)
+    assert relTarget.rotation().y == pytest.approx(pnpSim.best.rotation().y, abs=0.25)
+    assert relTarget.rotation().z == pytest.approx(pnpSim.best.rotation().z, abs=0.25)
 
-    assert relTarget.translation().X() == pytest.approx(
-        pnpSim.best.translation().X(), abs=0.005
+    assert relTarget.translation().x == pytest.approx(
+        pnpSim.best.translation().x, abs=0.005
     )
-    assert relTarget.translation().Y() == pytest.approx(
-        pnpSim.best.translation().Y(), abs=0.005
+    assert relTarget.translation().y == pytest.approx(
+        pnpSim.best.translation().y, abs=0.005
     )
-    assert relTarget.translation().Z() == pytest.approx(
-        pnpSim.best.translation().Z(), abs=0.005
+    assert relTarget.translation().z == pytest.approx(
+        pnpSim.best.translation().z, abs=0.005
     )

@@ -47,14 +47,14 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Transform3d;
-import org.wpilib.math.util.Pair;
 import org.wpilib.system.RobotController;
+import org.wpilib.util.Pair;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.util.WPIUtilJNI;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
 import org.wpilib.vision.camera.CvSource;
 import org.wpilib.vision.camera.OpenCvLoader;
 import org.wpilib.vision.camera.VideoSource.ConnectionStrategy;
@@ -83,7 +83,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private double minTargetAreaPercent;
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
-    private final AprilTagFieldLayout tagLayout;
+    private final Field tagLayout;
 
     // video stream simulation
     private final CvSource videoSimRaw;
@@ -131,7 +131,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param prop Properties of this camera such as FOV and FPS
      */
     public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop) {
-        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+        this(camera, prop, Field.loadField(Fields.DEFAULT_FIELD));
     }
 
     /**
@@ -142,10 +142,9 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param tagLayout The {@link AprilTagFieldLayout} used to solve for tag positions.
+     * @param tagLayout The {@link Field} used to solve for tag positions.
      */
-    public PhotonCameraSim(
-            PhotonCamera camera, SimCameraProperties prop, AprilTagFieldLayout tagLayout) {
+    public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop, Field tagLayout) {
         this.cam = camera;
         this.prop = prop;
         this.tagLayout = tagLayout;
@@ -180,7 +179,7 @@ public class PhotonCameraSim implements AutoCloseable {
             SimCameraProperties prop,
             double minTargetAreaPercent,
             double maxSightRangeMeters) {
-        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+        this(camera, prop, Field.loadField(Fields.DEFAULT_FIELD));
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
     }
@@ -203,7 +202,7 @@ public class PhotonCameraSim implements AutoCloseable {
             SimCameraProperties prop,
             double minTargetAreaPercent,
             double maxSightRangeMeters,
-            AprilTagFieldLayout tagLayout) {
+            Field tagLayout) {
         this(camera, prop);
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
@@ -629,7 +628,10 @@ public class PhotonCameraSim implements AutoCloseable {
         var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
         if (visibleLayoutTags.size() > 1) {
             List<Short> usedIDs =
-                    visibleLayoutTags.stream().map(t -> (short) t.ID).sorted().collect(Collectors.toList());
+                    visibleLayoutTags.stream()
+                            .map(t -> (short) t.getID())
+                            .sorted()
+                            .collect(Collectors.toList());
             var pnpResult =
                     VisionEstimation.estimateCamPosePNP(
                             prop.getIntrinsics(),

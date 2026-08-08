@@ -53,7 +53,7 @@ class TimeSyncServer:
     PORT = 5810
 
     def __init__(self, time_provider: Optional[Callable[[], int]] = None):
-        self.time_provider = time_provider or Timer.getMonotonicTimestamp
+        self.time_provider = time_provider or Timer.get_monotonic_timestamp
         self._process: Optional[threading.Thread] = None
         self.logger = logging.getLogger("PhotonVision-TimeSyncServer")
 

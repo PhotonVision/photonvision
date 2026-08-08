@@ -36,8 +36,7 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
-import org.wpilib.driverstation.Alert;
-import org.wpilib.driverstation.Alert.Level;
+import org.wpilib.fields.Field;
 import org.wpilib.networktables.LogMessage;
 import org.wpilib.networktables.MultiSubscriber;
 import org.wpilib.networktables.NetworkTable;
@@ -46,7 +45,8 @@ import org.wpilib.networktables.NetworkTableEvent.Kind;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.StringSubscriber;
 import org.wpilib.smartdashboard.SmartDashboard;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.util.Alert;
+import org.wpilib.util.Alert.Level;
 import org.wpilib.vision.camera.CameraServerJNI;
 
 public class NetworkTablesManager {
@@ -67,9 +67,9 @@ public class NetworkTablesManager {
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
-    private final Alert conflictAlert = new Alert("PhotonAlerts", "", Level.MEDIUM);
+    private final Alert conflictAlert = new Alert("PhotonAlerts", "conflict", "", Level.MEDIUM);
 
-    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", Level.MEDIUM);
+    private final Alert mismatchAlert = new Alert("PhotonAlerts", "mismatch", "", Level.MEDIUM);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
@@ -196,7 +196,7 @@ public class NetworkTablesManager {
         var atfl_json = event.valueData.value.getString();
         try {
             System.out.println("Got new field layout!");
-            var atfl = Jsonb.instance().type(AprilTagFieldLayout.class).fromJson(atfl_json);
+            var atfl = Jsonb.instance().type(Field.class).fromJson(atfl_json);
             ConfigManager.getInstance().getConfig().setApriltagFieldLayout(atfl);
             ConfigManager.getInstance().requestSave();
             DataChangeService.getInstance()
@@ -357,9 +357,9 @@ public class NetworkTablesManager {
         logger.debug("Starting NT Client with hostname: " + hostname);
         ntInstance.startClient(hostname);
         try {
-            int t = Integer.parseInt(config.ntServerAddress);
-            if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
-            ntInstance.setServerTeam(t);
+            if (!m_isRetryingConnection)
+                logger.info("Starting NT Client, server team is " + config.ntServerAddress);
+            ntInstance.setServerTeam(config.ntServerAddress);
         } catch (NumberFormatException e) {
             if (!m_isRetryingConnection)
                 logger.info("Starting NT Client, server IP is \"" + config.ntServerAddress + "\"");

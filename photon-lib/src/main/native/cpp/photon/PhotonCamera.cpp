@@ -120,10 +120,13 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       path(rootTable->GetPath()),
       cameraName(cameraName),
       disconnectAlert(PHOTON_ALERT_GROUP,
+                      "disconnected-" + std::to_string(InstanceCount),
                       std::string{"PhotonCamera '"} + std::string{cameraName} +
                           "' is disconnected.",
-                      wpi::Alert::Level::MEDIUM),
-      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::MEDIUM) {
+                      wpi::util::Alert::Level::MEDIUM),
+      timesyncAlert(PHOTON_ALERT_GROUP,
+                    "timesync-" + std::to_string(InstanceCount), "",
+                    wpi::util::Alert::Level::MEDIUM) {
   InstanceCount++;
   HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
 
@@ -392,7 +395,7 @@ void PhotonCamera::VerifyVersion() {
           ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
           "\n\n";
       WPILIB_ReportWarning(bfw);
-      std::string error_str = fmt::format(
+      std::string error_str = std::format(
           "Photonlib version {} (message definition version {}) does not match "
           "coprocessor version {} (message definition version {})!",
           PhotonVersion::versionString, local_uuid, versionString, remote_uuid);

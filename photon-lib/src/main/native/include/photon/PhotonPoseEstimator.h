@@ -27,7 +27,7 @@
 #include <optional>
 #include <span>
 
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/fields/Field.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
@@ -89,22 +89,20 @@ class PhotonPoseEstimator {
   /**
    * Create a new PhotonPoseEstimator.
    *
-   * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
-   * respect to the FIRST field.
+   * @param aprilTags A Field linking AprilTag IDs to Pose3ds with respect to
+   * the FIRST field.
    * @param robotToCamera Transform3d from the center of the robot to the camera
    * mount positions (ie, robot ➔ camera).
    */
-  explicit PhotonPoseEstimator(wpi::apriltag::AprilTagFieldLayout aprilTags,
+  explicit PhotonPoseEstimator(wpi::fields::Field aprilTags,
                                wpi::math::Transform3d robotToCamera);
 
   /**
-   * Get the AprilTagFieldLayout being used by the PositionEstimator.
+   * Get the Field being used by the PositionEstimator.
    *
-   * @return the AprilTagFieldLayout
+   * @return the Field
    */
-  wpi::apriltag::AprilTagFieldLayout GetFieldLayout() const {
-    return aprilTags;
-  }
+  wpi::fields::Field GetFieldLayout() const { return aprilTags; }
 
   /**
    * @return The current transform from the center of the robot to the camera
@@ -305,7 +303,7 @@ class PhotonPoseEstimator {
       wpi::math::Pose3d seedPose, bool headingFree, double headingScaleFactor);
 
  private:
-  wpi::apriltag::AprilTagFieldLayout aprilTags;
+  wpi::fields::Field aprilTags;
 
   wpi::math::Transform3d m_robotToCamera;
 

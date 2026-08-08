@@ -27,7 +27,7 @@ from photonlibpy.targeting import (
 )
 from photonlibpy.targeting.multiTargetPNPResult import MultiTargetPNPResult, PnpResult
 from photonlibpy.targeting.photonPipelineResult import PhotonPipelineResult
-from robotpy_apriltag import AprilTag, AprilTagFieldLayout
+from robotpy_fields import Field, FieldTag
 from wpimath import Pose3d, Rotation3d, Transform3d, Translation3d
 
 
@@ -41,22 +41,19 @@ class PhotonCameraInjector(PhotonCamera):
         return self.result
 
 
-def fakeAprilTagFieldLayout() -> AprilTagFieldLayout:
+def fakeAprilTagFieldLayout() -> Field:
     tagList = []
     tagPoses = (
         Pose3d(3, 3, 3, Rotation3d()),
         Pose3d(5, 5, 5, Rotation3d()),
     )
     for id_, pose in enumerate(tagPoses):
-        aprilTag = AprilTag()
-        aprilTag.ID = id_
-        aprilTag.pose = pose
-        tagList.append(aprilTag)
+        tagList.append(FieldTag(id_, pose))
 
     fieldLength = 54 / 3.281  # 54 ft -> meters
     fieldWidth = 27 / 3.281  # 24 ft -> meters
 
-    return AprilTagFieldLayout(tagList, fieldLength, fieldWidth)
+    return Field("test", "test", "test", None, fieldLength, fieldWidth, "frc", tagList)
 
 
 def test_lowestAmbiguityStrategy():
@@ -164,19 +161,19 @@ def test_pnpDistanceTrigSolve():
 
     cameraOneSim = PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG())
     simTargets = [
-        VisionTargetSim(tag.pose, TargetModel.AprilTag36h11(), tag.ID)
-        for tag in aprilTags.getTags()
+        VisionTargetSim(tag.pose, TargetModel.AprilTag36h11(), tag.id)
+        for tag in aprilTags.get_tags()
     ]
 
     # Compound Rolled + Pitched + Yaw
     compoundTestTransform = Transform3d(
-        -wpimath.units.inchesToMeters(12),
-        -wpimath.units.inchesToMeters(11),
+        -wpimath.units.inches_to_meters(12),
+        -wpimath.units.inches_to_meters(11),
         3,
         Rotation3d(
-            wpimath.units.degreesToRadians(37),
-            wpimath.units.degreesToRadians(6),
-            wpimath.units.degreesToRadians(60),
+            wpimath.units.degrees_to_radians(37),
+            wpimath.units.degrees_to_radians(6),
+            wpimath.units.degrees_to_radians(60),
         ),
     )
 
@@ -187,7 +184,7 @@ def test_pnpDistanceTrigSolve():
 
     realPose = Pose3d(7.3, 4.42, 0, Rotation3d(0, 0, 2.197))  # Pose to compare with
     result = cameraOneSim.process(
-        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transform_by(estimator.robotToCamera), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
@@ -197,7 +194,7 @@ def test_pnpDistanceTrigSolve():
     result.ntReceiveTimestampMicros = int(fakeTimestampSecs * 1e6)
 
     estimator.addHeadingData(
-        result.getTimestampSeconds(), realPose.rotation().toRotation2d()
+        result.getTimestampSeconds(), realPose.rotation().to_rotation2d()
     )
     estimatedRobotPose = estimator.estimatePnpDistanceTrigSolvePose(result)
 
@@ -216,7 +213,7 @@ def test_pnpDistanceTrigSolve():
     estimator.robotToCamera = straightOnTestTransform
     realPose = Pose3d(4.81, 2.38, 0, Rotation3d(0, 0, 2.818))  # Pose to compare with
     result = cameraOneSim.process(
-        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transform_by(estimator.robotToCamera), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
@@ -226,7 +223,7 @@ def test_pnpDistanceTrigSolve():
     result.ntReceiveTimestampMicros = int(fakeTimestampSecs * 1e6)
 
     estimator.addHeadingData(
-        result.getTimestampSeconds(), realPose.rotation().toRotation2d()
+        result.getTimestampSeconds(), realPose.rotation().to_rotation2d()
     )
     estimatedRobotPose = estimator.estimatePnpDistanceTrigSolvePose(result)
 
@@ -277,7 +274,7 @@ def test_multiTagOnCoprocStrategy():
     )
 
     estimator = PhotonPoseEstimator(
-        AprilTagFieldLayout(),
+        Field(),
         Transform3d(),
     )
 

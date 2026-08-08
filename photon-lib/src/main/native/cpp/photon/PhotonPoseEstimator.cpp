@@ -56,16 +56,15 @@ namespace photon {
 namespace detail {
 cv::Point3d ToPoint3d(const wpi::math::Translation3d& translation);
 std::optional<std::array<cv::Point3d, 4>> CalcTagCorners(
-    int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags);
+    int tagID, const wpi::fields::Field& aprilTags);
 wpi::math::Pose3d ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec);
 cv::Point3d TagCornerToObjectPoint(wpi::units::meter_t cornerX,
                                    wpi::units::meter_t cornerY,
                                    wpi::math::Pose3d tagPose);
 }  // namespace detail
 
-PhotonPoseEstimator::PhotonPoseEstimator(
-    wpi::apriltag::AprilTagFieldLayout tags,
-    wpi::math::Transform3d robotToCamera)
+PhotonPoseEstimator::PhotonPoseEstimator(wpi::fields::Field tags,
+                                         wpi::math::Transform3d robotToCamera)
     : aprilTags(tags),
       m_robotToCamera(robotToCamera),
       headingBuffer(
@@ -244,7 +243,7 @@ PhotonPoseEstimator::EstimateClosestToReferencePose(
 }
 
 std::optional<std::array<cv::Point3d, 4>> detail::CalcTagCorners(
-    int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags) {
+    int tagID, const wpi::fields::Field& aprilTags) {
   if (auto tagPose = aprilTags.GetTagPose(tagID); tagPose.has_value()) {
     return std::array{TagCornerToObjectPoint(-3_in, -3_in, *tagPose),
                       TagCornerToObjectPoint(+3_in, -3_in, *tagPose),

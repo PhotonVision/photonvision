@@ -27,8 +27,10 @@
 #include <utility>
 #include <vector>
 
-#include <gtest/gtest.h>
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/fields.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
@@ -46,13 +48,14 @@
 #include "photon/targeting/PhotonTrackedTarget.h"
 #include "photon/targeting/PnpResult.h"
 
-static std::vector<wpi::apriltag::AprilTag> tags = {
+static std::vector<wpi::fields::FieldTag> tags = {
     {0, wpi::math::Pose3d(wpi::units::meter_t(3), wpi::units::meter_t(3),
                           wpi::units::meter_t(3), wpi::math::Rotation3d())},
     {1, wpi::math::Pose3d(wpi::units::meter_t(5), wpi::units::meter_t(5),
                           wpi::units::meter_t(5), wpi::math::Rotation3d())}};
 
-static wpi::apriltag::AprilTagFieldLayout aprilTags{tags, 54_ft, 27_ft};
+static wpi::fields::Field aprilTags{"test", "test", "test", std::nullopt,
+                                    54_ft,  27_ft,  "frc",  tags};
 
 static std::vector<photon::TargetCorner> corners{
     photon::TargetCorner{1., 2.}, photon::TargetCorner{3., 4.},
@@ -61,7 +64,7 @@ static std::vector<photon::TargetCorner> detectedCorners{
     photon::TargetCorner{1., 2.}, photon::TargetCorner{3., 4.},
     photon::TargetCorner{5., 6.}, photon::TargetCorner{7., 8.}};
 
-TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
+TEST_CASE("PhotonPoseEstimatorTest LowestAmbiguityStrategy", "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{
@@ -98,20 +101,25 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
   }
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(
-      11, wpi::units::unit_cast<double>(estimatedPose.value().timestamp), .02);
-  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(3, wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(2, wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(11 == Catch::Approx(wpi::units::unit_cast<double>(
+                                estimatedPose.value().timestamp))
+                  .margin(.02));
+  CHECK(1 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(3 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(2 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
   // Only the chosen (lowest-ambiguity) target should be reported as used.
-  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
-  EXPECT_EQ(1, estimatedPose.value().targetsUsed[0].GetFiducialId());
+  CHECK(static_cast<size_t>(1) == estimatedPose.value().targetsUsed.size());
+  CHECK(1 == estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
-TEST(PhotonPoseEstimatorTest, LowestAmbiguityIgnoresNonFiducialTargets) {
+TEST_CASE("PhotonPoseEstimatorTest LowestAmbiguityIgnoresNonFiducialTargets",
+          "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   // A non-fiducial target reports poseAmbiguity = -1. Without the guard the
@@ -141,23 +149,28 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityIgnoresNonFiducialTargets) {
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
   }
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   // Tag 1 is at (5,5,5), bestCameraToTarget = (4,2,3), so the estimated
   // robot pose lands at (1,3,2) in the field frame.
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
-  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(3, wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(2, wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(1 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(3 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(2 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
 }
 
-TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
-  std::vector<wpi::apriltag::AprilTag> tags = {
+TEST_CASE("PhotonPoseEstimatorTest ClosestToCameraHeightStrategy",
+          "[poseest]") {
+  std::vector<wpi::fields::FieldTag> tags = {
       {0, wpi::math::Pose3d(wpi::units::meter_t(3), wpi::units::meter_t(3),
                             wpi::units::meter_t(3), wpi::math::Rotation3d())},
       {1, wpi::math::Pose3d(wpi::units::meter_t(5), wpi::units::meter_t(5),
                             wpi::units::meter_t(5), wpi::math::Rotation3d())},
   };
-  auto aprilTags = wpi::apriltag::AprilTagFieldLayout(tags, 54_ft, 27_ft);
+  auto aprilTags = wpi::fields::Field("test", "test", "test", std::nullopt,
+                                      54_ft, 27_ft, "frc", tags);
 
   std::vector<std::pair<photon::PhotonCamera, wpi::math::Transform3d>> cameras;
 
@@ -200,21 +213,26 @@ TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.EstimateClosestToCameraHeightPose(result);
   }
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
 
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(
-      17, wpi::units::unit_cast<double>(estimatedPose.value().timestamp), .02);
-  EXPECT_NEAR(4, wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(4, wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(0, wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(17 == Catch::Approx(wpi::units::unit_cast<double>(
+                                estimatedPose.value().timestamp))
+                  .margin(.02));
+  CHECK(4 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(4 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(0 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
   // Only the chosen target should be reported as used.
-  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
-  EXPECT_EQ(1, estimatedPose.value().targetsUsed[0].GetFiducialId());
+  CHECK(static_cast<size_t>(1) == estimatedPose.value().targetsUsed.size());
+  CHECK(1 == estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
-TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
+TEST_CASE("PhotonPoseEstimatorTest ClosestToReferencePoseStrategy",
+          "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{
@@ -254,20 +272,24 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
                                   wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)));
   }
 
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(
-      17, wpi::units::unit_cast<double>(estimatedPose.value().timestamp), .01);
-  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(1.1, wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(.9, wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(17 == Catch::Approx(wpi::units::unit_cast<double>(
+                                estimatedPose.value().timestamp))
+                  .margin(.01));
+  CHECK(1 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(1.1 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(.9 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
   // Only the chosen target should be reported as used.
-  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
-  EXPECT_EQ(0, estimatedPose.value().targetsUsed[0].GetFiducialId());
+  CHECK(static_cast<size_t>(1) == estimatedPose.value().targetsUsed.size());
+  CHECK(0 == estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
-TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
+TEST_CASE("PhotonPoseEstimatorTest ClosestToLastPose", "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{
@@ -307,7 +329,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
                                   wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)));
   }
 
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
   std::vector<photon::PhotonTrackedTarget> targetsThree{
@@ -342,21 +364,24 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
     estimatedPose = estimator.EstimateClosestToReferencePose(result, pose);
   }
 
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(21.0,
-              wpi::units::unit_cast<double>(estimatedPose.value().timestamp),
-              .01);
-  EXPECT_NEAR(.9, wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(1.1, wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(21.0 == Catch::Approx(wpi::units::unit_cast<double>(
+                                  estimatedPose.value().timestamp))
+                    .margin(.01));
+  CHECK(.9 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(1.1 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(1 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
   // Only the chosen target should be reported as used.
-  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
-  EXPECT_EQ(0, estimatedPose.value().targetsUsed[0].GetFiducialId());
+  CHECK(static_cast<size_t>(1) == estimatedPose.value().targetsUsed.size());
+  CHECK(0 == estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
-TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
+TEST_CASE("PhotonPoseEstimatorTest PnpDistanceTrigSolve", "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
   cameraOne.test = true;
 
@@ -392,17 +417,17 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
     estimatedPose = estimator.EstimatePnpDistanceTrigSolvePose(result);
   }
 
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.X()),
-              wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.Y()),
-              wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.Z()),
-              wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(wpi::units::unit_cast<double>(realPose.X()) ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(wpi::units::unit_cast<double>(realPose.Y()) ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(wpi::units::unit_cast<double>(realPose.Z()) ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
   // PNP_DISTANCE_TRIG_SOLVE uses only the best target.
-  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
+  CHECK(static_cast<size_t>(1) == estimatedPose.value().targetsUsed.size());
 
   /* Straight on */
   wpi::math::Transform3d straightOnTestTransform = wpi::math::Transform3d(
@@ -424,20 +449,20 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
     estimatedPose = estimator.EstimatePnpDistanceTrigSolvePose(result);
   }
 
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.X()),
-              wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.Y()),
-              wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.Z()),
-              wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(wpi::units::unit_cast<double>(realPose.X()) ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(wpi::units::unit_cast<double>(realPose.Y()) ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(wpi::units::unit_cast<double>(realPose.Z()) ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
   // PNP_DISTANCE_TRIG_SOLVE uses only the best target.
-  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
+  CHECK(static_cast<size_t>(1) == estimatedPose.value().targetsUsed.size());
 }
 
-TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
+TEST_CASE("PhotonPoseEstimatorTest AverageBestPoses", "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{
@@ -481,25 +506,30 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
     estimatedPose = estimator.EstimateAverageBestTargetsPose(result);
   }
 
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(15.0,
-              wpi::units::unit_cast<double>(estimatedPose.value().timestamp),
-              .01);
-  EXPECT_NEAR(2.15, wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(2.15, wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(2.15, wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(15.0 == Catch::Approx(wpi::units::unit_cast<double>(
+                                  estimatedPose.value().timestamp))
+                    .margin(.01));
+  CHECK(2.15 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(2.15 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(2.15 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
   // Only the three fiducial targets contributed; the non-fiducial fourth target
   // is excluded.
-  EXPECT_EQ(static_cast<size_t>(3), estimatedPose.value().targetsUsed.size());
+  CHECK(static_cast<size_t>(3) == estimatedPose.value().targetsUsed.size());
   for (const auto& t : estimatedPose.value().targetsUsed) {
-    EXPECT_NE(-1, t.GetFiducialId());
+    CHECK(-1 != t.GetFiducialId());
   }
 }
 
-TEST(PhotonPoseEstimatorTest,
-     ClosestToCameraHeightReturnsEmptyForNoFiducialTargets) {
+TEST_CASE(
+    "PhotonPoseEstimatorTest "
+    "ClosestToCameraHeightReturnsEmptyForNoFiducialTargets",
+    "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   // A single non-fiducial target (fid = -1) should yield no estimate.
@@ -518,11 +548,13 @@ TEST(PhotonPoseEstimatorTest,
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.EstimateClosestToCameraHeightPose(result);
   }
-  EXPECT_FALSE(estimatedPose);
+  CHECK_FALSE(estimatedPose);
 }
 
-TEST(PhotonPoseEstimatorTest,
-     ClosestToReferencePoseReturnsEmptyForNoFiducialTargets) {
+TEST_CASE(
+    "PhotonPoseEstimatorTest "
+    "ClosestToReferencePoseReturnsEmptyForNoFiducialTargets",
+    "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{photon::PhotonTrackedTarget{
@@ -541,10 +573,10 @@ TEST(PhotonPoseEstimatorTest,
     estimatedPose = estimator.EstimateClosestToReferencePose(
         result, wpi::math::Pose3d(1_m, 1_m, 1_m, wpi::math::Rotation3d()));
   }
-  EXPECT_FALSE(estimatedPose);
+  CHECK_FALSE(estimatedPose);
 }
 
-TEST(PhotonPoseEstimatorTest, MultiTagOnCoprocFallback) {
+TEST_CASE("PhotonPoseEstimatorTest MultiTagOnCoprocFallback", "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{
@@ -574,25 +606,29 @@ TEST(PhotonPoseEstimatorTest, MultiTagOnCoprocFallback) {
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.EstimateCoprocMultiTagPose(result);
   }
-  ASSERT_FALSE(estimatedPose);
+  REQUIRE_FALSE(estimatedPose);
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
   }
-  ASSERT_TRUE(estimatedPose);
+  REQUIRE(estimatedPose);
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
   // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
-  EXPECT_NEAR(
-      11, wpi::units::unit_cast<double>(estimatedPose.value().timestamp), .02);
-  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(3, wpi::units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(2, wpi::units::unit_cast<double>(pose.Z()), .01);
+  CHECK(11 == Catch::Approx(wpi::units::unit_cast<double>(
+                                estimatedPose.value().timestamp))
+                  .margin(.02));
+  CHECK(1 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(.01));
+  CHECK(3 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(.01));
+  CHECK(2 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(.01));
   // LOWEST_AMBIGUITY fallback should report only the single chosen target.
-  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
-  EXPECT_EQ(1, estimatedPose.value().targetsUsed[0].GetFiducialId());
+  CHECK(static_cast<size_t>(1) == estimatedPose.value().targetsUsed.size());
+  CHECK(1 == estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
-TEST(PhotonPoseEstimatorTest, CopyResult) {
+TEST_CASE("PhotonPoseEstimatorTest CopyResult", "[poseest]") {
   std::vector<photon::PhotonTrackedTarget> targets{};
 
   auto testResult = photon::PhotonPipelineResult{
@@ -601,14 +637,13 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 
   auto test2 = testResult;
 
-  EXPECT_NEAR(testResult.GetTimestamp().to<double>(),
-              test2.GetTimestamp().to<double>(), 0.001);
+  CHECK(testResult.GetTimestamp().to<double>() ==
+        Catch::Approx(test2.GetTimestamp().to<double>()).margin(0.001));
 }
 
-TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
+TEST_CASE("PhotonPoseEstimatorTest ConstrainedPnpEmptyCase", "[poseest]") {
   photon::PhotonPoseEstimator estimator(
-      wpi::apriltag::AprilTagFieldLayout::LoadField(
-          wpi::apriltag::AprilTagField::k2024Crescendo),
+      wpi::fields::GetField(wpi::fields::FieldId::FRC_2024_CRESCENDO),
       wpi::math::Transform3d());
 
   photon::PhotonPipelineResult result;
@@ -618,10 +653,10 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
                                    {0, 0, 1}};
   auto estimate = estimator.EstimateConstrainedSolvepnpPose(
       result, cameraMat, distortion, wpi::math::Pose3d(), true, 0.0);
-  EXPECT_FALSE(estimate.has_value());
+  CHECK_FALSE(estimate.has_value());
 }
 
-TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
+TEST_CASE("PhotonPoseEstimatorTest ConstrainedPnpOneTag", "[poseest]") {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
   auto distortion = Eigen::VectorXd::Zero(8);
   auto cameraMat = Eigen::Matrix3d{{399.37500000000006, 0, 319.5},
@@ -664,8 +699,7 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       wpi::math::Rotation3d(0_rad, -camPitch, 0_rad)};
 
   photon::PhotonPoseEstimator estimator(
-      wpi::apriltag::AprilTagFieldLayout::LoadField(
-          wpi::apriltag::AprilTagField::k2024Crescendo),
+      wpi::fields::GetField(wpi::fields::FieldId::FRC_2024_CRESCENDO),
       kRobotToCam);
 
   auto estimatedMultiTagPose =
@@ -678,13 +712,16 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       cameraOne.testResult[0], cameraMat, distortion,
       estimatedMultiTagPose->estimatedPose, true, 0);
 
-  ASSERT_TRUE(estimatedPose.has_value());
+  REQUIRE(estimatedPose.has_value());
 
   wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(3.58, wpi::units::unit_cast<double>(pose.X()), 0.01);
-  EXPECT_NEAR(4.13, wpi::units::unit_cast<double>(pose.Y()), 0.01);
-  EXPECT_NEAR(0.0, wpi::units::unit_cast<double>(pose.Z()), 0.01);
+  CHECK(3.58 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.X())).margin(0.01));
+  CHECK(4.13 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Y())).margin(0.01));
+  CHECK(0.0 ==
+        Catch::Approx(wpi::units::unit_cast<double>(pose.Z())).margin(0.01));
 
-  EXPECT_EQ(photon::CONSTRAINED_SOLVEPNP, estimatedPose.value().strategy);
+  CHECK(photon::CONSTRAINED_SOLVEPNP == estimatedPose.value().strategy);
 }

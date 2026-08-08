@@ -278,7 +278,7 @@ public class Main {
         }
         logger.info("WPILib and photon-targeting JNI libraries loaded.");
 
-        if (!HAL.initialize(500, 0)) {
+        if (!HAL.initialize()) {
             logger.error("Failed to initialize the HAL! Giving up :(");
             System.exit(1);
         }

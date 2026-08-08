@@ -32,7 +32,7 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 public class FindBoardCornersPipe
         extends CVPipe<
