@@ -612,6 +612,27 @@ jobs:
           root_location: ${{ matrix.root_location || 'partition=2' }}
           shrink_image: ${{ matrix.shrink_image || 'yes' }}
           commands: java -jar *.jar --smoketest --platform=${{ matrix.plat_override }}
+      # Make sure log files contains the image metadata record
+      - run: |
+          set -e
+          logs=(photonvision_config/logs/*)
+          if [ "${logs[0]}" = 'photonvision_config/logs/*' ]; then
+            echo "No logs found in photonvision_config/logs" >&2
+            exit 1
+          fi
+          if [ ${#logs[@]} -ne 1 ]; then
+            echo "Expected exactly one file in photonvision_config/logs, found ${#logs[@]}" >&2
+            ls -1 photonvision_config/logs >&2
+            exit 1
+          fi
+          grep -Eq 'PhotonVision image data: ImageMetadata\[' "${logs[0]}"
+        if: ${{ (matrix.os) != 'windows-2022' }}
+      # Upload config directory produced during smoketest
+      - uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: photonvision_smoketest-${{ matrix.image_suffix }}
+          path: photonvision_config
 
   matrix-checker:
     # This job always runs last to set the overall result based on the matrix jobs. If any matrix job failed, this job will fail.
