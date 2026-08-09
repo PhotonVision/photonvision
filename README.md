@@ -62,7 +62,8 @@ PhotonVision uses the following additional out-of-source repositories for buildi
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.
 
 * [WPILib](https://github.com/wpilibsuite) - Specifically [allwpilib](https://github.com/wpilibsuite/allwpilib) and [their build of OpenCV](https://github.com/wpilibsuite/thirdparty-opencv).
-* [Apache Commons](https://commons.apache.org/) - Specifically [Commons IO](https://commons.apache.org/proper/commons-io/), and [Commons CLI](https://commons.apache.org/proper/commons-cli/)
+* [Apache Commons](https://commons.apache.org/) - Specifically [Commons IO](https://commons.apache.org/proper/commons-io/)
+* [picocli](https://picocli.info)
 * [diozero](https://www.diozero.com/)
 * [EJML](https://github.com/lessthanoptimal/ejml)
 * [Javalin](https://javalin.io/)
