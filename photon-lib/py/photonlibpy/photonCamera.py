@@ -16,15 +16,14 @@
 ###############################################################################
 
 from enum import Enum
-from typing import List
 
 import hal
 import ntcore
+import wpilib
+from wpilib import RobotController, Timer
 
 # magical import to make serde stuff work
 import photonlibpy.generated  # noqa
-import wpilib
-from wpilib import RobotController, Timer
 
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
@@ -130,7 +129,7 @@ class PhotonCamera:
         )
         PhotonCamera.instance_count += 1
 
-    def getAllUnreadResults(self) -> List[PhotonPipelineResult]:
+    def getAllUnreadResults(self) -> list[PhotonPipelineResult]:
         """
         The list of pipeline results sent by PhotonVision since the last call to getAllUnreadResults().
         Calling this function clears the internal FIFO queue, and multiple calls to

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from .multiTargetPNPResult import MultiTargetPNPResult
 from .photonTrackedTarget import PhotonTrackedTarget
@@ -33,7 +33,7 @@ class PhotonPipelineResult:
     # Python users beware! We don't currently run a Time Sync Server, so these timestamps are in
     # an arbitrary timebase. This is not true in C++ or Java.
     metadata: PhotonPipelineMetadata = field(default_factory=PhotonPipelineMetadata)
-    multitagResult: Optional[MultiTargetPNPResult] = None
+    multitagResult: MultiTargetPNPResult | None = None
 
     def getLatencyMillis(self) -> float:
         return (
@@ -58,7 +58,7 @@ class PhotonPipelineResult:
     def hasTargets(self) -> bool:
         return len(self.targets) > 0
 
-    def getBestTarget(self) -> Optional[PhotonTrackedTarget]:
+    def getBestTarget(self) -> PhotonTrackedTarget | None:
         """
         Returns the best target in this pipeline result. If there are no targets, this method will
         return null. The best target is determined by the target sort mode in the PhotonVision UI.

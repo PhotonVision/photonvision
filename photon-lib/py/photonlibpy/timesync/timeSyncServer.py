@@ -2,7 +2,7 @@ import logging
 import socket
 import struct
 import threading
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from wpilib import Timer
 
@@ -52,9 +52,9 @@ class TimeSyncServer:
 
     PORT = 5810
 
-    def __init__(self, time_provider: Optional[Callable[[], int]] = None):
+    def __init__(self, time_provider: Callable[[], int] | None = None):
         self.time_provider = time_provider or Timer.getMonotonicTimestamp
-        self._process: Optional[threading.Thread] = None
+        self._process: threading.Thread | None = None
         self.logger = logging.getLogger("PhotonVision-TimeSyncServer")
 
     def _udp_server(self):

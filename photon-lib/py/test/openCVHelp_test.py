@@ -53,7 +53,7 @@ def test_Projection():
 
     # find circulation (counter/clockwise-ness)
     circulation = 0.0
-    for i in range(0, len(imagePoints)):
+    for i in range(len(imagePoints)):
         xDiff = imagePoints[(i + 1) % 4][0][0] - imagePoints[i][0][0]
         ySum = imagePoints[(i + 1) % 4][0][1] + imagePoints[i][0][1]
         circulation += xDiff * ySum
