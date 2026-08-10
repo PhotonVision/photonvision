@@ -191,7 +191,7 @@ const interactiveCols = computed(() =>
               block
               color="primary"
               class="text-black"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
             >
               <v-icon start size="large"> mdi-minus </v-icon>
@@ -204,7 +204,7 @@ const interactiveCols = computed(() =>
               class="text-black"
               size="small"
               block
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="enableColorPicking(1)"
             >
               <v-icon start size="large"> mdi-plus-minus </v-icon>
@@ -217,7 +217,7 @@ const interactiveCols = computed(() =>
               block
               color="primary"
               class="text-black"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
             >
               <v-icon start size="large"> mdi-plus </v-icon>
@@ -232,7 +232,7 @@ const interactiveCols = computed(() =>
               color="primary"
               class="text-black"
               size="small"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="disableColorPicking"
             >
               Cancel

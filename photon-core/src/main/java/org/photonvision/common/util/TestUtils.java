@@ -17,18 +17,26 @@
 
 package org.photonvision.common.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
-import java.awt.HeadlessException;
+import io.avaje.json.JsonException;
+import io.avaje.jsonb.Jsonb;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipeline.ReflectivePipeline;
+import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.util.Units;
 
 public class TestUtils {
     @SuppressWarnings("unused")
@@ -97,6 +105,26 @@ public class TestUtils {
 
         WPI2020Image(double distanceMeters) {
             this.distanceMeters = distanceMeters;
+            this.path = getPath();
+        }
+    }
+
+    public enum WPI2026Images {
+        // 4000 x 1868 px
+        // Galaxy S23, 6.3mm focal length
+        kBlueOutpostFuelSpread;
+
+        public static final Size resolution = new Size(4000, 1868);
+
+        public static final Rotation2d FOV = Rotation2d.fromDegrees(85.0);
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2026", filename + ".jpg");
+        }
+
+        WPI2026Images() {
             this.path = getPath();
         }
     }
@@ -206,7 +234,8 @@ public class TestUtils {
         kRobots,
         kTag1_640_480,
         kTag1_16h5_1280,
-        kTag_corner_1280;
+        kTag_corner_1280,
+        k36h11_stress_test;
 
         public final Path path;
 
@@ -215,6 +244,7 @@ public class TestUtils {
             var filename = this.toString().substring(1).toLowerCase();
             var extension = ".jpg";
             if (filename.equals("tag1_16h5_1280")) extension = ".png";
+            if (filename.equals("36h11_stress_test")) extension = ".png";
             return Path.of("apriltag", filename + extension);
         }
 
@@ -318,12 +348,10 @@ public class TestUtils {
     public static final String LIMELIGHT_480P_CAL_FILE = "limelight_1280_720.json";
 
     public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
-        try {
-            return new ObjectMapper()
-                    .readValue(
-                            (Path.of(getCalibrationPath(testMode).toString(), filename).toFile()),
-                            CameraCalibrationCoefficients.class);
-        } catch (IOException e) {
+        try (var stream =
+                new FileInputStream(Path.of(getCalibrationPath(testMode).toString(), filename).toFile())) {
+            return Jsonb.instance().type(CameraCalibrationCoefficients.class).fromJson(stream);
+        } catch (IOException | IllegalStateException | JsonException e) {
             e.printStackTrace();
             return null;
         }
@@ -348,13 +376,10 @@ public class TestUtils {
     private static final int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
-        if (frame.empty()) return;
-        try {
-            HighGui.imshow(title, frame);
-            HighGui.waitKey(timeoutMs);
-            HighGui.destroyAllWindows();
-        } catch (HeadlessException ignored) {
-        }
+        if (frame.empty() || Boolean.getBoolean("java.awt.headless")) return;
+        HighGui.imshow(title, frame);
+        HighGui.waitKey(timeoutMs);
+        HighGui.destroyAllWindows();
     }
 
     public static void showImage(Mat frame, int timeoutMs) {
@@ -367,6 +392,22 @@ public class TestUtils {
 
     public static void showImage(Mat frame) {
         showImage(frame, DefaultTimeoutMillis);
+    }
+
+    public static void continuouslyRunPipeline(
+            FrameProvider frameProvider, ReflectivePipelineSettings settings) {
+        try (var pipeline = new ReflectivePipeline()) {
+            while (true) {
+                CVPipelineResult pipelineResult =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+                TestUtils.printTestResults(pipelineResult);
+                int preRelease = CVMat.getMatCount();
+                pipelineResult.release();
+                int postRelease = CVMat.getMatCount();
+
+                System.out.printf("Pre: %d, Post: %d\n", preRelease, postRelease);
+            }
+        }
     }
 
     public static void printTestResults(CVPipelineResult pipelineResult) {

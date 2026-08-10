@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.cscore.UsbCamera;
+import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +48,7 @@ import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
+import org.wpilib.vision.camera.UsbCamera;
 
 /**
  * This class manages starting up VisionModules for serialized devices ({@link
@@ -60,7 +61,7 @@ import org.photonvision.vision.camera.csi.LibcameraGpuSource;
  *
  * <p>We now require user interaction for pretty much every operation this undertakes.
  */
-public class VisionSourceManager {
+public class VisionSourceManager implements AutoCloseable {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
 
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
@@ -73,7 +74,7 @@ public class VisionSourceManager {
         return SingletonHolder.INSTANCE;
     }
 
-    // Jackson does use these members even if your IDE claims otherwise
+    @Json
     public static class VisionSourceManagerState {
         public List<UICameraConfiguration> disabledConfigs;
         public List<PVCameraInfo> allConnectedCameras;
@@ -144,8 +145,7 @@ public class VisionSourceManager {
                         })
                 .map(this::loadVisionSourceFromCamConfig)
                 .filter(it -> it != null) // Filter out null sources (e.g., duplicates with missing source)
-                .map(vmm::addSource)
-                .forEach(VisionModule::start);
+                .forEach(vmm::addSource);
 
         // 3. write down all disabled sources for later
         deserializedConfigs.entrySet().stream()
@@ -210,16 +210,7 @@ public class VisionSourceManager {
 
         // transform the camera info all the way to a VisionModule and then start it
         var created =
-                deactivatedConfig
-                        .map(this::loadVisionSourceFromCamConfig)
-                        .map(vmm::addSource)
-                        .map(
-                                it -> {
-                                    it.start();
-                                    it.saveAndBroadcastAll();
-                                    return it;
-                                })
-                        .isPresent();
+                deactivatedConfig.map(this::loadVisionSourceFromCamConfig).map(vmm::addSource).isPresent();
 
         if (!created) {
             // Couldn't create a VM for this config - restore state
@@ -263,8 +254,6 @@ public class VisionSourceManager {
 
         var source = loadVisionSourceFromCamConfig(new CameraConfiguration(cameraInfo));
         var module = vmm.addSource(source);
-
-        module.start();
 
         // Check if this new camera is a source for any disabled duplicates
         handleSourceCameraReactivation(module.uniqueName());
@@ -338,15 +327,11 @@ public class VisionSourceManager {
 
         // 4. Add to VMM and start
         var duplicateModule = vmm.addSource(duplicateSource);
-        duplicateModule.start();
 
         // 5. Track the dependency relationship
         duplicateDependencies
                 .computeIfAbsent(sourceUniqueName, k -> new ArrayList<>())
                 .add(duplicateUniqueName);
-
-        // 6. Save and broadcast
-        duplicateModule.saveAndBroadcastAll();
 
         DataChangeService.getInstance()
                 .publishEvent(
@@ -459,9 +444,9 @@ public class VisionSourceManager {
                         .filter(module -> module.uniqueName().equals(uniqueName))
                         .findFirst()
                         .map(
-                                it -> {
-                                    vmm.removeModule(it);
-                                    return it.getCameraConfiguration();
+                                module -> {
+                                    module.getCameraConfiguration().deactivated = true;
+                                    return vmm.removeModule(module);
                                 });
 
         if (removedConfig.isEmpty()) {
@@ -523,7 +508,7 @@ public class VisionSourceManager {
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
-        
+
         // And same with duplicate cameras
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
@@ -762,5 +747,10 @@ public class VisionSourceManager {
 
     public List<VisionModule> getVisionModules() {
         return vmm.getModules();
+    }
+
+    @Override
+    public void close() {
+        vmm.close();
     }
 }

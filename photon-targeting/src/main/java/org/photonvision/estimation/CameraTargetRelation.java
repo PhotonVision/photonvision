@@ -17,11 +17,12 @@
 
 package org.photonvision.estimation;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform3d;
 
 /** Holds various helper geometries describing the relation between camera and target. */
+@SuppressWarnings("doclint")
 public class CameraTargetRelation {
     public final Pose3d camPose;
     public final Transform3d camToTarg;

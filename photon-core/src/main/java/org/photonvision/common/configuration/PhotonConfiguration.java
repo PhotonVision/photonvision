@@ -17,26 +17,32 @@
 
 package org.photonvision.common.configuration;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import io.avaje.jsonb.Json;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.photonvision.vision.processes.VisionSource;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
+@Json
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
-    private AprilTagFieldLayout atfl;
-    private NeuralNetworkPropertyManager neuralNetworkProperties;
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
+
+    @Json.Property("atfl")
+    private AprilTagFieldLayout aprilTagFieldLayout;
+
+    private NeuralNetworkModelsSettings neuralNetworkProperties;
+    private Map<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
-            NeuralNetworkPropertyManager neuralNetworkProperties) {
+            NeuralNetworkModelsSettings neuralNetworkProperties) {
         this(
                 hardwareConfig,
                 hardwareSettings,
@@ -46,19 +52,20 @@ public class PhotonConfiguration {
                 new HashMap<>());
     }
 
+    @Json.Creator
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
-            NeuralNetworkPropertyManager neuralNetworkProperties,
-            HashMap<String, CameraConfiguration> cameraConfigurations) {
+            NeuralNetworkModelsSettings neuralNetworkProperties,
+            Map<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
         this.neuralNetworkProperties = neuralNetworkProperties;
         this.cameraConfigurations = cameraConfigurations;
-        this.atfl = atfl;
+        this.aprilTagFieldLayout = atfl;
     }
 
     public PhotonConfiguration() {
@@ -67,7 +74,7 @@ public class PhotonConfiguration {
                 new HardwareSettings(),
                 new NetworkConfig(),
                 new AprilTagFieldLayout(List.of(), 0, 0),
-                new NeuralNetworkPropertyManager());
+                new NeuralNetworkModelsSettings());
     }
 
     public HardwareConfig getHardwareConfig() {
@@ -83,26 +90,26 @@ public class PhotonConfiguration {
     }
 
     public AprilTagFieldLayout getApriltagFieldLayout() {
-        return atfl;
+        return aprilTagFieldLayout;
     }
 
-    public NeuralNetworkPropertyManager neuralNetworkPropertyManager() {
+    public NeuralNetworkModelsSettings getNeuralNetworkProperties() {
         return neuralNetworkProperties;
     }
 
     public void setApriltagFieldLayout(AprilTagFieldLayout atfl) {
-        this.atfl = atfl;
+        this.aprilTagFieldLayout = atfl;
     }
 
     public void setNetworkConfig(NetworkConfig networkConfig) {
         this.networkConfig = networkConfig;
     }
 
-    public void setNeuralNetworkProperties(NeuralNetworkPropertyManager neuralNetworkProperties) {
+    public void setNeuralNetworkProperties(NeuralNetworkModelsSettings neuralNetworkProperties) {
         this.neuralNetworkProperties = neuralNetworkProperties;
     }
 
-    public HashMap<String, CameraConfiguration> getCameraConfigurations() {
+    public Map<String, CameraConfiguration> getCameraConfigurations() {
         return cameraConfigurations;
     }
 
@@ -132,18 +139,28 @@ public class PhotonConfiguration {
 
     @Override
     public String toString() {
+        StringBuilder cameraConfigurationsString = new StringBuilder();
+        cameraConfigurations.forEach(
+                (key, value) -> {
+                    cameraConfigurationsString
+                            .append("\n    ")
+                            .append(key)
+                            .append(" -> ")
+                            .append(value.toString());
+                });
+
         return "PhotonConfiguration [\n  hardwareConfig="
                 + hardwareConfig
                 + "\n  hardwareSettings="
                 + hardwareSettings
                 + "\n  networkConfig="
                 + networkConfig
-                + "\n  atfl="
-                + atfl
+                + "\n  aprilTagFieldLayout="
+                + aprilTagFieldLayout
                 + "\n  neuralNetworkProperties="
                 + neuralNetworkProperties
-                + "\n  cameraConfigurations="
-                + cameraConfigurations
-                + "\n]";
+                + "\n  cameraConfigurations={"
+                + cameraConfigurationsString
+                + "}\n]";
     }
 }

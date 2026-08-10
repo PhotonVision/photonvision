@@ -17,12 +17,12 @@
 
 package org.photonvision.estimation;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
 
 /**
  * Represents a transformation that first rotates a pose around the origin, and then translates it.
@@ -46,7 +46,7 @@ public class RotTrlTransform3d {
     }
 
     public RotTrlTransform3d(Pose3d initial, Pose3d last) {
-        this.rot = last.getRotation().minus(initial.getRotation());
+        this.rot = last.getRotation().relativeTo(initial.getRotation());
         this.trl = last.getTranslation().minus(initial.getTranslation().rotateBy(rot));
     }
 
@@ -62,6 +62,7 @@ public class RotTrlTransform3d {
         this(trf.getRotation(), trf.getTranslation());
     }
 
+    /** Constructs the identity transform -- maps an initial pose to itself. */
     public RotTrlTransform3d() {
         this(new Rotation3d(), new Translation3d());
     }
@@ -76,24 +77,40 @@ public class RotTrlTransform3d {
         return new RotTrlTransform3d(pose.getRotation(), pose.getTranslation()).inverse();
     }
 
-    /** The inverse of this transformation. Applying the inverse will "undo" this transformation. */
+    /**
+     * The inverse of this transformation. Applying the inverse will "undo" this transformation.
+     *
+     * @return The inverse transformation
+     */
     public RotTrlTransform3d inverse() {
-        var inverseRot = rot.unaryMinus();
+        var inverseRot = rot.inverse();
         var inverseTrl = trl.rotateBy(inverseRot).unaryMinus();
         return new RotTrlTransform3d(inverseRot, inverseTrl);
     }
 
-    /** This transformation as a Transform3d (as if of the origin) */
+    /**
+     * This transformation as a Transform3d (as if of the origin)
+     *
+     * @return The Transform2d
+     */
     public Transform3d getTransform() {
         return new Transform3d(trl, rot);
     }
 
-    /** The translation component of this transformation */
+    /**
+     * The translation component of this transformation
+     *
+     * @return The Translation3d
+     */
     public Translation3d getTranslation() {
         return trl;
     }
 
-    /** The rotation component of this transformation */
+    /**
+     * The rotation component of this transformation
+     *
+     * @return The Rotation3d
+     */
     public Rotation3d getRotation() {
         return rot;
     }
@@ -107,7 +124,7 @@ public class RotTrlTransform3d {
     }
 
     public Rotation3d apply(Rotation3d rot) {
-        return rot.plus(this.rot);
+        return rot.rotateBy(this.rot);
     }
 
     public List<Rotation3d> applyRots(List<Rotation3d> rots) {

@@ -34,10 +34,16 @@ To install *doc8*, the python tool we use to lint our documentation, run `pipx i
 
 To lint the documentation, run `doc8 docs` from the root level of the docs.
 
+## Website
+
+### Formatting the website
+
+To format the website, run `pnpm -C website run format`.
+
 ## Alias
 
 The following [alias](https://www.computerworld.com/article/1373210/how-to-use-aliases-in-linux-shell-commands.html) can be added to your shell config, which will allow you to lint the entirety of the PhotonVision project by running `pvLint`. The alias will work on Linux, macOS, Git Bash on Windows, and WSL.
 
 ```sh
-alias pvLint='wpiformat -v && ./gradlew spotlessApply && pnpm -C photon-client lint && pnpm -C photon-client format && doc8 docs'
+alias pvLint='wpiformat -v && ./gradlew spotlessApply && pnpm -C photon-client lint && pnpm -C photon-client format && doc8 docs && pnpm -C website format'
 ```

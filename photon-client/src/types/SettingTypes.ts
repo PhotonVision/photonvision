@@ -5,9 +5,11 @@ import { reactive } from "vue";
 
 export interface GeneralSettings {
   version?: string;
+  imageVersion?: string;
   gpuAcceleration?: string;
   hardwareModel?: string;
   hardwarePlatform?: string;
+  wpilibArch?: string;
   mrCalWorking: boolean;
   availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];
@@ -73,55 +75,34 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
-export interface PVCameraInfoBase {
-  /*
-  Huge hack. In Jackson, this is set based on the underlying type -- this
-  then maps to one of the subclasses here below. Not sure how to best deal with this.
-  */
-  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo" | "PVDuplicateCameraInfo";
+interface PVCameraInfoBase {
+  type: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo" | "PVDuplicateCameraInfo";
+  path: string;
+  name: string;
+  uniquePath: string;
 }
 
-export interface PVUsbCameraInfo {
+export interface PVUsbCameraInfo extends PVCameraInfoBase {
+  type: "PVUsbCameraInfo";
   dev: number;
-  name: string;
   otherPaths: string[];
-  path: string;
   vendorId: number;
   productId: number;
-
-  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
-  uniquePath: string;
 }
-export interface PVCSICameraInfo {
+export interface PVCSICameraInfo extends PVCameraInfoBase {
+  type: "PVCSICameraInfo";
   baseName: string;
-  path: string;
-
-  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
-  uniquePath: string;
 }
-export interface PVFileCameraInfo {
-  path: string;
-  name: string;
-
-  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
-  uniquePath: string;
+export interface PVFileCameraInfo extends PVCameraInfoBase {
+  type: "PVFileCameraInfo";
 }
 
-export interface PVDuplicateCameraInfo {
+export interface PVDuplicateCameraInfo extends PVCameraInfoBase {
+  type: "PVDuplicateCameraInfo";
   sourceUniqueName: string;
-  name: string;
-
-  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
-  uniquePath: string;
 }
 
-// This camera info will only ever hold one of its members - the others should be undefined.
-export class PVCameraInfo {
-  PVUsbCameraInfo: PVUsbCameraInfo | undefined;
-  PVCSICameraInfo: PVCSICameraInfo | undefined;
-  PVFileCameraInfo: PVFileCameraInfo | undefined;
-  PVDuplicateCameraInfo: PVDuplicateCameraInfo | undefined;
-}
+export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | PVDuplicateCameraInfo;
 
 export interface VsmState {
   disabledConfigs: WebsocketCameraSettingsUpdate[];
@@ -283,6 +264,7 @@ export interface UiCameraConfiguration {
   maxWhiteBalanceTemp: number;
 
   fpsLimit: number;
+  isEnabled: boolean;
 
   matchedCameraInfo: PVCameraInfo;
   isConnected: boolean;
@@ -450,16 +432,13 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   minWhiteBalanceTemp: 2000,
   maxWhiteBalanceTemp: 10000,
   matchedCameraInfo: {
-    PVFileCameraInfo: {
-      name: "Foobar",
-      path: "/dev/foobar",
-      uniquePath: "/dev/foobar2"
-    },
-    PVCSICameraInfo: undefined,
-    PVUsbCameraInfo: undefined,
-    PVDuplicateCameraInfo: undefined
+    type: "PVFileCameraInfo",
+    name: "Foobar",
+    path: "/dev/foobar",
+    uniquePath: "/dev/foobar2"
   },
   fpsLimit: -1,
+  isEnabled: true,
   isConnected: true,
   hasConnected: true,
   mismatch: false,
@@ -469,7 +448,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
 
 export enum CalibrationBoardTypes {
   Chessboard = 0,
-  Charuco = 1
+  ChArUco = 1
 }
 
 export enum CalibrationTagFamilies {
@@ -484,4 +463,14 @@ export enum RobotOffsetType {
   Single = 1,
   DualFirst = 2,
   DualSecond = 3
+}
+
+export enum CalibrationPaperTypes {
+  Letter,
+  Legal,
+  Tabloid,
+  A4,
+  A3,
+  A2,
+  Adaptive
 }

@@ -17,17 +17,18 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.Objects;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.TargetCornerSerde;
 import org.photonvision.targeting.proto.TargetCornerProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.util.protobuf.ProtobufSerializable;
 
 /**
  * Represents a point in an image at the corner of the minimum-area bounding rectangle, in pixels.
  * Origin at the top left, plus-x to the right, plus-y down.
  */
+@SuppressWarnings("doclint")
 public class TargetCorner implements ProtobufSerializable, PhotonStructSerializable<TargetCorner> {
     public double x;
     public double y;
@@ -59,7 +60,10 @@ public class TargetCorner implements ProtobufSerializable, PhotonStructSerializa
         return "(" + x + "," + y + ')';
     }
 
+    /** TargetCorner protobuf for serialization. */
     public static final TargetCornerProto proto = new TargetCornerProto();
+
+    /** TargetCorner PhotonStruct for serialization. */
     public static final TargetCornerSerde photonStruct = new TargetCornerSerde();
 
     @Override

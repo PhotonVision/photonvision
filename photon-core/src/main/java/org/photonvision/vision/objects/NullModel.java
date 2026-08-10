@@ -17,10 +17,11 @@
 
 package org.photonvision.vision.objects;
 
+import java.nio.file.Path;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 /**
@@ -43,8 +44,8 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
-    public String getUID() {
-        return "NullModel";
+    public Path getPath() {
+        return Path.of("null");
     }
 
     @Override

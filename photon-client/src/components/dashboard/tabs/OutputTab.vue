@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ActivePipelineSettings, PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
+import {
+  type ActivePipelineSettings,
+  PipelineType,
+  RobotOffsetPointMode,
+  ContourTargetOrientation,
+  ContourTargetOffsetPointEdge
+} from "@/types/PipelineTypes";
 import PvSwitch from "@/components/common/pv-switch.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -58,14 +65,17 @@ const interactiveCols = computed(() =>
 
 <template>
   <div>
-    <pv-switch
-      v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
-      label="Show Multiple Targets"
-      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
-      :disabled="isTagPipeline"
+    <pv-slider
+      v-model="useCameraSettingsStore().currentPipelineSettings.outputMaximumTargets"
+      label="Maximum Targets"
+      tooltip="The maximum number of targets to display and send."
+      :hidden="isTagPipeline"
+      :min="1"
+      :max="127"
+      :step="1"
       :switch-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputMaximumTargets: value }, false)
       "
     />
     <pv-switch
@@ -104,7 +114,13 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
       label="Target Offset Point"
       tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
-      :items="['Center', 'Top', 'Bottom', 'Left', 'Right']"
+      :items="[
+        { value: ContourTargetOffsetPointEdge.Center, name: 'Center' },
+        { value: ContourTargetOffsetPointEdge.Top, name: 'Top' },
+        { value: ContourTargetOffsetPointEdge.Bottom, name: 'Bottom' },
+        { value: ContourTargetOffsetPointEdge.Left, name: 'Left' },
+        { value: ContourTargetOffsetPointEdge.Right, name: 'Right' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
@@ -115,7 +131,10 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
-      :items="['Portrait', 'Landscape']"
+      :items="[
+        { value: ContourTargetOrientation.Portrait, name: 'Portrait' },
+        { value: ContourTargetOrientation.Landscape, name: 'Landscape' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
@@ -125,7 +144,11 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
       label="Robot Offset Mode"
       tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
-      :items="['None', 'Single Point', 'Dual Point']"
+      :items="[
+        { value: RobotOffsetPointMode.None, name: 'None' },
+        { value: RobotOffsetPointMode.Single, name: 'Single Point' },
+        { value: RobotOffsetPointMode.Dual, name: 'Dual Point' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
@@ -164,7 +187,7 @@ const interactiveCols = computed(() =>
             block
             color="primary"
             class="text-black"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
           >
             Take Point
@@ -175,7 +198,7 @@ const interactiveCols = computed(() =>
             size="small"
             block
             color="error"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
           >
             Clear All Points
@@ -192,7 +215,7 @@ const interactiveCols = computed(() =>
             block
             color="primary"
             class="text-black"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
           >
             Take First Point
@@ -204,7 +227,7 @@ const interactiveCols = computed(() =>
             block
             color="primary"
             class="text-black"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
           >
             Take Second Point
@@ -215,7 +238,7 @@ const interactiveCols = computed(() =>
             size="small"
             block
             color="error"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
           >
             Clear All Points

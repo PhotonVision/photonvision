@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
+import type {
+  Scene as SceneType,
+  PerspectiveCamera as PerspectiveCameraType,
+  WebGLRenderer as WebGLRendererType,
+  Group as GroupType,
+  Object3D
+} from "three";
+import type { TrackballControls as TrackballControlsType } from "three/examples/jsm/controls/TrackballControls.js";
 const {
   AmbientLight,
   AxesHelper,
@@ -16,7 +24,7 @@ const {
   SphereGeometry,
   WebGLRenderer
 } = await import("three");
-const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls.js");
 import type { BoardObservation, CameraCalibrationResult } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
@@ -31,12 +39,12 @@ const props = defineProps<{
   title: string;
 }>();
 
-let scene: Scene | undefined;
-let camera: PerspectiveCamera | undefined;
-let renderer: WebGLRenderer | undefined;
-let controls: TrackballControls | undefined;
+let scene: SceneType | undefined;
+let camera: PerspectiveCameraType | undefined;
+let renderer: WebGLRendererType | undefined;
+let controls: TrackballControlsType | undefined;
 
-const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): Group => {
+const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): GroupType => {
   const group = new Group();
 
   if (obs.locationInImageSpace.length === 0) return group;
@@ -65,7 +73,7 @@ const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): 
 
 let previousTargets: Object3D[] = [];
 let baseAspect: number | undefined;
-const drawCalibration = (cal: CameraCalibrationResult | null) => {
+const drawCalibration = async (cal: CameraCalibrationResult | null) => {
   // Check here, since if we check in watchEffect this never gets called
   if (!cal || !scene || !camera || !renderer || !controls) {
     return;
@@ -95,7 +103,7 @@ const drawCalibration = (cal: CameraCalibrationResult | null) => {
   });
 
   // And show camera frustum
-  const calibCamera = createPerspectiveCamera(props.resolution, cal.cameraIntrinsics);
+  const calibCamera = await createPerspectiveCamera(props.resolution, cal.cameraIntrinsics);
   const helper = new CameraHelper(calibCamera);
 
   // Flip to +Z forward
@@ -194,9 +202,6 @@ const resetCamThirdPerson = () => {
 let animationFrameId: number | null = null;
 
 onMounted(async () => {
-  // Grab data first off
-  fetchCalibrationData();
-
   scene = new Scene();
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 
@@ -208,8 +213,8 @@ onMounted(async () => {
   const ambientLight = new AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
-  else scene.background = new Color(0x000000);
+  if (theme.global.current.value.dark) scene.background = new Color(0x000000);
+  else scene.background = new Color(0xa9a9a9);
 
   // Initialize a stable aspect ratio so subsequent resize events derive
   // height from width, avoiding layout feedback during continuous resizing
@@ -255,6 +260,10 @@ onMounted(async () => {
   resetCamThirdPerson();
 
   controls.update();
+
+  // Fetch calibration only after the scene is ready so the initial draw
+  // can happen immediately when the data arrives.
+  await fetchCalibrationData();
 
   const animate = () => {
     if (!scene || !camera || !renderer || !controls) {
@@ -318,7 +327,7 @@ if (import.meta.hot) {
 }
 
 watchEffect(() => {
-  drawCalibration(calibrationData.value);
+  void drawCalibration(calibrationData.value);
 });
 
 watch(
@@ -328,9 +337,9 @@ watch(
     props.resolution.height,
     useCameraSettingsStore().getCalibrationCoeffs(props.resolution)
   ],
-  () => {
+  async () => {
     console.log("Camera or resolution changed, refetching calibration");
-    fetchCalibrationData();
+    await fetchCalibrationData();
   }
 );
 </script>
@@ -347,7 +356,7 @@ watch(
         <v-btn
           style="width: 100%"
           color="buttonActive"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="resetCamFirstPerson"
         >
           First Person
@@ -357,7 +366,7 @@ watch(
         <v-btn
           style="width: 100%"
           color="buttonActive"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="resetCamThirdPerson"
         >
           Third Person

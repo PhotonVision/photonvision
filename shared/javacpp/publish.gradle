@@ -8,6 +8,7 @@ def artifactGroupId = 'org.photonvision'
 def zipBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-cpp_CLS"
 
 def licenseFile = ext.licenseFile
+
 // Quick hack to make this name visible to photon-lib for combined
 ext.zipBaseName = zipBaseName
 ext.artifactGroupId = artifactGroupId

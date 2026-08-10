@@ -35,7 +35,7 @@ const processingMode = computed<number>({
           <v-btn
             color="buttonPassive"
             :disabled="!useCameraSettingsStore().hasConnected"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             class="w-50"
           >
             <template #prepend>
@@ -48,10 +48,10 @@ const processingMode = computed<number>({
             :disabled="
               !useCameraSettingsStore().hasConnected ||
               !useCameraSettingsStore().isCurrentVideoFormatCalibrated ||
-              useCameraSettingsStore().currentPipelineSettings.pipelineType == PipelineType.ObjectDetection ||
-              useCameraSettingsStore().currentPipelineSettings.pipelineType == PipelineType.ColoredShape
+              useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ObjectDetection ||
+              useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ColoredShape
             "
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             class="w-50"
           >
             <template #prepend>
@@ -69,7 +69,7 @@ const processingMode = computed<number>({
           <v-btn
             color="buttonPassive"
             class="fill w-50"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           >
             <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
             <span class="mode-btn-label">Raw</span>
@@ -77,7 +77,7 @@ const processingMode = computed<number>({
           <v-btn
             color="buttonPassive"
             class="fill w-50"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           >
             <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
             <span class="mode-btn-label">Processed</span>

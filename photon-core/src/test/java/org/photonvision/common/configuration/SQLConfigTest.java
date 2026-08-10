@@ -19,28 +19,40 @@ package org.photonvision.common.configuration;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import edu.wpi.first.cscore.UsbCameraInfo;
+import io.avaje.json.JsonDataException;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
+import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
+import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.wpilib.vision.camera.UsbCameraInfo;
 
 public class SQLConfigTest {
-    @TempDir private static Path tmpDir;
+    @TempDir private Path tmpDir;
 
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
+        CVMat.enablePrint(false);
     }
 
     @Test
@@ -83,25 +95,123 @@ public class SQLConfigTest {
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
 
+    void common2025p3p1Assertions(PhotonConfiguration config) {
+        // Make sure we got 8 cameras
+        assertEquals(8, config.getCameraConfigurations().size());
+
+        // Make sure exactly 2 have object detection pipelines
+        long count =
+                config.getCameraConfigurations().values().stream()
+                        .filter(
+                                c ->
+                                        c.pipelineSettings.stream()
+                                                .anyMatch(s -> s instanceof ObjectDetectionPipelineSettings))
+                        .count();
+        assertEquals(2, count);
+    }
+
     @Test
-    public void testLoad2024_3_1() {
-        var cfgLoader =
-                new SqlConfigProvider(
-                        TestUtils.getConfigDirectoriesPath(false)
-                                .resolve("photonvision_config_from_v2024.3.1"));
+    public void testLoadNewNNMM() throws JsonDataException, IOException {
+        var folder = tmpDir.resolve("2025.3.1-old-nnmm");
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
+                folder.toFile());
 
-        assertDoesNotThrow(cfgLoader::load);
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
 
-        System.out.println(cfgLoader.getConfig());
-        for (var c : CameraQuirk.values()) {
-            assertDoesNotThrow(
-                    () ->
-                            cfgLoader
-                                    .config
-                                    .getCameraConfigurations()
-                                    .get("Microsoft_LifeCam_HD-3000")
-                                    .cameraQuirks
-                                    .hasQuirk(c));
+        // Replace global configmanager
+        ConfigManager.INSTANCE = cfgManager;
+
+        assertDoesNotThrow(cfgManager::load);
+
+        System.out.println(cfgManager.getConfig());
+        common2025p3p1Assertions(cfgManager.getConfig());
+
+        // And we now see two models
+        NeuralNetworkModelManager.getInstance();
+        // force us to allow RKNN
+        NeuralNetworkModelManager.getInstance().supportedBackends.add(Family.RKNN);
+        NeuralNetworkModelManager.getInstance().discoverModels();
+        assertEquals(5, NeuralNetworkModelManager.getInstance().models.get(Family.RKNN).size());
+
+        ConfigManager.getInstance().saveToDisk();
+
+        // Now that we have the config saved, load it again
+        var reloadedProvider = new SqlConfigProvider(folder);
+        reloadedProvider.load();
+        common2025p3p1Assertions(reloadedProvider.getConfig());
+
+        // And make sure NNPM has all 5 models
+        assertEquals(5, reloadedProvider.getConfig().getNeuralNetworkProperties().getModels().length);
+
+        ConfigManager.INSTANCE = null;
+    }
+
+    @Test
+    public void testMaxDetectionsMigration() throws IOException {
+        var folder = tmpDir.resolve("2025.3.1-old-nnmm");
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
+                folder.toFile());
+
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+
+        // Replace global configmanager
+        ConfigManager.INSTANCE = cfgManager;
+
+        assertDoesNotThrow(cfgManager::load);
+
+        Collection<CameraConfiguration> cameraConfigs =
+                cfgManager.getConfig().getCameraConfigurations().values();
+
+        for (CameraConfiguration cc : cameraConfigs) {
+            for (CVPipelineSettings ps : cc.pipelineSettings) {
+                if (ps instanceof AdvancedPipelineSettings adps) {
+                    AdvancedPipelineSettings finalPs = adps;
+                    if (finalPs.pipelineType.equals(PipelineType.AprilTag)
+                            || finalPs.pipelineType.equals(PipelineType.Aruco)) {
+                        // Tag pipelines don't have max detections, so skip
+                        continue;
+                    } else if (finalPs.pipelineNickname.equals("TEST MIGRATION")) {
+                        // This is our colored shape pipeline that we set to 1 before saving
+                        assertEquals(1, finalPs.outputMaximumTargets);
+                    } else {
+                        // All others should be at default 20
+                        assertEquals(20, finalPs.outputMaximumTargets);
+                    }
+                } else {
+                    System.out.println("Skipping pipeline settings type: " + ps.getClass().getSimpleName());
+                }
+            }
         }
+
+        ConfigManager.INSTANCE = null;
+    }
+
+    @Test
+    public void testV2026p3p4WindowsPaths() throws JsonDataException, IOException {
+        assumeTrue(
+                Platform.isWindows(), "This test is only relevant on Windows, skipping on other platforms");
+
+        var configName = "2026.3.4-windows";
+        var folder = tmpDir.resolve(configName);
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve(configName).toFile(), folder.toFile());
+
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+
+        cfgManager.load();
+
+        // Make sure we have calibrated 1280x720, and the board observation paths matches
+        var camCfg =
+                cfgManager
+                        .getConfig()
+                        .getCameraConfigurations()
+                        .get("1414304b-6812-487a-ab5c-89ee70704fae");
+        assertEquals(1280, camCfg.calibrations.get(0).resolution.width);
+        assertEquals(720, camCfg.calibrations.get(0).resolution.height);
+        assertEquals(
+                "C:\\Users\\matth\\Documents\\GitHub\\photonvision\\test\\photonvision_config\\calibration\\1414304b-6812-487a-ab5c-89ee70704fae\\imgs\\1280x720\\img0.png",
+                camCfg.calibrations.get(0).observations.get(0).snapshotDataLocation.toString());
     }
 }

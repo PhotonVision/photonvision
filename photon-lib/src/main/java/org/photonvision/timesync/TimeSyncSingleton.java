@@ -24,13 +24,15 @@
 
 package org.photonvision.timesync;
 
-import edu.wpi.first.util.RuntimeLoader;
 import java.io.IOException;
 import org.photonvision.jni.TimeSyncServer;
+import org.wpilib.util.runtime.RuntimeLoader;
 
 /** Helper to hold a single TimeSyncServer instance with some default config */
 public class TimeSyncSingleton {
     private static TimeSyncServer INSTANCE = null;
+
+    private TimeSyncSingleton() {}
 
     public static boolean load() {
         if (INSTANCE == null) {

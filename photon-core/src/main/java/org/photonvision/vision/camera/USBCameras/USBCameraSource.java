@@ -17,10 +17,6 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.cscore.VideoProperty;
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.hardware.Platform;
@@ -33,6 +29,10 @@ import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.camera.VideoException;
+import org.wpilib.vision.camera.VideoProperty;
+import org.wpilib.vision.stream.CameraServer;
 
 public class USBCameraSource extends VisionSource {
     private final Logger logger;

@@ -18,7 +18,7 @@ The {code}`Drivetrain` class includes functionality to fuse multiple sensor read
 
 Please reference the [WPILib documentation](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-pose_state-estimators.html) on using the {code}`SwerveDrivePoseEstimator` class.
 
-We use the 2024 game's AprilTag Locations:
+We use the current game's AprilTag Locations:
 
 ```{eval-rst}
 .. tab-set-code::

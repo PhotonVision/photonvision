@@ -17,35 +17,40 @@
 
 package org.photonvision.estimation;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.ejml.simple.SimpleMatrix;
-import org.opencv.calib3d.Calib3d;
-import org.opencv.core.MatOfDouble;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.photonvision.jni.ConstrainedSolvepnpJni;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform2d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.linalg.MatBuilder;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.numbers.*;
+import org.wpilib.math.util.Nat;
+import org.wpilib.vision.apriltag.AprilTag;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.camera.OpenCvLoader;
 
 public class VisionEstimation {
-    /** Get the visible {@link AprilTag}s which are in the tag layout using the visible tag IDs. */
+    private VisionEstimation() {}
+
+    /**
+     * Get the list of visible {@link AprilTag}s which are in the tag layout using the visible tag
+     * IDs.
+     *
+     * @param visTags The list of targets to search for visible tags.
+     * @param tagLayout The tag layout to search
+     */
     public static List<AprilTag> getVisibleLayoutTags(
             List<PhotonTrackedTarget> visTags, AprilTagFieldLayout tagLayout) {
         return visTags.stream()
@@ -74,6 +79,7 @@ public class VisionEstimation {
      * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param visTags The visible tags reported by PV. Non-tag targets are automatically excluded.
      * @param tagLayout The known tag layout on the field
+     * @param tagModel The model describing the tag's geometry
      * @return The transformation that maps the field origin to the camera pose. Ensure the {@link
      *     PnpResult} are present before utilizing them.
      */
@@ -156,7 +162,7 @@ public class VisionEstimation {
      * @param visTags The visible tags reported by PV. Non-tag targets are automatically excluded.
      * @param robot2camera The {@link Transform3d} from the robot odometry frame to the camera optical
      *     frame
-     * @param robotPoseSeed An initial guess at robot pose, refined via optimizaiton. Better guesses
+     * @param robotPoseSeed An initial guess at robot pose, refined via optimization. Better guesses
      *     will converge faster.
      * @param tagLayout The known tag layout on the field
      * @param tagModel The physical size of the AprilTags
@@ -208,21 +214,7 @@ public class VisionEstimation {
         Point[] points = OpenCVHelp.cornersToPoints(corners);
 
         // Undistort
-        {
-            MatOfPoint2f temp = new MatOfPoint2f();
-            MatOfDouble cameraMatrixMat = new MatOfDouble();
-            MatOfDouble distCoeffsMat = new MatOfDouble();
-            OpenCVHelp.matrixToMat(cameraMatrix.getStorage()).assignTo(cameraMatrixMat);
-            OpenCVHelp.matrixToMat(distCoeffs.getStorage()).assignTo(distCoeffsMat);
-
-            temp.fromArray(points);
-            Calib3d.undistortImagePoints(temp, temp, cameraMatrixMat, distCoeffsMat);
-            points = temp.toArray();
-
-            temp.release();
-            cameraMatrixMat.release();
-            distCoeffsMat.release();
-        }
+        points = OpenCVHelp.undistortPoints(cameraMatrix, distCoeffs, points);
 
         // Rotate from wpilib to opencv camera CS
         var robot2cameraBase =

@@ -17,11 +17,11 @@
 
 package org.photonvision.targeting.proto;
 
-import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import org.photonvision.proto.Photon.ProtobufMultiTargetPNPResult;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PnpResult;
+import org.wpilib.util.protobuf.Protobuf;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedInt;
 

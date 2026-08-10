@@ -17,16 +17,16 @@
 
 package org.photonvision.common;
 
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
 import java.util.HashMap;
+import org.photonvision.jni.CombinedRuntimeLoader;
 import org.photonvision.jni.LibraryLoader;
 
 public class LoadJNI {
     private static HashMap<JNITypes, Boolean> loadedMap = new HashMap<>();
 
     public enum JNITypes {
-        RUBIK_DETECTOR("tensorflowlite", "tensorflowlite_c", "external_delegate", "rubik_jni"),
+        RUBIK_DETECTOR("tflite_jni"),
         RKNN_DETECTOR("rga", "rknnrt", "rknn_jni"),
         MRCAL("mrcal_jni"),
         LIBCAMERA("photonlibcamera");

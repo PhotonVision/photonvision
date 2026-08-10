@@ -19,10 +19,10 @@ package org.photonvision.targeting.proto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import org.junit.jupiter.api.Test;
 import org.photonvision.targeting.PnpResult;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
 
 public class PNPResultProtoTest {
     @Test

@@ -17,20 +17,20 @@
 
 package org.photonvision.common.networktables;
 
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.BooleanTopic;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.IntegerPublisher;
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.IntegerTopic;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.ProtobufPublisher;
-import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.StructPublisher;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.networktables.BooleanPublisher;
+import org.wpilib.networktables.BooleanSubscriber;
+import org.wpilib.networktables.BooleanTopic;
+import org.wpilib.networktables.DoubleArrayPublisher;
+import org.wpilib.networktables.DoublePublisher;
+import org.wpilib.networktables.IntegerPublisher;
+import org.wpilib.networktables.IntegerSubscriber;
+import org.wpilib.networktables.IntegerTopic;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.ProtobufPublisher;
+import org.wpilib.networktables.PubSubOption;
+import org.wpilib.networktables.StructPublisher;
 
 /**
  * This class is a wrapper around all per-pipeline NT topics that PhotonVision should be publishing
@@ -40,6 +40,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
  * <p>However, we do expect that the actual logic which fills out values in the entries will be
  * different for sim vs. real camera
  */
+@SuppressWarnings("doclint")
 public class NTTopicSet {
     public NetworkTable subTable;
 
@@ -55,6 +56,9 @@ public class NTTopicSet {
 
     public IntegerPublisher fpsLimitPublisher;
     public IntegerSubscriber fpsLimitSubscriber;
+
+    public BooleanPublisher enabledPublisher;
+    public BooleanSubscriber enabledSubscriber;
 
     public DoublePublisher latencyMillisEntry;
     public DoublePublisher fpsEntry;
@@ -84,15 +88,15 @@ public class NTTopicSet {
                         .publish(
                                 PhotonPipelineResult.photonStruct.getTypeString(),
                                 PubSubOption.periodic(0.01),
-                                PubSubOption.sendAll(true),
-                                PubSubOption.keepDuplicates(true));
+                                PubSubOption.SEND_ALL,
+                                PubSubOption.KEEP_DUPLICATES);
 
         resultPublisher =
                 new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         protoResultPublisher =
                 subTable
                         .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
-                        .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+                        .publish(PubSubOption.periodic(0.01), PubSubOption.SEND_ALL);
 
         pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();
         pipelineIndexRequestSub = subTable.getIntegerTopic("pipelineIndexRequest").subscribe(0);
@@ -107,6 +111,11 @@ public class NTTopicSet {
         fpsLimitSubscriber = subTable.getIntegerTopic("fpsLimitRequest").subscribe(-1);
 
         fpsLimitSubscriber.getTopic().publish().setDefault(-1);
+
+        enabledPublisher = subTable.getBooleanTopic("enabled").publish();
+        enabledSubscriber = subTable.getBooleanTopic("enabledRequest").subscribe(true);
+
+        enabledSubscriber.getTopic().publish().setDefault(true);
 
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
         fpsEntry = subTable.getDoubleTopic("fps").publish();
@@ -139,6 +148,9 @@ public class NTTopicSet {
 
         if (fpsLimitPublisher != null) fpsLimitPublisher.close();
         if (fpsLimitSubscriber != null) fpsLimitSubscriber.close();
+
+        if (enabledPublisher != null) enabledPublisher.close();
+        if (enabledSubscriber != null) enabledSubscriber.close();
 
         if (latencyMillisEntry != null) latencyMillisEntry.close();
         if (fpsEntry != null) fpsEntry.close();

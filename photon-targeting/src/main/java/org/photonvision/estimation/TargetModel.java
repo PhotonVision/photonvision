@@ -17,14 +17,14 @@
 
 package org.photonvision.estimation;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.util.Units;
 
 /** Describes the 3d model of a target. */
 public class TargetModel {
@@ -34,11 +34,19 @@ public class TargetModel {
      */
     public final List<Translation3d> vertices;
 
+    /** True if the target is planar, like an AprilTag. False otherwise. */
     public final boolean isPlanar;
+
+    /** True if the target is spherical, like a ball. False otherwise. */
     public final boolean isSpherical;
 
+    /** The model of AprilTags in the 16h5 family used by <i>FIRST</i> in FRC 2023. */
     public static final TargetModel kAprilTag16h5 =
             new TargetModel(Units.inchesToMeters(6), Units.inchesToMeters(6));
+
+    /**
+     * The model of AprilTags in the 36h11 family used by <i>FIRST</i> in FRC 2024 and later years.
+     */
     public static final TargetModel kAprilTag36h11 =
             new TargetModel(Units.inchesToMeters(6.5), Units.inchesToMeters(6.5));
 
@@ -148,6 +156,9 @@ public class TargetModel {
      *
      * <p>Note: If this target is spherical, use {@link #getOrientedPose(Translation3d,
      * Translation3d)} with this method.
+     *
+     * @param targetPose The field pose to offset the vertices by.
+     * @return The list of vertices offset from the target pose.
      */
     public List<Translation3d> getFieldVertices(Pose3d targetPose) {
         var basisChange = new RotTrlTransform3d(targetPose.getRotation(), targetPose.getTranslation());

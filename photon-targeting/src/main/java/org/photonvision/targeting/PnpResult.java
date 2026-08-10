@@ -17,12 +17,12 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.PnpResultSerde;
 import org.photonvision.targeting.proto.PNPResultProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.util.protobuf.ProtobufSerializable;
 
 /**
  * The best estimated transformation from solvePnP, and possibly an alternate transformation
@@ -33,6 +33,7 @@ import org.photonvision.targeting.serde.PhotonStructSerializable;
  * <p>Note that the coordinate frame of these transforms depends on the implementing solvePnP
  * method.
  */
+@SuppressWarnings("doclint")
 public class PnpResult implements ProtobufSerializable, PhotonStructSerializable<PnpResult> {
     /**
      * The best-fit transform. The coordinate frame of this transform depends on the method which gave
@@ -133,7 +134,10 @@ public class PnpResult implements ProtobufSerializable, PhotonStructSerializable
                 + "]";
     }
 
+    /** PnpResult protobuf for serialization. */
     public static final PNPResultProto proto = new PNPResultProto();
+
+    /** PnpResult PhotonStruct for serialization. */
     public static final PnpResultSerde photonStruct = new PnpResultSerde();
 
     @Override

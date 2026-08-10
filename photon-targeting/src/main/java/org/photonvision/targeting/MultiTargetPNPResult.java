@@ -17,12 +17,12 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.MultiTargetPNPResultSerde;
 import org.photonvision.targeting.proto.MultiTargetPNPResultProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.util.protobuf.ProtobufSerializable;
 
 public class MultiTargetPNPResult
         implements ProtobufSerializable, PhotonStructSerializable<MultiTargetPNPResult> {
@@ -30,8 +30,11 @@ public class MultiTargetPNPResult
     private static final int MAX_IDS = 32;
 
     public PnpResult estimatedPose = new PnpResult();
+
+    /** The fiducial IDs used to calculate this multi-target result. */
     public List<Short> fiducialIDsUsed = List.of();
 
+    /** Used for serialization and tests. */
     public MultiTargetPNPResult() {}
 
     public MultiTargetPNPResult(PnpResult results, List<Short> ids) {
@@ -72,9 +75,10 @@ public class MultiTargetPNPResult
                 + "]";
     }
 
+    /** MultiTargetPNPResult protobuf for serialization. */
     public static final MultiTargetPNPResultProto proto = new MultiTargetPNPResultProto();
 
-    // tODO!
+    /** MultiTargetPNPResult PhotonStruct for serialization. */
     public static final MultiTargetPNPResultSerde photonStruct = new MultiTargetPNPResultSerde();
 
     @Override

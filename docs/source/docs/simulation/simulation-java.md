@@ -95,6 +95,27 @@ These `TargetModel` are paired with a target pose to create a `VisionTargetSim`.
 The pose of a `VisionTargetSim` object can be updated to simulate moving targets. Note, however, that this will break latency simulation for that target.
 :::
 
+To use simulated object detection, you must provide an objDetClassId (zero-indexed class ID) and confidence value. When you set objDetConf to -1, the simulation computes confidence based on the area of the target in the camera's field of view. To simulate a object detection model with one class (fuel, index 0) and specify confidence, you'd write:
+
+```{eval-rst}
+.. tab-set-code::
+
+   .. code-block:: java
+
+      // arbitrary position on field
+      final var targetPose = new Pose3d(new Translation3d(2, 0, 0), new Rotation3d());
+      // Class id, zero-indexed
+      final int classId = 0;
+      // Confidence, between 0 and 1.
+      final float conf = 0.67f;
+      // 6 inch diameter ball
+      final TargetModel ballModel = new TargetModel(Units.inchesToMeters(6));
+      final var ballTargetSim = new VisionTargetSim(targetPose, ballModel, classId, conf);
+
+      // Add this vision target to the vision system simulation to make it visible
+      visionSim.addVisionTargets(visionTarget);
+```
+
 For convenience, an `AprilTagFieldLayout` can also be added to automatically create a target for each of its AprilTags.
 
 ```{eval-rst}
@@ -195,6 +216,42 @@ If the camera is mounted on a mobile mechanism (like a turret) this transform ca
               robotToCameraRot.rotateBy(turretRotation));
       visionSim.adjustCamera(cameraSim, robotToCamera);
 ```
+
+## Low-Resource Vision Simulation with Photonvision
+
+By default, PhotonCameraSim renders two simulated camera streams using OpenCV:
+
+- Raw stream - The unprocessed camera view
+- Processed stream - The camera view with vision processing overlays
+
+These streams are nice if you want to actually view the simulated images, but they can be computationally expensive. This may cause lag and reduced simulation performance on lower-powered computers.
+Lightweight Configuration
+
+The following configuration disables both streams while still allowing tag detection and pose simulation to work. It's not perfect, but it's much better performance-wise than the default configuration.
+
+.. code-block:: java
+
+     // lightweight config version
+     // var cameraProperties = new SimCameraProperties();
+     // cameraSim = new PhotonCameraSim(camera, cameraProperties, aprilTagLayout);
+     // cameraSim.enableRawStream(false);        // disables raw image stream
+     // cameraSim.enableProcessedStream(false);  // disables processed image stream
+
+**Use Case**
+
+This configuration is ideal for Chromebooks or low-spec machines where rendering the simulated camera images causes lag, but vision data is still desired for testing.
+
+**What Still Works**
+
+- AprilTag detection
+- Pose estimation
+- NetworkTables data publishing
+- Robot positioning and targeting
+
+**What's Disabled**
+
+- Visual camera stream rendering
+- Real-time visual debugging of camera output
 
 ## Updating The Simulation World
 

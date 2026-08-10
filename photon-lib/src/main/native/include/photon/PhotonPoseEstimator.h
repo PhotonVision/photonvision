@@ -24,21 +24,19 @@
 
 #pragma once
 
-#include <memory>
+#include <optional>
+#include <span>
 
-#include <frc/apriltag/AprilTagFieldLayout.h>
-#include <frc/geometry/Pose3d.h>
-#include <frc/geometry/Rotation3d.h>
-#include <frc/geometry/Transform3d.h>
-#include <frc/interpolation/TimeInterpolatableBuffer.h>
-#include <opencv2/core/mat.hpp>
+#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/math/geometry/Pose3d.hpp>
+#include <wpi/math/geometry/Rotation3d.hpp>
+#include <wpi/math/geometry/Transform3d.hpp>
+#include <wpi/math/interpolation/TimeInterpolatableBuffer.hpp>
+#include <wpi/util/SmallVector.hpp>
 
 #include "photon/PhotonCamera.h"
-#include "photon/dataflow/structures/Packet.h"
-#include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
-#include "photon/targeting/PnpResult.h"
 
 namespace photon {
 enum PoseStrategy {
@@ -60,18 +58,18 @@ struct ConstrainedSolvepnpParams {
 
 struct EstimatedRobotPose {
   /** The estimated pose */
-  frc::Pose3d estimatedPose;
+  wpi::math::Pose3d estimatedPose;
   /** The estimated time the frame used to derive the robot pose was taken, in
    * the same timebase as the RoboRIO FPGA Timestamp */
-  units::second_t timestamp;
+  wpi::units::second_t timestamp;
 
   /** A list of the targets used to compute this pose */
-  wpi::SmallVector<PhotonTrackedTarget, 10> targetsUsed;
+  wpi::util::SmallVector<PhotonTrackedTarget, 10> targetsUsed;
 
   /** The strategy actually used to produce this pose */
   PoseStrategy strategy;
 
-  EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_,
+  EstimatedRobotPose(wpi::math::Pose3d pose_, wpi::units::second_t time_,
                      std::span<const PhotonTrackedTarget> targets,
                      PoseStrategy strategy_)
       : estimatedPose(pose_),
@@ -93,73 +91,26 @@ class PhotonPoseEstimator {
    *
    * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
    * respect to the FIRST field.
-   * @param strategy The strategy it should use to determine the best pose.
    * @param robotToCamera Transform3d from the center of the robot to the camera
    * mount positions (ie, robot ➔ camera).
    */
-  explicit PhotonPoseEstimator(frc::AprilTagFieldLayout aprilTags,
-                               PoseStrategy strategy,
-                               frc::Transform3d robotToCamera);
+  explicit PhotonPoseEstimator(wpi::apriltag::AprilTagFieldLayout aprilTags,
+                               wpi::math::Transform3d robotToCamera);
 
   /**
    * Get the AprilTagFieldLayout being used by the PositionEstimator.
    *
    * @return the AprilTagFieldLayout
    */
-  frc::AprilTagFieldLayout GetFieldLayout() const { return aprilTags; }
-
-  /**
-   * Get the Position Estimation Strategy being used by the Position Estimator.
-   *
-   * @return the strategy
-   */
-  PoseStrategy GetPoseStrategy() const { return strategy; }
-
-  /**
-   * Set the Position Estimation Strategy used by the Position Estimator.
-   *
-   * @param strategy the strategy to set
-   */
-  inline void SetPoseStrategy(PoseStrategy strat) {
-    if (strategy != strat) {
-      InvalidatePoseCache();
-    }
-    strategy = strat;
-  }
-
-  /**
-   * Set the Position Estimation Strategy used in multi-tag mode when
-   * only one tag can be seen. Must NOT be MULTI_TAG_PNP
-   *
-   * @param strategy the strategy to set
-   */
-  void SetMultiTagFallbackStrategy(PoseStrategy strategy);
-
-  /**
-   * Return the reference position that is being used by the estimator.
-   *
-   * @return the referencePose
-   */
-  frc::Pose3d GetReferencePose() const { return referencePose; }
-
-  /**
-   * Update the stored reference pose for use when using the
-   * CLOSEST_TO_REFERENCE_POSE strategy.
-   *
-   * @param referencePose the referencePose to set
-   */
-  inline void SetReferencePose(frc::Pose3d referencePose) {
-    if (this->referencePose != referencePose) {
-      InvalidatePoseCache();
-    }
-    this->referencePose = referencePose;
+  wpi::apriltag::AprilTagFieldLayout GetFieldLayout() const {
+    return aprilTags;
   }
 
   /**
    * @return The current transform from the center of the robot to the camera
    *         mount position.
    */
-  inline frc::Transform3d GetRobotToCameraTransform() {
+  inline wpi::math::Transform3d GetRobotToCameraTransform() {
     return m_robotToCamera;
   }
 
@@ -169,17 +120,9 @@ class PhotonPoseEstimator {
    * @param robotToCamera The current transform from the center of the robot to
    * the camera mount position.
    */
-  inline void SetRobotToCameraTransform(frc::Transform3d robotToCamera) {
+  inline void SetRobotToCameraTransform(wpi::math::Transform3d robotToCamera) {
     m_robotToCamera = robotToCamera;
   }
-
-  /**
-   * Update the stored last pose. Useful for setting the initial estimate when
-   * using the CLOSEST_TO_LAST_POSE strategy.
-   *
-   * @param lastPose the lastPose to set
-   */
-  inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
 
   /**
    * Add robot heading data to the buffer. Must be called periodically for the
@@ -189,8 +132,8 @@ class PhotonPoseEstimator {
    * @param heading Field-relative heading at the given timestamp. Standard
    * WPILIB field coordinates.
    */
-  inline void AddHeadingData(units::second_t timestamp,
-                             frc::Rotation2d heading) {
+  inline void AddHeadingData(wpi::units::second_t timestamp,
+                             wpi::math::Rotation2d heading) {
     this->headingBuffer.AddSample(timestamp, heading);
   }
 
@@ -202,8 +145,8 @@ class PhotonPoseEstimator {
    * @param heading Field-relative heading at the given timestamp. Standard
    * WPILIB coordinates.
    */
-  inline void AddHeadingData(units::second_t timestamp,
-                             frc::Rotation3d heading) {
+  inline void AddHeadingData(wpi::units::second_t timestamp,
+                             wpi::math::Rotation3d heading) {
     AddHeadingData(timestamp, heading.ToRotation2d());
   }
 
@@ -216,8 +159,8 @@ class PhotonPoseEstimator {
    * @param heading Field-relative robot heading at given timestamp. Standard
    * WPILIB field coordinates.
    */
-  inline void ResetHeadingData(units::second_t timestamp,
-                               frc::Rotation2d heading) {
+  inline void ResetHeadingData(wpi::units::second_t timestamp,
+                               wpi::math::Rotation2d heading) {
     headingBuffer.Clear();
     AddHeadingData(timestamp, heading);
   }
@@ -231,149 +174,144 @@ class PhotonPoseEstimator {
    * @param heading Field-relative robot heading at given timestamp. Standard
    * WPILIB field coordinates.
    */
-  inline void ResetHeadingData(units::second_t timestamp,
-                               frc::Rotation3d heading) {
+  inline void ResetHeadingData(wpi::units::second_t timestamp,
+                               wpi::math::Rotation3d heading) {
     ResetHeadingData(timestamp, heading.ToRotation2d());
   }
-
-  /**
-   * Update the pose estimator. If updating multiple times per loop, you should
-   * call this exactly once per new result, in order of increasing result
-   * timestamp.
-   *
-   * @param result The vision targeting result to process
-   * @param cameraIntrinsics The camera calibration pinhole coefficients matrix.
-   * Only required if doing multitag-on-rio, and may be nullopt otherwise.
-   * @param distCoeffsData The camera calibration distortion coefficients. Only
-   * required if doing multitag-on-rio, and may be nullopt otherwise.
-   * @param constrainedPnpParams Constrained SolvePNP params, if needed.
-   */
-  std::optional<EstimatedRobotPose> Update(
-      const photon::PhotonPipelineResult& result,
-      std::optional<photon::PhotonCamera::CameraMatrix> cameraMatrixData =
-          std::nullopt,
-      std::optional<photon::PhotonCamera::DistortionMatrix> coeffsData =
-          std::nullopt,
-      std::optional<ConstrainedSolvepnpParams> constrainedPnpParams =
-          std::nullopt);
-
- private:
-  frc::AprilTagFieldLayout aprilTags;
-  PoseStrategy strategy;
-  PoseStrategy multiTagFallbackStrategy = LOWEST_AMBIGUITY;
-
-  frc::Transform3d m_robotToCamera;
-
-  frc::Pose3d lastPose;
-  frc::Pose3d referencePose;
-
-  units::second_t poseCacheTimestamp;
-
-  frc::TimeInterpolatableBuffer<frc::Rotation2d> headingBuffer;
-
-  inline static int InstanceCount = 1;
-
-  inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
-
-  /**
-   * Internal convenience method for using a fallback strategy for update().
-   * This should only be called after timestamp checks have been done by another
-   * update() overload.
-   *
-   * @param cameraResult The latest pipeline result from the camera
-   * @param strategy The pose strategy to use
-   * @return an EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
-   */
-  std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result,
-                                           PoseStrategy strategy) {
-    return Update(result, std::nullopt, std::nullopt, std::nullopt, strategy);
-  }
-
-  std::optional<EstimatedRobotPose> Update(
-      const PhotonPipelineResult& result,
-      std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
-      std::optional<PhotonCamera::DistortionMatrix> coeffsData,
-      std::optional<ConstrainedSolvepnpParams> constrainedPnpParams,
-      PoseStrategy strategy);
 
   /**
    * Return the estimated position of the robot with the lowest position
    * ambiguity from a List of pipeline results.
    *
-   * @return the estimated position of the robot in the FCS and the estimated
-   * timestamp of this estimation.
+   * @param cameraResult A pipeline result from the camera.
+   * @return An EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate, or std::nullopt if there's no targets.
    */
-  std::optional<EstimatedRobotPose> LowestAmbiguityStrategy(
-      PhotonPipelineResult result);
+  std::optional<EstimatedRobotPose> EstimateLowestAmbiguityPose(
+      PhotonPipelineResult cameraResult);
 
   /**
    * Return the estimated position of the robot using the target with the lowest
    * delta height difference between the estimated and actual height of the
    * camera.
    *
-   * @return the estimated position of the robot in the FCS and the estimated
-   * timestamp of this estimation.
+   * @param cameraResult A pipeline result from the camera.
+   * @return An EstimatedRobotPose with an estimated pose, timestamp and
+   * targets used to create the estimate, or std::nullopt if there's no targets.
    */
-  std::optional<EstimatedRobotPose> ClosestToCameraHeightStrategy(
-      PhotonPipelineResult result);
+  std::optional<EstimatedRobotPose> EstimateClosestToCameraHeightPose(
+      PhotonPipelineResult cameraResult);
 
   /**
    * Return the estimated position of the robot using the target with the lowest
    * delta in the vector magnitude between it and the reference pose.
    *
+   * @param cameraResult A pipeline result from the camera.
    * @param referencePose reference pose to check vector magnitude difference
    * against.
-   * @return the estimated position of the robot in the FCS and the estimated
-   * timestamp of this estimation.
+   * @return An EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate, or std::nullopt if there's no targets.
    */
-  std::optional<EstimatedRobotPose> ClosestToReferencePoseStrategy(
-      PhotonPipelineResult result);
+  std::optional<EstimatedRobotPose> EstimateClosestToReferencePose(
+      PhotonPipelineResult cameraResult, wpi::math::Pose3d referencePose);
 
   /**
-   * Return the pose calculated by combining all tags into one on coprocessor
+   * Return the estimated position of the robot by using all visible tags to
+   * compute a single pose estimate on coprocessor. This option needs to be
+   * enabled on the PhotonVision web UI as well.
    *
-   * @return the estimated position of the robot in the FCS
+   * @param cameraResult A pipeline result from the camera.
+   * @return An EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate or std::nullopt if there's no targets,
+   * no multi-tag results, or multi-tag is disabled in the web UI.
    */
-  std::optional<EstimatedRobotPose> MultiTagOnCoprocStrategy(
-      PhotonPipelineResult result);
+  std::optional<EstimatedRobotPose> EstimateCoprocMultiTagPose(
+      PhotonPipelineResult cameraResult);
 
   /**
-   * Return the pose calculation using all targets in view in the same PNP()
-   calculation
+   * Return the estimated position of the robot by using all visible tags to
+   * compute a single pose estimate on the RoboRIO. This can take a lot of time
+   * due to the RIO's weak computing power.
    *
-   * @return the estimated position of the robot in the FCS and the estimated
-   timestamp of this estimation.
+   * @param cameraResult A pipeline result from the camera.
+   * @param cameraMatrix Camera intrinsics from camera calibration data.
+   * @param distCoeffs Distortion coefficients from camera calibration data.
+   * @return An EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate, or std::nullopt if there's less than 2
+   * targets visible or SolvePnP fails.
    */
-  std::optional<EstimatedRobotPose> MultiTagOnRioStrategy(
-      PhotonPipelineResult result,
-      std::optional<PhotonCamera::CameraMatrix> camMat,
-      std::optional<PhotonCamera::DistortionMatrix> distCoeffs);
+  std::optional<EstimatedRobotPose> EstimateRioMultiTagPose(
+      PhotonPipelineResult cameraResult, PhotonCamera::CameraMatrix camMat,
+      PhotonCamera::DistortionMatrix distCoeffs);
 
   /**
-   * Return the pose calculation using the best visible tag and the robot's
-   * heading
+   * Return the estimated position of the robot by using distance data from best
+   * visible tag to compute a Pose. This runs on the RoboRIO in order to access
+   * the robot's yaw heading, and MUST have AddHeadingData called every frame so
+   * heading data is up-to-date.
    *
-   * @return the estimated position of the robot in the FCS and the estimated
-   * timestamp of this estimation
+   * <p>Yields a Pose2d in estimatedRobotPose (0 for z, roll, pitch)
+   *
+   * <p>https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98
+   *
+   * @param cameraResult A pipeline result from the camera.
+   * @return An EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate, or std::nullopt if there's no targets
+   * or heading data.
    */
-  std::optional<EstimatedRobotPose> PnpDistanceTrigSolveStrategy(
-      PhotonPipelineResult result);
+  std::optional<EstimatedRobotPose> EstimatePnpDistanceTrigSolvePose(
+      PhotonPipelineResult cameraResult);
 
   /**
    * Return the average of the best target poses using ambiguity as weight.
-
-   * @return the estimated position of the robot in the FCS and the estimated
-   timestamp of this estimation.
+   * @param cameraResult A pipeline result from the camera.
+   * @return An EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate, or std::nullopt if there's no targets.
    */
-  std::optional<EstimatedRobotPose> AverageBestTargetsStrategy(
-      PhotonPipelineResult result);
+  std::optional<EstimatedRobotPose> EstimateAverageBestTargetsPose(
+      PhotonPipelineResult cameraResult);
 
-  std::optional<EstimatedRobotPose> ConstrainedPnpStrategy(
-      photon::PhotonPipelineResult result,
-      std::optional<photon::PhotonCamera::CameraMatrix> camMat,
-      std::optional<photon::PhotonCamera::DistortionMatrix> distCoeffs,
-      std::optional<ConstrainedSolvepnpParams> constrainedPnpParams);
+  /**
+   * Return the estimated position of the robot by solving a constrained version
+   * of the Perspective-n-Point problem with the robot's drivebase flat on the
+   * floor. This computation takes place on the RoboRIO, and typically takes not
+   * more than 2ms. See
+   * photon::VisionEstimation::EstimateRobotPoseConstrainedSolvePNP for tuning
+   * handles this strategy exposes. Internally, the cost function is a
+   * sum-squared of pixel reprojection error + (optionally) heading error *
+   * heading scale factor. This strategy needs addHeadingData called every frame
+   * so heading data is up-to-date.
+   *
+   * @param cameraResult A pipeline result from the camera.
+   * @param cameraMatrix Camera intrinsics from camera calibration data.
+   * @param distCoeffs Distortion coefficients from camera calibration data.
+   * @param seedPose An initial guess at robot pose, refined via optimization.
+   * Better guesses will converge faster. Can come from any pose source, but
+   * some battle-tested sources are estimateCoprocMultiTagPose, or
+   * estimateLowestAmbiguityPose if MultiTag results aren't available.
+   * @param headingFree If true, heading is completely free to vary. If false,
+   * heading excursions from the provided heading measurement will be penalized
+   * @param headingScaleFactor If headingFree is false, this weights the cost of
+   * changing our robot heading estimate against the tag corner reprojection
+   * error cost.
+   * @return An EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate, or std::nullopt if there's no targets
+   * or heading data, or if the solver fails to solve the problem.
+   */
+  std::optional<EstimatedRobotPose> EstimateConstrainedSolvepnpPose(
+      photon::PhotonPipelineResult cameraResult,
+      photon::PhotonCamera::CameraMatrix cameraMatrix,
+      photon::PhotonCamera::DistortionMatrix distCoeffs,
+      wpi::math::Pose3d seedPose, bool headingFree, double headingScaleFactor);
+
+ private:
+  wpi::apriltag::AprilTagFieldLayout aprilTags;
+
+  wpi::math::Transform3d m_robotToCamera;
+
+  wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d> headingBuffer;
+
+  inline static int InstanceCount = 1;
 };
 
 }  // namespace photon

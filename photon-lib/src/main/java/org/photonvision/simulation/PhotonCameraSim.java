@@ -24,19 +24,6 @@
 
 package org.photonvision.simulation;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.util.PixelFormat;
-import edu.wpi.first.util.WPIUtilJNI;
-import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +47,18 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.util.Pair;
+import org.wpilib.system.RobotController;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.util.WPIUtilJNI;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.apriltag.AprilTagFields;
+import org.wpilib.vision.camera.CvSource;
+import org.wpilib.vision.camera.OpenCvLoader;
+import org.wpilib.vision.camera.VideoSource.ConnectionStrategy;
+import org.wpilib.vision.stream.CameraServer;
 
 /**
  * A handle for simulating {@link PhotonCamera} values. Processing simulated targets through this
@@ -69,7 +68,9 @@ import org.photonvision.targeting.PnpResult;
 public class PhotonCameraSim implements AutoCloseable {
     private final PhotonCamera cam;
 
+    @SuppressWarnings("doclint")
     protected NTTopicSet ts = new NTTopicSet();
+
     private long heartbeatCounter = 1;
 
     /** This simulated camera's {@link SimCameraProperties} */
@@ -152,7 +153,7 @@ public class PhotonCameraSim implements AutoCloseable {
 
         videoSimRaw =
                 CameraServer.putVideo(camera.getName() + "-raw", prop.getResWidth(), prop.getResHeight());
-        videoSimRaw.setPixelFormat(PixelFormat.kGray);
+        videoSimRaw.setPixelFormat(PixelFormat.GRAY);
         videoSimProcessed =
                 CameraServer.putVideo(
                         camera.getName() + "-processed", prop.getResWidth(), prop.getResHeight());
@@ -168,7 +169,7 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of
+     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up of
      *     the camera's image to be processed. Match this with your contour filtering settings in the
      *     PhotonVision GUI.
      * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
@@ -190,7 +191,7 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of
+     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up of
      *     the camera's image to be processed. Match this with your contour filtering settings in the
      *     PhotonVision GUI.
      * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
@@ -208,22 +209,50 @@ public class PhotonCameraSim implements AutoCloseable {
         this.maxSightRangeMeters = maxSightRangeMeters;
     }
 
+    /**
+     * Returns the camera being simulated.
+     *
+     * @return The camera
+     */
     public PhotonCamera getCamera() {
         return cam;
     }
 
+    /**
+     * Returns the minimum percentage (0 - 100) a detected target must take up of the camera's image
+     * to be processed.
+     *
+     * @return The percentage
+     */
     public double getMinTargetAreaPercent() {
         return minTargetAreaPercent;
     }
 
+    /**
+     * Returns the minimum number of pixels a detected target must take up in the camera's image to be
+     * processed.
+     *
+     * @return The number of pixels
+     */
     public double getMinTargetAreaPixels() {
         return minTargetAreaPercent / 100.0 * prop.getResArea();
     }
 
+    /**
+     * Returns the maximum distance at which the target is illuminated to your camera. Note that
+     * minimum target area of the image is separate from this.
+     *
+     * @return The distance in meters
+     */
     public double getMaxSightRangeMeters() {
         return maxSightRangeMeters;
     }
 
+    /**
+     * Returns the order the targets are sorted in the pipeline result.
+     *
+     * @return The target sorting order
+     */
     public PhotonTargetSortMode getTargetSortMode() {
         return sortMode;
     }
@@ -261,11 +290,12 @@ public class PhotonCameraSim implements AutoCloseable {
      * Determines if all target points are inside the camera's image.
      *
      * @param points The target's 2d image points
+     * @return True if all the target points are inside the camera's image, false otherwise.
      */
     public boolean canSeeCorners(Point[] points) {
         for (var point : points) {
-            if (MathUtil.clamp(point.x, 0, prop.getResWidth()) != point.x
-                    || MathUtil.clamp(point.y, 0, prop.getResHeight()) != point.y) {
+            if (Math.clamp(point.x, 0, prop.getResWidth()) != point.x
+                    || Math.clamp(point.y, 0, prop.getResHeight()) != point.y) {
                 return false; // point is outside of resolution
             }
         }
@@ -306,30 +336,40 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     /**
-     * The minimum percentage(0 - 100) a detected target must take up of the camera's image to be
-     * processed.
+     * Sets the minimum percentage (0 - 100) a detected target must take up of the camera's image to
+     * be processed.
+     *
+     * @param areaPercent The percentage
      */
     public void setMinTargetAreaPercent(double areaPercent) {
         this.minTargetAreaPercent = areaPercent;
     }
 
     /**
-     * The minimum number of pixels a detected target must take up in the camera's image to be
+     * Sets the minimum number of pixels a detected target must take up in the camera's image to be
      * processed.
+     *
+     * @param areaPx The number of pixels
      */
     public void setMinTargetAreaPixels(double areaPx) {
         this.minTargetAreaPercent = areaPx / prop.getResArea() * 100;
     }
 
     /**
-     * Maximum distance at which the target is illuminated to your camera. Note that minimum target
-     * area of the image is separate from this.
+     * Sets the maximum distance at which the target is illuminated to your camera. Note that minimum
+     * target area of the image is separate from this.
+     *
+     * @param rangeMeters The distance in meters
      */
     public void setMaxSightRange(double rangeMeters) {
         this.maxSightRangeMeters = rangeMeters;
     }
 
-    /** Defines the order the targets are sorted in the pipeline result. */
+    /**
+     * Defines the order the targets are sorted in the pipeline result.
+     *
+     * @param sortMode The target sorting order
+     */
     public void setTargetSortMode(PhotonTargetSortMode sortMode) {
         if (sortMode != null) this.sortMode = sortMode;
     }
@@ -338,6 +378,8 @@ public class PhotonCameraSim implements AutoCloseable {
      * Sets whether the raw video stream simulation is enabled.
      *
      * <p>Note: This may increase loop times.
+     *
+     * @param enabled Whether or not to enable the raw video stream
      */
     public void enableRawStream(boolean enabled) {
         videoSimRawEnabled = enabled;
@@ -347,6 +389,8 @@ public class PhotonCameraSim implements AutoCloseable {
      * Sets whether a wireframe of the field is drawn to the raw video stream.
      *
      * <p>Note: This will dramatically increase loop times.
+     *
+     * @param enabled Whether or not to enable the wireframe in the raw video stream
      */
     public void enableDrawWireframe(boolean enabled) {
         videoSimWireframeEnabled = enabled;
@@ -363,7 +407,11 @@ public class PhotonCameraSim implements AutoCloseable {
         videoSimWireframeResolution = resolution;
     }
 
-    /** Sets whether the processed video stream simulation is enabled. */
+    /**
+     * Sets whether the processed video stream simulation is enabled.
+     *
+     * @param enabled Whether or not to enable the processed video stream
+     */
     public void enableProcessedStream(boolean enabled) {
         videoSimProcEnabled = enabled;
     }
@@ -393,6 +441,10 @@ public class PhotonCameraSim implements AutoCloseable {
         Mat.zeros(videoFrameSize, CvType.CV_8UC1).assignTo(videoSimFrameRaw);
 
         for (var tgt : targets) {
+            if (detectableTgts.size() >= 50) {
+                break;
+            }
+
             // pose isn't visible, skip to next
             if (!canSeeTargetPose(cameraPose, tgt)) continue;
 
@@ -472,6 +524,16 @@ public class PhotonCameraSim implements AutoCloseable {
                                 .get();
             }
 
+            // If object detection (user classId valid) but conf wasn't provided, estimate
+            int classId = tgt.objDetClassId;
+            float conf = tgt.objDetConf;
+            if (classId >= 0 && conf < 0) {
+                // Simulate confidence using sqrt-scaled area for a more realistic
+                // curve. Raw areaPercent/100 is tiny for most targets; sqrt scaling
+                // gives reasonable values even for small-but-visible objects.
+                conf = (float) Math.clamp(Math.sqrt(areaPercent / 100.0) * 2.0, 0.0, 1.0);
+            }
+
             detectableTgts.add(
                     new PhotonTrackedTarget(
                             -Math.toDegrees(centerRot.getZ()),
@@ -479,8 +541,8 @@ public class PhotonCameraSim implements AutoCloseable {
                             areaPercent,
                             Math.toDegrees(centerRot.getX()),
                             tgt.fiducialID,
-                            -1,
-                            -1,
+                            classId,
+                            conf,
                             pnpSim.best,
                             pnpSim.alt,
                             pnpSim.ambiguity,
@@ -587,7 +649,7 @@ public class PhotonCameraSim implements AutoCloseable {
         }
 
         // put this simulated data to NT
-        var now = RobotController.getFPGATime();
+        var now = RobotController.getMonotonicTime();
         var ret =
                 new PhotonPipelineResult(
                         heartbeatCounter,

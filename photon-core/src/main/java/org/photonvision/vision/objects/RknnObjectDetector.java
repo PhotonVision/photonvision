@@ -19,8 +19,8 @@ package org.photonvision.vision.objects;
 
 import java.awt.Color;
 import java.lang.ref.Cleaner;
+import java.lang.ref.Cleaner.Cleanable;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
@@ -33,11 +33,13 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 public class RknnObjectDetector implements ObjectDetector {
     private static final Logger logger = new Logger(RknnObjectDetector.class, LogGroup.General);
 
-    /** Cleaner instance to release the detector when it goes out of scope */
-    private final Cleaner cleaner = Cleaner.create();
+    private static final Cleaner cleaner = Cleaner.create();
 
-    /** Atomic boolean to ensure that the native object can only be released once. */
-    private AtomicBoolean released = new AtomicBoolean(false);
+    private final Cleanable cleanable;
+
+    private static Runnable cleanupAction(long ptr) {
+        return () -> RknnJNI.destroy(ptr);
+    }
 
     /** Pointer to the native object */
     private final long objPointer;
@@ -45,6 +47,8 @@ public class RknnObjectDetector implements ObjectDetector {
     private final RknnModel model;
 
     private final Size inputSize;
+
+    private final Mat letterboxed = new Mat();
 
     /** Returns the model in use by this detector. */
     @Override
@@ -59,9 +63,10 @@ public class RknnObjectDetector implements ObjectDetector {
      * @param inputSize The required image dimensions for the model. Images will be {@link
      *     Letterbox}ed to this shape.
      */
-    public RknnObjectDetector(RknnModel model, Size inputSize) {
+    public RknnObjectDetector(RknnModel model) {
         this.model = model;
-        this.inputSize = inputSize;
+        this.inputSize =
+                new Size(model.properties.resolutionWidth(), model.properties.resolutionHeight());
 
         // Create the detector
         objPointer =
@@ -80,7 +85,7 @@ public class RknnObjectDetector implements ObjectDetector {
         logger.debug("Created detector for model " + model.modelFile.getName());
 
         // Register the cleaner to release the detector when it goes out of scope
-        cleaner.register(this, this::release);
+        cleanable = cleaner.register(this, cleanupAction(objPointer));
     }
 
     /**
@@ -111,18 +116,14 @@ public class RknnObjectDetector implements ObjectDetector {
         }
 
         // Resize the frame to the input size of the model
-        Mat letterboxed = new Mat();
         Letterbox scale =
                 Letterbox.letterbox(in, letterboxed, this.inputSize, ColorHelper.colorToScalar(Color.GRAY));
         if (!letterboxed.size().equals(this.inputSize)) {
-            letterboxed.release();
             throw new RuntimeException("Letterboxed frame is not the right size!");
         }
 
         // Detect objects in the letterboxed frame
         var results = RknnJNI.detect(objPointer, letterboxed.getNativeObjAddr(), nmsThresh, boxThresh);
-
-        letterboxed.release();
 
         if (results == null) {
             return List.of();
@@ -137,17 +138,7 @@ public class RknnObjectDetector implements ObjectDetector {
     /** Thread-safe method to release the detector. */
     @Override
     public void release() {
-        // Checks if the atomic is 'false', and if so, sets it to 'true'
-        if (released.compareAndSet(false, true)) {
-            if (objPointer <= 0) {
-                logger.error(
-                        "Detector is not initialized, and so it can't be released! Model: "
-                                + model.modelFile.getName());
-                return;
-            }
-
-            RknnJNI.destroy(objPointer);
-            logger.debug("Released detector for model " + model.modelFile.getName());
-        }
+        cleanable.clean();
+        letterboxed.release();
     }
 }

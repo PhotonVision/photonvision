@@ -17,10 +17,6 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTablesJNI;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -35,6 +31,10 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableEvent;
+import org.wpilib.networktables.NetworkTablesJNI;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.General);
@@ -55,6 +55,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Consumer<Integer> fpsLimitConsumer;
     private final Supplier<Integer> fpsLimitSupplier;
 
+    NTDataChangeListener isEnabledListener;
+    private final Consumer<Boolean> isEnabledConsumer;
+    private final BooleanSupplier enabledSupplier;
+
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
@@ -62,13 +66,17 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             BooleanSupplier driverModeSupplier,
             Consumer<Boolean> driverModeConsumer,
             Supplier<Integer> fpsLimitSupplier,
-            Consumer<Integer> fpsLimitConsumer) {
+            Consumer<Integer> fpsLimitConsumer,
+            BooleanSupplier enabledSupplier,
+            Consumer<Boolean> isEnabledConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.fpsLimitConsumer = fpsLimitConsumer;
+        this.enabledSupplier = enabledSupplier;
+        this.isEnabledConsumer = isEnabledConsumer;
 
         updateCameraNickname(cameraNickname);
         updateEntries();
@@ -124,6 +132,19 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         logger.debug("Set FPS limit to " + newFPSLimit);
     }
 
+    private void onEnabledChange(NetworkTableEvent entryNotification) {
+        var newEnabled = entryNotification.valueData.value.getBoolean();
+        var originalEnabled = enabledSupplier.getAsBoolean();
+
+        if (newEnabled == originalEnabled) {
+            logger.debug("Enabled value is already " + newEnabled);
+            return;
+        }
+
+        isEnabledConsumer.accept(newEnabled);
+        logger.debug("Set is enabled to " + newEnabled);
+    }
+
     private void removeEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
@@ -148,6 +169,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         fpsLimitListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.fpsLimitSubscriber, this::onFPSLimitChange);
+
+        isEnabledListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.enabledSubscriber, this::onEnabledChange);
     }
 
     public void updateCameraNickname(String newCameraNickname) {
@@ -177,7 +202,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         var offset = NetworkTablesManager.getInstance().getOffset();
 
-        // Transform the metadata timestamps from the local nt::Now timebase to the Time Sync Server's
+        // Transform the metadata timestamps from the local wpi::nt::Now timebase to the Time Sync
+        // Server's
         // timebase
         var simplified =
                 new PhotonPipelineResult(
@@ -197,6 +223,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
         ts.fpsLimitPublisher.set(fpsLimitSupplier.get());
+        ts.enabledPublisher.set(enabledSupplier.getAsBoolean());
         ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
         ts.fpsEntry.set(acceptedResult.fps);
         ts.hasTargetEntry.set(acceptedResult.hasTargets());

@@ -17,17 +17,18 @@
 
 package org.photonvision.vision.camera;
 
-import edu.wpi.first.cscore.UsbCameraInfo;
-import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.util.PixelFormat;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.vision.camera.UsbCameraInfo;
+import org.wpilib.vision.camera.VideoMode;
 
 public class FileVisionSource extends VisionSource {
     private final FileFrameProvider frameProvider;
@@ -50,8 +51,9 @@ public class FileVisionSource extends VisionSource {
         if (getCameraConfiguration().cameraQuirks == null)
             getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
-        settables =
-                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+        try (var frame = frameProvider.get()) {
+            settables = new FileSourceSettables(cameraConfiguration, frame.frameStaticProperties);
+        }
     }
 
     public FileVisionSource(String name, String imagePath, double fov) {
@@ -62,8 +64,9 @@ public class FileVisionSource extends VisionSource {
                         name,
                         name));
         frameProvider = new FileFrameProvider(imagePath, fov);
-        settables =
-                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+        try (var frame = frameProvider.get()) {
+            settables = new FileSourceSettables(cameraConfiguration, frame.frameStaticProperties);
+        }
     }
 
     @Override
@@ -100,7 +103,7 @@ public class FileVisionSource extends VisionSource {
     public static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
 
-        private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();
+        private final ArrayList<VideoMode> videoModes = new ArrayList<>();
 
         FileSourceSettables(
                 CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {
@@ -108,11 +111,11 @@ public class FileVisionSource extends VisionSource {
             this.frameStaticProperties = frameStaticProperties;
             videoMode =
                     new VideoMode(
-                            PixelFormat.kMJPEG,
+                            PixelFormat.MJPEG,
                             frameStaticProperties.imageWidth,
                             frameStaticProperties.imageHeight,
                             30);
-            videoModes.put(0, videoMode);
+            videoModes.add(videoMode);
         }
 
         @Override
@@ -137,7 +140,7 @@ public class FileVisionSource extends VisionSource {
         }
 
         @Override
-        public HashMap<Integer, VideoMode> getAllVideoModes() {
+        public List<VideoMode> getAllVideoModes() {
             return videoModes;
         }
 

@@ -26,51 +26,152 @@
 
 #include <vector>
 
-#include <frc/geometry/Pose3d.h>
+#include <wpi/math/geometry/Pose3d.hpp>
 
 #include "photon/estimation/TargetModel.h"
 
 namespace photon {
+/** Describes a vision target located somewhere on the field that your vision
+ * system can detect. */
 class VisionTargetSim {
  public:
-  VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model)
-      : fiducialId(-1), pose(pose), model(model) {}
-  VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model, int id)
-      : fiducialId(id), pose(pose), model(model) {}
-  void SetPose(const frc::Pose3d& newPose) { pose = newPose; }
+  /**
+   * Describes a retro-reflective/colored shape vision target located somewhere
+   * on the field that your vision system can detect.
+   *
+   * @param pose Pose3d of the tag in field-relative coordinates
+   * @param model TargetModel which describes the geometry of the target
+   */
+  VisionTargetSim(const wpi::math::Pose3d& pose, const TargetModel& model)
+      : fiducialId(-1),
+        objDetClassId(-1),
+        objDetConf(-1),
+        pose(pose),
+        model(model) {}
+
+  /**
+   * Describes a fiducial tag located somewhere on the field that your vision
+   * system can detect.
+   *
+   * @param pose Pose3d of the tag in field-relative coordinates
+   * @param model TargetModel which describes the geometry of the target(tag)
+   * @param id The ID of this fiducial tag
+   */
+  VisionTargetSim(const wpi::math::Pose3d& pose, const TargetModel& model,
+                  int id)
+      : fiducialId(id),
+        objDetClassId(-1),
+        objDetConf(-1),
+        pose(pose),
+        model(model) {}
+
+  /**
+   * Describes an object-detection vision target located somewhere on the field
+   * that your vision system can detect. Class ID is the (zero-indexed) index of
+   * the object's class ID in the list of all classes. Confidence can be
+   * specified, or pass -1 to estimate confidence based on 2 * sqrt(target area
+   * / total image area)
+   *
+   * @param pose Pose3d of the target in field-relative coordinates
+   * @param model TargetModel which describes the geometry of the target
+   * @param objDetClassId The object detection class ID, if -1 it will not be
+   * detected by object detection
+   * @param objDetConf The object detection confidence, or -1 in which case the
+   * simulation will compute a confidence based on the area of the target in the
+   * camera's field of view
+   */
+  VisionTargetSim(const wpi::math::Pose3d& pose, const TargetModel& model,
+                  int objDetClassId, float objDetConf)
+      : fiducialId(-1),
+        objDetClassId(objDetClassId),
+        objDetConf(objDetConf),
+        pose(pose),
+        model(model) {}
+
+  /**
+   * Sets the pose of this target on the field.
+   *
+   * @param newPose The pose in field-relative coordinates
+   */
+  void SetPose(const wpi::math::Pose3d& newPose) { pose = newPose; }
+
+  /**
+   * Sets the model describing this target's geometry.
+   *
+   * @param newModel The model of the target
+   */
   void SetModel(const TargetModel& newModel) { model = newModel; }
-  frc::Pose3d GetPose() const { return pose; }
+
+  /**
+   * Returns the pose of this target on the field.
+   *
+   * @return The pose in field-relative coordinates
+   */
+  wpi::math::Pose3d GetPose() const { return pose; }
+
+  /**
+   * Returns the model describing this target's geometry.
+   *
+   * @return The model of the target
+   */
   TargetModel GetModel() const { return model; }
-  std::vector<frc::Translation3d> GetFieldVertices() const {
+
+  /**
+   * Returns the fiducial ID of this target, or -1 if not a fiducial target.
+   *
+   * @return The fiducial ID
+   */
+  int GetFiducialId() const { return fiducialId; }
+
+  /**
+   * Returns the object detection class ID of this target, or -1 if not an
+   * object detection target.
+   *
+   * @return The object detection class ID
+   */
+  int GetObjDetClassId() const { return objDetClassId; }
+
+  /**
+   * Returns the object detection confidence of this target, or -1 if
+   * confidence is estimated from target area or is not an object.
+   *
+   * @return The object detection confidence
+   */
+  float GetObjDetConf() const { return objDetConf; }
+
+  /**
+   * This target's vertices offset from its field pose.
+   * @return A vector of Translation3d representing the vertices of the target
+   */
+  std::vector<wpi::math::Translation3d> GetFieldVertices() const {
     return model.GetFieldVertices(pose);
   }
-  int fiducialId;
-
-  int objDetClassId = -1;
-  float objDetConf = -1;
 
   bool operator<(const VisionTargetSim& right) const {
     return pose.Translation().Norm() < right.pose.Translation().Norm();
   }
 
   bool operator==(const VisionTargetSim& other) const {
-    return units::math::abs(pose.Translation().X() -
-                            other.GetPose().Translation().X()) < 1_in &&
-           units::math::abs(pose.Translation().Y() -
-                            other.GetPose().Translation().Y()) < 1_in &&
-           units::math::abs(pose.Translation().Z() -
-                            other.GetPose().Translation().Z()) < 1_in &&
-           units::math::abs(pose.Rotation().X() -
-                            other.GetPose().Rotation().X()) < 1_deg &&
-           units::math::abs(pose.Rotation().Y() -
-                            other.GetPose().Rotation().Y()) < 1_deg &&
-           units::math::abs(pose.Rotation().Z() -
-                            other.GetPose().Rotation().Z()) < 1_deg &&
+    return wpi::units::math::abs(pose.Translation().X() -
+                                 other.GetPose().Translation().X()) < 1_in &&
+           wpi::units::math::abs(pose.Translation().Y() -
+                                 other.GetPose().Translation().Y()) < 1_in &&
+           wpi::units::math::abs(pose.Translation().Z() -
+                                 other.GetPose().Translation().Z()) < 1_in &&
+           wpi::units::math::abs(pose.Rotation().X() -
+                                 other.GetPose().Rotation().X()) < 1_deg &&
+           wpi::units::math::abs(pose.Rotation().Y() -
+                                 other.GetPose().Rotation().Y()) < 1_deg &&
+           wpi::units::math::abs(pose.Rotation().Z() -
+                                 other.GetPose().Rotation().Z()) < 1_deg &&
            model.GetIsPlanar() == other.GetModel().GetIsPlanar();
   }
 
  private:
-  frc::Pose3d pose;
+  int fiducialId;
+  int objDetClassId;
+  float objDetConf;
+  wpi::math::Pose3d pose;
   TargetModel model;
 };
 }  // namespace photon

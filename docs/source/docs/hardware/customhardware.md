@@ -19,14 +19,18 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
         "ledsCanDim" : true,
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
-        "statusRGBPins" : [ ],
-        "statusRGBActiveHigh" : false,
+        "statusLEDType": "RGB",
+        "statusLEDPins" : [ ],
+        "statusLEDActiveHigh" : false,
       }
 ```
 
-:::{note}
-No hardware boards with status RGB LED pins or non-dimming LED's have been tested yet. Please reach out to the development team if these features are desired, they can assist with configuration and testing.
-:::
+There are currently two types of status LEDs supported:
+
+* `RGB` (default): A singular LED mixing separate red, green, and blue inputs
+* `GreenYellow`: A pair of independent green and yellow LEDs
+
+For an explanation of the colors used for status LEDs, see {ref}`Status LEDs<docs/troubleshooting/status-leds:Status LEDs>`
 
 ### GPIO Pinout
 
@@ -73,27 +77,21 @@ If you were using custom LED commands from 2025 or earlier and still need custom
 
 ## Hardware Interaction Commands
 
-For Non-Raspberry-Pi hardware, users must provide valid hardware-specific commands for some parts of the UI interaction (including performance metrics, and executing system restarts).
+For non-Linux hardware, users must provide the hardware-specific command for executing system restarts.
 
-Leaving a command blank will disable the associated functionality.
+Leaving this command blank will disable the restart functionality.
 
 ```{eval-rst}
 .. tab-set-code::
    .. code-block::  json
 
       {
-        "cpuTempCommand" : "",
-        "cpuMemoryCommand" : "",
-        "cpuUtilCommand" : "",
-        "gpuMemoryCommand" : "",
-        "gpuTempCommand" : "",
-        "ramUtilCommand" : "",
         "restartHardwareCommand" : "",
       }
 ```
 
 :::{note}
-These settings have no effect if PhotonVision detects it is running on a Raspberry Pi. See [the MetricsBase class](https://github.com/PhotonVision/photonvision/blob/dbd631da61b7c86b70fa6574c2565ad57d80a91a/photon-core/src/main/java/org/photonvision/common/hardware/metrics/MetricsBase.java) for the commands utilized.
+This setting has no effect if PhotonVision detects it is running on Linux. On Linux, the restart is accomplished by executing `reboot now` in a shell.
 :::
 
 ## Known Camera FOV
@@ -109,9 +107,9 @@ If your hardware contains a camera with a known field of vision, it can be enter
       }
 ```
 
-## Cosmetic & Branding
+## Device Name Branding
 
-To help differentiate your hardware from other solutions, some customization is allowed.
+To help differentiate your hardware from other solutions, a device name may be set.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -119,8 +117,6 @@ To help differentiate your hardware from other solutions, some customization is 
 
       {
         "deviceName" : "Super Cool Custom Hardware",
-        "deviceLogoPath" : "",
-        "supportURL" : "https://cat-bounce.com/",
       }
 ```
 
@@ -138,25 +134,18 @@ Here is a complete example `hardwareConfig.json`:
 
       {
         "deviceName" : "Blinky McBlinkface",
-        "deviceLogoPath" : "",
-        "supportURL" : "https://www.youtube.com/watch?v=b-CvLWbfZhU",
         "ledPins" : [2, 13],
         "ledsCanDim" : true,
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
-        "statusRGBPins" : [ ],
-        "statusRGBActiveHigh" : false,
+        "statusLEDType": "RGB",
+        "statusLEDPins" : [ ],
+        "statusLEDActiveHigh" : false,
         "getGPIOCommand" : "getGPIO {p}",
         "setGPIOCommand" : "setGPIO {p} {s}",
         "setPWMCommand" : "setPWM {p} {v}",
         "setPWMFrequencyCommand" : "setPWMFrequency {p} {f}",
-        "releaseGPIOCommand" : "releseGPIO {p}",
-        "cpuTempCommand" : "",
-        "cpuMemoryCommand" : "",
-        "cpuUtilCommand" : "",
-        "gpuMemoryCommand" : "",
-        "gpuTempCommand" : "",
-        "ramUtilCommand" : "",
+        "releaseGPIOCommand" : "releaseGPIO {p}",
         "restartHardwareCommand" : "",
         "vendorFOV" : 72.5
       }

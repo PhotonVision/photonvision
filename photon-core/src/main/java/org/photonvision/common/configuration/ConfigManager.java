@@ -17,7 +17,10 @@
 
 package org.photonvision.common.configuration;
 
+import io.avaje.json.JsonException;
+import io.avaje.jsonb.Jsonb;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,12 +37,11 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class ConfigManager {
-    private static ConfigManager INSTANCE;
+    static ConfigManager INSTANCE;
 
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
     public static final String HW_SET_FNAME = "hardwareSettings.json";
@@ -185,6 +187,10 @@ public class ConfigManager {
         return PathManager.getInstance().getRootFolder();
     }
 
+    public static Path getImageMetadataPath() {
+        return Path.of(getRootFolder().toString(), "image-metadata.json");
+    }
+
     ConfigManager(Path configDirectory, ConfigProvider provider) {
         this.configDirectoryFile = new File(configDirectory.toUri());
         m_provider = provider;
@@ -233,14 +239,15 @@ public class ConfigManager {
                 Path.of(getModelsDirectory().toString(), "photonvision-object-detection-models.json")
                         .toFile();
         try {
-            JacksonUtils.serialize(
-                    tempProperties.toPath(), this.getConfig().neuralNetworkPropertyManager());
+            Jsonb.instance()
+                    .type(NeuralNetworkModelsSettings.class)
+                    .toJson(this.getConfig().getNeuralNetworkProperties(), new FileWriter(tempProperties));
             ZipUtil.pack(getModelsDirectory(), out);
             // Now delete the tempProperties
             if (tempProperties.exists()) {
                 Files.delete(tempProperties.toPath());
             }
-        } catch (Exception e) {
+        } catch (IOException | IllegalStateException | JsonException e) {
             e.printStackTrace();
         }
         return out;

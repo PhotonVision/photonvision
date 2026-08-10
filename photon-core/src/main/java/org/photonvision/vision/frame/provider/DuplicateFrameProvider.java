@@ -17,10 +17,10 @@
 
 package org.photonvision.vision.frame.provider;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.vision.camera.CvSink;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.stream.CameraServer;
 
 /**
  * A {@link FrameProvider} that creates its own CvSink for a duplicate camera. This allows duplicate

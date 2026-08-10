@@ -26,35 +26,39 @@
 
 import drivetrain
 import wpilib
-import wpimath.geometry
-from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
+import wpimath
+from photonlibpy import PhotonCamera, PhotonPoseEstimator
 from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
-kRobotToCam = wpimath.geometry.Transform3d(
-    wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
-    wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
+kRobotToCam = wpimath.Transform3d(
+    wpimath.Translation3d(0.5, 0.0, 0.5),
+    wpimath.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
 )
 
 
 class MyRobot(wpilib.TimedRobot):
-    def robotInit(self) -> None:
+    def __init__(self) -> None:
         """Robot initialization function"""
-        self.controller = wpilib.XboxController(0)
+        super().__init__()
+
+        self.controller = wpilib.NiDsXboxController(0)
         self.swerve = drivetrain.Drivetrain()
         self.cam = PhotonCamera("YOUR CAMERA NAME")
         self.camPoseEst = PhotonPoseEstimator(
             AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
-            PoseStrategy.LOWEST_AMBIGUITY,
-            self.cam,
             kRobotToCam,
         )
 
     def robotPeriodic(self) -> None:
-        camEstPose = self.camPoseEst.update()
-        if camEstPose:
-            self.swerve.addVisionPoseEstimate(
-                camEstPose.estimatedPose, camEstPose.timestampSeconds
-            )
+        for result in self.cam.getAllUnreadResults():
+            camEstPose = self.camPoseEst.estimateCoprocMultiTagPose(result)
+            if camEstPose is None:
+                camEstPose = self.camPoseEst.estimateLowestAmbiguityPose(result)
+
+            if camEstPose:
+                self.swerve.addVisionPoseEstimate(
+                    camEstPose.estimatedPose, camEstPose.timestampSeconds
+                )
 
         self.swerve.updateOdometry()
         self.swerve.log()
@@ -66,6 +70,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.swerve.drive(xSpeed, ySpeed, rot, True, self.getPeriod())
 
-    def _simulationPeriodic(self) -> None:
+    def simulationPeriodic(self) -> None:
         self.swerve.simulationPeriodic()
-        return super()._simulationPeriodic()
+        return super().simulationPeriodic()

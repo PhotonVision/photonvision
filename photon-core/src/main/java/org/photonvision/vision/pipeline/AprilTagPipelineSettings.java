@@ -17,11 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
-@JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
     public int decimate = 1;
@@ -40,7 +38,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagPipelineSettings() {
         super();
         pipelineType = PipelineType.AprilTag;
-        outputShowMultipleTargets = true;
         targetModel = TargetModel.kAprilTag6p5in_36h11;
         cameraExposureRaw = 20;
         cameraAutoExposure = false;

@@ -37,11 +37,6 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
     public LibcameraGpuFrameProvider(LibcameraGpuSettables visionSettables) {
         this.settables = visionSettables;
-
-        var vidMode = settables.getCurrentVideoMode();
-        settables.setVideoMode(vidMode);
-        this.cameraPropertiesCached =
-                true; // Camera properties are not able to be changed so they are always cached
     }
 
     @Override
@@ -136,6 +131,11 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     }
 
     @Override
+    public void requestBlockForFrames(boolean blockForFrames) {
+        // GPU provider always blocks for frames, so this is a no-op
+    }
+
+    @Override
     public void release() {
         synchronized (settables.CAMERA_LOCK) {
             LibCameraJNI.stopCamera(settables.r_ptr);
@@ -146,18 +146,26 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
     @Override
     public boolean checkCameraConnected() {
-        String[] cameraNames = LibCameraJNI.getCameraNames();
-        for (String name : cameraNames) {
-            if (name.equals(settables.getConfiguration().getDevicePath())) {
-                return true;
+        try {
+            String[] cameraNames = LibCameraJNI.getCameraNames();
+            for (String name : cameraNames) {
+                if (name.equals(settables.getConfiguration().getDevicePath())) {
+                    return true;
+                }
             }
+        } catch (UnsatisfiedLinkError e) {
+            // libcamera failed to load; ignored
         }
         return false;
     }
 
-    // To our knowledge the camera is always connected (after boot) with csi cameras
     @Override
-    public boolean isConnected() {
-        return checkCameraConnected();
+    protected void onCameraConnected() {
+        logger.info("Camera connected! running callback");
+
+        super.onCameraConnected();
+
+        var vidMode = settables.getCurrentVideoMode();
+        settables.setVideoMode(vidMode);
     }
 }

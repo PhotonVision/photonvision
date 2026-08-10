@@ -24,13 +24,6 @@
 
 package org.photonvision.simulation;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.RawFrame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,9 +41,17 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.util.Units;
+import org.wpilib.util.RawFrame;
+import org.wpilib.vision.apriltag.AprilTag;
+import org.wpilib.vision.camera.CvSource;
+import org.wpilib.vision.camera.OpenCvLoader;
 
 public class VideoSimUtil {
-    public static final int kNumTags36h11 = 30;
+    // Tag IDs start at 0, this should be set to 1 greater than the maximum tag ID required
+    public static final int kNumTags36h11 = 40;
 
     // All 36h11 tag images
     private static final Map<Integer, Mat> kTag36h11Images = new HashMap<>();
@@ -73,6 +74,8 @@ public class VideoSimUtil {
         kTag36h11MarkerPts = get36h11MarkerPts();
     }
 
+    private VideoSimUtil() {}
+
     /** Updates the properties of this CvSource video stream with the given camera properties. */
     public static void updateVideoProp(CvSource video, SimCameraProperties prop) {
         video.setResolution(prop.getResWidth(), prop.getResHeight());
@@ -87,6 +90,7 @@ public class VideoSimUtil {
      * <p>Order of corners returned is: [BL, BR, TR, TL]
      *
      * @param size Size of image
+     * @return The corners
      */
     public static Point[] getImageCorners(Size size) {
         return new Point[] {
@@ -116,7 +120,11 @@ public class VideoSimUtil {
                 frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
     }
 
-    /** Gets the points representing the marker(black square) corners. */
+    /**
+     * Gets the points representing the marker(black square) corners.
+     *
+     * @return The points
+     */
     public static Point[] get36h11MarkerPts() {
         return get36h11MarkerPts(1);
     }
@@ -125,6 +133,7 @@ public class VideoSimUtil {
      * Gets the points representing the marker(black square) corners.
      *
      * @param scale The scale of the tag image (10*scale x 10*scale image)
+     * @return The points
      */
     public static Point[] get36h11MarkerPts(int scale) {
         var roi36h11 = new Rect(new Point(1, 1), new Size(8, 8));
@@ -166,6 +175,7 @@ public class VideoSimUtil {
         // check extreme image corners after transform to check if we need to expand bounding rect
         var extremeCorners = new MatOfPoint2f();
         Core.perspectiveTransform(tagImageCorners, extremeCorners, perspecTrf);
+        perspecTrf.release();
         // dilate ROI to fit full tag
         boundingRect = Imgproc.boundingRect(extremeCorners);
 
@@ -233,6 +243,7 @@ public class VideoSimUtil {
         // the destination image encapsulated by boundingRect
         Mat tempROI = new Mat();
         Imgproc.warpPerspective(scaledTagImage, tempROI, perspecTrf, boundingRect.size(), warpStrategy);
+        perspecTrf.release();
 
         // downscale ROI with interpolation if supersampling
         if (supersampling > 1) {
@@ -265,10 +276,23 @@ public class VideoSimUtil {
                             new Point(tempCenter.x + xdiff, tempCenter.y + ydiff);
                         });
         // (make inside of tag completely white in mask)
-        Imgproc.fillConvexPoly(tempMask, new MatOfPoint(extremeCorners.toArray()), new Scalar(255));
+        var extremeCornersMat = new MatOfPoint(extremeCorners.toArray());
+        Imgproc.fillConvexPoly(tempMask, extremeCornersMat, new Scalar(255));
+        extremeCornersMat.release();
 
         // copy transformed tag onto result image
-        tempROI.copyTo(destination.submat(boundingRect), tempMask);
+        var destROI = destination.submat(boundingRect);
+        tempROI.copyTo(destROI, tempMask);
+        destROI.release();
+
+        tagPoints.release();
+        tagImageCorners.release();
+        dstPointMat.release();
+        extremeCorners.release();
+        scaledTagImage.release();
+        scaledDstPts.release();
+        tempROI.release();
+        tempMask.release();
     }
 
     /**
@@ -276,12 +300,12 @@ public class VideoSimUtil {
      * resolution.
      *
      * @param thickness480p A hypothetical line thickness in a 640x480 image
-     * @param destinationImg The destination image to scale to
+     * @param destination The destination image to scale to
      * @return Scaled thickness which cannot be less than 1
      */
-    public static double getScaledThickness(double thickness480p, Mat destinationImg) {
-        double scaleX = destinationImg.width() / 640.0;
-        double scaleY = destinationImg.height() / 480.0;
+    public static double getScaledThickness(double thickness480p, Mat destination) {
+        double scaleX = destination.width() / 640.0;
+        double scaleY = destination.height() / 480.0;
         double minScale = Math.min(scaleX, scaleY);
         return Math.max(thickness480p * minScale, 1.0);
     }
@@ -321,6 +345,7 @@ public class VideoSimUtil {
         } else {
             Imgproc.fillPoly(destination, List.of(dstPointsd), color, Imgproc.LINE_AA);
         }
+        dstPointsd.release();
     }
 
     /**
@@ -335,7 +360,9 @@ public class VideoSimUtil {
     public static void drawTagDetection(int id, Point[] dstPoints, Mat destination) {
         double thickness = getScaledThickness(1, destination);
         drawPoly(dstPoints, (int) thickness, new Scalar(0, 0, 255), true, destination);
-        var rect = Imgproc.boundingRect(new MatOfPoint(dstPoints));
+        var dstPointsMat = new MatOfPoint(dstPoints);
+        var rect = Imgproc.boundingRect(dstPointsMat);
+        dstPointsMat.release();
         var textPt = new Point(rect.x + rect.width, rect.y);
         textPt.x += thickness;
         textPt.y += thickness;

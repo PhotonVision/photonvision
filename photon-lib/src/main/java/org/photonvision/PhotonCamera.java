@@ -24,28 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.numbers.*;
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.DoubleArraySubscriber;
-import edu.wpi.first.networktables.IntegerEntry;
-import edu.wpi.first.networktables.IntegerPublisher;
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.MultiSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.StringSubscriber;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.WPILibVersion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +33,25 @@ import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.timesync.TimeSyncSingleton;
+import org.wpilib.driverstation.Alert;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.linalg.MatBuilder;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.numbers.*;
+import org.wpilib.math.util.Nat;
+import org.wpilib.networktables.BooleanPublisher;
+import org.wpilib.networktables.BooleanSubscriber;
+import org.wpilib.networktables.DoubleArraySubscriber;
+import org.wpilib.networktables.IntegerEntry;
+import org.wpilib.networktables.IntegerPublisher;
+import org.wpilib.networktables.IntegerSubscriber;
+import org.wpilib.networktables.MultiSubscriber;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.PubSubOption;
+import org.wpilib.networktables.StringSubscriber;
+import org.wpilib.system.Timer;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -68,6 +65,8 @@ public class PhotonCamera implements AutoCloseable {
     BooleanSubscriber driverModeSubscriber;
     IntegerPublisher fpsLimitPublisher;
     IntegerSubscriber fpsLimitSubscriber;
+    BooleanSubscriber enabledSubscriber;
+    BooleanPublisher enabledPublisher;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
@@ -85,6 +84,8 @@ public class PhotonCamera implements AutoCloseable {
         driverModeSubscriber.close();
         fpsLimitPublisher.close();
         fpsLimitSubscriber.close();
+        enabledPublisher.close();
+        enabledSubscriber.close();
         versionEntry.close();
         inputSaveImgEntry.close();
         outputSaveImgEntry.close();
@@ -115,6 +116,14 @@ public class PhotonCamera implements AutoCloseable {
     private final Alert disconnectAlert;
     private final Alert timesyncAlert;
 
+    /**
+     * Sets whether or not coprocessor version checks will occur. Setting this to true will silence
+     * all console warnings about coproccessor connection, so be careful when enabling this and ensure
+     * all your coprocessors are communicating to the robot properly and everything has matching
+     * versions.
+     *
+     * @param enabled Whether or not to enable coprocessor version checks
+     */
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
     }
@@ -131,8 +140,8 @@ public class PhotonCamera implements AutoCloseable {
         name = cameraName;
         disconnectAlert =
                 new Alert(
-                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", AlertType.kWarning);
-        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", AlertType.kWarning);
+                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", Alert.Level.MEDIUM);
+        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", Alert.Level.MEDIUM);
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();
@@ -143,13 +152,15 @@ public class PhotonCamera implements AutoCloseable {
                                 PhotonPipelineResult.photonStruct.getTypeString(),
                                 new byte[0],
                                 PubSubOption.periodic(0.01),
-                                PubSubOption.sendAll(true),
+                                PubSubOption.SEND_ALL,
                                 PubSubOption.pollStorage(20));
         resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         fpsLimitPublisher = cameraTable.getIntegerTopic("fpsLimitRequest").publish();
         fpsLimitSubscriber = cameraTable.getIntegerTopic("fpsLimit").subscribe(-1);
+        enabledPublisher = cameraTable.getBooleanTopic("enabledRequest").publish();
+        enabledSubscriber = cameraTable.getBooleanTopic("enabled").subscribe(true);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
@@ -166,11 +177,10 @@ public class PhotonCamera implements AutoCloseable {
 
         // Existing is enough to make this multisubscriber do its thing
         topicNameSubscriber =
-                new MultiSubscriber(
-                        instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
+                new MultiSubscriber(instance, new String[] {"/photonvision/"}, PubSubOption.TOPICS_ONLY);
 
-        HAL.report(tResourceType.kResourceType_PhotonCamera, InstanceCount);
         InstanceCount++;
+        HAL.reportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
 
         // HACK - start a TimeSyncServer, if we haven't yet.
         TimeSyncSingleton.load();
@@ -179,53 +189,12 @@ public class PhotonCamera implements AutoCloseable {
         verifyDependencies();
     }
 
-    public static void verifyDependencies() {
+    /** This is something we only need to check for java because of the way java packages opencv. */
+    static void verifyDependencies() {
         // spotless:off
-        if (!WPILibVersion.Version.equals(PhotonVersion.wpilibTargetVersion)) {
-            String bfw = """
-
-
-
-
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
-                    >>>                                          \s
-                    >>> You are running an incompatible version  \s
-                    >>> of PhotonVision !                        \s
-                    >>>                                          \s
-                    >>> PhotonLib """
-                    + PhotonVersion.versionString
-                    + " is built for WPILib "
-                    + PhotonVersion.wpilibTargetVersion
-                    + "\n"
-                    + ">>> but you are using WPILib "
-                    + WPILibVersion.Version
-                    + """
-                    \n>>>                                          \s
-                    >>> This is neither tested nor supported.    \s
-                    >>> You MUST update WPILib, PhotonLib, or both.
-                    >>> Check `./gradlew dependencies` and ensure\s
-                    >>> all mentions of OpenCV match the version \s
-                    >>> that PhotonLib was built for. If you find a
-                    >>> a mismatched version in a dependency, you\s
-                    >>> must take steps to update the version of \s
-                    >>> OpenCV used in that dependency. If you do\s
-                    >>> not control that dependency and an updated\s
-                    >>> version is not available, contact the    \s
-                    >>> developers of that dependency.           \s
-                    >>>                                          \s
-                    >>> Your code will now crash.                \s
-                    >>> We hope your day gets better.            \s
-                    >>>                                          \s
-                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    """;
-
-            DriverStation.reportWarning(bfw, false);
-            DriverStation.reportError(bfw, false);
-            throw new UnsupportedOperationException(bfw);
-        }
-        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
+        // WPILIB names their opencv version in the format YEAR-OPENCVVERSION-PATCH
+        // so we split on '-' and take the middle part to get the version number
+        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion.split("-")[1])) {
             String bfw = """
 
 
@@ -266,8 +235,8 @@ public class PhotonCamera implements AutoCloseable {
                     """;
             // spotless:on
 
-            DriverStation.reportWarning(bfw, false);
-            DriverStation.reportError(bfw, false);
+            DriverStationErrors.reportWarning(bfw, false);
+            DriverStationErrors.reportError(bfw, false);
             throw new UnsupportedOperationException(bfw);
         }
     }
@@ -287,6 +256,8 @@ public class PhotonCamera implements AutoCloseable {
      * getAllUnreadResults() will return different (potentially empty) result arrays. Be careful to
      * call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20 changes, so
      * make sure to call this frequently enough to avoid old results being discarded, too!
+     *
+     * @return The list of pipeline results
      */
     public List<PhotonPipelineResult> getAllUnreadResults() {
         verifyVersion();
@@ -311,6 +282,8 @@ public class PhotonCamera implements AutoCloseable {
      *
      * <p>Replaced by {@link #getAllUnreadResults()} over getLatestResult, as this function can miss
      * results, or provide duplicate ones!
+     *
+     * @return The latest pipeline result
      */
     @Deprecated(since = "2024", forRemoval = true)
     public PhotonPipelineResult getLatestResult() {
@@ -346,10 +319,10 @@ public class PhotonCamera implements AutoCloseable {
             timesyncAlert.setText(warningText);
             timesyncAlert.set(true);
 
-            if (Timer.getFPGATimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
-                prevTimeSyncWarnTime = Timer.getFPGATimestamp();
+            if (Timer.getMonotonicTimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
+                prevTimeSyncWarnTime = Timer.getMonotonicTimestamp();
 
-                DriverStation.reportWarning(
+                DriverStationErrors.reportWarning(
                         warningText
                                 + "\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more information.",
                         false);
@@ -380,8 +353,6 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * Gets the FPS limit set on the camera.
-     *
      * @return The current FPS limit.
      */
     public int getFPSLimit() {
@@ -391,10 +362,30 @@ public class PhotonCamera implements AutoCloseable {
     /**
      * Sets the FPS limit on the camera.
      *
-     * @param fps The FPS limit to set. Set to -1 for unlimited FPS.
+     * <p>A negative FPS limit is treated as no FPS limit, and will run as fast as possible.
+     *
+     * <p>Otherwise, will limit processing to at most the provided FPS limit
+     *
+     * @param fps The FPS limit to set.
      */
     public void setFPSLimit(int fps) {
         fpsLimitPublisher.set(fps);
+    }
+
+    /**
+     * Sets whether the camera is enabled, default is true.
+     *
+     * @param enabled Whether to enable the camera.
+     */
+    public void setEnabled(boolean enabled) {
+        enabledPublisher.set(enabled);
+    }
+
+    /**
+     * @return Whether the camera is enabled.
+     */
+    public boolean getEnabled() {
+        return enabledSubscriber.get();
     }
 
     /**
@@ -477,7 +468,7 @@ public class PhotonCamera implements AutoCloseable {
      */
     public boolean isConnected() {
         var curHeartbeat = heartbeatSubscriber.get();
-        var now = Timer.getFPGATimestamp();
+        var now = Timer.getMonotonicTimestamp();
 
         if (curHeartbeat < 0) {
             // we have never heard from the camera
@@ -501,8 +492,11 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * The camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms are set
-     * to 0
+     * Returns the camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms
+     * are set to 0
+     *
+     * @return The distortion coefficients in a 8x1 matrix, if they are published by the camera. Empty
+     *     otherwise.
      */
     public Optional<Matrix<N8, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
@@ -527,19 +521,19 @@ public class PhotonCamera implements AutoCloseable {
     void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
 
-        if ((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
-        lastVersionCheckTime = Timer.getFPGATimestamp();
+        if ((Timer.getMonotonicTimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
+        lastVersionCheckTime = Timer.getMonotonicTimestamp();
 
         // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.
         if (!heartbeatSubscriber.exists()) {
             var cameraNames = getTablesThatLookLikePhotonCameras();
             if (cameraNames.isEmpty()) {
-                DriverStation.reportError(
+                DriverStationErrors.reportError(
                         "Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",
                         false);
             } else {
-                DriverStation.reportError(
+                DriverStationErrors.reportError(
                         "PhotonVision coprocessor at path "
                                 + path
                                 + " not found on NetworkTables. Double check that your camera names match!",
@@ -552,7 +546,7 @@ public class PhotonCamera implements AutoCloseable {
                     cameraNameStr.append("\n");
                 }
 
-                DriverStation.reportError(
+                DriverStationErrors.reportError(
                         "Found the following PhotonVision cameras on NetworkTables:\n"
                                 + cameraNameStr.toString(),
                         false);
@@ -560,7 +554,7 @@ public class PhotonCamera implements AutoCloseable {
         }
         // Check for connection status. Warn if disconnected.
         else if (!isConnected()) {
-            DriverStation.reportWarning(
+            DriverStationErrors.reportWarning(
                     "PhotonVision coprocessor at path " + path + " is not sending new data.", false);
         }
 
@@ -572,7 +566,7 @@ public class PhotonCamera implements AutoCloseable {
 
         if (remote_uuid == null || remote_uuid.isEmpty()) {
             // not connected yet?
-            DriverStation.reportWarning(
+            DriverStationErrors.reportWarning(
                     "PhotonVision coprocessor at path "
                             + path
                             + " has not reported a message interface UUID - is your coprocessor's camera started?",
@@ -606,8 +600,8 @@ public class PhotonCamera implements AutoCloseable {
                     """;
             // spotless:on
 
-            DriverStation.reportWarning(bfw, false);
-            var versionMismatchMessage =
+            DriverStationErrors.reportWarning(bfw, false);
+            String versionMismatchMessage =
                     "Photon version "
                             + PhotonVersion.versionString
                             + " (message definition version "
@@ -619,7 +613,7 @@ public class PhotonCamera implements AutoCloseable {
                             + remote_uuid
                             + ")"
                             + "!";
-            DriverStation.reportError(versionMismatchMessage, false);
+            DriverStationErrors.reportError(versionMismatchMessage, false);
             throw new UnsupportedOperationException(versionMismatchMessage);
         }
     }

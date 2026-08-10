@@ -24,18 +24,17 @@
 
 #include "photon/PhotonPoseEstimator.h"
 
-#include <map>
 #include <utility>
 #include <vector>
 
-#include <frc/apriltag/AprilTagFieldLayout.h>
-#include <frc/geometry/Pose3d.h>
-#include <frc/geometry/Rotation3d.h>
-#include <frc/geometry/Transform3d.h>
 #include <gtest/gtest.h>
-#include <units/angle.h>
-#include <units/length.h>
-#include <wpi/SmallVector.h>
+#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/math/geometry/Pose3d.hpp>
+#include <wpi/math/geometry/Rotation3d.hpp>
+#include <wpi/math/geometry/Transform3d.hpp>
+#include <wpi/units/angle.hpp>
+#include <wpi/units/length.hpp>
+#include <wpi/util/SmallVector.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/dataflow/structures/Packet.h"
@@ -47,13 +46,13 @@
 #include "photon/targeting/PhotonTrackedTarget.h"
 #include "photon/targeting/PnpResult.h"
 
-static std::vector<frc::AprilTag> tags = {
-    {0, frc::Pose3d(units::meter_t(3), units::meter_t(3), units::meter_t(3),
-                    frc::Rotation3d())},
-    {1, frc::Pose3d(units::meter_t(5), units::meter_t(5), units::meter_t(5),
-                    frc::Rotation3d())}};
+static std::vector<wpi::apriltag::AprilTag> tags = {
+    {0, wpi::math::Pose3d(wpi::units::meter_t(3), wpi::units::meter_t(3),
+                          wpi::units::meter_t(3), wpi::math::Rotation3d())},
+    {1, wpi::math::Pose3d(wpi::units::meter_t(5), wpi::units::meter_t(5),
+                          wpi::units::meter_t(5), wpi::math::Rotation3d())}};
 
-static frc::AprilTagFieldLayout aprilTags{tags, 54_ft, 27_ft};
+static wpi::apriltag::AprilTagFieldLayout aprilTags{tags, 54_ft, 27_ft};
 
 static std::vector<photon::TargetCorner> corners{
     photon::TargetCorner{1., 2.}, photon::TargetCorner{3., 4.},
@@ -68,58 +67,99 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
   std::vector<photon::PhotonTrackedTarget> targets{
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(1_rad, 2_rad, 3_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(1_rad, 2_rad, 3_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           9.0, -2.0, 19.0, 3.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(1_rad, 2_rad, 3_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(1_rad, 2_rad, 3_rad)),
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(11));
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(11));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
-                                        frc::Transform3d{});
+  photon::PhotonPoseEstimator estimator(aprilTags, wpi::math::Transform3d{});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
   }
   ASSERT_TRUE(estimatedPose);
-  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(11, units::unit_cast<double>(estimatedPose.value().timestamp),
-              .02);
-  EXPECT_NEAR(1, units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(3, units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(2, units::unit_cast<double>(pose.Z()), .01);
+  EXPECT_NEAR(
+      11, wpi::units::unit_cast<double>(estimatedPose.value().timestamp), .02);
+  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(3, wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(2, wpi::units::unit_cast<double>(pose.Z()), .01);
+  // Only the chosen (lowest-ambiguity) target should be reported as used.
+  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
+  EXPECT_EQ(1, estimatedPose.value().targetsUsed[0].GetFiducialId());
+}
+
+TEST(PhotonPoseEstimatorTest, LowestAmbiguityIgnoresNonFiducialTargets) {
+  photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
+
+  // A non-fiducial target reports poseAmbiguity = -1. Without the guard the
+  // -1 score beats every fiducial target's score, the loop selects the
+  // non-fiducial target, GetTagPose(-1) returns nullopt, and the whole
+  // estimate is thrown away. The valid fiducial target (fid=1) must win.
+  std::vector<photon::PhotonTrackedTarget> targets{
+      photon::PhotonTrackedTarget{
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          0.3, corners, detectedCorners},
+      photon::PhotonTrackedTarget{
+          0.0, 0.0, 0.0, 0.0, -1, -1, -1.f, wpi::math::Transform3d(),
+          wpi::math::Transform3d(), -1.0, corners, detectedCorners}};
+
+  cameraOne.test = true;
+  cameraOne.testResult = {photon::PhotonPipelineResult{
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(11));
+
+  photon::PhotonPoseEstimator estimator(aprilTags, wpi::math::Transform3d{});
+
+  std::optional<photon::EstimatedRobotPose> estimatedPose;
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
+  }
+  ASSERT_TRUE(estimatedPose);
+  // Tag 1 is at (5,5,5), bestCameraToTarget = (4,2,3), so the estimated
+  // robot pose lands at (1,3,2) in the field frame.
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
+  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(3, wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(2, wpi::units::unit_cast<double>(pose.Z()), .01);
 }
 
 TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
-  std::vector<frc::AprilTag> tags = {
-      {0, frc::Pose3d(units::meter_t(3), units::meter_t(3), units::meter_t(3),
-                      frc::Rotation3d())},
-      {1, frc::Pose3d(units::meter_t(5), units::meter_t(5), units::meter_t(5),
-                      frc::Rotation3d())},
+  std::vector<wpi::apriltag::AprilTag> tags = {
+      {0, wpi::math::Pose3d(wpi::units::meter_t(3), wpi::units::meter_t(3),
+                            wpi::units::meter_t(3), wpi::math::Rotation3d())},
+      {1, wpi::math::Pose3d(wpi::units::meter_t(5), wpi::units::meter_t(5),
+                            wpi::units::meter_t(5), wpi::math::Rotation3d())},
   };
-  auto aprilTags = frc::AprilTagFieldLayout(tags, 54_ft, 27_ft);
+  auto aprilTags = wpi::apriltag::AprilTagFieldLayout(tags, 54_ft, 27_ft);
 
-  std::vector<std::pair<photon::PhotonCamera, frc::Transform3d>> cameras;
+  std::vector<std::pair<photon::PhotonCamera, wpi::math::Transform3d>> cameras;
 
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
@@ -129,24 +169,24 @@ TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
   std::vector<photon::PhotonTrackedTarget> targets{
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(0_m, 0_m, 0_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 1_m, 1_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2_m, 2_m, 2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(3_m, 3_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           9.0, -2.0, 19.0, 3.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(4_m, 4_m, 4_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(5_m, 5_m, 5_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 4_m, 4_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(5_m, 5_m, 5_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
@@ -154,22 +194,24 @@ TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(17_s);
 
-  photon::PhotonPoseEstimator estimator(
-      aprilTags, photon::CLOSEST_TO_CAMERA_HEIGHT, {{0_m, 0_m, 4_m}, {}});
+  photon::PhotonPoseEstimator estimator(aprilTags, {{0_m, 0_m, 4_m}, {}});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToCameraHeightPose(result);
   }
   ASSERT_TRUE(estimatedPose);
 
-  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(17, units::unit_cast<double>(estimatedPose.value().timestamp),
-              .02);
-  EXPECT_NEAR(4, units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(4, units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(0, units::unit_cast<double>(pose.Z()), .01);
+  EXPECT_NEAR(
+      17, wpi::units::unit_cast<double>(estimatedPose.value().timestamp), .02);
+  EXPECT_NEAR(4, wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(4, wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(0, wpi::units::unit_cast<double>(pose.Z()), .01);
+  // Only the chosen target should be reported as used.
+  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
+  EXPECT_EQ(1, estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
 TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
@@ -178,49 +220,51 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
   std::vector<photon::PhotonTrackedTarget> targets{
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(0_m, 0_m, 0_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 1_m, 1_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2_m, 2_m, 2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(3_m, 3_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           9.0, -2.0, 19.0, 3.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2.2_m, 2.2_m, 2.2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2.2_m, 2.2_m, 2.2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2_m, 1.9_m, 2.1_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(17));
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(17));
 
-  photon::PhotonPoseEstimator estimator(aprilTags,
-                                        photon::CLOSEST_TO_REFERENCE_POSE, {});
-  estimator.SetReferencePose(
-      frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
+  photon::PhotonPoseEstimator estimator(aprilTags, {});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToReferencePose(
+        result, wpi::math::Pose3d(1_m, 1_m, 1_m,
+                                  wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)));
   }
 
   ASSERT_TRUE(estimatedPose);
-  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(17, units::unit_cast<double>(estimatedPose.value().timestamp),
-              .01);
-  EXPECT_NEAR(1, units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(1.1, units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(.9, units::unit_cast<double>(pose.Z()), .01);
+  EXPECT_NEAR(
+      17, wpi::units::unit_cast<double>(estimatedPose.value().timestamp), .01);
+  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(1.1, wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(.9, wpi::units::unit_cast<double>(pose.Z()), .01);
+  // Only the chosen target should be reported as used.
+  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
+  EXPECT_EQ(0, estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
 TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
@@ -229,85 +273,87 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
   std::vector<photon::PhotonTrackedTarget> targets{
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(0_m, 0_m, 0_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 1_m, 1_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2_m, 2_m, 2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(3_m, 3_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           9.0, -2.0, 19.0, 3.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2.2_m, 2.2_m, 2.2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2.2_m, 2.2_m, 2.2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2_m, 1.9_m, 2.1_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(17));
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(17));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::CLOSEST_TO_LAST_POSE,
-                                        {});
-  estimator.SetLastPose(
-      frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
+  photon::PhotonPoseEstimator estimator(aprilTags, {});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToReferencePose(
+        result, wpi::math::Pose3d(1_m, 1_m, 1_m,
+                                  wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)));
   }
 
   ASSERT_TRUE(estimatedPose);
-  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
   std::vector<photon::PhotonTrackedTarget> targetsThree{
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(0_m, 0_m, 0_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 1_m, 1_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.1, 6.7, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2.1_m, 1.9_m, 2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2.1_m, 1.9_m, 2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(3_m, 3_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           9.0, -2.0, 19.0, 3.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2.4_m, 2.4_m, 2.2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(2_m, 1_m, 2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2.4_m, 2.4_m, 2.2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2_m, 1_m, 2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.4, corners, detectedCorners}};
 
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targetsThree,
       std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(21));
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(21));
 
-  // std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToReferencePose(result, pose);
   }
 
   ASSERT_TRUE(estimatedPose);
   pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(21.0, units::unit_cast<double>(estimatedPose.value().timestamp),
+  EXPECT_NEAR(21.0,
+              wpi::units::unit_cast<double>(estimatedPose.value().timestamp),
               .01);
-  EXPECT_NEAR(.9, units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(1.1, units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(1, units::unit_cast<double>(pose.Z()), .01);
+  EXPECT_NEAR(.9, wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(1.1, wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.Z()), .01);
+  // Only the chosen target should be reported as used.
+  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
+  EXPECT_EQ(0, estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
 TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
@@ -324,15 +370,14 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
       &cameraOne, photon::SimCameraProperties::PERFECT_90DEG());
 
   /* Compound Rolled + Pitched + Yaw */
-  frc::Transform3d compoundTestTransform = frc::Transform3d(
-      -12_in, -11_in, 3_m, frc::Rotation3d(37_deg, 6_deg, 60_deg));
+  wpi::math::Transform3d compoundTestTransform = wpi::math::Transform3d(
+      -12_in, -11_in, 3_m, wpi::math::Rotation3d(37_deg, 6_deg, 60_deg));
 
-  photon::PhotonPoseEstimator estimator(
-      aprilTags, photon::PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
+  photon::PhotonPoseEstimator estimator(aprilTags, compoundTestTransform);
 
   /* real pose of the robot base to test against */
-  frc::Pose3d realPose =
-      frc::Pose3d(7.3_m, 4.42_m, 0_m, frc::Rotation3d(0_rad, 0_rad, 2.197_rad));
+  wpi::math::Pose3d realPose = wpi::math::Pose3d(
+      7.3_m, 4.42_m, 0_m, wpi::math::Rotation3d(0_rad, 0_rad, 2.197_rad));
 
   photon::PhotonPipelineResult result = cameraOneSim.Process(
       1_ms, realPose.TransformBy(estimator.GetRobotToCameraTransform()),
@@ -344,26 +389,28 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimatePnpDistanceTrigSolvePose(result);
   }
 
   ASSERT_TRUE(estimatedPose);
-  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(units::unit_cast<double>(realPose.X()),
-              units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(units::unit_cast<double>(realPose.Y()),
-              units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(units::unit_cast<double>(realPose.Z()),
-              units::unit_cast<double>(pose.Z()), .01);
+  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.X()),
+              wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.Y()),
+              wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.Z()),
+              wpi::units::unit_cast<double>(pose.Z()), .01);
+  // PNP_DISTANCE_TRIG_SOLVE uses only the best target.
+  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
 
   /* Straight on */
-  frc::Transform3d straightOnTestTransform =
-      frc::Transform3d(0_m, 0_m, 3_m, frc::Rotation3d(0_rad, 0_rad, 0_rad));
+  wpi::math::Transform3d straightOnTestTransform = wpi::math::Transform3d(
+      0_m, 0_m, 3_m, wpi::math::Rotation3d(0_rad, 0_rad, 0_rad));
 
   estimator.SetRobotToCameraTransform(straightOnTestTransform);
-  realPose = frc::Pose3d(4.81_m, 2.38_m, 0_m,
-                         frc::Rotation3d(0_rad, 0_rad, 2.818_rad));
+  realPose = wpi::math::Pose3d(4.81_m, 2.38_m, 0_m,
+                               wpi::math::Rotation3d(0_rad, 0_rad, 2.818_rad));
   result = cameraOneSim.Process(
       1_ms, realPose.TransformBy(estimator.GetRobotToCameraTransform()),
       targets);
@@ -374,18 +421,20 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
 
   estimatedPose = std::nullopt;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimatePnpDistanceTrigSolvePose(result);
   }
 
   ASSERT_TRUE(estimatedPose);
   pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(units::unit_cast<double>(realPose.X()),
-              units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(units::unit_cast<double>(realPose.Y()),
-              units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(units::unit_cast<double>(realPose.Z()),
-              units::unit_cast<double>(pose.Z()), .01);
+  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.X()),
+              wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.Y()),
+              wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(wpi::units::unit_cast<double>(realPose.Z()),
+              wpi::units::unit_cast<double>(pose.Z()), .01);
+  // PNP_DISTANCE_TRIG_SOLVE uses only the best target.
+  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
 }
 
 TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
@@ -394,183 +443,153 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
   std::vector<photon::PhotonTrackedTarget> targets{
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2_m, 2_m, 2_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 1_m, 1_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(3_m, 3_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(3_m, 3_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           9.0, -2.0, 19.0, 3.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          0.4, corners, detectedCorners}};
+          wpi::math::Transform3d(wpi::math::Translation3d(0_m, 0_m, 0_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(2_m, 1.9_m, 2.1_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          0.4, corners, detectedCorners},
+      // Non-fiducial target: must be skipped by the contributor loop and
+      // therefore must not appear in targetsUsed.
+      photon::PhotonTrackedTarget{0.0, 0.0, 0.0, 0.0, -1, -1, -1.f,
+                                  wpi::math::Transform3d(),
+                                  wpi::math::Transform3d(), 0.5, corners,
+                                  detectedCorners}};
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(15));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
-                                        {});
+  photon::PhotonPoseEstimator estimator(aprilTags, {});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateAverageBestTargetsPose(result);
   }
 
   ASSERT_TRUE(estimatedPose);
-  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(15.0, units::unit_cast<double>(estimatedPose.value().timestamp),
+  EXPECT_NEAR(15.0,
+              wpi::units::unit_cast<double>(estimatedPose.value().timestamp),
               .01);
-  EXPECT_NEAR(2.15, units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Z()), .01);
+  EXPECT_NEAR(2.15, wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(2.15, wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(2.15, wpi::units::unit_cast<double>(pose.Z()), .01);
+  // Only the three fiducial targets contributed; the non-fiducial fourth target
+  // is excluded.
+  EXPECT_EQ(static_cast<size_t>(3), estimatedPose.value().targetsUsed.size());
+  for (const auto& t : estimatedPose.value().targetsUsed) {
+    EXPECT_NE(-1, t.GetFiducialId());
+  }
 }
 
-TEST(PhotonPoseEstimatorTest, PoseCache) {
-  photon::PhotonCamera cameraOne = photon::PhotonCamera("test2");
+TEST(PhotonPoseEstimatorTest,
+     ClosestToCameraHeightReturnsEmptyForNoFiducialTargets) {
+  photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
-  std::vector<photon::PhotonTrackedTarget> targets{
-      photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          0.7, corners, detectedCorners},
-      photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          0.3, corners, detectedCorners},
-      photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          0.4, corners, detectedCorners}};
+  // A single non-fiducial target (fid = -1) should yield no estimate.
+  std::vector<photon::PhotonTrackedTarget> targets{photon::PhotonTrackedTarget{
+      0.0, 0.0, 0.0, 0.0, -1, -1, -1.f, wpi::math::Transform3d(),
+      wpi::math::Transform3d(), 0.5, corners, detectedCorners}};
 
   cameraOne.test = true;
-
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
-                                        {});
-
-  // empty input, expect empty out
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000},
-      std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(1));
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(4));
+
+  photon::PhotonPoseEstimator estimator(aprilTags, {{0_m, 0_m, 4_m}, {}});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToCameraHeightPose(result);
   }
-
   EXPECT_FALSE(estimatedPose);
-
-  // Set result, and update -- expect present and timestamp to be 15
-  cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 3000, 1000}, targets, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
-
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  ASSERT_TRUE(estimatedPose);
-  EXPECT_NEAR((15_s - 3_ms).to<double>(),
-              estimatedPose.value().timestamp.to<double>(), 1e-6);
-
-  // And again -- pose cache should result in returning std::nullopt
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  EXPECT_FALSE(estimatedPose);
-
-  // If the camera produces a result that is > 1 micro second later,
-  // the pose cache should not be hit.
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(16));
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  EXPECT_NEAR((16_s - 3_ms).to<double>(),
-              estimatedPose.value().timestamp.to<double>(), 1e-6);
-
-  // And again -- pose cache should result in returning std::nullopt
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  EXPECT_FALSE(estimatedPose);
-
-  // Setting ReferencePose should also clear the cache
-  estimator.SetReferencePose(frc::Pose3d(units::meter_t(1), units::meter_t(2),
-                                         units::meter_t(3), frc::Rotation3d()));
-
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  ASSERT_TRUE(estimatedPose);
-  EXPECT_NEAR((16_s - 3_ms).to<double>(),
-              estimatedPose.value().timestamp.to<double>(), 1e-6);
 }
 
-TEST(PhotonPoseEstimatorTest, MultiTagOnRioFallback) {
+TEST(PhotonPoseEstimatorTest,
+     ClosestToReferencePoseReturnsEmptyForNoFiducialTargets) {
+  photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
+
+  std::vector<photon::PhotonTrackedTarget> targets{photon::PhotonTrackedTarget{
+      0.0, 0.0, 0.0, 0.0, -1, -1, -1.f, wpi::math::Transform3d(),
+      wpi::math::Transform3d(), 0.5, corners, detectedCorners}};
+
+  cameraOne.test = true;
+  cameraOne.testResult = {photon::PhotonPipelineResult{
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(17));
+
+  photon::PhotonPoseEstimator estimator(aprilTags, {});
+
+  std::optional<photon::EstimatedRobotPose> estimatedPose;
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.EstimateClosestToReferencePose(
+        result, wpi::math::Pose3d(1_m, 1_m, 1_m, wpi::math::Rotation3d()));
+  }
+  EXPECT_FALSE(estimatedPose);
+}
+
+TEST(PhotonPoseEstimatorTest, MultiTagOnCoprocFallback) {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
-                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(1_rad, 2_rad, 3_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(1_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(1_rad, 2_rad, 3_rad)),
           0.7, corners, detectedCorners},
       photon::PhotonTrackedTarget{
           3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.3, corners, detectedCorners}};
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(11));
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(11));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
-                                        frc::Transform3d{});
+  photon::PhotonPoseEstimator estimator(aprilTags, wpi::math::Transform3d{});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateCoprocMultiTagPose(result);
+  }
+  ASSERT_FALSE(estimatedPose);
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
   }
   ASSERT_TRUE(estimatedPose);
-  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
   // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
-  EXPECT_NEAR(11, units::unit_cast<double>(estimatedPose.value().timestamp),
-              .02);
-  EXPECT_NEAR(1, units::unit_cast<double>(pose.X()), .01);
-  EXPECT_NEAR(3, units::unit_cast<double>(pose.Y()), .01);
-  EXPECT_NEAR(2, units::unit_cast<double>(pose.Z()), .01);
+  EXPECT_NEAR(
+      11, wpi::units::unit_cast<double>(estimatedPose.value().timestamp), .02);
+  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(3, wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(2, wpi::units::unit_cast<double>(pose.Z()), .01);
+  // LOWEST_AMBIGUITY fallback should report only the single chosen target.
+  EXPECT_EQ(static_cast<size_t>(1), estimatedPose.value().targetsUsed.size());
+  EXPECT_EQ(1, estimatedPose.value().targetsUsed[0].GetFiducialId());
 }
 
 TEST(PhotonPoseEstimatorTest, CopyResult) {
@@ -578,7 +597,7 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 
   auto testResult = photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt};
-  testResult.SetReceiveTimestamp(units::second_t(11));
+  testResult.SetReceiveTimestamp(wpi::units::second_t(11));
 
   auto test2 = testResult;
 
@@ -588,11 +607,17 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 
 TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
   photon::PhotonPoseEstimator estimator(
-      frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
-      photon::CONSTRAINED_SOLVEPNP, frc::Transform3d());
+      wpi::apriltag::AprilTagFieldLayout::LoadField(
+          wpi::apriltag::AprilTagField::k2024Crescendo),
+      wpi::math::Transform3d());
 
   photon::PhotonPipelineResult result;
-  auto estimate = estimator.Update(result);
+  auto distortion = Eigen::VectorXd::Zero(8);
+  auto cameraMat = Eigen::Matrix3d{{399.37500000000006, 0, 319.5},
+                                   {0, 399.16666666666674, 239.5},
+                                   {0, 0, 1}};
+  auto estimate = estimator.EstimateConstrainedSolvepnpPose(
+      result, cameraMat, distortion, wpi::math::Pose3d(), true, 0.0);
   EXPECT_FALSE(estimate.has_value());
 }
 
@@ -610,12 +635,12 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       photon::TargetCorner{127.17118732489361, 313.81406314178633},
       photon::TargetCorner{104.28543773760417, 309.6516557438994}};
 
-  frc::Transform3d poseTransform(
-      frc::Translation3d(3.1665557336121353_m, 4.430673446050584_m,
-                         0.48678786477534686_m),
-      frc::Rotation3d(frc::Quaternion(0.3132532247418243, 0.24722671090692333,
-                                      -0.08413452932300695,
-                                      0.9130568172784148)));
+  wpi::math::Transform3d poseTransform(
+      wpi::math::Translation3d(3.1665557336121353_m, 4.430673446050584_m,
+                               0.48678786477534686_m),
+      wpi::math::Rotation3d(
+          wpi::math::Quaternion(0.3132532247418243, 0.24722671090692333,
+                                -0.08413452932300695, 0.9130568172784148)));
 
   std::vector<photon::PhotonTrackedTarget> targets{
       photon::PhotonTrackedTarget{0.0, 0.0, 0.0, 0.0, 8, 0, 0.0f, poseTransform,
@@ -631,30 +656,35 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
 
   cameraOne.test = true;
   cameraOne.testResult = {result};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(15));
 
-  const units::radian_t camPitch = 30_deg;
-  const frc::Transform3d kRobotToCam{frc::Translation3d(0.5_m, 0.0_m, 0.5_m),
-                                     frc::Rotation3d(0_rad, -camPitch, 0_rad)};
+  const wpi::units::radian_t camPitch = 30_deg;
+  const wpi::math::Transform3d kRobotToCam{
+      wpi::math::Translation3d(0.5_m, 0.0_m, 0.5_m),
+      wpi::math::Rotation3d(0_rad, -camPitch, 0_rad)};
 
   photon::PhotonPoseEstimator estimator(
-      frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
-      photon::CONSTRAINED_SOLVEPNP, kRobotToCam);
+      wpi::apriltag::AprilTagFieldLayout::LoadField(
+          wpi::apriltag::AprilTagField::k2024Crescendo),
+      kRobotToCam);
+
+  auto estimatedMultiTagPose =
+      estimator.EstimateCoprocMultiTagPose(cameraOne.testResult[0]);
 
   estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(),
-                           frc::Rotation2d());
+                           wpi::math::Rotation2d());
 
-  auto estimatedPose =
-      estimator.Update(cameraOne.testResult[0], cameraMat, distortion,
-                       photon::ConstrainedSolvepnpParams{true, 0});
+  auto estimatedPose = estimator.EstimateConstrainedSolvepnpPose(
+      cameraOne.testResult[0], cameraMat, distortion,
+      estimatedMultiTagPose->estimatedPose, true, 0);
 
   ASSERT_TRUE(estimatedPose.has_value());
 
-  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(3.58, units::unit_cast<double>(pose.X()), 0.01);
-  EXPECT_NEAR(4.13, units::unit_cast<double>(pose.Y()), 0.01);
-  EXPECT_NEAR(0.0, units::unit_cast<double>(pose.Z()), 0.01);
+  EXPECT_NEAR(3.58, wpi::units::unit_cast<double>(pose.X()), 0.01);
+  EXPECT_NEAR(4.13, wpi::units::unit_cast<double>(pose.Y()), 0.01);
+  EXPECT_NEAR(0.0, wpi::units::unit_cast<double>(pose.Z()), 0.01);
 
   EXPECT_EQ(photon::CONSTRAINED_SOLVEPNP, estimatedPose.value().strategy);
 }

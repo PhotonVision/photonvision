@@ -24,15 +24,6 @@
 
 package org.photonvision.simulation;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,6 +34,15 @@ import java.util.Optional;
 import java.util.Set;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.interpolation.TimeInterpolatableBuffer;
+import org.wpilib.smartdashboard.Field2d;
+import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.system.Timer;
+import org.wpilib.vision.apriltag.AprilTag;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
 /**
  * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
@@ -106,7 +106,7 @@ public class VisionSystemSim {
             camTrfMap.put(cameraSim, TimeInterpolatableBuffer.createBuffer(kBufferLengthSeconds));
             camTrfMap
                     .get(cameraSim)
-                    .addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
+                    .addSample(Timer.getMonotonicTimestamp(), new Pose3d().plus(robotToCamera));
         }
     }
 
@@ -119,6 +119,7 @@ public class VisionSystemSim {
     /**
      * Remove a simulated camera from this vision system.
      *
+     * @param cameraSim The camera to remove
      * @return If the camera was present and removed
      */
     public boolean removeCamera(PhotonCameraSim cameraSim) {
@@ -136,7 +137,7 @@ public class VisionSystemSim {
      * @return The transform of this camera, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim) {
-        return getRobotToCamera(cameraSim, Timer.getFPGATimestamp());
+        return getRobotToCamera(cameraSim, Timer.getMonotonicTimestamp());
     }
 
     /**
@@ -163,7 +164,7 @@ public class VisionSystemSim {
      * @return The pose of this camera, or an empty optional if it is invalid
      */
     public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim) {
-        return getCameraPose(cameraSim, Timer.getFPGATimestamp());
+        return getCameraPose(cameraSim, Timer.getMonotonicTimestamp());
     }
 
     /**
@@ -190,7 +191,7 @@ public class VisionSystemSim {
     public boolean adjustCamera(PhotonCameraSim cameraSim, Transform3d robotToCamera) {
         var trfBuffer = camTrfMap.get(cameraSim);
         if (trfBuffer == null) return false;
-        trfBuffer.addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
+        trfBuffer.addSample(Timer.getMonotonicTimestamp(), new Pose3d().plus(robotToCamera));
         return true;
     }
 
@@ -202,10 +203,11 @@ public class VisionSystemSim {
     /**
      * Reset the transform history for this camera to just the current transform.
      *
+     * @param cameraSim The camera to reset
      * @return If the cameraSim was valid and transforms were reset
      */
     public boolean resetCameraTransforms(PhotonCameraSim cameraSim) {
-        double now = Timer.getFPGATimestamp();
+        double now = Timer.getMonotonicTimestamp();
         var trfBuffer = camTrfMap.get(cameraSim);
         if (trfBuffer == null) return false;
         var lastTrf = new Transform3d(new Pose3d(), trfBuffer.getSample(now).orElse(new Pose3d()));
@@ -214,6 +216,11 @@ public class VisionSystemSim {
         return true;
     }
 
+    /**
+     * Returns all the vision targets on the field.
+     *
+     * @return The vision targets
+     */
     public Set<VisionTargetSim> getVisionTargets() {
         var all = new HashSet<VisionTargetSim>();
         for (var entry : targetSets.entrySet()) {
@@ -222,6 +229,12 @@ public class VisionSystemSim {
         return all;
     }
 
+    /**
+     * Returns all the vision targets of the specified type on the field.
+     *
+     * @param type The type of vision targets to return
+     * @return The vision targets
+     */
     public Set<VisionTargetSim> getVisionTargets(String type) {
         return targetSets.get(type);
     }
@@ -276,18 +289,33 @@ public class VisionSystemSim {
         }
     }
 
+    /** Removes every {@link VisionTargetSim} from the simulated field. */
     public void clearVisionTargets() {
         targetSets.clear();
     }
 
+    /** Removes all simulated AprilTag targets from the simulated field. */
     public void clearAprilTags() {
         removeVisionTargets("apriltag");
     }
 
+    /**
+     * Removes every {@link VisionTargetSim} of the specified type from the simulated field.
+     *
+     * @param type Type of target (e.g. "cargo"). Same as the type passed into {@link
+     *     #addVisionTargets(String, VisionTargetSim...)}
+     * @return The removed targets, or null if no targets of the specified type exist
+     */
     public Set<VisionTargetSim> removeVisionTargets(String type) {
         return targetSets.remove(type);
     }
 
+    /**
+     * Removes the specified {@link VisionTargetSim}s from the simulated field.
+     *
+     * @param targets The targets to remove
+     * @return The targets that were actually removed
+     */
     public Set<VisionTargetSim> removeVisionTargets(VisionTargetSim... targets) {
         var removeList = List.of(targets);
         var removedSet = new HashSet<VisionTargetSim>();
@@ -305,29 +333,42 @@ public class VisionSystemSim {
         return removedSet;
     }
 
-    /** Get the latest robot pose in meters saved by the vision system. */
+    /**
+     * Get the latest robot pose in meters saved by the vision system.
+     *
+     * @return The latest robot pose
+     */
     public Pose3d getRobotPose() {
-        return getRobotPose(Timer.getFPGATimestamp());
+        return getRobotPose(Timer.getMonotonicTimestamp());
     }
 
     /**
      * Get the robot pose in meters saved by the vision system at this timestamp.
      *
      * @param timestamp Timestamp of the desired robot pose
+     * @return The robot pose
      */
     public Pose3d getRobotPose(double timestamp) {
         return robotPoseBuffer.getSample(timestamp).orElse(new Pose3d());
     }
 
-    /** Clears all previous robot poses and sets robotPose at current time. */
+    /**
+     * Clears all previous robot poses and sets robotPose at current time.
+     *
+     * @param robotPose The robot pose
+     */
     public void resetRobotPose(Pose2d robotPose) {
         resetRobotPose(new Pose3d(robotPose));
     }
 
-    /** Clears all previous robot poses and sets robotPose at current time. */
+    /**
+     * Clears all previous robot poses and sets robotPose at current time.
+     *
+     * @param robotPose The robot pose
+     */
     public void resetRobotPose(Pose3d robotPose) {
         robotPoseBuffer.clear();
-        robotPoseBuffer.addSample(Timer.getFPGATimestamp(), robotPose);
+        robotPoseBuffer.addSample(Timer.getMonotonicTimestamp(), robotPose);
     }
 
     public Field2d getDebugField() {
@@ -362,7 +403,7 @@ public class VisionSystemSim {
         if (robotPoseMeters == null) return;
 
         // save "real" robot poses over time
-        double now = Timer.getFPGATimestamp();
+        double now = Timer.getMonotonicTimestamp();
         robotPoseBuffer.addSample(now, robotPoseMeters);
         dbgField.setRobotPose(robotPoseMeters.toPose2d());
 

@@ -11,7 +11,7 @@ const runtimeMode: PhotonClientRuntimeMode = process.env.NODE_ENV as PhotonClien
 
 let backendHost: string;
 let backendHostname: string;
-switch (runtimeMode as PhotonClientRuntimeMode) {
+switch (runtimeMode) {
   case "development":
     backendHost = `${location.hostname}:5800`;
     backendHostname = location.hostname;

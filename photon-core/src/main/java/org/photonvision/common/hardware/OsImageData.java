@@ -17,17 +17,19 @@
 
 package org.photonvision.common.hardware;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import io.avaje.jsonb.Json;
+import io.avaje.jsonb.Jsonb;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.util.Optional;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 /**
- * Our blessed images inject the current version via the build process in
+ * Our blessed images inject the current version and metadata via the build process in
  * https://github.com/PhotonVision/photon-image-modifier
  *
  * <p>This class provides a convenient abstraction around this
@@ -35,45 +37,23 @@ import org.photonvision.common.logging.Logger;
 public class OsImageData {
     private static final Logger logger = new Logger(OsImageData.class, LogGroup.General);
 
-    private static Path imageVersionFile = Path.of("/opt/photonvision/image-version");
-    private static Path imageMetadataFile = Path.of("/opt/photonvision/image-version.json");
-
-    /** The OS image version string, if available. This is legacy, use {@link ImageMetadata}. */
-    public static final Optional<String> IMAGE_VERSION = getImageVersion();
-
-    private static Optional<String> getImageVersion() {
-        if (!imageVersionFile.toFile().exists()) {
-            logger.warn("Photon cannot locate base OS image version at " + imageVersionFile.toString());
-            return Optional.empty();
-        }
-
-        try {
-            return Optional.of(Files.readString(imageVersionFile).strip());
-        } catch (IOException e) {
-            logger.error("Couldn't read image-version file", e);
-        }
-
-        return Optional.empty();
-    }
+    private static File imageMetadataFile =
+            ConfigManager.getInstance().getImageMetadataPath().toFile();
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 
+    @Json(naming = Json.Naming.LowerUnderscore)
     public static record ImageMetadata(
             String buildDate, String commitSha, String commitTag, String imageName, String imageSource) {}
 
     private static Optional<ImageMetadata> getImageMetadata() {
-        if (!imageMetadataFile.toFile().exists()) {
+        if (!imageMetadataFile.exists()) {
             logger.warn("Photon cannot locate OS image metadata at " + imageMetadataFile.toString());
             return Optional.empty();
         }
 
-        try {
-            String content = Files.readString(imageMetadataFile).strip();
-
-            ObjectMapper mapper =
-                    new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-
-            ImageMetadata md = mapper.readValue(content, ImageMetadata.class);
+        try (InputStream stream = new FileInputStream(imageMetadataFile)) {
+            ImageMetadata md = Jsonb.instance().type(ImageMetadata.class).fromJson(stream);
 
             if (md.buildDate() == null
                     && md.commitSha() == null

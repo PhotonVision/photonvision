@@ -31,15 +31,14 @@
 #include <utility>
 #include <vector>
 
-#include <cscore_cv.h>
-#include <frc/apriltag/AprilTag.h>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/objdetect.hpp>
-#include <units/length.h>
+#include <wpi/apriltag/AprilTag.hpp>
+#include <wpi/cs/CvSource.hpp>
+#include <wpi/units/length.hpp>
 
-#include "SimCameraProperties.h"
-#include "photon/estimation/RotTrlTransform3d.h"
+#include "photon/simulation/SimCameraProperties.h"
 
 namespace mathutil {
 template <typename T>
@@ -50,14 +49,16 @@ int sgn(T val) {
 
 namespace photon {
 namespace VideoSimUtil {
-static constexpr int kNumTags36h11 = 30;
+// Tag IDs start at 0, this should be set to 1 greater than the maximum tag ID
+// required
+static constexpr int kNumTags36h11 = 40;
 
-static constexpr units::meter_t fieldLength{16.54175_m};
-static constexpr units::meter_t fieldWidth{8.0137_m};
+static constexpr wpi::units::meter_t fieldLength{16.54175_m};
+static constexpr wpi::units::meter_t fieldWidth{8.0137_m};
 
 static cv::Mat Get36h11TagImage(int id) {
-  wpi::RawFrame frame;
-  frc::AprilTag::Generate36h11AprilTagImage(&frame, id);
+  wpi::util::RawFrame frame;
+  wpi::apriltag::AprilTag::Generate36h11AprilTagImage(&frame, id);
   cv::Mat markerImage{frame.height, frame.width, CV_8UC1, frame.data,
                       static_cast<size_t>(frame.stride)};
   cv::Mat markerClone = markerImage.clone();
@@ -73,6 +74,16 @@ static std::unordered_map<int, cv::Mat> LoadAprilTagImages() {
   return retVal;
 }
 
+/**
+ * Gets the points representing the corners of this image. Because image pixels
+ * are accessed through a cv::Mat, the point (0,0) actually represents the
+ * center of the top-left pixel and not the actual top-left corner.
+ *
+ * <p>Order of corners returned is: [BL, BR, TR, TL]
+ *
+ * @param size Size of image
+ * @return The corners
+ */
 static std::vector<cv::Point2f> GetImageCorners(const cv::Size& size) {
   std::vector<cv::Point2f> retVal{};
   retVal.emplace_back(cv::Point2f{-0.5f, size.height - 0.5f});
@@ -82,6 +93,12 @@ static std::vector<cv::Point2f> GetImageCorners(const cv::Size& size) {
   return retVal;
 }
 
+/**
+ * Gets the points representing the marker(black square) corners.
+ *
+ * @param scale The scale of the tag image (10*scale x 10*scale image)
+ * @return The points
+ */
 static std::vector<cv::Point2f> Get36h11MarkerPts(int scale) {
   cv::Rect2f roi36h11{cv::Point2f{1, 1}, cv::Point2f{8, 8}};
   roi36h11.x *= scale;
@@ -96,6 +113,11 @@ static std::vector<cv::Point2f> Get36h11MarkerPts(int scale) {
   return pts;
 }
 
+/**
+ * Gets the points representing the marker(black square) corners.
+ *
+ * @return The points
+ */
 static std::vector<cv::Point2f> Get36h11MarkerPts() {
   return Get36h11MarkerPts(1);
 }
@@ -104,12 +126,26 @@ static const std::unordered_map<int, cv::Mat> kTag36h11Images =
     LoadAprilTagImages();
 static const std::vector<cv::Point2f> kTag36h11MarkPts = Get36h11MarkerPts();
 
-[[maybe_unused]] static void UpdateVideoProp(cs::CvSource& video,
+/** Updates the properties of this cs::CvSource video stream with the given
+ * camera properties. */
+[[maybe_unused]] static void UpdateVideoProp(wpi::cs::CvSource& video,
                                              const SimCameraProperties& prop) {
   video.SetResolution(prop.GetResWidth(), prop.GetResHeight());
   video.SetFPS(prop.GetFPS().to<int>());
 }
-
+/**
+ * Warps the image of a specific 36h11 AprilTag onto the destination image at
+ * the given points.
+ *
+ * @param tagId The id of the specific tag to warp onto the destination image
+ * @param dstPoints Points(4) in destination image where the tag marker(black
+ * square) corners should be warped onto.
+ * @param antialiasing If antialiasing should be performed by automatically
+ *     supersampling/interpolating the warped image. This should be used if
+ * better stream quality is desired or target detection is being done on the
+ * stream, but can hurt performance.
+ * @param destination The destination image to place the warped tag image onto.
+ */
 [[maybe_unused]] static void Warp165h5TagImage(
     int tagId, const std::vector<cv::Point2f>& dstPoints, bool antialiasing,
     cv::Mat& destination) {
@@ -232,14 +268,32 @@ static const std::vector<cv::Point2f> kTag36h11MarkPts = Get36h11MarkerPts();
   cv::copyTo(tempRoi, destination(boundingRect), tempMask);
 }
 
+/**
+ * Given a line thickness in a 640x480 image, try to scale to the given
+ * destination image resolution.
+ *
+ * @param thickness480p A hypothetical line thickness in a 640x480 image
+ * @param destination The destination image to scale to
+ * @return Scaled thickness which cannot be less than 1
+ */
 static double GetScaledThickness(double thickness480p,
-                                 const cv::Mat& destinationMat) {
-  double scaleX = destinationMat.size().width / 640.0;
-  double scaleY = destinationMat.size().height / 480.0;
+                                 const cv::Mat& destination) {
+  double scaleX = destination.size().width / 640.0;
+  double scaleY = destination.size().height / 480.0;
   double minScale = std::min(scaleX, scaleY);
   return std::max(thickness480p * minScale, 1.0);
 }
 
+/**
+ * Draw a filled ellipse in the destination image.
+ *
+ * @param dstPoints The points in the destination image representing the
+ * rectangle in which the ellipse is inscribed.
+ * @param color The color of the ellipse. This is a scalar with BGR values
+ * (0-255)
+ * @param destination The destination image to draw onto. The image should be in
+ * the BGR color space.
+ */
 [[maybe_unused]] static void DrawInscribedEllipse(
     const std::vector<cv::Point2f>& dstPoints, const cv::Scalar& color,
     cv::Mat& destination) {
@@ -261,6 +315,16 @@ static void DrawPoly(const std::vector<cv::Point2f>& dstPoints, int thickness,
   }
 }
 
+/**
+ * Draws a contour around the given points and text of the id onto the
+ * destination image.
+ *
+ * @param id Fiducial ID number to draw
+ * @param dstPoints Points representing the four corners of the tag marker(black
+ * square) in the destination image.
+ * @param destination The destination image to draw onto. The image should be in
+ * the BGR color space.
+ */
 [[maybe_unused]] static void DrawTagDetection(
     int id, const std::vector<cv::Point2f>& dstPoints, cv::Mat& destination) {
   double thickness = GetScaledThickness(1, destination);
@@ -275,91 +339,122 @@ static void DrawPoly(const std::vector<cv::Point2f>& dstPoints, int thickness,
               static_cast<int>(thickness), cv::LINE_AA);
 }
 
-static std::vector<std::vector<frc::Translation3d>> GetFieldWallLines() {
-  std::vector<std::vector<frc::Translation3d>> list;
+/**
+ * The translations used to draw the field side walls and driver station walls.
+ * It is a vector of vectors because the translations are not all connected.
+ */
+static std::vector<std::vector<wpi::math::Translation3d>> GetFieldWallLines() {
+  std::vector<std::vector<wpi::math::Translation3d>> list;
 
-  const units::meter_t sideHt = 19.5_in;
-  const units::meter_t driveHt = 35_in;
-  const units::meter_t topHt = 78_in;
+  const wpi::units::meter_t sideHt = 19.5_in;
+  const wpi::units::meter_t driveHt = 35_in;
+  const wpi::units::meter_t topHt = 78_in;
 
   // field floor
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, 0_m, 0_m},
-      frc::Translation3d{fieldLength, 0_m, 0_m},
-      frc::Translation3d{fieldLength, fieldWidth, 0_m},
-      frc::Translation3d{0_m, fieldWidth, 0_m},
-      frc::Translation3d{0_m, 0_m, 0_m}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, 0_m, 0_m},
+      wpi::math::Translation3d{fieldLength, 0_m, 0_m},
+      wpi::math::Translation3d{fieldLength, fieldWidth, 0_m},
+      wpi::math::Translation3d{0_m, fieldWidth, 0_m},
+      wpi::math::Translation3d{0_m, 0_m, 0_m}});
 
   // right side wall
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, 0_m, 0_m}, frc::Translation3d{0_m, 0_m, sideHt},
-      frc::Translation3d{fieldLength, 0_m, sideHt},
-      frc::Translation3d{fieldLength, 0_m, 0_m}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, 0_m, 0_m},
+      wpi::math::Translation3d{0_m, 0_m, sideHt},
+      wpi::math::Translation3d{fieldLength, 0_m, sideHt},
+      wpi::math::Translation3d{fieldLength, 0_m, 0_m}});
 
   // red driverstation
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{fieldLength, 0_m, sideHt},
-      frc::Translation3d{fieldLength, 0_m, topHt},
-      frc::Translation3d{fieldLength, fieldWidth, topHt},
-      frc::Translation3d{fieldLength, fieldWidth, sideHt},
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{fieldLength, 0_m, sideHt},
+      wpi::math::Translation3d{fieldLength, 0_m, topHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, topHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, sideHt},
   });
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{fieldLength, 0_m, driveHt},
-      frc::Translation3d{fieldLength, fieldWidth, driveHt}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{fieldLength, 0_m, driveHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, driveHt}});
 
   // left side wall
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, fieldWidth, 0_m},
-      frc::Translation3d{0_m, fieldWidth, sideHt},
-      frc::Translation3d{fieldLength, fieldWidth, sideHt},
-      frc::Translation3d{fieldLength, fieldWidth, 0_m}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, fieldWidth, 0_m},
+      wpi::math::Translation3d{0_m, fieldWidth, sideHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, sideHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, 0_m}});
 
   // blue driverstation
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, 0_m, sideHt},
-      frc::Translation3d{0_m, 0_m, topHt},
-      frc::Translation3d{0_m, fieldWidth, topHt},
-      frc::Translation3d{0_m, fieldWidth, sideHt},
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, 0_m, sideHt},
+      wpi::math::Translation3d{0_m, 0_m, topHt},
+      wpi::math::Translation3d{0_m, fieldWidth, topHt},
+      wpi::math::Translation3d{0_m, fieldWidth, sideHt},
   });
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, 0_m, driveHt},
-      frc::Translation3d{0_m, fieldWidth, driveHt}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, 0_m, driveHt},
+      wpi::math::Translation3d{0_m, fieldWidth, driveHt}});
 
   return list;
 }
 
-static std::vector<std::vector<frc::Translation3d>> GetFieldFloorLines(
+/**
+ * The translations used to draw the field floor subdivisions (not the floor
+ * outline). It is a vector of vectors because the translations are not all
+ * connected.
+ *
+ * @param subdivisions How many "subdivisions" along the width/length of the
+ * floor. E.g. 3 subdivisions would mean 2 lines along the length and 2 lines
+ * along the width creating a 3x3 "grid".
+ */
+static std::vector<std::vector<wpi::math::Translation3d>> GetFieldFloorLines(
     int subdivisions) {
-  std::vector<std::vector<frc::Translation3d>> list;
-  const units::meter_t subLength = fieldLength / subdivisions;
-  const units::meter_t subWidth = fieldWidth / subdivisions;
+  std::vector<std::vector<wpi::math::Translation3d>> list;
+  const wpi::units::meter_t subLength = fieldLength / subdivisions;
+  const wpi::units::meter_t subWidth = fieldWidth / subdivisions;
 
   for (int i = 0; i < subdivisions; i++) {
-    list.emplace_back(std::vector<frc::Translation3d>{
-        frc::Translation3d{0_m, subWidth * (i + 1), 0_m},
-        frc::Translation3d{fieldLength, subWidth * (i + 1), 0_m}});
-    list.emplace_back(std::vector<frc::Translation3d>{
-        frc::Translation3d{subLength * (i + 1), 0_m, 0_m},
-        frc::Translation3d{subLength * (i + 1), fieldWidth, 0_m}});
+    list.emplace_back(std::vector<wpi::math::Translation3d>{
+        wpi::math::Translation3d{0_m, subWidth * (i + 1), 0_m},
+        wpi::math::Translation3d{fieldLength, subWidth * (i + 1), 0_m}});
+    list.emplace_back(std::vector<wpi::math::Translation3d>{
+        wpi::math::Translation3d{subLength * (i + 1), 0_m, 0_m},
+        wpi::math::Translation3d{subLength * (i + 1), fieldWidth, 0_m}});
   }
   return list;
 }
 
+/**
+ * Convert 3D lines represented by the given series of translations into a
+ * polygon(s) in the camera's image.
+ *
+ * @param camRt The change in basis from world coordinates to camera
+ * coordinates. See RotTrlTransform3d#makeRelativeTo(Pose3d).
+ * @param prop The simulated camera's properties.
+ * @param trls A sequential series of translations defining the polygon to be
+ * drawn.
+ * @param resolution Resolution as a fraction(0 - 1) of the video frame's
+ * diagonal length in pixels. Line segments will be subdivided if they exceed
+ * this resolution.
+ * @param isClosed If the final translation should also draw a line to the first
+ * translation.
+ * @param destination The destination image that is being drawn to.
+ * @return A list of polygons(which are an array of points)
+ */
 static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
     const RotTrlTransform3d& camRt, const SimCameraProperties& prop,
-    const std::vector<frc::Translation3d>& trls, double resolution,
+    const std::vector<wpi::math::Translation3d>& trls, double resolution,
     bool isClosed, cv::Mat& destination) {
   resolution = std::hypot(destination.size().height, destination.size().width) *
                resolution;
-  std::vector<frc::Translation3d> pts{trls};
+  std::vector<wpi::math::Translation3d> pts{trls};
   if (isClosed) {
     pts.emplace_back(pts[0]);
   }
   std::vector<std::vector<cv::Point2f>> polyPointList{};
 
   for (size_t i = 0; i < pts.size() - 1; i++) {
-    frc::Translation3d pta = pts[i];
-    frc::Translation3d ptb = pts[i + 1];
+    wpi::math::Translation3d pta = pts[i];
+    wpi::math::Translation3d ptb = pts[i + 1];
 
     std::pair<std::optional<double>, std::optional<double>> inter =
         prop.GetVisibleLine(camRt, pta, ptb);
@@ -369,8 +464,8 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
 
     double inter1 = inter.first.value();
     double inter2 = inter.second.value();
-    frc::Translation3d baseDelta = ptb - pta;
-    frc::Translation3d old_pta = pta;
+    wpi::math::Translation3d baseDelta = ptb - pta;
+    wpi::math::Translation3d old_pta = pta;
     if (inter1 > 0) {
       pta = old_pta + baseDelta * inter1;
     }
@@ -386,8 +481,8 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
 
     double pxDist = std::hypot(pxb.x - pxa.x, pxb.y - pxa.y);
     int subdivisions = static_cast<int>(pxDist / resolution);
-    frc::Translation3d subDelta = baseDelta / (subdivisions + 1);
-    std::vector<frc::Translation3d> subPts{};
+    wpi::math::Translation3d subDelta = baseDelta / (subdivisions + 1);
+    std::vector<wpi::math::Translation3d> subPts{};
     for (int j = 0; j < subdivisions; j++) {
       subPts.emplace_back(pta + (subDelta * (j + 1)));
     }
@@ -403,6 +498,25 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
   return polyPointList;
 }
 
+/**
+ * Draw a wireframe of the field to the given image.
+ *
+ * @param camRt The change in basis from world coordinates to camera
+ * coordinates. See RotTrlTransform3d#makeRelativeTo(wpi::math::Pose3d).
+ * @param prop The simulated camera's properties.
+ * @param resolution Resolution as a fraction(0 - 1) of the video frame's
+ * diagonal length in pixels. Line segments will be subdivided if they exceed
+ * this resolution.
+ * @param wallThickness Thickness of the lines used for drawing the field walls
+ * in pixels. This is scaled by #getScaledThickness(double, cv::Mat).
+ * @param wallColor Color of the lines used for drawing the field walls.
+ * @param floorSubdivisions A NxN "grid" is created from the floor where this
+ * parameter is N, which defines the floor lines.
+ * @param floorThickness Thickness of the lines used for drawing the field floor
+ * grid in pixels. This is scaled by #getScaledThickness(double, cv::Mat).
+ * @param floorColor Color of the lines used for drawing the field floor grid.
+ * @param destination The destination image to draw to.
+ */
 [[maybe_unused]] static void DrawFieldWireFrame(
     const RotTrlTransform3d& camRt, const SimCameraProperties& prop,
     double resolution, double wallThickness, const cv::Scalar& wallColor,

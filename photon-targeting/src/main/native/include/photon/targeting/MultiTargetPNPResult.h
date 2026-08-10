@@ -19,11 +19,6 @@
 
 #include <utility>
 
-#include <frc/geometry/Transform3d.h>
-#include <wpi/SmallVector.h>
-
-#include "PnpResult.h"
-#include "photon/dataflow/structures/Packet.h"
 #include "photon/struct/MultiTargetPNPResultStruct.h"
 
 namespace photon {

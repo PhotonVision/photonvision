@@ -17,44 +17,50 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.avaje.jsonb.Json;
 import java.util.ArrayList;
+import java.util.List;
+import org.photonvision.common.hardware.statusLED.StatusLEDType;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Json
 public class HardwareConfig {
-    public final String deviceName;
-    public final String deviceLogoPath;
-    public final String supportURL;
+    public String deviceName;
 
     // LED control
-    public final ArrayList<Integer> ledPins;
-    public final boolean ledsCanDim;
-    public final ArrayList<Integer> ledBrightnessRange;
-    public final int ledPWMFrequency;
-    public final ArrayList<Integer> statusRGBPins;
-    public final boolean statusRGBActiveHigh;
+    public List<Integer> ledPins;
+    public boolean ledsCanDim;
+    public List<Integer> ledBrightnessRange;
+    public int ledPWMFrequency;
+    public StatusLEDType statusLEDType;
+
+    // MIGRATION: 2026
+    @Json.Alias("statusRGBPins")
+    public List<Integer> statusLEDPins;
+
+    // MIGRATION: 2026
+    @Json.Alias("statusRGBActiveHigh")
+    public boolean statusLEDActiveHigh;
 
     // Custom GPIO
-    public final String getGPIOCommand;
-    public final String setGPIOCommand;
-    public final String setPWMCommand;
-    public final String setPWMFrequencyCommand;
-    public final String releaseGPIOCommand;
+    public String getGPIOCommand;
+    public String setGPIOCommand;
+    public String setPWMCommand;
+    public String setPWMFrequencyCommand;
+    public String releaseGPIOCommand;
 
     // Device stuff
-    public final String restartHardwareCommand;
-    public final double vendorFOV; // -1 for unmanaged
+    public String restartHardwareCommand;
+    public double vendorFOV; // -1 for unmanaged
 
     public HardwareConfig(
             String deviceName,
-            String deviceLogoPath,
-            String supportURL,
-            ArrayList<Integer> ledPins,
+            List<Integer> ledPins,
             boolean ledsCanDim,
-            ArrayList<Integer> ledBrightnessRange,
+            List<Integer> ledBrightnessRange,
             int ledPwmFrequency,
-            ArrayList<Integer> statusRGBPins,
-            boolean statusRGBActiveHigh,
+            StatusLEDType statusLEDType,
+            List<Integer> statusLEDPins,
+            boolean statusLEDActiveHigh,
             String getGPIOCommand,
             String setGPIOCommand,
             String setPWMCommand,
@@ -63,14 +69,13 @@ public class HardwareConfig {
             String restartHardwareCommand,
             double vendorFOV) {
         this.deviceName = deviceName;
-        this.deviceLogoPath = deviceLogoPath;
-        this.supportURL = supportURL;
         this.ledPins = ledPins;
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
         this.ledPWMFrequency = ledPwmFrequency;
-        this.statusRGBPins = statusRGBPins;
-        this.statusRGBActiveHigh = statusRGBActiveHigh;
+        this.statusLEDType = statusLEDType;
+        this.statusLEDPins = statusLEDPins;
+        this.statusLEDActiveHigh = statusLEDActiveHigh;
         this.getGPIOCommand = getGPIOCommand;
         this.setGPIOCommand = setGPIOCommand;
         this.setPWMCommand = setPWMCommand;
@@ -82,14 +87,13 @@ public class HardwareConfig {
 
     public HardwareConfig() {
         deviceName = "";
-        deviceLogoPath = "";
-        supportURL = "";
         ledPins = new ArrayList<>();
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
         ledPWMFrequency = 0;
-        statusRGBPins = new ArrayList<>();
-        statusRGBActiveHigh = false;
+        statusLEDType = StatusLEDType.RGB;
+        statusLEDPins = new ArrayList<>();
+        statusLEDActiveHigh = false;
         getGPIOCommand = "";
         setGPIOCommand = "";
         setPWMCommand = "";
@@ -121,10 +125,6 @@ public class HardwareConfig {
     public String toString() {
         return "HardwareConfig[deviceName="
                 + deviceName
-                + ", deviceLogoPath="
-                + deviceLogoPath
-                + ", supportURL="
-                + supportURL
                 + ", ledPins="
                 + ledPins
                 + ", ledsCanDim="
@@ -133,10 +133,12 @@ public class HardwareConfig {
                 + ledBrightnessRange
                 + ", ledPWMFrequency="
                 + ledPWMFrequency
-                + ", statusRGBPins="
-                + statusRGBPins
-                + ", statusRGBActiveHigh"
-                + statusRGBActiveHigh
+                + ", statusLEDType="
+                + statusLEDType
+                + ", statusLEDPins="
+                + statusLEDPins
+                + ", statusLEDActiveHigh"
+                + statusLEDActiveHigh
                 + ", getGPIOCommand="
                 + getGPIOCommand
                 + ", setGPIOCommand="

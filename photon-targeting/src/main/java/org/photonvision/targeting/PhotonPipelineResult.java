@@ -17,7 +17,6 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,19 +24,20 @@ import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.PhotonPipelineResultSerde;
 import org.photonvision.targeting.proto.PhotonPipelineResultProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.util.protobuf.ProtobufSerializable;
 
 /** Represents a pipeline result from a PhotonCamera. */
 public class PhotonPipelineResult
         implements ProtobufSerializable, PhotonStructSerializable<PhotonPipelineResult> {
     private static boolean HAS_WARNED = false;
 
-    // Frame capture metadata
+    /** Frame capture metadata. */
     public PhotonPipelineMetadata metadata;
 
-    // Targets to store.
+    /** The list of targets detected by the pipeline. */
     public List<PhotonTrackedTarget> targets = new ArrayList<>();
 
-    // Multi-tag result
+    /** The multitag result, if using an AprilTag pipeline with Multi-Target Estimation enabled. */
     public Optional<MultiTargetPNPResult> multitagResult;
 
     /** Constructs an empty pipeline result. */
@@ -53,6 +53,7 @@ public class PhotonPipelineResult
      *     coprocessor captured the image this result contains the targeting info of
      * @param publishTimestampMicros The time, in uS in the coprocessor's timebase, that the
      *     coprocessor published targeting info
+     * @param timeSinceLastPong The time since the last Time Sync Pong in uS.
      * @param targets The list of targets identified by the pipeline.
      */
     public PhotonPipelineResult(
@@ -76,6 +77,7 @@ public class PhotonPipelineResult
      *     captured the image this result contains the targeting info of
      * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
      *     published targeting info
+     * @param timeSinceLastPong The time since the last Time Sync Pong in uS.
      * @param targets The list of targets identified by the pipeline.
      * @param result Result from multi-target PNP.
      */
@@ -155,17 +157,20 @@ public class PhotonPipelineResult
     }
 
     /**
-     * Return the latest multi-target result. Be sure to check
-     * getMultiTagResult().estimatedPose.isPresent before using the pose estimate!
+     * Return the latest multi-target result. Be sure to check {@code getMultiTagResult().isPresent()}
+     * before using the pose estimate!
+     *
+     * @return The multi-target result. Empty if there's no multi-target result/Multi-Target
+     *     Estimation is disabled in the UI.
      */
     public Optional<MultiTargetPNPResult> getMultiTagResult() {
         return multitagResult;
     }
 
     /**
-     * Returns the estimated time the frame was taken, in the Time Sync Server's time base (nt::Now).
-     * This is calculated using the estimated offset between Time Sync Server time and local time. The
-     * robot shall run a server, so the offset shall be 0.
+     * Returns the estimated time the frame was taken, in the Time Sync Server's time base
+     * (wpi::nt::Now). This is calculated using the estimated offset between Time Sync Server time and
+     * local time. The robot shall run a server, so the offset shall be 0.
      *
      * @return The timestamp in seconds
      */
@@ -212,7 +217,10 @@ public class PhotonPipelineResult
         return true;
     }
 
+    /** PhotonPipelineResult PhotonStruct for serialization. */
     public static final PhotonPipelineResultSerde photonStruct = new PhotonPipelineResultSerde();
+
+    /** PhotonPipelineResult Protobuf for serialization. */
     public static final PhotonPipelineResultProto proto = new PhotonPipelineResultProto();
 
     @Override

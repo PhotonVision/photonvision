@@ -24,28 +24,24 @@
 
 #include "photon/PhotonPoseEstimator.h"
 
-#include <cmath>
-#include <iostream>
+#include <array>
 #include <limits>
-#include <map>
-#include <memory>
-#include <span>
-#include <string>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include <Eigen/Core>
-#include <frc/Errors.h>
-#include <frc/geometry/Pose3d.h>
-#include <frc/geometry/Rotation3d.h>
-#include <frc/geometry/Transform3d.h>
-#include <hal/FRCUsageReporting.h>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
-#include <units/angle.h>
-#include <units/math.h>
-#include <units/time.h>
+#include <wpi/hal/UsageReporting.hpp>
+#include <wpi/math/geometry/Pose3d.hpp>
+#include <wpi/math/geometry/Rotation3d.hpp>
+#include <wpi/math/geometry/Transform3d.hpp>
+#include <wpi/system/Errors.hpp>
+#include <wpi/units/angle.hpp>
+#include <wpi/units/math.hpp>
+#include <wpi/units/time.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/estimation/TargetModel.h"
@@ -55,144 +51,59 @@
 
 #define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include <opencv2/core/eigen.hpp>
-
 namespace photon {
 
 namespace detail {
-cv::Point3d ToPoint3d(const frc::Translation3d& translation);
+cv::Point3d ToPoint3d(const wpi::math::Translation3d& translation);
 std::optional<std::array<cv::Point3d, 4>> CalcTagCorners(
-    int tagID, const frc::AprilTagFieldLayout& aprilTags);
-frc::Pose3d ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec);
-cv::Point3d TagCornerToObjectPoint(units::meter_t cornerX,
-                                   units::meter_t cornerY, frc::Pose3d tagPose);
+    int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags);
+wpi::math::Pose3d ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec);
+cv::Point3d TagCornerToObjectPoint(wpi::units::meter_t cornerX,
+                                   wpi::units::meter_t cornerY,
+                                   wpi::math::Pose3d tagPose);
 }  // namespace detail
 
-PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
-                                         PoseStrategy strat,
-                                         frc::Transform3d robotToCamera)
+PhotonPoseEstimator::PhotonPoseEstimator(
+    wpi::apriltag::AprilTagFieldLayout tags,
+    wpi::math::Transform3d robotToCamera)
     : aprilTags(tags),
-      strategy(strat),
       m_robotToCamera(robotToCamera),
-      lastPose(frc::Pose3d()),
-      referencePose(frc::Pose3d()),
-      poseCacheTimestamp(-1_s),
-      headingBuffer(frc::TimeInterpolatableBuffer<frc::Rotation2d>(1_s)) {
-  HAL_Report(HALUsageReporting::kResourceType_PhotonPoseEstimator,
-             InstanceCount);
+      headingBuffer(
+          wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
+  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
   InstanceCount++;
 }
 
-void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
-  if (strategy == MULTI_TAG_PNP_ON_COPROCESSOR ||
-      strategy == MULTI_TAG_PNP_ON_RIO) {
-    FRC_ReportError(
-        frc::warn::Warning,
-        "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity",
-        "");
-    strategy = LOWEST_AMBIGUITY;
-  }
-  if (this->multiTagFallbackStrategy != strategy) {
-    InvalidatePoseCache();
-  }
-  multiTagFallbackStrategy = strategy;
-}
-
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    const PhotonPipelineResult& result,
-    std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
-    std::optional<PhotonCamera::DistortionMatrix> cameraDistCoeffs,
-    std::optional<ConstrainedSolvepnpParams> constrainedPnpParams) {
+bool ShouldEstimate(const PhotonPipelineResult& result) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
-    FRC_ReportError(frc::warn::Warning,
-                    "Result timestamp was reported in the past!");
-    return std::nullopt;
+    WPILIB_ReportError(wpi::warn::Warning,
+                       "Result timestamp was reported in the past!");
+    return false;
   }
 
-  // If the pose cache timestamp was set, and the result is from the same
-  // timestamp, return an empty result
-  if (poseCacheTimestamp > 0_s &&
-      units::math::abs(poseCacheTimestamp - result.GetTimestamp()) < 0.001_ms) {
-    return std::nullopt;
-  }
-
-  // Remember the timestamp of the current result used
-  poseCacheTimestamp = result.GetTimestamp();
-
-  // If no targets seen, trivial case -- return empty result
-  if (!result.HasTargets()) {
-    return std::nullopt;
-  }
-
-  return Update(result, cameraMatrixData, cameraDistCoeffs,
-                constrainedPnpParams, this->strategy);
+  // If no targets seen, trivial case -- can't do estimation
+  return result.HasTargets();
 }
 
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    const PhotonPipelineResult& result,
-    std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
-    std::optional<PhotonCamera::DistortionMatrix> cameraDistCoeffs,
-    std::optional<ConstrainedSolvepnpParams> constrainedPnpParams,
-    PoseStrategy strategy) {
-  std::optional<EstimatedRobotPose> ret = std::nullopt;
-
-  switch (strategy) {
-    case LOWEST_AMBIGUITY:
-      ret = LowestAmbiguityStrategy(result);
-      break;
-    case CLOSEST_TO_CAMERA_HEIGHT:
-      ret = ClosestToCameraHeightStrategy(result);
-      break;
-    case CLOSEST_TO_REFERENCE_POSE:
-      ret = ClosestToReferencePoseStrategy(result);
-      break;
-    case CLOSEST_TO_LAST_POSE:
-      SetReferencePose(lastPose);
-      ret = ClosestToReferencePoseStrategy(result);
-      break;
-    case AVERAGE_BEST_TARGETS:
-      ret = AverageBestTargetsStrategy(result);
-      break;
-    case MULTI_TAG_PNP_ON_COPROCESSOR:
-      ret = MultiTagOnCoprocStrategy(result);
-      break;
-    case MULTI_TAG_PNP_ON_RIO:
-      if (cameraMatrixData && cameraDistCoeffs) {
-        ret = MultiTagOnRioStrategy(result, cameraMatrixData, cameraDistCoeffs);
-      } else {
-        FRC_ReportError(frc::warn::Warning,
-                        "No camera calibration provided to multi-tag-on-rio!",
-                        "");
-      }
-      break;
-    case CONSTRAINED_SOLVEPNP:
-      ret = ConstrainedPnpStrategy(result, cameraMatrixData, cameraDistCoeffs,
-                                   constrainedPnpParams);
-      break;
-    case PNP_DISTANCE_TRIG_SOLVE:
-      ret = PnpDistanceTrigSolveStrategy(result);
-      break;
-    default:
-      FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
-                      "");
-      ret = std::nullopt;
+std::optional<EstimatedRobotPose>
+PhotonPoseEstimator::EstimateLowestAmbiguityPose(
+    PhotonPipelineResult cameraResult) {
+  if (!ShouldEstimate(cameraResult)) {
+    return std::nullopt;
   }
-
-  if (ret) {
-    lastPose = ret->estimatedPose;
-  }
-  return ret;
-}
-
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::LowestAmbiguityStrategy(
-    PhotonPipelineResult result) {
   double lowestAmbiguityScore = std::numeric_limits<double>::infinity();
-  auto targets = result.GetTargets();
+  auto targets = cameraResult.GetTargets();
   auto foundIt = targets.end();
   for (auto it = targets.begin(); it != targets.end(); ++it) {
-    if (it->GetPoseAmbiguity() < lowestAmbiguityScore) {
+    double targetPoseAmbiguity = it->GetPoseAmbiguity();
+    // Skip non-fiducial targets (ambiguity == -1), otherwise they win over
+    // every fiducial target and the whole estimate is thrown away when
+    // GetTagPose(-1) returns nullopt.
+    if (targetPoseAmbiguity != -1 &&
+        targetPoseAmbiguity < lowestAmbiguityScore) {
       foundIt = it;
-      lowestAmbiguityScore = it->GetPoseAmbiguity();
+      lowestAmbiguityScore = targetPoseAmbiguity;
     }
   }
 
@@ -202,87 +113,101 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::LowestAmbiguityStrategy(
 
   auto& bestTarget = *foundIt;
 
-  std::optional<frc::Pose3d> fiducialPose =
+  std::optional<wpi::math::Pose3d> fiducialPose =
       aprilTags.GetTagPose(bestTarget.GetFiducialId());
   if (!fiducialPose) {
-    FRC_ReportError(frc::warn::Warning,
-                    "Tried to get pose of unknown April Tag: {}",
-                    bestTarget.GetFiducialId());
+    WPILIB_ReportError(wpi::warn::Warning,
+                       "Tried to get pose of unknown April Tag: {}",
+                       bestTarget.GetFiducialId());
     return std::nullopt;
   }
 
+  std::array<PhotonTrackedTarget, 1> usedTargets{bestTarget};
   return EstimatedRobotPose{
       fiducialPose->TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
           .TransformBy(m_robotToCamera.Inverse()),
-      result.GetTimestamp(), result.GetTargets(), LOWEST_AMBIGUITY};
+      cameraResult.GetTimestamp(), usedTargets, LOWEST_AMBIGUITY};
 }
 
 std::optional<EstimatedRobotPose>
-PhotonPoseEstimator::ClosestToCameraHeightStrategy(
-    PhotonPipelineResult result) {
-  units::meter_t smallestHeightDifference =
-      units::meter_t(std::numeric_limits<double>::infinity());
+PhotonPoseEstimator::EstimateClosestToCameraHeightPose(
+    PhotonPipelineResult cameraResult) {
+  if (!ShouldEstimate(cameraResult)) {
+    return std::nullopt;
+  }
+  wpi::units::meter_t smallestHeightDifference =
+      wpi::units::meter_t(std::numeric_limits<double>::infinity());
 
-  std::optional<EstimatedRobotPose> pose = std::nullopt;
+  std::optional<wpi::math::Pose3d> bestPose = std::nullopt;
+  std::optional<PhotonTrackedTarget> bestTarget = std::nullopt;
 
-  for (auto& target : result.GetTargets()) {
-    std::optional<frc::Pose3d> fiducialPose =
+  for (auto& target : cameraResult.GetTargets()) {
+    std::optional<wpi::math::Pose3d> fiducialPose =
         aprilTags.GetTagPose(target.GetFiducialId());
     if (!fiducialPose) {
-      FRC_ReportError(frc::warn::Warning,
-                      "Tried to get pose of unknown April Tag: {}",
-                      target.GetFiducialId());
+      WPILIB_ReportError(wpi::warn::Warning,
+                         "Tried to get pose of unknown April Tag: {}",
+                         target.GetFiducialId());
       continue;
     }
-    frc::Pose3d const targetPose = *fiducialPose;
+    wpi::math::Pose3d const targetPose = *fiducialPose;
 
-    units::meter_t const alternativeDifference = units::math::abs(
+    wpi::units::meter_t const alternativeDifference = wpi::units::math::abs(
         m_robotToCamera.Z() -
         targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
             .Z());
 
-    units::meter_t const bestDifference = units::math::abs(
+    wpi::units::meter_t const bestDifference = wpi::units::math::abs(
         m_robotToCamera.Z() -
         targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()).Z());
 
     if (alternativeDifference < smallestHeightDifference) {
       smallestHeightDifference = alternativeDifference;
-      pose = EstimatedRobotPose{
+      bestPose =
           targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
-              .TransformBy(m_robotToCamera.Inverse()),
-          result.GetTimestamp(), result.GetTargets(), CLOSEST_TO_CAMERA_HEIGHT};
+              .TransformBy(m_robotToCamera.Inverse());
+      bestTarget = target;
     }
     if (bestDifference < smallestHeightDifference) {
       smallestHeightDifference = bestDifference;
-      pose = EstimatedRobotPose{
+      bestPose =
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
-              .TransformBy(m_robotToCamera.Inverse()),
-          result.GetTimestamp(), result.GetTargets(), CLOSEST_TO_CAMERA_HEIGHT};
+              .TransformBy(m_robotToCamera.Inverse());
+      bestTarget = target;
     }
   }
 
-  return pose;
+  if (!bestTarget) {
+    return std::nullopt;
+  }
+  std::array<PhotonTrackedTarget, 1> usedTargets{*bestTarget};
+  return EstimatedRobotPose{*bestPose, cameraResult.GetTimestamp(), usedTargets,
+                            CLOSEST_TO_CAMERA_HEIGHT};
 }
 
 std::optional<EstimatedRobotPose>
-PhotonPoseEstimator::ClosestToReferencePoseStrategy(
-    PhotonPipelineResult result) {
-  units::meter_t smallestDifference =
-      units::meter_t(std::numeric_limits<double>::infinity());
-  units::second_t stateTimestamp = units::second_t(0);
-  frc::Pose3d pose = lastPose;
+PhotonPoseEstimator::EstimateClosestToReferencePose(
+    PhotonPipelineResult cameraResult, wpi::math::Pose3d referencePose) {
+  if (!ShouldEstimate(cameraResult)) {
+    return std::nullopt;
+  }
+  wpi::units::meter_t smallestDifference =
+      wpi::units::meter_t(std::numeric_limits<double>::infinity());
+  wpi::units::second_t stateTimestamp = wpi::units::second_t(0);
+  wpi::math::Pose3d pose;
+  std::optional<PhotonTrackedTarget> bestTarget = std::nullopt;
 
-  auto targets = result.GetTargets();
+  auto targets = cameraResult.GetTargets();
   for (auto& target : targets) {
-    std::optional<frc::Pose3d> fiducialPose =
+    std::optional<wpi::math::Pose3d> fiducialPose =
         aprilTags.GetTagPose(target.GetFiducialId());
     if (!fiducialPose) {
-      FRC_ReportError(frc::warn::Warning,
-                      "Tried to get pose of unknown April Tag: {}",
-                      target.GetFiducialId());
+      WPILIB_ReportError(wpi::warn::Warning,
+                         "Tried to get pose of unknown April Tag: {}",
+                         target.GetFiducialId());
       continue;
     }
-    frc::Pose3d targetPose = fiducialPose.value();
+    wpi::math::Pose3d targetPose = fiducialPose.value();
 
     const auto altPose =
         targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
@@ -291,29 +216,35 @@ PhotonPoseEstimator::ClosestToReferencePoseStrategy(
         targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
             .TransformBy(m_robotToCamera.Inverse());
 
-    units::meter_t const alternativeDifference = units::math::abs(
+    wpi::units::meter_t const alternativeDifference = wpi::units::math::abs(
         referencePose.Translation().Distance(altPose.Translation()));
-    units::meter_t const bestDifference = units::math::abs(
+    wpi::units::meter_t const bestDifference = wpi::units::math::abs(
         referencePose.Translation().Distance(bestPose.Translation()));
     if (alternativeDifference < smallestDifference) {
       smallestDifference = alternativeDifference;
       pose = altPose;
-      stateTimestamp = result.GetTimestamp();
+      stateTimestamp = cameraResult.GetTimestamp();
+      bestTarget = target;
     }
 
     if (bestDifference < smallestDifference) {
       smallestDifference = bestDifference;
       pose = bestPose;
-      stateTimestamp = result.GetTimestamp();
+      stateTimestamp = cameraResult.GetTimestamp();
+      bestTarget = target;
     }
   }
 
-  return EstimatedRobotPose{pose, stateTimestamp, result.GetTargets(),
+  if (!bestTarget) {
+    return std::nullopt;
+  }
+  std::array<PhotonTrackedTarget, 1> usedTargets{*bestTarget};
+  return EstimatedRobotPose{pose, stateTimestamp, usedTargets,
                             CLOSEST_TO_REFERENCE_POSE};
 }
 
 std::optional<std::array<cv::Point3d, 4>> detail::CalcTagCorners(
-    int tagID, const frc::AprilTagFieldLayout& aprilTags) {
+    int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags) {
   if (auto tagPose = aprilTags.GetTagPose(tagID); tagPose.has_value()) {
     return std::array{TagCornerToObjectPoint(-3_in, -3_in, *tagPose),
                       TagCornerToObjectPoint(+3_in, -3_in, *tagPose),
@@ -324,23 +255,23 @@ std::optional<std::array<cv::Point3d, 4>> detail::CalcTagCorners(
   }
 }
 
-cv::Point3d detail::ToPoint3d(const frc::Translation3d& translation) {
+cv::Point3d detail::ToPoint3d(const wpi::math::Translation3d& translation) {
   return cv::Point3d(-translation.Y().value(), -translation.Z().value(),
                      +translation.X().value());
 }
 
-cv::Point3d detail::TagCornerToObjectPoint(units::meter_t cornerX,
-                                           units::meter_t cornerY,
-                                           frc::Pose3d tagPose) {
-  frc::Translation3d cornerTrans =
-      tagPose.Translation() +
-      frc::Translation3d(0.0_m, cornerX, cornerY).RotateBy(tagPose.Rotation());
+cv::Point3d detail::TagCornerToObjectPoint(wpi::units::meter_t cornerX,
+                                           wpi::units::meter_t cornerY,
+                                           wpi::math::Pose3d tagPose) {
+  wpi::math::Translation3d cornerTrans =
+      tagPose.Translation() + wpi::math::Translation3d(0.0_m, cornerX, cornerY)
+                                  .RotateBy(tagPose.Rotation());
   return ToPoint3d(cornerTrans);
 }
 
-frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
-  using namespace frc;
-  using namespace units;
+wpi::math::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
+  using namespace wpi::math;
+  using namespace wpi::units;
 
   cv::Mat R;
   cv::Rodrigues(rvec, R);  // R is 3x3
@@ -361,41 +292,31 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
                 Rotation3d(rv));
 }
 
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
-    PhotonPipelineResult result) {
-  if (!result.MultiTagResult()) {
-    return Update(result, this->multiTagFallbackStrategy);
+std::optional<EstimatedRobotPose>
+PhotonPoseEstimator::EstimateCoprocMultiTagPose(
+    PhotonPipelineResult cameraResult) {
+  if (!cameraResult.MultiTagResult() || !ShouldEstimate(cameraResult)) {
+    return std::nullopt;
   }
 
-  const auto field2camera = result.MultiTagResult()->estimatedPose.best;
+  const auto field2camera = cameraResult.MultiTagResult()->estimatedPose.best;
 
   const auto fieldToRobot =
-      frc::Pose3d() + field2camera + m_robotToCamera.Inverse();
-  return photon::EstimatedRobotPose(fieldToRobot, result.GetTimestamp(),
-                                    result.GetTargets(),
+      wpi::math::Pose3d() + field2camera + m_robotToCamera.Inverse();
+  return photon::EstimatedRobotPose(fieldToRobot, cameraResult.GetTimestamp(),
+                                    cameraResult.GetTargets(),
                                     MULTI_TAG_PNP_ON_COPROCESSOR);
 }
 
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
-    PhotonPipelineResult result,
-    std::optional<PhotonCamera::CameraMatrix> camMat,
-    std::optional<PhotonCamera::DistortionMatrix> distCoeffs) {
-  using namespace frc;
-
-  if (!camMat || !distCoeffs) {
-    FRC_ReportError(frc::warn::Warning,
-                    "No camera calibration data provided to "
-                    "PhotonPoseEstimator::MultiTagOnRioStrategy!",
-                    "");
-    return Update(result, this->multiTagFallbackStrategy);
-  }
-
+std::optional<EstimatedRobotPose> PhotonPoseEstimator::EstimateRioMultiTagPose(
+    PhotonPipelineResult cameraResult, PhotonCamera::CameraMatrix cameraMatrix,
+    PhotonCamera::DistortionMatrix distCoeffs) {
   // Need at least 2 targets
-  if (!result.HasTargets() || result.GetTargets().size() < 2) {
-    return Update(result, this->multiTagFallbackStrategy);
+  if (cameraResult.GetTargets().size() < 2 || !ShouldEstimate(cameraResult)) {
+    return std::nullopt;
   }
 
-  auto const targets = result.GetTargets();
+  const auto targets = cameraResult.GetTargets();
 
   // List of corners mapped from 3d space (meters) to the 2d camera screen
   // (pixels).
@@ -418,7 +339,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
 
   // We should only do multi-tag if at least 2 tags (* 4 corners/tag)
   if (imagePoints.size() < 8) {
-    return Update(result, this->multiTagFallbackStrategy);
+    return std::nullopt;
   }
 
   // Output mats for results
@@ -426,183 +347,173 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
   {
-    cv::Mat cameraMatCV(camMat->rows(), camMat->cols(), CV_64F);
-    cv::eigen2cv(*camMat, cameraMatCV);
-    cv::Mat distCoeffsMatCV(distCoeffs->rows(), distCoeffs->cols(), CV_64F);
-    cv::eigen2cv(*distCoeffs, distCoeffsMatCV);
+    cv::Mat cameraMatCV(cameraMatrix.rows(), cameraMatrix.cols(), CV_64F);
+    cv::eigen2cv(cameraMatrix, cameraMatCV);
+    cv::Mat distCoeffsMatCV(distCoeffs.rows(), distCoeffs.cols(), CV_64F);
+    cv::eigen2cv(distCoeffs, distCoeffsMatCV);
 
     cv::solvePnP(objectPoints, imagePoints, cameraMatCV, distCoeffsMatCV, rvec,
                  tvec, false, cv::SOLVEPNP_SQPNP);
   }
 
-  const Pose3d pose = detail::ToPose3d(tvec, rvec);
+  const wpi::math::Pose3d pose = detail::ToPose3d(tvec, rvec);
 
-  return photon::EstimatedRobotPose(pose.TransformBy(m_robotToCamera.Inverse()),
-                                    result.GetTimestamp(), result.GetTargets(),
-                                    MULTI_TAG_PNP_ON_RIO);
+  return photon::EstimatedRobotPose(
+      pose.TransformBy(m_robotToCamera.Inverse()), cameraResult.GetTimestamp(),
+      cameraResult.GetTargets(), MULTI_TAG_PNP_ON_RIO);
 }
 
 std::optional<EstimatedRobotPose>
-PhotonPoseEstimator::PnpDistanceTrigSolveStrategy(PhotonPipelineResult result) {
-  PhotonTrackedTarget bestTarget = result.GetBestTarget();
-  std::optional<frc::Rotation2d> headingSampleOpt =
-      headingBuffer.Sample(result.GetTimestamp());
+PhotonPoseEstimator::EstimatePnpDistanceTrigSolvePose(
+    PhotonPipelineResult cameraResult) {
+  if (!ShouldEstimate(cameraResult)) {
+    return std::nullopt;
+  }
+  PhotonTrackedTarget bestTarget = cameraResult.GetBestTarget();
+  std::optional<wpi::math::Rotation2d> headingSampleOpt =
+      headingBuffer.Sample(cameraResult.GetTimestamp());
   if (!headingSampleOpt) {
-    FRC_ReportError(frc::warn::Warning,
-                    "There was no heading data! Use AddHeadingData to add it!");
+    WPILIB_ReportError(
+        wpi::warn::Warning,
+        "There was no heading data! Use AddHeadingData to add it!");
     return std::nullopt;
   }
 
-  frc::Rotation2d headingSample = headingSampleOpt.value();
+  wpi::math::Rotation2d headingSample = headingSampleOpt.value();
 
-  frc::Translation2d camToTagTranslation =
-      frc::Translation3d(
+  wpi::math::Translation2d camToTagTranslation =
+      wpi::math::Translation3d(
           bestTarget.GetBestCameraToTarget().Translation().Norm(),
-          frc::Rotation3d(0_rad, -units::degree_t(bestTarget.GetPitch()),
-                          -units::degree_t(bestTarget.GetYaw())))
+          wpi::math::Rotation3d(0_rad,
+                                -wpi::units::degree_t(bestTarget.GetPitch()),
+                                -wpi::units::degree_t(bestTarget.GetYaw())))
           .RotateBy(m_robotToCamera.Rotation())
           .ToTranslation2d()
           .RotateBy(headingSample);
 
-  std::optional<frc::Pose3d> fiducialPose =
+  std::optional<wpi::math::Pose3d> fiducialPose =
       aprilTags.GetTagPose(bestTarget.GetFiducialId());
   if (!fiducialPose) {
-    FRC_ReportError(frc::warn::Warning,
-                    "Tried to get pose of unknown April Tag: {}",
-                    bestTarget.GetFiducialId());
+    WPILIB_ReportError(wpi::warn::Warning,
+                       "Tried to get pose of unknown April Tag: {}",
+                       bestTarget.GetFiducialId());
     return std::nullopt;
   }
 
-  frc::Pose2d tagPose = fiducialPose.value().ToPose2d();
+  wpi::math::Pose2d tagPose = fiducialPose.value().ToPose2d();
 
-  frc::Translation2d fieldToCameraTranslation =
+  wpi::math::Translation2d fieldToCameraTranslation =
       tagPose.Translation() - camToTagTranslation;
 
-  frc::Translation2d camToRobotTranslation =
+  wpi::math::Translation2d camToRobotTranslation =
       (-m_robotToCamera.Translation().ToTranslation2d())
           .RotateBy(headingSample);
 
-  frc::Pose2d robotPose = frc::Pose2d(
+  wpi::math::Pose2d robotPose = wpi::math::Pose2d(
       fieldToCameraTranslation + camToRobotTranslation, headingSample);
 
-  return EstimatedRobotPose{frc::Pose3d(robotPose), result.GetTimestamp(),
-                            result.GetTargets(), PNP_DISTANCE_TRIG_SOLVE};
+  std::array<PhotonTrackedTarget, 1> usedTargets{bestTarget};
+  return EstimatedRobotPose{wpi::math::Pose3d(robotPose),
+                            cameraResult.GetTimestamp(), usedTargets,
+                            PNP_DISTANCE_TRIG_SOLVE};
 }
 
 std::optional<EstimatedRobotPose>
-PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
-  std::vector<std::pair<frc::Pose3d, std::pair<double, units::second_t>>>
+PhotonPoseEstimator::EstimateAverageBestTargetsPose(
+    PhotonPipelineResult cameraResult) {
+  if (!ShouldEstimate(cameraResult)) {
+    return std::nullopt;
+  }
+  std::vector<
+      std::pair<wpi::math::Pose3d, std::pair<double, PhotonTrackedTarget>>>
       tempPoses;
   double totalAmbiguity = 0;
 
-  auto targets = result.GetTargets();
+  auto targets = cameraResult.GetTargets();
   for (auto& target : targets) {
-    std::optional<frc::Pose3d> fiducialPose =
+    std::optional<wpi::math::Pose3d> fiducialPose =
         aprilTags.GetTagPose(target.GetFiducialId());
     if (!fiducialPose) {
-      FRC_ReportError(frc::warn::Warning,
-                      "Tried to get pose of unknown April Tag: {}",
-                      target.GetFiducialId());
+      WPILIB_ReportError(wpi::warn::Warning,
+                         "Tried to get pose of unknown April Tag: {}",
+                         target.GetFiducialId());
       continue;
     }
 
-    frc::Pose3d targetPose = fiducialPose.value();
+    wpi::math::Pose3d targetPose = fiducialPose.value();
     // Ambiguity = 0, use that pose
     if (target.GetPoseAmbiguity() == 0) {
+      std::array<PhotonTrackedTarget, 1> usedTargets{target};
       return EstimatedRobotPose{
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
               .TransformBy(m_robotToCamera.Inverse()),
-          result.GetTimestamp(), result.GetTargets(), AVERAGE_BEST_TARGETS};
+          cameraResult.GetTimestamp(), usedTargets, AVERAGE_BEST_TARGETS};
     }
     totalAmbiguity += 1. / target.GetPoseAmbiguity();
 
     tempPoses.push_back(std::make_pair(
         targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()),
-        std::make_pair(target.GetPoseAmbiguity(), result.GetTimestamp())));
+        std::make_pair(target.GetPoseAmbiguity(), target)));
   }
 
-  frc::Translation3d transform = frc::Translation3d();
-  frc::Rotation3d rotation = frc::Rotation3d();
+  wpi::math::Translation3d transform = wpi::math::Translation3d();
+  wpi::math::Rotation3d rotation = wpi::math::Rotation3d();
 
-  for (std::pair<frc::Pose3d, std::pair<double, units::second_t>>& pair :
-       tempPoses) {
+  std::vector<PhotonTrackedTarget> usedTargets;
+  usedTargets.reserve(tempPoses.size());
+  for (std::pair<wpi::math::Pose3d, std::pair<double, PhotonTrackedTarget>>&
+           pair : tempPoses) {
     double const weight = (1. / pair.second.first) / totalAmbiguity;
     transform = transform + pair.first.Translation() * weight;
-    rotation = rotation + pair.first.Rotation() * weight;
+    rotation = rotation.RotateBy(pair.first.Rotation() * weight);
+    usedTargets.push_back(pair.second.second);
   }
 
-  return EstimatedRobotPose{frc::Pose3d(transform, rotation),
-                            result.GetTimestamp(), result.GetTargets(),
+  return EstimatedRobotPose{wpi::math::Pose3d(transform, rotation),
+                            cameraResult.GetTimestamp(), usedTargets,
                             AVERAGE_BEST_TARGETS};
 }
 
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::ConstrainedPnpStrategy(
-    photon::PhotonPipelineResult result,
-    std::optional<photon::PhotonCamera::CameraMatrix> camMat,
-    std::optional<photon::PhotonCamera::DistortionMatrix> distCoeffs,
-    std::optional<ConstrainedSolvepnpParams> constrainedPnpParams) {
-  using namespace frc;
-
-  if (!camMat || !distCoeffs) {
-    FRC_ReportError(frc::warn::Warning,
-                    "No camera calibration data provided to "
-                    "StrPoseEstimator::MultiTagOnRioStrategy!",
-                    "");
-    return Update(result, this->multiTagFallbackStrategy);
+std::optional<EstimatedRobotPose>
+PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
+    photon::PhotonPipelineResult cameraResult,
+    photon::PhotonCamera::CameraMatrix cameraMatrix,
+    photon::PhotonCamera::DistortionMatrix distCoeffs,
+    wpi::math::Pose3d seedPose, bool headingFree, double headingScaleFactor) {
+  if (!ShouldEstimate(cameraResult)) {
+    return std::nullopt;
   }
-
-  if (!constrainedPnpParams) {
-    return {};
-  }
-
-  if (!constrainedPnpParams->headingFree &&
-      !headingBuffer.Sample(result.GetTimestamp()).has_value()) {
-    return Update(result, camMat, distCoeffs, {},
-                  this->multiTagFallbackStrategy);
-  }
-
-  frc::Pose3d fieldToRobotSeed;
-
-  if (result.MultiTagResult().has_value()) {
-    fieldToRobotSeed =
-        frc::Pose3d{} + (result.MultiTagResult()->estimatedPose.best +
-                         m_robotToCamera.Inverse());
-  } else {
-    std::optional<EstimatedRobotPose> nestedUpdate =
-        Update(result, camMat, distCoeffs, {}, this->multiTagFallbackStrategy);
-
-    if (!nestedUpdate.has_value()) {
-      return {};
+  // Need heading if heading fixed
+  if (!headingFree) {
+    if (!headingBuffer.Sample(cameraResult.GetTimestamp())) {
+      return std::nullopt;
+    } else {
+      // If heading fixed, force rotation component
+      seedPose = wpi::math::Pose3d{
+          seedPose.Translation(),
+          wpi::math::Rotation3d{
+              headingBuffer.Sample(cameraResult.GetTimestamp()).value()}};
     }
-
-    fieldToRobotSeed = nestedUpdate->estimatedPose;
   }
-
-  if (!constrainedPnpParams.value().headingFree) {
-    fieldToRobotSeed = frc::Pose3d{
-        fieldToRobotSeed.Translation(),
-        frc::Rotation3d{headingBuffer.Sample(result.GetTimestamp()).value()}};
-  }
-
-  std::vector<photon::PhotonTrackedTarget> targets{result.GetTargets().begin(),
-                                                   result.GetTargets().end()};
+  std::vector<photon::PhotonTrackedTarget> targets{
+      cameraResult.GetTargets().begin(), cameraResult.GetTargets().end()};
 
   std::optional<photon::PnpResult> pnpResult =
       VisionEstimation::EstimateRobotPoseConstrainedSolvePNP(
-          camMat.value(), distCoeffs.value(), targets, m_robotToCamera,
-          fieldToRobotSeed, aprilTags, photon::kAprilTag36h11,
-          constrainedPnpParams->headingFree,
-          frc::Rotation2d{headingBuffer.Sample(result.GetTimestamp()).value()},
-          constrainedPnpParams->headingScalingFactor);
+          cameraMatrix, distCoeffs, targets, m_robotToCamera, seedPose,
+          aprilTags, photon::kAprilTag36h11, headingFree,
+          wpi::math::Rotation2d{
+              headingBuffer.Sample(cameraResult.GetTimestamp()).value()},
+          headingScaleFactor);
 
   if (!pnpResult) {
-    return Update(result, camMat, distCoeffs, {},
-                  this->multiTagFallbackStrategy);
+    return std::nullopt;
   }
 
-  frc::Pose3d best = frc::Pose3d{} + pnpResult->best;
+  wpi::math::Pose3d best = wpi::math::Pose3d{} + pnpResult->best;
 
-  return EstimatedRobotPose{best, result.GetTimestamp(), result.GetTargets(),
+  return EstimatedRobotPose{best, cameraResult.GetTimestamp(),
+                            cameraResult.GetTargets(),
                             PoseStrategy::CONSTRAINED_SOLVEPNP};
 }
 }  // namespace photon

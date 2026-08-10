@@ -17,14 +17,15 @@
 
 package org.photonvision.common.networktables;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.networktables.RawPublisher;
+import io.avaje.json.JsonException;
+import io.avaje.jsonb.Jsonb;
 import java.util.HashSet;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.wpilib.networktables.RawPublisher;
 
+@SuppressWarnings("doclint")
 public class PacketPublisher<T> implements AutoCloseable {
     public final RawPublisher publisher;
     private final PacketSerde<T> photonStruct;
@@ -33,12 +34,11 @@ public class PacketPublisher<T> implements AutoCloseable {
         this.publisher = publisher;
         this.photonStruct = photonStruct;
 
-        var mapper = new ObjectMapper();
         try {
             this.publisher
                     .getTopic()
-                    .setProperty("message_uuid", mapper.writeValueAsString(photonStruct.getInterfaceUUID()));
-        } catch (JsonProcessingException e) {
+                    .setProperty("message_uuid", Jsonb.instance().toJson(photonStruct.getInterfaceUUID()));
+        } catch (IllegalStateException | JsonException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             throw new RuntimeException(e);

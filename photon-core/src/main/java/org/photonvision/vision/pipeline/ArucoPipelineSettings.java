@@ -17,12 +17,10 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
-@JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
 
@@ -45,7 +43,6 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public ArucoPipelineSettings() {
         super();
         pipelineType = PipelineType.Aruco;
-        outputShowMultipleTargets = true;
         targetModel = TargetModel.kAprilTag6p5in_36h11;
         cameraExposureRaw = 20;
         cameraAutoExposure = true;

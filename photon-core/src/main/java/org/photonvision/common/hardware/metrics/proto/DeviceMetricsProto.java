@@ -17,9 +17,9 @@
 
 package org.photonvision.common.hardware.metrics.proto;
 
-import edu.wpi.first.util.protobuf.Protobuf;
 import org.photonvision.common.hardware.metrics.DeviceMetrics;
 import org.photonvision.proto.Photon.ProtobufDeviceMetrics;
+import org.wpilib.util.protobuf.Protobuf;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDeviceMetrics> {

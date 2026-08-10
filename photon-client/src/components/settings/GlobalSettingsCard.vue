@@ -9,6 +9,7 @@ import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types
 import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
 import { getThemeColor, setThemeColor, resetTheme } from "@/lib/ThemeManager";
+import { statusCheck } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
@@ -80,9 +81,7 @@ const settingsHaveChanged = (): boolean => {
   );
 };
 
-const saveGeneralSettings = () => {
-  const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
-
+const saveGeneralSettings = async () => {
   // replace undefined members with empty strings for backend
   const payload = {
     connectionType: tempSettingsStruct.value.connectionType,
@@ -97,52 +96,66 @@ const saveGeneralSettings = () => {
     staticIp: tempSettingsStruct.value.staticIp
   };
 
-  useSettingsStore()
-    .updateGeneralSettings(payload)
-    .then((response) => {
-      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
+  const changingStaticIP =
+    useSettingsStore().network.connectionType === NetworkConnectionType.Static &&
+    tempSettingsStruct.value.staticIp !== useSettingsStore().network.staticIp;
 
-      // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
-    })
-    .catch((error) => {
-      resetTempSettingsStruct();
-      if (error.response) {
-        if (error.status === 504 || changingStaticIp) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: `Connection lost! Try the new static IP at ${useSettingsStore().network.staticIp}:5800 or ${
-              useSettingsStore().network.hostname
-            }:5800?`
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: error.response.data.text || error.response.data
-          });
-        }
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+  try {
+    const response = await useSettingsStore().updateGeneralSettings(payload);
+    useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
+
+    // Update the local settings cause the backend checked their validity. Assign is to deref value
+    useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    resetTempSettingsStruct();
+    if (error.response) {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: error.response.data.text || error.response.data
+      });
+    } else if (error.request) {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: "Error while trying to process the request! The backend didn't respond."
+      });
+    } else {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: "An error occurred while trying to process the request."
+      });
+    }
+    return;
+  }
+
+  if (changingStaticIP) {
+    const status = await statusCheck(5000, tempSettingsStruct.value.staticIp);
+
+    if (!status) {
+      useStateStore().showSnackbarMessage({
+        message:
+          "Warning: Unable to verify new static IP address! You may need to manually navigate to the new address: http://" +
+          tempSettingsStruct.value.staticIp +
+          ":5800",
+        color: "warning"
+      });
+      return;
+    }
+
+    // Keep current hash route (e.g., #/settings)
+    const hash = window.location.hash || "";
+    const url = `http://${tempSettingsStruct.value.staticIp}:5800/${hash}`;
+    setTimeout(() => {
+      window.location.href = url;
+    }, 1000);
+  }
 };
 
-const currentNetworkInterfaceIndex = computed<number | undefined>({
-  get: () => {
-    const index = useSettingsStore().networkInterfaceNames.indexOf(
-      useSettingsStore().network.networkManagerIface || ""
-    );
-    return index === -1 ? undefined : index;
-  },
-  set: (v) => v && (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+const currentNetworkInterface = computed<string>({
+  get: () => useSettingsStore().network.networkManagerIface || "",
+  set: (v) => {
+    tempSettingsStruct.value.networkManagerIface = v;
+  }
 });
 
 watchEffect(() => {
@@ -170,7 +183,7 @@ watchEffect(() => {
     </v-card-title>
     <div class="pa-5 pt-0">
       <v-card-title class="pl-0 pt-0 pb-10px">Networking</v-card-title>
-      <v-form ref="form" v-model="settingsValid">
+      <v-form v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
           label="Team Number/NetworkTables Server Address"
@@ -190,7 +203,7 @@ watchEffect(() => {
           density="compact"
           text="The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect."
           icon="mdi-alert-circle-outline"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
         <pv-radio
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -241,7 +254,7 @@ watchEffect(() => {
         />
         <pv-select
           v-show="!useSettingsStore().network.networkingDisabled"
-          v-model="currentNetworkInterfaceIndex"
+          v-model="currentNetworkInterface"
           label="NetworkManager interface"
           :disabled="
             !tempSettingsStruct.shouldManage ||
@@ -264,7 +277,7 @@ watchEffect(() => {
           density="compact"
           text="Cannot detect any wired connections! Send program logs to the developers for help."
           icon="mdi-alert-circle-outline"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
         <pv-switch
           v-model="tempSettingsStruct.runNTServer"
@@ -278,7 +291,7 @@ watchEffect(() => {
           density="compact"
           text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
           icon="mdi-information-outline"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
         <v-card-title class="pl-0 pt-3 pb-10px">Miscellaneous</v-card-title>
         <pv-switch
@@ -293,13 +306,13 @@ watchEffect(() => {
           density="compact"
           text="This mode is intended for debugging and may reduce performance; it should be off for field use."
           icon="mdi-information-outline"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
       </v-form>
       <v-btn
         color="primary"
         class="mt-3"
-        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"
@@ -362,7 +375,7 @@ watchEffect(() => {
         </v-card-text>
         <v-card-actions class="pa-5 pt-0">
           <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             color="buttonPassive"
             class="text-black"
             @click="showThemeConfig = false"
@@ -370,7 +383,7 @@ watchEffect(() => {
             Close
           </v-btn>
           <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             color="buttonActive"
             class="text-black"
             @click="

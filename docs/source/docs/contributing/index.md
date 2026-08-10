@@ -1,6 +1,7 @@
 # Contributing to PhotonVision Projects
 
 ```{toctree}
+guidelines
 building-photon
 building-docs
 linting

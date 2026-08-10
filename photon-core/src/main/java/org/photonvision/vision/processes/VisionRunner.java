@@ -38,9 +38,12 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-/** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
+/**
+ * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer; it must be closed
+ * prior to the frame supplier closing
+ */
 @SuppressWarnings("rawtypes")
-public class VisionRunner {
+public class VisionRunner implements AutoCloseable {
     private final Logger logger;
     private final Thread visionProcessThread;
     private final FrameProvider frameSupplier;
@@ -50,6 +53,7 @@ public class VisionRunner {
     private final List<Runnable> runnableList = new ArrayList<Runnable>();
     private final QuirkyCamera cameraQuirks;
     private final Supplier<Integer> fpsLimitSupplier;
+    private final Supplier<Boolean> enabledSupplier;
 
     private long loopCount;
 
@@ -57,9 +61,14 @@ public class VisionRunner {
      * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
      * the consumer.
      *
-     * @param frameSupplier The supplier of the latest frame.
-     * @param pipelineSupplier The supplier of the current pipeline.
-     * @param pipelineResultConsumer The consumer of the latest result.
+     * @param frameSupplier
+     * @param pipelineSupplier
+     * @param pipelineResultConsumer
+     * @param cameraQuirks
+     * @param changeSubscriber The subscriber to setting changes for this VisionRunner, so it can
+     *     update its settings when they change.
+     * @param fpsLimitSupplier
+     * @param enabledSupplier
      */
     public VisionRunner(
             FrameProvider frameSupplier,
@@ -67,13 +76,15 @@ public class VisionRunner {
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
             VisionModuleChangeSubscriber changeSubscriber,
-            Supplier<Integer> fpsLimitSupplier) {
+            Supplier<Integer> fpsLimitSupplier,
+            Supplier<Boolean> enabledSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
+        this.enabledSupplier = enabledSupplier;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -93,6 +104,10 @@ public class VisionRunner {
         } catch (InterruptedException e) {
             logger.error("Exception killing process thread", e);
         }
+    }
+
+    public boolean isRunning() {
+        return visionProcessThread.isAlive();
     }
 
     public Future<Void> runSynchronously(Runnable runnable) {
@@ -130,9 +145,31 @@ public class VisionRunner {
         return future;
     }
 
+    /**
+     * Waits until the next time this VisionRunner should run its pipeline, based on current FPS limit
+     */
+    private void waitUntilNextTick(long start) {
+        int fpsLimit = fpsLimitSupplier.get();
+
+        if (fpsLimit > 0) {
+            long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
+
+            if (sleepTime > 0) {
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                }
+            }
+            return;
+        } else {
+            // Fall through to no limit
+            return;
+        }
+    }
+
     private void update() {
         // wait for the camera to connect
-        while (!frameSupplier.checkCameraConnected() && !Thread.interrupted()) {
+        while (!frameSupplier.isConnected() && !Thread.interrupted()) {
             // yield
             pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
             try {
@@ -181,6 +218,7 @@ public class VisionRunner {
             }
             frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
             frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
+            frameSupplier.requestBlockForFrames(settings.blockForFrames);
 
             // Grab the new camera frame
             var frame = frameSupplier.get();
@@ -190,34 +228,47 @@ public class VisionRunner {
                 // give up without increasing loop count
                 // Still feed with blank frames just dont run any pipelines
 
+                frame.release();
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-
             } else if (pipeline == pipelineSupplier.get()) {
+                if (!enabledSupplier.get()) {
+                    // If we are skipping processing due to the camera being disabled, we still want to send a
+                    // result with the new frame and settings, just with a null pipeline result
+                    pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+                    frame.release();
+                    continue;
+                }
+
                 // If the pipeline has changed while we are getting our frame we should scrap
                 // that frame it may result in incorrect frame settings like hsv values
 
                 // There's no guarantee the processing type change will occur this tick, so
                 // pipelines should check themselves
+
+                // If we have an FPS limit, check if it's 0, in which case we skip processing and just send
+                // a blank frame, otherwise we sleep until the next tick
+                waitUntilNextTick(start);
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
-                    pipelineResultConsumer.accept(pipelineResult);
+                    try {
+                        pipelineResultConsumer.accept(pipelineResult);
+                    } catch (Exception ex) {
+                        logger.error("Exception on loop " + loopCount, ex);
+                        pipelineResult.release();
+                    }
                 } catch (Exception ex) {
-                    logger.error("Exception on loop " + loopCount, ex);
+                    logger.error("Pipeline exception on loop " + loopCount, ex);
+                    frame.release();
                 }
                 loopCount++;
             }
-            int fpsLimit = fpsLimitSupplier.get();
-            if (fpsLimit > 0) {
-                long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
+        }
+    }
 
-                if (sleepTime > 0) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                }
-            }
+    @Override
+    public void close() {
+        if (visionProcessThread.isAlive()) {
+            stopProcess();
         }
     }
 }

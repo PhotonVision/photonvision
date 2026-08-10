@@ -1,6 +1,6 @@
 import "vuetify/styles";
-import("@mdi/font/css/materialdesignicons.css");
-import type { ThemeDefinition } from "vuetify/lib/composables/theme";
+void import("@mdi/font/css/materialdesignicons.css");
+import type { ThemeDefinition } from "vuetify";
 import { createVuetify } from "vuetify";
 
 const CommonColors = {

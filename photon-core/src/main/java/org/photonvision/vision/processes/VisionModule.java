@@ -17,14 +17,13 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -58,6 +57,8 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.vision.camera.CameraServerJNI;
+import org.wpilib.vision.camera.VideoException;
 
 /**
  * This is the God Class
@@ -65,7 +66,7 @@ import org.photonvision.vision.target.TrackedTarget;
  * <p>VisionModule has a pipeline manager, vision runner, and data providers. The data providers
  * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
  */
-public class VisionModule {
+public class VisionModule implements AutoCloseable {
     private final Logger logger;
     protected final PipelineManager pipelineManager;
     protected final VisionSource visionSource;
@@ -89,6 +90,7 @@ public class VisionModule {
     private int outputStreamPort = -1;
 
     private int fpsLimit = -1;
+    private boolean enabled = true;
 
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
@@ -98,7 +100,10 @@ public class VisionModule {
 
     boolean mismatch;
 
-    public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
+    public VisionModule(
+            PipelineManager pipelineManager,
+            VisionSource visionSource,
+            Collection<CVPipelineResultConsumer> extraConsumers) {
         logger =
                 new Logger(
                         VisionModule.class,
@@ -138,7 +143,8 @@ public class VisionModule {
                         this::consumeResult,
                         this.cameraQuirks,
                         getChangeSubscriber(),
-                        this::getFPSLimit);
+                        this::getFPSLimit,
+                        this::getEnabled);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
@@ -154,16 +160,19 @@ public class VisionModule {
                         pipelineManager::getDriverMode,
                         this::setDriverMode,
                         this::getFPSLimit,
-                        this::setFPSLimit);
+                        this::setFPSLimit,
+                        this::getEnabled,
+                        this::setEnabled);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
-        addResultConsumer(ntConsumer);
-        addResultConsumer(uiDataConsumer);
-        addResultConsumer(statusLEDsConsumer);
-        addResultConsumer(
+        resultConsumers.add(ntConsumer);
+        resultConsumers.add(uiDataConsumer);
+        resultConsumers.add(statusLEDsConsumer);
+        resultConsumers.add(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        resultConsumers.addAll(extraConsumers);
 
         // Sync VisionModule state with the first pipeline index
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
@@ -179,11 +188,16 @@ public class VisionModule {
         if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
-                    .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
+                    .ifPresent(
+                            (visionLED) ->
+                                    visionLED.setPipelineModeSupplier(
+                                            () -> pipelineManager.getCurrentPipelineSettings().ledMode));
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
+        getCameraConfiguration().deactivated = false;
         saveAndBroadcastAll();
+        start();
     }
 
     private void createStreams() {
@@ -251,6 +265,9 @@ public class VisionModule {
                 if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
                     this.latestFrame.release();
+                    if (this.targets != null) {
+                        this.targets.forEach(TrackedTarget::release);
+                    }
                 }
 
                 this.latestFrame = inputOutputFrame;
@@ -258,10 +275,6 @@ public class VisionModule {
                 this.targets = targets;
 
                 shouldRun = inputOutputFrame != null;
-                // && inputOutputFrame.colorImage != null
-                // && !inputOutputFrame.colorImage.getMat().empty()
-                // && inputOutputFrame.processedImage != null
-                // && !inputOutputFrame.processedImage.getMat().empty();
             }
         }
 
@@ -286,15 +299,18 @@ public class VisionModule {
                     try {
                         CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
-
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
-                    }
-                    try {
-                        m_frame.release();
-                    } catch (Exception e) {
-                        logger.error("Exception freeing frames", e);
+                    } finally {
+                        if (targets != null) {
+                            targets.forEach(TrackedTarget::release);
+                        }
+                        try {
+                            m_frame.release();
+                        } catch (Exception e) {
+                            logger.error("Exception freeing frames", e);
+                        }
                     }
                 } else {
                     // busy wait! hurray!
@@ -309,14 +325,12 @@ public class VisionModule {
         }
     }
 
-    public void start() {
-        visionSource.cameraConfiguration.deactivated = false;
+    private void start() {
         visionRunner.startProcess();
         streamRunnable.start();
     }
 
-    public void stop() {
-        visionSource.cameraConfiguration.deactivated = true;
+    private void stop() {
         visionRunner.stopProcess();
 
         try {
@@ -325,16 +339,6 @@ public class VisionModule {
         } catch (InterruptedException e) {
             logger.error("Exception killing process thread", e);
         }
-
-        visionSource.release();
-
-        inputVideoStreamer.close();
-        outputVideoStreamer.close();
-        inputFrameSaver.close();
-        outputFrameSaver.close();
-
-        changeSubscriberHandle.stop();
-        setVisionLEDs(false);
     }
 
     public void setFov(double fov) {
@@ -384,8 +388,8 @@ public class VisionModule {
                         + data.videoModeIndex
                         + " and settings "
                         + data);
-        settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
-        settings.markerSize = Units.inchesToMeters(data.markerSizeIn);
+        settings.gridSize = data.squareSizeMeters;
+        settings.markerSize = data.markerSizeMeters;
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
@@ -514,8 +518,9 @@ public class VisionModule {
     }
 
     private void setVisionLEDs(boolean on) {
-        if (camShouldControlLEDs() && HardwareManager.getInstance().visionLED != null)
-            HardwareManager.getInstance().visionLED.setState(on);
+        if (camShouldControlLEDs()) {
+            HardwareManager.getInstance().visionLED.ifPresent((visionLED) -> visionLED.setState(on));
+        }
     }
 
     public void saveModule() {
@@ -537,8 +542,8 @@ public class VisionModule {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
 
-        HashMap<String, Object> map = new HashMap<>();
-        HashMap<String, Object> subMap = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> subMap = new HashMap<>();
         subMap.put(propertyName, value);
         map.put("mutatePipelineSettings", subMap);
 
@@ -577,29 +582,29 @@ public class VisionModule {
         ret.maxWhiteBalanceTemp = visionSource.getSettables().getMaxWhiteBalanceTemp();
 
         ret.deactivated = config.deactivated;
+        ret.isEnabled = getEnabled();
 
         ret.mismatch = this.mismatch;
 
         ret.fpsLimit = this.fpsLimit;
 
         // TODO refactor into helper method
-        var temp = new HashMap<Integer, HashMap<String, Object>>();
+        var temp = new ArrayList<Map<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
 
-        for (var k : videoModes.entrySet()) {
+        for (var videoMode : videoModes) {
             var internalMap = new HashMap<String, Object>();
 
-            internalMap.put("width", k.getValue().width);
-            internalMap.put("height", k.getValue().height);
-            internalMap.put("fps", k.getValue().fps);
+            internalMap.put("width", videoMode.width);
+            internalMap.put("height", videoMode.height);
+            internalMap.put("fps", videoMode.fps);
             internalMap.put(
                     "pixelFormat",
-                    ((k.getValue() instanceof LibcameraGpuSource.FPSRatedVideoMode)
-                                    ? "kPicam"
-                                    : k.getValue().pixelFormat.toString())
-                            .substring(1)); // Remove the k prefix
+                    ((videoMode instanceof LibcameraGpuSource.FPSRatedVideoMode)
+                            ? "Picam"
+                            : videoMode.pixelFormat.toString()));
 
-            temp.put(k.getKey(), internalMap);
+            temp.add(internalMap);
         }
 
         if (videoModes.size() == 0) {
@@ -660,6 +665,25 @@ public class VisionModule {
         return fpsLimit;
     }
 
+    /**
+     * Sets whether the camera is enabled/disabled, disabling the camera allows you to reduce util
+     * while keeping the vision runner up for fast toggling.
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        saveAndBroadcastAll();
+    }
+
+    /**
+     * Gets whether the camera is enabled or disabled, if disabled the vision runner will still be
+     * running but the camera will not capture frames, allowing for fast toggling.
+     *
+     * @return the enabled state of the camera
+     */
+    public boolean getEnabled() {
+        return enabled;
+    }
+
     public CameraConfiguration getStateAsCameraConfig() {
         var config = visionSource.getSettables().getConfiguration();
         config.setPipelineSettings(pipelineManager.userPipelineSettings);
@@ -667,10 +691,6 @@ public class VisionModule {
         config.currentPipelineIndex = Math.max(pipelineManager.getRequestedIndex(), -1);
 
         return config;
-    }
-
-    public void addResultConsumer(CVPipelineResultConsumer dataConsumer) {
-        resultConsumers.add(dataConsumer);
     }
 
     private void consumeResult(CVPipelineResult result) {
@@ -715,7 +735,7 @@ public class VisionModule {
 
     public void addCalibrationToConfig(CameraCalibrationCoefficients newCalibration) {
         if (newCalibration != null) {
-            logger.info("Got new calibration for " + newCalibration.unrotatedImageSize);
+            logger.info("Got new calibration for " + newCalibration.resolution);
             visionSource.getSettables().addCalibration(newCalibration);
         } else {
             logger.error("Got null calibration?");
@@ -724,9 +744,9 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
-    public void removeCalibrationFromConfig(Size unrotatedImageSize) {
-        if (unrotatedImageSize != null) {
-            visionSource.getSettables().removeCalibration(unrotatedImageSize);
+    public void removeCalibrationFromConfig(Size resolution) {
+        if (resolution != null) {
+            visionSource.getSettables().removeCalibration(resolution);
         } else {
             logger.error("Got null size?");
         }
@@ -739,7 +759,7 @@ public class VisionModule {
      *
      * @param quirksToChange map of true/false for quirks we should change
      */
-    public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
+    public void changeCameraQuirks(Map<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
         visionSource.remakeSettables();
         saveAndBroadcastAll();
@@ -751,5 +771,28 @@ public class VisionModule {
 
     public CameraConfiguration getCameraConfiguration() {
         return this.visionSource.cameraConfiguration;
+    }
+
+    @Override
+    public void close() {
+        if (visionRunner.isRunning()) {
+            stop();
+        }
+
+        // Ensure config is saved and synced before closing
+        saveAndBroadcastAll();
+
+        inputVideoStreamer.close();
+        outputVideoStreamer.close();
+        inputFrameSaver.close();
+        outputFrameSaver.close();
+
+        changeSubscriberHandle.stop();
+        setVisionLEDs(false);
+
+        visionRunner.close();
+        pipelineManager.close();
+        visionSource.close();
+        if (lastPipelineResultBestTarget != null) lastPipelineResultBestTarget.close();
     }
 }

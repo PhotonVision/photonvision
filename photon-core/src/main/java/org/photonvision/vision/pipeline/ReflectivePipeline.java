@@ -85,9 +85,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
-                        settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
-                        frameStaticProperties));
+                        settings.contourSortMode, settings.outputMaximumTargets, frameStaticProperties));
 
         collect2dTargetsPipe.setParams(
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
@@ -162,5 +160,19 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
         return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
+    }
+
+    @Override
+    public void release() {
+        findContoursPipe.release();
+        speckleRejectPipe.release();
+        filterContoursPipe.release();
+        groupContoursPipe.release();
+        sortContoursPipe.release();
+        collect2dTargetsPipe.release();
+        cornerDetectionPipe.release();
+        solvePNPPipe.release();
+        calculateFPSPipe.release();
+        super.release();
     }
 }

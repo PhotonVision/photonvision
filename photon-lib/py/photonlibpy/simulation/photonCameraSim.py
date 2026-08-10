@@ -6,8 +6,9 @@ import cv2 as cv
 import numpy as np
 import wpilib
 from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
-from wpimath.geometry import Pose3d, Transform3d
+from wpimath import Pose3d, Transform3d
 from wpimath.units import meters, seconds
+from wpiutil import PixelFormat
 
 from ..estimation import OpenCVHelp, RotTrlTransform3d, TargetModel, VisionEstimation
 from ..estimation.cameraTargetRelation import CameraTargetRelation
@@ -51,7 +52,7 @@ class PhotonCameraSim:
 
         :param camera:               The camera to be simulated
         :param prop:                 Properties of this camera such as FOV and FPS
-        :param minTargetAreaPercent: The minimum percentage(0 - 100) a detected target must take up of
+        :param minTargetAreaPercent: The minimum percentage (0 - 100) a detected target must take up of
                                      the camera's image to be processed. Match this with your contour filtering settings in the
                                      PhotonVision GUI.
         :param maxSightRangeMeters:  Maximum distance at which the target is illuminated to your camera.
@@ -66,7 +67,7 @@ class PhotonCameraSim:
         # TODO switch this back to default True when the functionality is enabled
         self.videoSimProcEnabled: bool = False
         self.heartbeatCounter: int = 0
-        self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
+        self.nextNtEntryTime = wpilib.Timer.getMonotonicTimestamp()
         self.tagLayout = tagLayout
 
         self.cam = camera
@@ -76,7 +77,7 @@ class PhotonCameraSim:
         # TODO Check fps is right
         self.videoSimRaw = cs.CvSource(
             self.cam.getName() + "-raw",
-            cs.VideoMode.PixelFormat.kGray,
+            PixelFormat.GRAY,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
             1,
@@ -88,7 +89,7 @@ class PhotonCameraSim:
         # TODO Check fps is right
         self.videoSimProcessed = cs.CvSource(
             self.cam.getName() + "-processed",
-            cs.VideoMode.PixelFormat.kGray,
+            PixelFormat.GRAY,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
             1,
@@ -182,7 +183,7 @@ class PhotonCameraSim:
                   ready
         """
         # check if this camera is ready for another frame update
-        now = wpilib.Timer.getFPGATimestamp()
+        now = wpilib.Timer.getMonotonicTimestamp()
         timestamp = 0.0
         iter = 0
         # prepare next latest update
@@ -206,7 +207,7 @@ class PhotonCameraSim:
         return None
 
     def setMinTargetAreaPercent(self, areaPercent: float) -> None:
-        """The minimum percentage(0 - 100) a detected target must take up of the camera's image to be
+        """The minimum percentage (0 - 100) a detected target must take up of the camera's image to be
         processed.
         """
         self.minTargetAreaPercent = areaPercent
@@ -271,6 +272,9 @@ class PhotonCameraSim:
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
 
         for tgt in targets:
+            if len(detectableTgts) >= 50:
+                break
+
             # pose isn't visible, skip to next
             if not self.canSeeTargetPose(cameraPose, tgt):
                 continue
@@ -298,21 +302,21 @@ class PhotonCameraSim:
             # spherical targets need a rotated rectangle of their midpoints for visualization
             if isSpherical:
                 center = OpenCVHelp.avgPoint(imagePoints)
-                l: int = 0
+                left_idx: int = 0
                 # reference point (left side midpoint)
                 for i in range(4):
-                    if imagePoints[i, 0, 0] < imagePoints[l, 0, 0].x:
-                        l = i
+                    if imagePoints[i, 0, 0] < imagePoints[left_idx, 0, 0].x:
+                        left_idx = i
 
-                lc = imagePoints[l]
+                lc = imagePoints[left_idx]
                 angles = [
                     0.0,
                 ] * 4
-                t = (l + 1) % 4
-                b = (l + 1) % 4
+                t = (left_idx + 1) % 4
+                b = (left_idx + 1) % 4
                 r = 0
                 for i in range(4):
-                    if i == l:
+                    if i == left_idx:
                         continue
                     ic = imagePoints[i]
                     angles[i] = math.atan2(lc[0, 1] - ic[0, 1], ic[0, 0] - lc[0, 0])
@@ -321,7 +325,7 @@ class PhotonCameraSim:
                     if angles[i] <= angles[b]:
                         b = i
                 for i in range(4):
-                    if i != t and i != l and i != b:
+                    if i != t and i != left_idx and i != b:
                         r = i
                 # create RotatedRect from midpoints
                 rect = cv.RotatedRect(
@@ -365,6 +369,15 @@ class PhotonCameraSim:
                     noisyTargetCorners,
                 )
 
+            # Compute object detection confidence if this is an obj det target
+            classId = tgt.objDetClassId
+            conf = tgt.objDetConf
+            if classId >= 0 and conf < 0:
+                # Simulate confidence using sqrt-scaled area for a more realistic
+                # curve. Raw areaPercent/100 is tiny for most targets; sqrt scaling
+                # gives reasonable values even for small-but-visible objects.
+                conf = max(0.0, min(1.0, math.sqrt(areaPercent / 100.0) * 2.0))
+
             smallVec: list[TargetCorner] = []
             for corner in minAreaRectPts:
                 smallVec.append(TargetCorner(corner[0], corner[1]))
@@ -378,6 +391,8 @@ class PhotonCameraSim:
                     area=areaPercent,
                     skew=math.degrees(centerRot.X()),
                     fiducialId=tgt.fiducialId,
+                    objDetectId=classId,
+                    objDetectConf=conf,
                     detectedCorners=cornersFloat,
                     minAreaRectCorners=smallVec,
                     bestCameraToTarget=pnpSim.best if pnpSim else Transform3d(),
@@ -420,7 +435,7 @@ class PhotonCameraSim:
 
         # put this simulated data to NT
         self.heartbeatCounter += 1
-        publishTimestampMicros = wpilib.Timer.getFPGATimestamp() * 1e6
+        publishTimestampMicros = wpilib.Timer.getMonotonicTimestamp() * 1e6
         return PhotonPipelineResult(
             ntReceiveTimestampMicros=int(publishTimestampMicros + 10),
             metadata=PhotonPipelineMetadata(
@@ -447,7 +462,7 @@ class PhotonCameraSim:
         :param receiveTimestamp: The (sim) timestamp when this result was read by NT in microseconds. If not passed image capture time is assumed be (current time - latency)
         """
         if receiveTimestamp_us is None:
-            receiveTimestamp_us = wpilib.Timer.getFPGATimestamp() * 1e6
+            receiveTimestamp_us = wpilib.Timer.getMonotonicTimestamp() * 1e6
         receiveTimestamp_us = int(receiveTimestamp_us)
 
         self.ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp_us)

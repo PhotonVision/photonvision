@@ -20,8 +20,6 @@ package org.photonvision.vision.target;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,6 +37,8 @@ import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation3d;
 
 public class TargetCalculationsTest {
     private static Size imageSize = new Size(1280, 720);
@@ -62,7 +62,7 @@ public class TargetCalculationsTest {
                     null);
 
     @BeforeAll
-    public static void setup() {
+    public static void init() {
         LoadJNI.loadLibraries();
     }
 
@@ -162,14 +162,21 @@ public class TargetCalculationsTest {
                 new MatOfPoint3f(new Point3(-targetTrl.getY(), -targetTrl.getZ(), targetTrl.getX()));
         var imagePoints = new MatOfPoint2f();
         // Project translation into camera image
+        var rvec = new MatOfDouble(0, 0, 0);
+        var tvec = new MatOfDouble(0, 0, 0);
         Calib3d.projectPoints(
                 objectPoints,
-                new MatOfDouble(0, 0, 0),
-                new MatOfDouble(0, 0, 0),
+                rvec,
+                tvec,
                 testCameraCal.getCameraIntrinsicsMat(),
                 testCameraCal.getDistCoeffsMat(),
                 imagePoints);
         var point = imagePoints.toArray()[0];
+
+        objectPoints.release();
+        imagePoints.release();
+        rvec.release();
+        tvec.release();
 
         // need point within FOV to be valid
         assertTrue(Math.abs(point.x) >= 0);
@@ -288,6 +295,8 @@ public class TargetCalculationsTest {
         // Assert result
         result = TargetCalculations.calculateSkew(isLandscape, minAreaRect);
         assertEquals(-70, result, 0.01);
+
+        mat2f.release();
     }
 
     @Test

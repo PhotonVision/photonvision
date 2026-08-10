@@ -17,11 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.apriltag.AprilTagPoseEstimate;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
@@ -32,15 +27,18 @@ import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
 
 public class ArucoPoseEstimatorPipe
         extends CVPipe<
                 ArucoDetectionResult,
                 AprilTagPoseEstimate,
-                ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams>
-        implements Releasable {
+                ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams> {
     // image points of marker corners
     private final MatOfPoint2f imagePoints = new MatOfPoint2f(Mat.zeros(4, 1, CvType.CV_32FC2));
     // rvec/tvec estimations from solvepnp
@@ -53,7 +51,7 @@ public class ArucoPoseEstimatorPipe
     private final Mat reprojectionErrors = Mat.zeros(2, 1, CvType.CV_32F);
 
     // Tag corner locations in object space - order matters for ippe_square
-    MatOfPoint3f objectPoints = new MatOfPoint3f();
+    private final MatOfPoint3f objectPoints = new MatOfPoint3f();
 
     private final int kNaNRetries = 1;
 
@@ -145,6 +143,7 @@ public class ArucoPoseEstimatorPipe
         rvec.release();
         tvec.release();
         reprojectionErrors.release();
+        objectPoints.release();
     }
 
     // object vertices defined by tag size

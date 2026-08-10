@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.Pair;
 import java.awt.*;
 import java.util.List;
 import org.opencv.core.*;
@@ -31,10 +30,12 @@ import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.util.Pair;
 
 public class Draw2dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
-    MatOfPoint tempMat = new MatOfPoint();
+    MatOfPoint boundingRect = new MatOfPoint();
+    MatOfPoint contourMat = new MatOfPoint();
     private static final Logger logger = new Logger(Draw2dTargetsPipe.class, LogGroup.General);
 
     @Override
@@ -58,13 +59,8 @@ public class Draw2dTargetsPipe
             var circleColor = ColorHelper.colorToScalar(params.circleColor);
             var shapeColour = ColorHelper.colorToScalar(params.shapeOutlineColour);
 
-            for (int i = 0; i < (params.showMultipleTargets ? in.getSecond().size() : 1); i++) {
+            for (int i = 0; i < Math.min(params.outputMaximumTargets, in.getSecond().size()); i++) {
                 Point[] vertices = new Point[4];
-                MatOfPoint contour = new MatOfPoint();
-
-                if (i != 0 && !params.showMultipleTargets) {
-                    break;
-                }
 
                 TrackedTarget target = in.getSecond().get(i);
                 RotatedRect r = target.getMinAreaRect();
@@ -73,12 +69,12 @@ public class Draw2dTargetsPipe
 
                 r.points(vertices);
                 dividePointArray(vertices);
-                contour.fromArray(vertices);
+                boundingRect.fromArray(vertices);
 
                 if (params.shouldShowRotatedBox(target.getShape())) {
                     Imgproc.drawContours(
                             in.getFirst(),
-                            List.of(contour),
+                            List.of(boundingRect),
                             0,
                             rotatedBoxColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
@@ -97,21 +93,18 @@ public class Draw2dTargetsPipe
                     if (poly == null && target.getShape() != null)
                         poly = target.getShape().getContour().getApproxPolyDp();
                     if (poly != null) {
-                        var mat = new MatOfPoint();
-                        mat.fromArray(poly.toArray());
-                        divideMat(mat, mat);
+                        divideMat(poly, contourMat);
                         Imgproc.drawContours(
                                 in.getFirst(),
-                                List.of(mat),
+                                List.of(contourMat),
                                 -1,
                                 ColorHelper.colorToScalar(params.rotatedBoxColor),
                                 2);
-                        mat.release();
                     }
                 }
 
                 if (params.showMaximumBox) {
-                    Rect box = Imgproc.boundingRect(contour);
+                    Rect box = Imgproc.boundingRect(boundingRect);
                     Imgproc.rectangle(
                             in.getFirst(),
                             new Point(box.x, box.y),
@@ -121,10 +114,10 @@ public class Draw2dTargetsPipe
                 }
 
                 if (params.showShape) {
-                    divideMat(target.m_mainContour.mat, tempMat);
+                    divideMat(target.m_mainContour.mat, contourMat);
                     Imgproc.drawContours(
                             in.getFirst(),
-                            List.of(tempMat),
+                            List.of(contourMat),
                             -1,
                             shapeColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
@@ -216,6 +209,12 @@ public class Draw2dTargetsPipe
         p.y = p.y / (double) params.divisor.value;
     }
 
+    @Override
+    public void release() {
+        boundingRect.release();
+        contourMat.release();
+    }
+
     public static class Draw2dTargetsParams {
         public double kPixelsToText = 0.0025;
         public double kPixelsToThickness = 0.008;
@@ -233,8 +232,7 @@ public class Draw2dTargetsPipe
         public Color shapeOutlineColour = Color.MAGENTA;
         public Color textColor = Color.GREEN;
         public Color circleColor = Color.RED;
-
-        public final boolean showMultipleTargets;
+        public int outputMaximumTargets;
         public final boolean shouldDraw;
 
         public final FrameDivisor divisor;
@@ -247,10 +245,9 @@ public class Draw2dTargetsPipe
             return shape != null && shape.shape.equals(ContourShape.Circle);
         }
 
-        public Draw2dTargetsParams(
-                boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
+        public Draw2dTargetsParams(boolean shouldDraw, int outputMaximumTargets, FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
-            this.showMultipleTargets = showMultipleTargets;
+            this.outputMaximumTargets = outputMaximumTargets;
             this.divisor = divisor;
         }
     }

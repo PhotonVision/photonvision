@@ -32,7 +32,7 @@ package org.photonvision;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("ALL")
+@SuppressWarnings("doclint")
 public final class PhotonVersion {
     public static final String versionString = "${version}";
     public static final String buildDate = "${date}";

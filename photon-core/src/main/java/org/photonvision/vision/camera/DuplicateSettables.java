@@ -17,11 +17,11 @@
 
 package org.photonvision.vision.camera;
 
-import edu.wpi.first.cscore.VideoMode;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.vision.camera.VideoMode;
 
 /**
  * Read-only settables for duplicate cameras. All setter methods log warnings and do nothing, while

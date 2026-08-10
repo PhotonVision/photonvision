@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.Pair;
 import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
@@ -26,6 +25,7 @@ import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
 import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
+import org.wpilib.math.util.Pair;
 
 public class DriverModePipeline
         extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {
@@ -95,7 +95,9 @@ public class DriverModePipeline
 
     @Override
     public void release() {
-        // we never actually need to give resources up since pipelinemanager only makes
-        // one of us
+        draw2dCrosshairPipe.release();
+        calculateFPSPipe.release();
+        resizeImagePipe.release();
+        super.release();
     }
 }

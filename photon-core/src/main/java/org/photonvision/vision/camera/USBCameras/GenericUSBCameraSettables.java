@@ -17,22 +17,20 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.cscore.VideoProperty;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.util.PixelFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.camera.VideoException;
+import org.wpilib.vision.camera.VideoMode;
+import org.wpilib.vision.camera.VideoProperty;
 
 public class GenericUSBCameraSettables extends VisionSourceSettables {
     // We need to remember the last exposure set when exiting
@@ -131,7 +129,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
             softSet("white_balance_automatic", 0);
 
-            int propVal = (int) MathUtil.clamp(temp, minWhiteBalanceTemp, maxWhiteBalanceTemp);
+            int propVal = (int) Math.clamp(temp, minWhiteBalanceTemp, maxWhiteBalanceTemp);
 
             logger.debug(
                     "Setting property "
@@ -167,7 +165,30 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         }
     }
 
+    @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
+        if ((configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV9281Controls)
+                        || configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782Controls)
+                        || configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311Controls))
+                && !cameraAutoExposure) {
+            // OV9281, OV9782, and OV2311 on Linux seems to sometimes ignore our exposure requests on
+            // first boot if we're in manual mode. Poking the camera into and out of auto exposure seems
+            // to fix it.
+            try {
+                setAutoExposureImpl(false);
+                Thread.sleep(2000);
+                setAutoExposureImpl(true);
+                Thread.sleep(2000);
+                setAutoExposureImpl(false);
+            } catch (InterruptedException e) {
+                logger.error("Thread interrupted while setting OV9281 or OV9782 exposure!", e);
+            }
+        } else {
+            setAutoExposureImpl(cameraAutoExposure);
+        }
+    }
+
+    public void setAutoExposureImpl(boolean cameraAutoExposure) {
         logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
         if (!cameraAutoExposure) {
@@ -207,7 +228,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             try {
                 if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
-                int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
+                int propVal = (int) Math.clamp(exposureRaw, minExposure, maxExposure);
 
                 logger.debug(
                         "Setting property "
@@ -264,13 +285,12 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     private void cacheVideoModes() {
-        videoModes = new HashMap<>();
         List<VideoMode> videoModesList = new ArrayList<>();
         try {
             for (VideoMode videoMode : camera.enumerateVideoModes()) {
                 // Filter grey modes
-                if (videoMode.pixelFormat == PixelFormat.kGray
-                        || videoMode.pixelFormat == PixelFormat.kUnknown) {
+                if (videoMode.pixelFormat == PixelFormat.GRAY
+                        || videoMode.pixelFormat == PixelFormat.UNKNOWN) {
                     continue;
                 }
 
@@ -294,10 +314,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // The ordering is usually more logical when done like this. It typically puts higher FPSes
         // closer to the bottom.
         Collections.reverse(sortedList);
-
-        for (int i = 0; i < sortedList.size(); i++) {
-            videoModes.put(i, sortedList.get(i));
-        }
+        videoModes = sortedList;
 
         // If after all that we still have no video modes, not much we can do besides
         // throw up our hands
@@ -307,11 +324,11 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     @Override
-    public HashMap<Integer, VideoMode> getAllVideoModes() {
+    public List<VideoMode> getAllVideoModes() {
         if (!cameraPropertiesCached) {
             // Device hasn't connected at least once, best I can do is given up
             logger.warn("Device hasn't connected, cannot enumerate video modes");
-            return new HashMap<>();
+            return new ArrayList<>();
         }
 
         return videoModes;

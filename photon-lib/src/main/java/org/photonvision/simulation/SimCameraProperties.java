@@ -24,20 +24,10 @@
 
 package org.photonvision.simulation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.*;
-import edu.wpi.first.wpilibj.DriverStation;
+import io.avaje.json.JsonIoException;
+import io.avaje.jsonb.Json;
+import io.avaje.jsonb.Jsonb;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -51,6 +41,18 @@ import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.linalg.MatBuilder;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.linalg.Vector;
+import org.wpilib.math.numbers.*;
+import org.wpilib.math.util.Nat;
+import org.wpilib.math.util.Pair;
 
 /**
  * Calibration and performance values for this camera.
@@ -67,6 +69,26 @@ import org.photonvision.estimation.RotTrlTransform3d;
  * network latency and the latency reported will always be perfect.
  */
 public class SimCameraProperties {
+    @Json
+    record SimCameraData(SimCameraCalibrationData[] calibrations) {
+        @Json
+        record SimCameraCalibrationData(
+                ResolutionData resolution,
+                CameraIntrinsicsData cameraIntrinsics,
+                DistortionCoefficients distCoeffs,
+                double[] perViewErrors,
+                double standardDeviation) {
+            @Json
+            record ResolutionData(int width, int height) {}
+
+            @Json
+            record CameraIntrinsicsData(double[] data) {}
+
+            @Json
+            record DistortionCoefficients(double[] data) {}
+        }
+    }
+
     private final Random rand = new Random();
     // calibration
     private int resWidth;
@@ -89,7 +111,7 @@ public class SimCameraProperties {
     }
 
     /**
-     * Reads camera properties from a photonvision <code>config.json</code> file. This is only the
+     * Reads camera properties from a PhotonVision <code>config.json</code> file. This is only the
      * resolution, camera intrinsics, distortion coefficients, and average/std. dev. pixel error.
      * Other camera properties must be set.
      *
@@ -104,7 +126,7 @@ public class SimCameraProperties {
     }
 
     /**
-     * Reads camera properties from a photonvision <code>config.json</code> file. This is only the
+     * Reads camera properties from a PhotonVision <code>config.json</code> file. This is only the
      * resolution, camera intrinsics, distortion coefficients, and average/std. dev. pixel error.
      * Other camera properties must be set.
      *
@@ -115,47 +137,26 @@ public class SimCameraProperties {
      *     calibrated resolution.
      */
     public SimCameraProperties(Path path, int width, int height) throws IOException {
-        var mapper = new ObjectMapper();
-        var json = mapper.readTree(path.toFile());
-        json = json.get("calibrations");
+        SimCameraData data;
+        try (var stream = new FileInputStream(path.toFile())) {
+            data = Jsonb.instance().type(SimCameraData.class).fromJson(stream);
+        } catch (JsonIoException e) {
+            throw new IOException("Invalid calibration JSON", e);
+        }
         boolean success = false;
-        try {
-            for (int i = 0; i < json.size() && !success; i++) {
-                // check if this calibration entry is our desired resolution
-                var calib = json.get(i);
-                int jsonWidth = calib.get("resolution").get("width").asInt();
-                int jsonHeight = calib.get("resolution").get("height").asInt();
-                if (jsonWidth != width || jsonHeight != height) continue;
-                // get the relevant calibration values
-                var jsonIntrinsicsNode = calib.get("cameraIntrinsics").get("data");
-                double[] jsonIntrinsics = new double[jsonIntrinsicsNode.size()];
-                for (int j = 0; j < jsonIntrinsicsNode.size(); j++) {
-                    jsonIntrinsics[j] = jsonIntrinsicsNode.get(j).asDouble();
-                }
-                var jsonDistortNode = calib.get("distCoeffs").get("data");
-                double[] jsonDistortion = new double[8];
-                Arrays.fill(jsonDistortion, 0);
-                for (int j = 0; j < jsonDistortNode.size(); j++) {
-                    jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
-                }
-                var jsonViewErrors = calib.get("perViewErrors");
-                double jsonAvgError = 0;
-                for (int j = 0; j < jsonViewErrors.size(); j++) {
-                    jsonAvgError += jsonViewErrors.get(j).asDouble();
-                }
-                jsonAvgError /= jsonViewErrors.size();
-                double jsonErrorStdDev = calib.get("standardDeviation").asDouble();
-                // assign the read JSON values to this CameraProperties
-                setCalibration(
-                        jsonWidth,
-                        jsonHeight,
-                        MatBuilder.fill(Nat.N3(), Nat.N3(), jsonIntrinsics),
-                        MatBuilder.fill(Nat.N8(), Nat.N1(), jsonDistortion));
-                setCalibError(jsonAvgError, jsonErrorStdDev);
-                success = true;
-            }
-        } catch (Exception e) {
-            throw new IOException("Invalid calibration JSON");
+        for (var calib : data.calibrations) {
+            // check if this calibration entry is our desired resolution
+            if (calib.resolution.width != width || calib.resolution.height != height) continue;
+            // get the relevant calibration values
+            double avgViewError = Arrays.stream(calib.perViewErrors).average().orElse(0);
+            // assign the read JSON values to this CameraProperties
+            setCalibration(
+                    calib.resolution.width,
+                    calib.resolution.height,
+                    MatBuilder.fill(Nat.N3(), Nat.N3(), calib.cameraIntrinsics.data),
+                    MatBuilder.fill(Nat.N8(), Nat.N1(), calib.distCoeffs.data));
+            setCalibError(avgViewError, calib.standardDeviation);
+            success = true;
         }
         if (!success) throw new IOException("Requested resolution not found in calibration");
     }
@@ -167,8 +168,8 @@ public class SimCameraProperties {
 
     public SimCameraProperties setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
         if (fovDiag.getDegrees() < 1 || fovDiag.getDegrees() > 179) {
-            fovDiag = Rotation2d.fromDegrees(MathUtil.clamp(fovDiag.getDegrees(), 1, 179));
-            DriverStation.reportError(
+            fovDiag = Rotation2d.fromDegrees(Math.clamp(fovDiag.getDegrees(), 1, 179));
+            DriverStationErrors.reportError(
                     "Requested invalid FOV! Clamping between (1, 179) degrees...", false);
         }
         double resDiag = Math.hypot(resWidth, resHeight);
@@ -232,8 +233,11 @@ public class SimCameraProperties {
     }
 
     /**
+     * Sets the simulated FPS for this camera.
+     *
      * @param fps The average frames per second the camera should process at. <b>Exposure time limits
      *     FPS if set!</b>
+     * @return This camera properties object for use in chaining
      */
     public SimCameraProperties setFPS(double fps) {
         frameSpeedMs = Math.max(1000.0 / fps, exposureTimeMs);
@@ -242,8 +246,11 @@ public class SimCameraProperties {
     }
 
     /**
+     * Sets the simulated exposure time for this camera.
+     *
      * @param exposureTimeMs The amount of time the "shutter" is open for one frame. Affects motion
      *     blur. <b>Frame speed(from FPS) is limited to this!</b>
+     * @return This camera properties object for use in chaining
      */
     public SimCameraProperties setExposureTimeMs(double exposureTimeMs) {
         this.exposureTimeMs = exposureTimeMs;
@@ -253,8 +260,11 @@ public class SimCameraProperties {
     }
 
     /**
+     * Sets the simulated latency for this camera.
+     *
      * @param avgLatencyMs The average latency (from image capture to data published) in milliseconds
      *     a frame should have
+     * @return This camera properties object for use in chaining
      */
     public SimCameraProperties setAvgLatencyMs(double avgLatencyMs) {
         this.avgLatencyMs = avgLatencyMs;
@@ -263,7 +273,10 @@ public class SimCameraProperties {
     }
 
     /**
+     * Sets the simulated latency variation for this camera.
+     *
      * @param latencyStdDevMs The standard deviation in milliseconds of the latency
+     * @return This camera properties object for use in chaining
      */
     public SimCameraProperties setLatencyStdDevMs(double latencyStdDevMs) {
         this.latencyStdDevMs = latencyStdDevMs;
@@ -271,14 +284,29 @@ public class SimCameraProperties {
         return this;
     }
 
+    /**
+     * Gets the width of the simulated camera image.
+     *
+     * @return The width in pixels
+     */
     public int getResWidth() {
         return resWidth;
     }
 
+    /**
+     * Gets the height of the simulated camera image.
+     *
+     * @return The height in pixels
+     */
     public int getResHeight() {
         return resHeight;
     }
 
+    /**
+     * Gets the area of the simulated camera image.
+     *
+     * @return The area in pixels
+     */
     public int getResArea() {
         return resWidth * resHeight;
     }
@@ -292,30 +320,66 @@ public class SimCameraProperties {
         return camIntrinsics.copy();
     }
 
+    /**
+     * Returns the camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms
+     * are set to 0
+     *
+     * @return The distortion coefficients in an 8d vector
+     */
     public Vector<N8> getDistCoeffs() {
         return new Vector<>(distCoeffs);
     }
 
+    /**
+     * Gets the FPS of the simulated camera.
+     *
+     * @return The FPS
+     */
     public double getFPS() {
         return 1000.0 / frameSpeedMs;
     }
 
+    /**
+     * Gets the time per frame of the simulated camera.
+     *
+     * @return The time per frame in milliseconds
+     */
     public double getFrameSpeedMs() {
         return frameSpeedMs;
     }
 
+    /**
+     * Gets the exposure time of the simulated camera.
+     *
+     * @return The exposure time in milliseconds
+     */
     public double getExposureTimeMs() {
         return exposureTimeMs;
     }
 
+    /**
+     * Gets the average latency of the simulated camera.
+     *
+     * @return The average latency in milliseconds
+     */
     public double getAvgLatencyMs() {
         return avgLatencyMs;
     }
 
+    /**
+     * Gets the time per frame of the simulated camera.
+     *
+     * @return The time per frame in milliseconds
+     */
     public double getLatencyStdDevMs() {
         return latencyStdDevMs;
     }
 
+    /**
+     * Returns a copy of the camera properties.
+     *
+     * @return The copied camera properties
+     */
     public SimCameraProperties copy() {
         var newProp = new SimCameraProperties();
         newProp.setCalibration(resWidth, resHeight, camIntrinsics, distCoeffs);
@@ -328,15 +392,17 @@ public class SimCameraProperties {
     }
 
     /**
-     * The percentage(0 - 100) of this camera's resolution the contour takes up in pixels of the
+     * The percentage (0 - 100) of this camera's resolution the contour takes up in pixels of the
      * image.
      *
      * @param points Points of the contour
+     * @return The percentage
      */
     public double getContourAreaPercent(Point[] points) {
-        return Imgproc.contourArea(new MatOfPoint2f(OpenCVHelp.getConvexHull(points)))
-                / getResArea()
-                * 100;
+        var contour = new MatOfPoint2f(OpenCVHelp.getConvexHull(points));
+        var percent = Imgproc.contourArea(contour) / getResArea() * 100;
+        contour.release();
+        return percent;
     }
 
     /** The yaw from the principal point of this camera to the pixel x value. Positive values left. */
@@ -567,7 +633,12 @@ public class SimCameraProperties {
         else return new Pair<>(null, null);
     }
 
-    /** Returns these points after applying this camera's estimated noise. */
+    /**
+     * Returns these points after applying this camera's estimated noise.
+     *
+     * @param points The points to add noise to
+     * @return The points with noise
+     */
     public Point[] estPixelNoise(Point[] points) {
         if (avgErrorPx == 0 && errorStdDevPx == 0) return points;
 
@@ -584,14 +655,18 @@ public class SimCameraProperties {
     }
 
     /**
-     * @return Noisy estimation of a frame's processing latency in milliseconds
+     * Returns an estimation of a frame's processing latency with noise added.
+     *
+     * @return The latency estimate in milliseconds
      */
     public double estLatencyMs() {
         return Math.max(avgLatencyMs + rand.nextGaussian() * latencyStdDevMs, 0);
     }
 
     /**
-     * @return Estimate how long until the next frame should be processed in milliseconds
+     * Estimates how long until the next frame should be processed.
+     *
+     * @return The estimated time until the next frame in milliseconds
      */
     public double estMsUntilNextFrame() {
         // exceptional processing latency blocks the next frame
@@ -600,11 +675,28 @@ public class SimCameraProperties {
 
     // pre-calibrated example cameras
 
-    /** 960x720 resolution, 90 degree FOV, "perfect" lagless camera */
+    /**
+     * Creates a set of camera properties where the camera has a 960x720 resolution, 90 degree FOV,
+     * and is a "perfect" lagless camera.
+     *
+     * @return The properties for this theoretical camera
+     */
     public static SimCameraProperties PERFECT_90DEG() {
         return new SimCameraProperties();
     }
 
+    /**
+     * Creates a set of camera properties matching those of Microsoft Lifecam running on a Raspberry
+     * Pi 4 at 320x240 resolution.
+     *
+     * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
+     * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
+     * the calibration data. Always use your camera's calibration data to do vision calculations in
+     * non-sim environments. These properties exist as a sample that may be used to get representative
+     * data in sim.
+     *
+     * @return The properties for this camera setup
+     */
     public static SimCameraProperties PI4_LIFECAM_320_240() {
         var prop = new SimCameraProperties();
         prop.setCalibration(
@@ -639,6 +731,18 @@ public class SimCameraProperties {
         return prop;
     }
 
+    /**
+     * Creates a set of camera properties matching those of Microsoft Lifecam running on a Raspberry
+     * Pi 4 at 640x480 resolution.
+     *
+     * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
+     * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
+     * the calibration data. Always use your camera's calibration data to do vision calculations in
+     * non-sim environments. These properties exist as a sample that may be used to get representative
+     * data in sim.
+     *
+     * @return The properties for this camera setup
+     */
     public static SimCameraProperties PI4_LIFECAM_640_480() {
         var prop = new SimCameraProperties();
         prop.setCalibration(
@@ -673,6 +777,18 @@ public class SimCameraProperties {
         return prop;
     }
 
+    /**
+     * Creates a set of camera properties matching those of a Limelight 2 running at 640x480
+     * resolution.
+     *
+     * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
+     * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
+     * the calibration data. Always use your camera's calibration data to do vision calculations in
+     * non-sim environments. These properties exist as a sample that may be used to get representative
+     * data in sim.
+     *
+     * @return The properties for this camera setup
+     */
     public static SimCameraProperties LL2_640_480() {
         var prop = new SimCameraProperties();
         prop.setCalibration(
@@ -706,6 +822,18 @@ public class SimCameraProperties {
         return prop;
     }
 
+    /**
+     * Creates a set of camera properties matching those of a Limelight 2 running at 960x720
+     * resolution.
+     *
+     * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
+     * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
+     * the calibration data. Always use your camera's calibration data to do vision calculations in
+     * non-sim environments. These properties exist as a sample that may be used to get representative
+     * data in sim.
+     *
+     * @return The properties for this camera setup
+     */
     public static SimCameraProperties LL2_960_720() {
         var prop = new SimCameraProperties();
         prop.setCalibration(
@@ -740,6 +868,18 @@ public class SimCameraProperties {
         return prop;
     }
 
+    /**
+     * Creates a set of camera properties matching those of a Limelight 2 running at 1280x720
+     * resolution.
+     *
+     * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
+     * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
+     * the calibration data. Always use your camera's calibration data to do vision calculations in
+     * non-sim environments. These properties exist as a sample that may be used to get representative
+     * data in sim.
+     *
+     * @return The properties for this camera setup
+     */
     public static SimCameraProperties LL2_1280_720() {
         var prop = new SimCameraProperties();
         prop.setCalibration(

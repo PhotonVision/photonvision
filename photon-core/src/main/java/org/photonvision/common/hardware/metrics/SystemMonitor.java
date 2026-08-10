@@ -17,9 +17,6 @@
 
 package org.photonvision.common.hardware.metrics;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.ProtobufPublisher;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
@@ -37,7 +34,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
-import oshi.SystemInfo;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.ProtobufPublisher;
+import org.wpilib.vision.camera.CameraServerJNI;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
 import oshi.hardware.GlobalMemory;
@@ -45,6 +44,8 @@ import oshi.hardware.GraphicsCard;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.NetworkIF;
 import oshi.software.os.OperatingSystem;
+import oshi.spi.SystemInfoFactory;
+import oshi.spi.SystemInfoProvider;
 import oshi.util.FormatUtil;
 import oshi.util.GlobalConfig;
 
@@ -62,7 +63,7 @@ public class SystemMonitor {
                     .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
 
-    private SystemInfo si;
+    private SystemInfoProvider si;
     private CentralProcessor cpu;
     private OperatingSystem os;
     private GlobalMemory mem;
@@ -103,6 +104,8 @@ public class SystemMonitor {
                 instance = new SystemMonitorRK3588();
             } else if (Platform.isQCS6490()) {
                 instance = new SystemMonitorQCS6490();
+            } else if (Platform.isWindows()) {
+                instance = new SystemMonitorWindows();
             } else {
                 instance = new SystemMonitor();
             }
@@ -113,9 +116,9 @@ public class SystemMonitor {
     protected SystemMonitor() {
         logger.info("Starting SystemMonitor");
         GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, true);
-        GlobalConfig.set("oshi.os.linux.sensors.cpuTemperature.types", getThermalZoneTypes());
+        GlobalConfig.set("oshi.os.linux.sensors.cputemperature.types", getThermalZoneTypes());
 
-        si = new SystemInfo();
+        si = SystemInfoFactory.create();
         hal = si.getHardware();
         os = si.getOperatingSystem();
         cpu = hal.getProcessor();
@@ -152,7 +155,7 @@ public class SystemMonitor {
         //     `cat /sys/class/thermal/thermal_zone*/type`
         // This command will show the types for all thermal zones.
         //
-        return GlobalConfig.get("oshi.os.linux.sensors.cpuTemperature.types");
+        return GlobalConfig.get("oshi.os.linux.sensors.cputemperature.types");
     }
 
     /**
@@ -447,7 +450,7 @@ public class SystemMonitor {
     /**
      * Returns the total GPU memory in MiB.
      *
-     * @return The total GPU memory in MiB, or -1.0 if not avaialable on this platform.
+     * @return The total GPU memory in MiB, or -1.0 if not available on this platform.
      */
     public double getGpuMem() {
         return -1.0;

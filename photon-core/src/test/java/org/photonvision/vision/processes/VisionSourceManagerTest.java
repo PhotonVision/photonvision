@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.wpi.first.cscore.UsbCameraInfo;
+import io.avaje.jsonb.Jsonb;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +32,10 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.wpilib.vision.camera.UsbCameraInfo;
 
 public class VisionSourceManagerTest {
     // Test harness that overrides getConnectedCameras, but uses USB cameras for
@@ -48,12 +49,14 @@ public class VisionSourceManagerTest {
             return testCameras;
         }
 
-        public void teardown() {
+        @Override
+        public void close() {
             // release native resources
             var uniqueNames = getVisionModules().stream().map(VisionModule::uniqueName).toList();
             for (var name : uniqueNames) {
                 deactivateVisionSource(name);
             }
+            super.close();
         }
     }
 
@@ -75,7 +78,7 @@ public class VisionSourceManagerTest {
 
     @AfterEach
     public void teardownVsm() {
-        vsm.teardown();
+        vsm.close();
     }
 
     @Test
@@ -94,31 +97,32 @@ public class VisionSourceManagerTest {
                                     7,
                                     8));
 
-            var str = JacksonUtils.serializeToString(usb);
+            var str = Jsonb.instance().type(PVCameraInfo.class).toJson(usb);
             System.out.println(str);
-            System.out.println(JacksonUtils.deserialize(str, PVCameraInfo.class));
+            System.out.println(Jsonb.instance().type(PVCameraInfo.class).fromJson(str));
         }
         {
             var csi =
                     PVCameraInfo.fromCSICameraInfo(
                             "/dev/v4l/by-path/platform-1f00110000.csi-video-index0", "rp1-cfe");
-            var str = JacksonUtils.serializeToString(csi);
+
+            var str = Jsonb.instance().type(PVCameraInfo.class).toJson(csi);
             System.out.println(str);
-            System.out.println(JacksonUtils.deserialize(str, PVCameraInfo.class));
+            System.out.println(Jsonb.instance().type(PVCameraInfo.class).fromJson(str));
         }
     }
 
     @Test
     public void testEmpty() {
-        var vsm = new TestVsm();
+        try (var vsm = new TestVsm()) {
+            List<CameraConfiguration> configs = List.of();
+            vsm.registerLoadedConfigs(configs);
 
-        List<CameraConfiguration> configs = List.of();
-        vsm.registerLoadedConfigs(configs);
-
-        // And make assertions about the current matching state
-        assertEquals(0, vsm.getVsmState().allConnectedCameras.size());
-        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
-        assertEquals(0, vsm.vmm.getModules().size());
+            // And make assertions about the current matching state
+            assertEquals(0, vsm.getVsmState().allConnectedCameras.size());
+            assertEquals(0, vsm.getVsmState().disabledConfigs.size());
+            assertEquals(0, vsm.vmm.getModules().size());
+        }
     }
 
     @Test
@@ -137,7 +141,10 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera1);
 
-        System.out.println(JacksonUtils.serializeToString(ConfigManager.getInstance().getConfig()));
+        System.out.println(
+                Jsonb.instance()
+                        .type(PhotonConfiguration.class)
+                        .toJson(ConfigManager.getInstance().getConfig()));
 
         // And make assertions about the current matching state
         assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
@@ -148,88 +155,86 @@ public class VisionSourceManagerTest {
     @Test
     public void testEnabledDisabled() throws InterruptedException {
         // GIVEN a VSM
-        var vsm = new TestVsm();
-        // AND one enabled camera, and one disabled camera
-        var enabledCam =
-                new CameraConfiguration(
-                        PVCameraInfo.fromUsbCameraInfo(
-                                new UsbCameraInfo(
-                                        0,
-                                        "/dev/video0",
-                                        "Lifecam HD-3000",
-                                        new String[] {"/dev/v4l/by-path/foobar1"},
-                                        5940,
-                                        5940)));
-        enabledCam.deactivated = false;
-        enabledCam.nickname = "Matt's awesome camera 1";
+        try (var vsm = new TestVsm()) {
+            // AND one enabled camera, and one disabled camera
+            var enabledCam =
+                    new CameraConfiguration(
+                            PVCameraInfo.fromUsbCameraInfo(
+                                    new UsbCameraInfo(
+                                            0,
+                                            "/dev/video0",
+                                            "Lifecam HD-3000",
+                                            new String[] {"/dev/v4l/by-path/foobar1"},
+                                            5940,
+                                            5940)));
+            enabledCam.deactivated = false;
+            enabledCam.nickname = "Matt's awesome camera 1";
 
-        var disabledCam =
-                new CameraConfiguration(
-                        PVCameraInfo.fromUsbCameraInfo(
-                                new UsbCameraInfo(
-                                        1,
-                                        "/dev/video1",
-                                        "Lifecam HD-3000",
-                                        new String[] {"/dev/v4l/by-path/foobar2"},
-                                        5940,
-                                        5940)));
-        enabledCam.deactivated = true;
-        enabledCam.nickname = "Matt's awesome camera 2";
+            var disabledCam =
+                    new CameraConfiguration(
+                            PVCameraInfo.fromUsbCameraInfo(
+                                    new UsbCameraInfo(
+                                            1,
+                                            "/dev/video1",
+                                            "Lifecam HD-3000",
+                                            new String[] {"/dev/v4l/by-path/foobar2"},
+                                            5940,
+                                            5940)));
+            enabledCam.deactivated = true;
+            enabledCam.nickname = "Matt's awesome camera 2";
 
-        vsm.testCameras = List.of(enabledCam.matchedCameraInfo, disabledCam.matchedCameraInfo);
+            vsm.testCameras = List.of(enabledCam.matchedCameraInfo, disabledCam.matchedCameraInfo);
 
-        // WHEN cameras are loaded from disk
-        vsm.registerLoadedConfigs(List.of(enabledCam, disabledCam));
+            // WHEN cameras are loaded from disk
+            vsm.registerLoadedConfigs(List.of(enabledCam, disabledCam));
 
-        // the enabled and disabled cameras will be matched
-        assertEquals(2, vsm.getVsmState().allConnectedCameras.size());
-        assertEquals(1, vsm.getVsmState().disabledConfigs.size());
-        assertEquals(1, vsm.vmm.getModules().size());
+            // the enabled and disabled cameras will be matched
+            assertEquals(2, vsm.getVsmState().allConnectedCameras.size());
+            assertEquals(1, vsm.getVsmState().disabledConfigs.size());
+            assertEquals(1, vsm.vmm.getModules().size());
 
-        Thread.sleep(2000);
-
-        vsm.teardown();
+            Thread.sleep(2000);
+        }
     }
 
     @Test
     public void testOtherPathsOrderChange() throws InterruptedException {
         // GIVEN a VSM
-        var vsm = new TestVsm();
-        // AND one camera and camera config with flipped otherpaths order
-        var cam =
-                PVCameraInfo.fromUsbCameraInfo(
-                        new UsbCameraInfo(
-                                0,
-                                "/dev/video0",
-                                "Lifecam HD-3000",
-                                new String[] {"/dev/v4l/by-path/usbv2/foobar1", "/dev/v4l/by-path/usb/foobar1"},
-                                5940,
-                                5940));
+        try (var vsm = new TestVsm()) {
+            // AND one camera and camera config with flipped otherpaths order
+            var cam =
+                    PVCameraInfo.fromUsbCameraInfo(
+                            new UsbCameraInfo(
+                                    0,
+                                    "/dev/video0",
+                                    "Lifecam HD-3000",
+                                    new String[] {"/dev/v4l/by-path/usbv2/foobar1", "/dev/v4l/by-path/usb/foobar1"},
+                                    5940,
+                                    5940));
 
-        var camOtherPaths =
-                PVCameraInfo.fromUsbCameraInfo(
-                        new UsbCameraInfo(
-                                1,
-                                "/dev/video1",
-                                "Lifecam HD-3000",
-                                new String[] {"/dev/v4l/by-path/usb/foobar1", "/dev/v4l/by-path/usbv2/foobar1"},
-                                5940,
-                                5940));
-        CameraConfiguration camOtherPathsConf = new CameraConfiguration(camOtherPaths);
-        camOtherPathsConf.nickname = "TestCamera";
-        camOtherPathsConf.deactivated = false;
+            var camOtherPaths =
+                    PVCameraInfo.fromUsbCameraInfo(
+                            new UsbCameraInfo(
+                                    1,
+                                    "/dev/video1",
+                                    "Lifecam HD-3000",
+                                    new String[] {"/dev/v4l/by-path/usb/foobar1", "/dev/v4l/by-path/usbv2/foobar1"},
+                                    5940,
+                                    5940));
+            CameraConfiguration camOtherPathsConf = new CameraConfiguration(camOtherPaths);
+            camOtherPathsConf.nickname = "TestCamera";
+            camOtherPathsConf.deactivated = false;
 
-        vsm.registerLoadedConfigs(List.of(camOtherPathsConf));
+            vsm.registerLoadedConfigs(List.of(camOtherPathsConf));
 
-        vsm.assignUnmatchedCamera(cam);
+            vsm.assignUnmatchedCamera(cam);
 
-        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
-        assertEquals(1, vsm.vmm.getModules().size());
-        assertEquals(cam.uniquePath(), camOtherPaths.uniquePath());
+            assertEquals(0, vsm.getVsmState().disabledConfigs.size());
+            assertEquals(1, vsm.vmm.getModules().size());
+            assertEquals(cam.uniquePath(), camOtherPaths.uniquePath());
 
-        Thread.sleep(2000);
-
-        vsm.teardown();
+            Thread.sleep(2000);
+        }
     }
 
     @Test
@@ -268,7 +273,10 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera3);
 
-        System.out.println(JacksonUtils.serializeToString(ConfigManager.getInstance().getConfig()));
+        System.out.println(
+                Jsonb.instance()
+                        .type(PhotonConfiguration.class)
+                        .toJson(ConfigManager.getInstance().getConfig()));
 
         // And make assertions about the current matching state
         assertEquals(3, vsm.getVsmState().allConnectedCameras.size());
@@ -278,52 +286,50 @@ public class VisionSourceManagerTest {
 
     @Test
     public void testMismatch() throws InterruptedException {
-        var vsm = new TestVsm();
+        try (var vsm = new TestVsm()) {
+            // Create a saved camera configuration that expects a device at /dev/video0 with a name
+            PVCameraInfo savedInfo =
+                    PVCameraInfo.fromUsbCameraInfo(
+                            new UsbCameraInfo(
+                                    0, "/dev/video0", "CamA", new String[] {"/dev/v4l/by-path/1"}, 111, 222));
+            CameraConfiguration savedConf = new CameraConfiguration(savedInfo);
+            savedConf.deactivated = false;
+            savedConf.nickname = "SavedCam";
 
-        // Create a saved camera configuration that expects a device at /dev/video0 with a name
-        PVCameraInfo savedInfo =
-                PVCameraInfo.fromUsbCameraInfo(
-                        new UsbCameraInfo(
-                                0, "/dev/video0", "CamA", new String[] {"/dev/v4l/by-path/1"}, 111, 222));
-        CameraConfiguration savedConf = new CameraConfiguration(savedInfo);
-        savedConf.deactivated = false;
-        savedConf.nickname = "SavedCam";
+            // Register the saved config so VSM creates a VisionModule
+            vsm.registerLoadedConfigs(List.of(savedConf));
 
-        // Register the saved config so VSM creates a VisionModule
-        vsm.registerLoadedConfigs(List.of(savedConf));
+            // Now simulate a connected camera at same uniquePath but with a different name (mismatch)
+            List<PVCameraInfo> currentInfo =
+                    List.of(
+                            PVCameraInfo.fromUsbCameraInfo(
+                                    new UsbCameraInfo(
+                                            0,
+                                            "/dev/video0",
+                                            "CamDifferent",
+                                            new String[] {"/dev/v4l/by-path/1"},
+                                            111,
+                                            222)));
 
-        // Now simulate a connected camera at same uniquePath but with a different name (mismatch)
-        List<PVCameraInfo> currentInfo =
-                List.of(
-                        PVCameraInfo.fromUsbCameraInfo(
-                                new UsbCameraInfo(
-                                        0,
-                                        "/dev/video0",
-                                        "CamDifferent",
-                                        new String[] {"/dev/v4l/by-path/1"},
-                                        111,
-                                        222)));
+            // Trigger state evaluation
+            vsm.checkMismatches(currentInfo);
 
-        // Trigger state evaluation
-        vsm.checkMismatches(currentInfo);
+            // The module should have detected a mismatch
+            assertTrue(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
 
-        // The module should have detected a mismatch
-        assertTrue(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
+            // Now simulate the device being disconnected
+            currentInfo = List.of();
+            vsm.checkMismatches(currentInfo);
 
-        // Now simulate the device being disconnected
-        currentInfo = List.of();
-        vsm.checkMismatches(currentInfo);
+            // Mismatch should be cleared when device is disconnected
+            assertFalse(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
 
-        // Mismatch should be cleared when device is disconnected
-        assertFalse(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
+            // Test with a matching camera info
+            currentInfo = List.of(savedInfo);
+            vsm.checkMismatches(currentInfo);
 
-        // Test with a matching camera info
-        currentInfo = List.of(savedInfo);
-        vsm.checkMismatches(currentInfo);
-
-        // The mismatch should be cleared
-        assertFalse(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
-
-        vsm.teardown();
+            // The mismatch should be cleared
+            assertFalse(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
+        }
     }
 }

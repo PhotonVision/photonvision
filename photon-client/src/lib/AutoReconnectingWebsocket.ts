@@ -40,18 +40,13 @@ export class AutoReconnectingWebsocket {
    * Send data over the websocket. This is a no-op if the websocket is not in the OPEN state.
    *
    * @param data data to send
-   * @param encodeData whether or not to encode the data using msgpack (defaults to true)
    * @see isConnected
    *
    */
-  send(data, encodeData = true) {
+  send(data: unknown) {
     // Only send data if the websocket is open
     if (this.isConnected()) {
-      if (encodeData) {
-        this.websocket?.send(encode(data));
-      } else {
-        this.websocket?.send(data);
-      }
+      this.websocket?.send(encode(data));
     }
   }
 

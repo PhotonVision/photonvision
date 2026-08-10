@@ -17,7 +17,6 @@
 
 package org.photonvision.common.logging;
 
-import edu.wpi.first.math.Pair;
 import java.io.*;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -28,6 +27,7 @@ import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
+import org.wpilib.math.util.Pair;
 
 /** TODO: get rid of static {} blocks and refactor to singleton pattern */
 public class Logger {
@@ -307,10 +307,10 @@ public class Logger {
     private static class UILogAppender implements LogAppender {
         @Override
         public void log(String message, LogLevel level) {
-            var messageMap = new HashMap<String, Object>();
+            Map<String, Object> messageMap = new HashMap<>();
             messageMap.put("logMessage", message);
             messageMap.put("logLevel", level.code);
-            var superMap = new HashMap<String, Object>();
+            Map<String, Object> superMap = new HashMap<>();
             superMap.put("logMessage", messageMap);
             DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("log", superMap));
         }

@@ -18,16 +18,13 @@
 #pragma once
 
 #include <span>
-#include <string>
 #include <utility>
 
-#include <units/time.h>
-#include <wpi/SmallVector.h>
+#include <wpi/units/time.hpp>
 
 #include "MultiTargetPNPResult.h"
 #include "PhotonTrackedTarget.h"
 #include "fmt/base.h"
-#include "photon/dataflow/structures/Packet.h"
 #include "photon/struct/PhotonPipelineResultStruct.h"
 
 namespace photon {
@@ -88,25 +85,31 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
    * Returns the latency in the pipeline.
    * @return The latency in the pipeline.
    */
-  units::millisecond_t GetLatency() const {
-    return units::microsecond_t{static_cast<double>(
+  wpi::units::millisecond_t GetLatency() const {
+    return wpi::units::microsecond_t{static_cast<double>(
         metadata.publishTimestampMicros - metadata.captureTimestampMicros)};
   }
 
   /**
-   * Returns the estimated time the frame was taken,
+   * Returns the estimated time the frame was taken, in the Time Sync Server's
+   * time base (nt::Now). This is calculated using the estimated offset between
+   * Time Sync Server time and local time. The robot shall run a server, so the
+   * offset shall be 0.
    * This is much more accurate than using GetLatency()
    * @return The timestamp in seconds or -1 if this result was not initiated
    * with a timestamp.
    */
-  units::second_t GetTimestamp() const {
+  wpi::units::second_t GetTimestamp() const {
     return ntReceiveTimestamp - GetLatency();
   }
 
   /**
    * Return the latest mulit-target result, as calculated on your coprocessor.
-   * Be sure to check getMultiTagResult().estimatedPose.isPresent before using
+   * Be sure to check `MultiTagResult().has_value()` before using
    * the pose estimate!
+   *
+   * @return The multi-target result. Empty if there's no multi-target
+   * result/Multi-Target Estimation is disabled in the UI.
    */
   const std::optional<MultiTargetPNPResult>& MultiTagResult() const {
     return multitagResult;
@@ -119,7 +122,7 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
   int64_t SequenceID() const { return metadata.sequenceID; }
 
   /** Sets the FPGA timestamp this result was Received by robot code */
-  void SetReceiveTimestamp(const units::second_t timestamp) {
+  void SetReceiveTimestamp(const wpi::units::second_t timestamp) {
     this->ntReceiveTimestamp = timestamp;
   }
 
@@ -143,7 +146,7 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
 
   // Since we don't trust NT time sync, keep track of when we got this packet
   // into robot code
-  units::microsecond_t ntReceiveTimestamp = -1_s;
+  wpi::units::microsecond_t ntReceiveTimestamp = -1_s;
 
   inline static bool HAS_WARNED = false;
 };

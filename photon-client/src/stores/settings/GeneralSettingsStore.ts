@@ -10,23 +10,70 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
+import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
+import { ref } from "vue";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  lastMetricsUpdate: Date;
-  currentFieldLayout;
+  currentFieldLayout: AprilTagFieldLayout;
 }
+
+interface MetricsEntry {
+  time: number;
+  metrics: MetricData;
+}
+
+class MetricsHistory {
+  private MAX_METRIC_HISTORY = 60;
+  private UPDATE_INTERVAL_MS = 900;
+
+  private buffer: (MetricsEntry | undefined)[];
+  private size: number;
+  private index = 0;
+  private count = 0;
+  private lastUpdate = 0;
+
+  constructor(size = this.MAX_METRIC_HISTORY) {
+    this.size = size;
+    this.buffer = new Array<MetricsEntry | undefined>(size);
+  }
+
+  update(value: MetricsEntry): boolean {
+    const now = Date.now();
+    if (now - this.lastUpdate < this.UPDATE_INTERVAL_MS) return false;
+
+    this.lastUpdate = now;
+    this.buffer[this.index] = value;
+    this.index = (this.index + 1) % this.size;
+    this.count = Math.min(this.count + 1, this.size);
+    return true;
+  }
+
+  getHistory(): MetricsEntry[] {
+    const result: MetricsEntry[] = new Array(this.count);
+    for (let i = 0; i < this.count; i++) {
+      const idx = (this.index - this.count + i + this.size) % this.size;
+      result[i] = this.buffer[idx]!;
+    }
+    return result;
+  }
+}
+
+const metricsHistoryBuffer = new MetricsHistory();
+export const metricsHistorySnapshot = ref<MetricsEntry[]>([]);
 
 export const useSettingsStore = defineStore("settings", {
   state: (): GeneralSettingsStore => ({
     general: {
       version: undefined,
+      imageVersion: undefined,
       gpuAcceleration: undefined,
       hardwareModel: undefined,
       hardwarePlatform: undefined,
+      wpilibArch: undefined,
       mrCalWorking: true,
       availableModels: [],
       supportedBackends: [],
@@ -76,8 +123,7 @@ export const useSettingsStore = defineStore("settings", {
         width: 8.2296
       },
       tags: []
-    },
-    lastMetricsUpdate: new Date()
+    }
   }),
   getters: {
     gpuAccelerationEnabled(): boolean {
@@ -89,7 +135,6 @@ export const useSettingsStore = defineStore("settings", {
   },
   actions: {
     updateMetricsFromWebsocket(data: Required<MetricData>) {
-      this.lastMetricsUpdate = new Date();
       this.metrics = {
         cpuTemp: data.cpuTemp || undefined,
         cpuUtil: data.cpuUtil || undefined,
@@ -106,12 +151,17 @@ export const useSettingsStore = defineStore("settings", {
         sentBitRate: data.sentBitRate || undefined,
         recvBitRate: data.recvBitRate || undefined
       };
+      if (metricsHistoryBuffer.update({ time: Date.now(), metrics: this.metrics })) {
+        metricsHistorySnapshot.value = metricsHistoryBuffer.getHistory();
+      }
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
       this.general = {
         version: data.general.version || undefined,
+        imageVersion: data.general.imageVersion || undefined,
         hardwareModel: data.general.hardwareModel || undefined,
         hardwarePlatform: data.general.hardwarePlatform || undefined,
+        wpilibArch: data.general.wpilibArch || undefined,
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
         availableModels: data.general.availableModels || undefined,
@@ -135,7 +185,7 @@ export const useSettingsStore = defineStore("settings", {
       const payload = {
         enabledLEDPercentage: brightness
       };
-      useStateStore().websocket?.send(payload, true);
+      useStateStore().websocket?.send(payload);
     }
   }
 });

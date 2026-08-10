@@ -23,8 +23,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.function.Supplier;
+import org.photonvision.jni.CombinedRuntimeLoader;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "doclint"})
 public enum Platform {
     // WPILib Supported (JNI)
     WINDOWS_64("Windows x64", Platform::getUnknownModel, false, OSType.WINDOWS, true),
@@ -136,6 +137,28 @@ public enum Platform {
             return UnknownPlatformString;
         } else {
             return currentPlatform.description;
+        }
+    }
+
+    /**
+     * This function serves to map between formats used in the CombinedRuntimeLoader and the platform
+     * names used in the wpilib-tools-plugin. This is typically used for native libraries.
+     *
+     * @return String representing the platform in the format used by wpilib-tools-plugin, or an empty
+     *     string if the platform is not recognized.
+     */
+    public static String getNativePlatform() {
+        String platPath = CombinedRuntimeLoader.getPlatformPath();
+
+        switch (platPath) {
+            case "/linux/x86-64/":
+                return "linuxx86-64";
+            case "/windows/x86-64/":
+                return "winx86-64";
+            case "/linux/arm64/":
+                return "linuxarm64";
+            default:
+                return "";
         }
     }
 

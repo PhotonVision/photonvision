@@ -17,8 +17,8 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.wpilib.vision.camera.UsbCamera;
 
 public class InnoOV9281CameraSettables extends GenericUSBCameraSettables {
     public InnoOV9281CameraSettables(CameraConfiguration configuration, UsbCamera camera) {

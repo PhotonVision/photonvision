@@ -17,8 +17,9 @@
 
 package org.photonvision.common.dataflow.structures;
 
-import edu.wpi.first.util.struct.Struct;
+import org.wpilib.util.struct.Struct;
 
+@SuppressWarnings("doclint")
 public interface PacketSerde<T> {
     int getMaxByteSize();
 

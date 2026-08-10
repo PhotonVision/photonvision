@@ -207,7 +207,7 @@ const resetCurrentBuffer = () => {
           color="buttonActive"
           class="mb-4 mt-1"
           style="width: min-content"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="resetCurrentBuffer"
           >Reset Samples</v-btn
         >

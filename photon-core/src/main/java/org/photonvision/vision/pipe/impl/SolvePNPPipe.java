@@ -17,10 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -33,6 +29,10 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.linalg.VecBuilder;
 
 public class SolvePNPPipe
         extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPPipe.SolvePNPPipeParams> {
@@ -101,6 +101,11 @@ public class SolvePNPPipe
                 MathUtils.convertOpenCVtoPhotonTransform(new Transform3d(translation, rotation));
         target.setBestCameraToTarget3d(camToTarget);
         target.setAltCameraToTarget3d(new Transform3d());
+    }
+
+    @Override
+    public void release() {
+        imagePoints.release();
     }
 
     public static record SolvePNPPipeParams(

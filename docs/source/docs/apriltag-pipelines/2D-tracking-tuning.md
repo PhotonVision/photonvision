@@ -23,7 +23,7 @@ AprilTag pipelines come with reasonable defaults to get you up and running with 
 
 Target families are defined by two numbers (before and after the h). The first number is the number of bits the tag is able to encode (which means more tags are available in the respective family) and the second is the hamming distance. Hamming distance describes the ability for error correction while identifying tag ids. A high hamming distance generally means that it will be easier for a tag to be identified even if there are errors. However, as hamming distance increases, the number of available tags decreases.
 
-The 2025 FRC game will be using 36h11 tags, which can be found [here](https://github.com/AprilRobotics/apriltag-imgs/tree/main/tag36h11).
+The 2026 FRC game will be using 36h11 tags, which can be found [here](https://github.com/AprilRobotics/apriltag-imgs/tree/2bc821edb4eb7b408d13c6a590d326d8a9ec98f3/tag36h11).
 
 ### Decimate
 

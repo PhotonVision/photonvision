@@ -28,17 +28,17 @@
 #include <string>
 #include <vector>
 
-#include <frc/Alert.h>
-#include <networktables/BooleanTopic.h>
-#include <networktables/DoubleArrayTopic.h>
-#include <networktables/DoubleTopic.h>
-#include <networktables/IntegerTopic.h>
-#include <networktables/MultiSubscriber.h>
-#include <networktables/NetworkTable.h>
-#include <networktables/NetworkTableInstance.h>
-#include <networktables/RawTopic.h>
-#include <networktables/StringTopic.h>
-#include <units/time.h>
+#include <wpi/driverstation/Alert.hpp>
+#include <wpi/nt/BooleanTopic.hpp>
+#include <wpi/nt/DoubleArrayTopic.hpp>
+#include <wpi/nt/DoubleTopic.hpp>
+#include <wpi/nt/IntegerTopic.hpp>
+#include <wpi/nt/MultiSubscriber.hpp>
+#include <wpi/nt/NetworkTable.hpp>
+#include <wpi/nt/NetworkTableInstance.hpp>
+#include <wpi/nt/RawTopic.hpp>
+#include <wpi/nt/StringTopic.hpp>
+#include <wpi/units/time.hpp>
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
@@ -64,7 +64,7 @@ class PhotonCamera {
    * @param cameraName The name of the camera, as seen in the UI.
    * over.
    */
-  explicit PhotonCamera(nt::NetworkTableInstance instance,
+  explicit PhotonCamera(wpi::nt::NetworkTableInstance instance,
                         const std::string_view cameraName);
 
   /**
@@ -104,7 +104,17 @@ class PhotonCamera {
   bool GetDriverMode() const;
 
   /**
-   * @param fpsLimit The FPS limit to set. Use -1 for unlimited FPS.
+   *  Sets the FPS limit on the camera.
+   *
+   * <p>An FPS of 0 means to pause processing until a FPS limit greater than 0
+   * is set.
+   *
+   * <p>A negative FPS limit is treated as no FPS limit, and will run as fast as
+   * possible.
+   *
+   * <p>Otherwise, will limit processing to at most the provided FPS limit
+   *
+   * @param fps The FPS limit to set.
    */
   void SetFPSLimit(int fpsLimit);
 
@@ -112,6 +122,17 @@ class PhotonCamera {
    * @return The FPS limit set on the camera, or -1 if no limit is set.
    */
   int GetFPSLimit() const;
+
+  /**
+   * Sets whether the camera is enabled, default is true.
+   * @param enabled Whether to enable the camera.
+   */
+  void SetEnabled(bool enabled);
+
+  /**
+   * @return Whether the camera is enabled.
+   */
+  bool GetEnabled() const;
 
   /**
    * Request the camera to save a new image file from the input
@@ -179,71 +200,84 @@ class PhotonCamera {
   using DistortionMatrix = Eigen::Matrix<double, 8, 1>;
 
   /**
-   * @brief Get the camera calibration matrix, in standard OpenCV form
+   * Get the camera calibration matrix, in standard OpenCV form
    *
    * @return std::optional<cv::Mat>
    */
   std::optional<CameraMatrix> GetCameraMatrix();
 
   /**
-   * @brief Get the camera calibration distortion coefficients, in OPENCV8 form.
-   * Higher order terms are set to zero.
+   * Returns the camera calibration's distortion coefficients, in OPENCV8 form.
+   * Higher-order terms are set to 0
    *
-   * @return std::optional<cv::Mat>
+   * @return The distortion coefficients in a 8x1 matrix, if they are published
+   * by the camera. Empty otherwise.
    */
   std::optional<DistortionMatrix> GetDistCoeffs();
 
+  /**
+   * Sets whether or not coprocessor version checks will occur. Setting this to
+   * true will silence all console warnings about coproccessor connection, so be
+   * careful when enabling this and ensure all your coprocessors are
+   * communicating to the robot properly and everything has matching versions.
+   *
+   * @param enabled Whether or not to enable coprocessor version checks
+   */
   static void SetVersionCheckEnabled(bool enabled);
 
-  std::shared_ptr<nt::NetworkTable> GetCameraTable() const { return rootTable; }
+  std::shared_ptr<wpi::nt::NetworkTable> GetCameraTable() const {
+    return rootTable;
+  }
 
   // For use in tests
   bool test = false;
   std::vector<PhotonPipelineResult> testResult;
 
  protected:
-  std::shared_ptr<nt::NetworkTable> mainTable;
-  std::shared_ptr<nt::NetworkTable> rootTable;
-  nt::RawSubscriber rawBytesEntry;
-  nt::IntegerPublisher inputSaveImgEntry;
-  nt::IntegerSubscriber inputSaveImgSubscriber;
-  nt::IntegerPublisher outputSaveImgEntry;
-  nt::IntegerSubscriber outputSaveImgSubscriber;
-  nt::IntegerPublisher pipelineIndexPub;
-  nt::IntegerSubscriber pipelineIndexSub;
-  nt::IntegerPublisher ledModePub;
-  nt::IntegerSubscriber ledModeSub;
-  nt::StringSubscriber versionEntry;
+  std::shared_ptr<wpi::nt::NetworkTable> mainTable;
+  std::shared_ptr<wpi::nt::NetworkTable> rootTable;
+  wpi::nt::RawSubscriber rawBytesEntry;
+  wpi::nt::IntegerPublisher inputSaveImgEntry;
+  wpi::nt::IntegerSubscriber inputSaveImgSubscriber;
+  wpi::nt::IntegerPublisher outputSaveImgEntry;
+  wpi::nt::IntegerSubscriber outputSaveImgSubscriber;
+  wpi::nt::IntegerPublisher pipelineIndexPub;
+  wpi::nt::IntegerSubscriber pipelineIndexSub;
+  wpi::nt::IntegerPublisher ledModePub;
+  wpi::nt::IntegerSubscriber ledModeSub;
+  wpi::nt::StringSubscriber versionEntry;
 
-  nt::DoubleArraySubscriber cameraIntrinsicsSubscriber;
-  nt::DoubleArraySubscriber cameraDistortionSubscriber;
+  wpi::nt::DoubleArraySubscriber cameraIntrinsicsSubscriber;
+  wpi::nt::DoubleArraySubscriber cameraDistortionSubscriber;
 
-  nt::BooleanSubscriber driverModeSubscriber;
-  nt::BooleanPublisher driverModePublisher;
-  nt::IntegerSubscriber fpsLimitSubscriber;
-  nt::IntegerPublisher fpsLimitPublisher;
+  wpi::nt::BooleanSubscriber driverModeSubscriber;
+  wpi::nt::BooleanPublisher driverModePublisher;
+  wpi::nt::IntegerSubscriber fpsLimitSubscriber;
+  wpi::nt::IntegerPublisher fpsLimitPublisher;
+  wpi::nt::BooleanSubscriber enabledSubscriber;
+  wpi::nt::BooleanPublisher enabledPublisher;
 
-  nt::IntegerSubscriber ledModeSubscriber;
+  wpi::nt::IntegerSubscriber ledModeSubscriber;
 
-  nt::IntegerSubscriber heartbeatSubscriber;
+  wpi::nt::IntegerSubscriber heartbeatSubscriber;
 
-  nt::MultiSubscriber topicNameSubscriber;
+  wpi::nt::MultiSubscriber topicNameSubscriber;
 
   std::string path;
   std::string cameraName;
 
-  frc::Alert disconnectAlert;
-  frc::Alert timesyncAlert;
+  wpi::Alert disconnectAlert;
+  wpi::Alert timesyncAlert;
 
  private:
-  units::second_t lastVersionCheckTime = 0_s;
+  wpi::units::second_t lastVersionCheckTime = 0_s;
   static bool VERSION_CHECK_ENABLED;
   inline static int InstanceCount = 1;
 
-  units::second_t prevTimeSyncWarnTime = 0_s;
+  wpi::units::second_t prevTimeSyncWarnTime = 0_s;
 
   int prevHeartbeatValue = -1;
-  units::second_t prevHeartbeatChangeTime = 0_s;
+  wpi::units::second_t prevHeartbeatChangeTime = 0_s;
 
   void VerifyVersion();
 

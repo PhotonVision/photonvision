@@ -21,9 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import edu.wpi.first.cscore.VideoMode;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,6 +39,7 @@ import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.wpilib.vision.camera.VideoMode;
 
 public class VisionModuleManagerTest {
     @BeforeAll
@@ -87,7 +87,9 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void release() {}
+        public void release() {
+            provider.release();
+        }
     }
 
     private static class TestSettables extends VisionSourceSettables {
@@ -115,9 +117,9 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public HashMap<Integer, VideoMode> getAllVideoModes() {
-            var ret = new HashMap<Integer, VideoMode>();
-            ret.put(0, getCurrentVideoMode());
+        public List<VideoMode> getAllVideoModes() {
+            var ret = new ArrayList<VideoMode>();
+            ret.add(getCurrentVideoMode());
             return ret;
         }
 
@@ -164,84 +166,83 @@ public class VisionModuleManagerTest {
     public void setupManager() {
         ConfigManager.getInstance().load();
 
-        var vmm = new VisionModuleManager();
+        try (var vmm = new VisionModuleManager()) {
+            var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
+            var ffp =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
 
-        var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
-        var ffp =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
+            var testSource = new TestSource(ffp, conf);
+            var module0DataConsumer = new TestDataConsumer();
+            vmm.addSource(testSource, List.of(module0DataConsumer));
 
-        var testSource = new TestSource(ffp, conf);
+            sleep(1500);
 
-        var module = vmm.addSource(testSource);
-        var module0DataConsumer = new TestDataConsumer();
-
-        module.addResultConsumer(module0DataConsumer);
-
-        module.start();
-
-        sleep(1500);
-
-        assertNotNull(module0DataConsumer.result);
-        TestUtils.printTestResults(module0DataConsumer.result);
+            assertNotNull(module0DataConsumer.result);
+            TestUtils.printTestResults(module0DataConsumer.result);
+        }
     }
 
     @Test
     public void testMultipleStreamIndex() {
         ConfigManager.getInstance().load();
 
-        var vmm = new VisionModuleManager();
+        try (var vmm = new VisionModuleManager()) {
+            var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
+            conf.streamIndex = 1;
+            var ffp =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
+            var testSource = new TestSource(ffp, conf);
 
-        var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
-        conf.streamIndex = 1;
-        var ffp =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource = new TestSource(ffp, conf);
+            var conf2 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo2", "Bar2"));
+            conf2.streamIndex = 0;
+            var ffp2 =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
+            var testSource2 = new TestSource(ffp2, conf2);
 
-        var conf2 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo2", "Bar2"));
-        conf2.streamIndex = 0;
-        var ffp2 =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource2 = new TestSource(ffp2, conf2);
+            var conf3 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo3", "Bar3"));
+            conf3.streamIndex = 0;
+            var ffp3 =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
+            var testSource3 = new TestSource(ffp3, conf3);
 
-        var conf3 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo3", "Bar3"));
-        conf3.streamIndex = 0;
-        var ffp3 =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource3 = new TestSource(ffp3, conf3);
+            // Arducam OV9281 UC844 raspberry pi test.
+            var conf4 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Left", "/dev/video1"));
+            USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
 
-        // Arducam OV9281 UC844 raspberry pi test.
-        var conf4 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Left", "/dev/video1"));
-        USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
+            var conf5 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Right", "/dev/video2"));
+            USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
 
-        var conf5 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Right", "/dev/video2"));
-        USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
+            var modules =
+                    List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
+                            .map(vmm::addSource)
+                            .toList();
 
-        var modules =
-                List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
-                        .map(vmm::addSource)
-                        .toList();
+            System.out.println(
+                    Arrays.toString(
+                            modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
+            var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
 
-        System.out.println(
-                Arrays.toString(
-                        modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
-        var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
+            assertTrue(usbSimulation.equals(usbSimulation));
+            assertTrue(!usbSimulation.equals(usbSimulation2));
 
-        assertTrue(usbSimulation.equals(usbSimulation));
-        assertTrue(!usbSimulation.equals(usbSimulation2));
-
-        assertTrue(idxs.contains(0));
-        assertTrue(idxs.contains(1));
-        assertTrue(idxs.contains(2));
-        assertTrue(idxs.contains(3));
-        assertTrue(idxs.contains(4));
+            assertTrue(idxs.contains(0));
+            assertTrue(idxs.contains(1));
+            assertTrue(idxs.contains(2));
+            assertTrue(idxs.contains(3));
+            assertTrue(idxs.contains(4));
+        }
     }
 
     private void sleep(int millis) {

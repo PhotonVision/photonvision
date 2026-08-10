@@ -22,13 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.MatchType;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.simulation.SimHooks;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -43,6 +36,13 @@ import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
+import org.wpilib.driverstation.MatchType;
+import org.wpilib.driverstation.internal.DriverStationBackend;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.simulation.DriverStationSim;
+import org.wpilib.simulation.SimHooks;
+import org.wpilib.smartdashboard.SmartDashboard;
 
 public class FileSaveFrameConsumerTest {
     NetworkTableInstance inst = null;
@@ -93,23 +93,27 @@ public class FileSaveFrameConsumerTest {
                 new FileSaveFrameConsumer(camNickname, cameraUniqueName, streamPrefix);
 
         // AND a frameProvider giving a random test mode image
-        var frameProvider =
+        String eventName;
+        Date currentTime;
+        try (var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in, false),
-                        TestUtils.WPI2019Image.FOV);
+                        TestUtils.WPI2019Image.FOV)) {
+            // AND fake FMS data
+            eventName = "CASJ";
+            DriverStationSim.setMatchType(matchType);
+            DriverStationSim.setMatchNumber(matchNumber);
+            DriverStationSim.setEventName(eventName);
+            DriverStationBackend.refreshData();
 
-        // AND fake FMS data
-        String eventName = "CASJ";
-        DriverStationSim.setMatchType(matchType);
-        DriverStationSim.setMatchNumber(matchNumber);
-        DriverStationSim.setEventName(eventName);
-        DriverStation.refreshData();
-
-        // WHEN we save the image
-        var currentTime = new Date();
-        var counterPublisher = consumer.saveFrameEntry.getTopic().publish();
-        counterPublisher.accept(1);
-        consumer.accept(frameProvider.get().colorImage, currentTime);
+            // WHEN we save the image
+            currentTime = new Date();
+            var counterPublisher = consumer.saveFrameEntry.getTopic().publish();
+            counterPublisher.accept(1);
+            try (var frame = frameProvider.get()) {
+                consumer.accept(frame.colorImage, currentTime);
+            }
+        }
 
         // THEN an image will be created on disk
         File expectedSnapshot =

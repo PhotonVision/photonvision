@@ -60,7 +60,7 @@ You can also get the pipeline latency from a pipeline result using the `getLaten
    .. code-block:: c++
 
       // Get the pipeline latency.
-      units::second_t latency = result.GetLatency();
+      wpi::units::second_t latency = result.GetLatency();
 
    .. code-block:: python
 

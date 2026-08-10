@@ -27,28 +27,28 @@
 #include <limits>
 #include <memory>
 
-#include <frc/apriltag/AprilTagFieldLayout.h>
-#include <frc/apriltag/AprilTagFields.h>
 #include <photon/PhotonCamera.h>
 #include <photon/PhotonPoseEstimator.h>
 #include <photon/estimation/VisionEstimation.h>
 #include <photon/simulation/VisionSystemSim.h>
 #include <photon/simulation/VisionTargetSim.h>
 #include <photon/targeting/PhotonPipelineResult.h>
+#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/apriltag/AprilTagFields.hpp>
 
 #include "Constants.h"
 
 class VisionSim {
  public:
   explicit VisionSim(photon::PhotonCamera* camera) {
-    if (frc::RobotBase::IsSimulation()) {
+    if (wpi::RobotBase::IsSimulation()) {
       visionSim = std::make_unique<photon::VisionSystemSim>("main");
 
       visionSim->AddAprilTags(constants::Vision::kTagLayout);
 
       cameraProp = std::make_unique<photon::SimCameraProperties>();
 
-      cameraProp->SetCalibration(320, 240, frc::Rotation2d{90_deg});
+      cameraProp->SetCalibration(320, 240, wpi::math::Rotation2d{90_deg});
       cameraProp->SetCalibError(.35, .10);
       cameraProp->SetFPS(70_Hz);
       cameraProp->SetAvgLatency(30_ms);
@@ -64,17 +64,17 @@ class VisionSim {
 
   photon::PhotonPipelineResult GetLatestResult() { return m_latestResult; }
 
-  void SimPeriodic(frc::Pose2d robotSimPose) {
+  void SimPeriodic(wpi::math::Pose2d robotSimPose) {
     visionSim->Update(robotSimPose);
   }
 
-  void ResetSimPose(frc::Pose2d pose) {
-    if (frc::RobotBase::IsSimulation()) {
+  void ResetSimPose(wpi::math::Pose2d pose) {
+    if (wpi::RobotBase::IsSimulation()) {
       visionSim->ResetRobotPose(pose);
     }
   }
 
-  frc::Field2d& GetSimDebugField() { return visionSim->GetDebugField(); }
+  wpi::Field2d& GetSimDebugField() { return visionSim->GetDebugField(); }
 
  private:
   std::unique_ptr<photon::VisionSystemSim> visionSim;

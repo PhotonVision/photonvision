@@ -17,8 +17,8 @@
 
 package org.photonvision.common.logging;
 
-import edu.wpi.first.cscore.CameraServerJNI;
 import java.nio.file.Path;
+import org.wpilib.vision.camera.CameraServerJNI;
 
 /** Redirect cscore logs to our logger */
 public class PvCSCoreLogger {

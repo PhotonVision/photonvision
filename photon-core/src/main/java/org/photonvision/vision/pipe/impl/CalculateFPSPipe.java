@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.vision.pipe.CVPipe;
+import org.wpilib.math.filter.LinearFilter;
+import org.wpilib.system.Timer;
 
 public class CalculateFPSPipe
         extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
@@ -31,10 +31,10 @@ public class CalculateFPSPipe
     @Override
     protected Integer process(Void in) {
         if (lastTime < 0) {
-            lastTime = Timer.getFPGATimestamp();
+            lastTime = Timer.getMonotonicTimestamp();
         }
 
-        var now = Timer.getFPGATimestamp();
+        var now = Timer.getMonotonicTimestamp();
         var dtSeconds = now - lastTime;
         lastTime = now;
 
@@ -50,4 +50,7 @@ public class CalculateFPSPipe
     }
 
     public static class CalculateFPSPipeParams {}
+
+    @Override
+    public void release() {}
 }

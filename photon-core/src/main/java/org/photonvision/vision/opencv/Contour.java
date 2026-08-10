@@ -57,6 +57,17 @@ public class Contour implements Releasable {
                         new Point(box.x, box.y + box.height));
     }
 
+    public Contour(RotatedRect obb) {
+        Point[] pts = new Point[4];
+        for (int i = 0; i < 4; ++i) pts[i] = new Point();
+
+        obb.points(pts);
+
+        // target: tl tr br bl
+        // pts array: "The order is bottomLeft, topLeft, topRight, bottomRight."
+        this.mat = new MatOfPoint(pts[1], pts[2], pts[3], pts[0]);
+    }
+
     public MatOfPoint2f getMat2f() {
         if (mat2f == null) {
             mat2f = new MatOfPoint2f(mat.toArray());
@@ -139,14 +150,8 @@ public class Contour implements Releasable {
             isIntersecting = true;
         } else {
             try {
-                MatOfPoint2f intersectMatA = new MatOfPoint2f();
-                MatOfPoint2f intersectMatB = new MatOfPoint2f();
-
-                mat.convertTo(intersectMatA, CvType.CV_32F);
-                secondContour.mat.convertTo(intersectMatB, CvType.CV_32F);
-
-                RotatedRect a = Imgproc.fitEllipse(intersectMatA);
-                RotatedRect b = Imgproc.fitEllipse(intersectMatB);
+                RotatedRect a = Imgproc.fitEllipse(this.getMat2f());
+                RotatedRect b = Imgproc.fitEllipse(secondContour.getMat2f());
                 double mA = MathUtils.toSlope(a.angle);
                 double mB = MathUtils.toSlope(b.angle);
                 double x0A = a.center.x;
@@ -172,8 +177,6 @@ public class Contour implements Releasable {
                         if (intersectionX > massX) isIntersecting = true;
                     }
                 }
-                intersectMatA.release();
-                intersectMatB.release();
             } catch (Exception e) {
                 // defaults to false
             }
@@ -225,7 +228,7 @@ public class Contour implements Releasable {
         if (approxPolyDp != null) approxPolyDp.release();
     }
 
-    public static MatOfPoint2f convertIndexesToPoints(MatOfPoint contour, MatOfInt indexes) {
+    protected static MatOfPoint2f convertIndexesToPoints(MatOfPoint contour, MatOfInt indexes) {
         int[] arrIndex = indexes.toArray();
         Point[] arrContour = contour.toArray();
         Point[] arrPoints = new Point[arrIndex.length];

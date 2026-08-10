@@ -18,10 +18,10 @@
 package org.photonvision.vision.objects;
 
 import java.io.File;
-import org.opencv.core.Size;
+import java.nio.file.Path;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 
 public class RknnModel implements Model {
     public final File modelFile;
@@ -61,8 +61,8 @@ public class RknnModel implements Model {
     }
 
     /** Return the unique identifier for the model. In this case, it's the model's path. */
-    public String getUID() {
-        return properties.modelPath().toString();
+    public Path getPath() {
+        return properties.modelPath();
     }
 
     public String getNickname() {
@@ -78,8 +78,7 @@ public class RknnModel implements Model {
     }
 
     public ObjectDetector load() {
-        return new RknnObjectDetector(
-                this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
+        return new RknnObjectDetector(this);
     }
 
     public String toString() {
