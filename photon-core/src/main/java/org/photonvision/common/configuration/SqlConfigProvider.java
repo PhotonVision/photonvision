@@ -299,10 +299,9 @@ public class SqlConfigProvider extends ConfigProvider {
     /**
      * MIGRATION: 2026
      *
-     *
-     * Loads the stored AprilTag field layout, migrating any legacy {@code AprilTagFieldLayout} JSON
-     * to the newer {@link Field} format before deserializing. If a migration happened the upgraded
-     * JSON is written back to the database so the stored data self-upgrades.
+     * <p>Loads the stored AprilTag field layout, migrating any legacy {@code AprilTagFieldLayout}
+     * JSON to the newer {@link Field} format before deserializing. If a migration happened the
+     * upgraded JSON is written back to the database so the stored data self-upgrades.
      */
     private Field loadAtfl(Connection conn) {
         String configString = getOneConfigFile(conn, GlobalKeys.ATFL_CONFIG_FILE);
