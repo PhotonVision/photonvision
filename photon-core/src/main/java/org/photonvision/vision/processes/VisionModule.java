@@ -514,8 +514,8 @@ public class VisionModule implements AutoCloseable {
      * pipeline settings.
      *
      * <p>Used to keep a duplicate camera's displayed/stored settings in sync with its source, since
-     * {@link org.photonvision.vision.camera.DuplicateSettables} can't report the source's live
-     * values through getters for anything but video mode and exposure/white-balance range.
+     * {@link org.photonvision.vision.camera.DuplicateSettables} can't report the source's live values
+     * through getters for anything but video mode and exposure/white-balance range.
      *
      * @param sourceModule The module (source camera) to copy settings from
      */

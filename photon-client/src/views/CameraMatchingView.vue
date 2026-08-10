@@ -2,7 +2,7 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings, type PVCameraInfo } from "@/types/SettingTypes";
+import { PlaceholderCameraSettings, type PVCameraInfo, type UiCameraConfiguration } from "@/types/SettingTypes";
 import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
@@ -88,7 +88,7 @@ const duplicateCamera = (sourceUniqueName: string) => {
     .finally(() => (duplicatingCamera.value = false));
 };
 
-const isCameraDuplicate = (module: any): boolean => {
+const isCameraDuplicate = (module: UiCameraConfiguration): boolean => {
   return module.matchedCameraInfo?.type === "PVCameraInfo.PVDuplicateCameraInfo";
 };
 
