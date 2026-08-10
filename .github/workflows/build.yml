@@ -630,7 +630,7 @@ jobs:
       # Upload config directory produced during smoketest
       - uses: actions/upload-artifact@v7
         with:
-          archive: false
+          archive: true
           name: photonvision_smoketest-${{ matrix.image_suffix }}
           path: photonvision_config
 
