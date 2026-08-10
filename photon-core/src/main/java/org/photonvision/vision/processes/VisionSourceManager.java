@@ -328,6 +328,11 @@ public class VisionSourceManager implements AutoCloseable {
         // 4. Add to VMM and start
         var duplicateModule = vmm.addSource(duplicateSource);
 
+        // Seed the duplicate's camera settings (exposure, resolution, etc.) from the source's
+        // current values, since a freshly created duplicate otherwise starts with its own
+        // independent defaults that don't reflect what the source is actually doing
+        duplicateModule.syncCameraSettingsFromSource(sourceModule);
+
         // 5. Track the dependency relationship
         duplicateDependencies
                 .computeIfAbsent(sourceUniqueName, k -> new ArrayList<>())
@@ -348,6 +353,20 @@ public class VisionSourceManager implements AutoCloseable {
                         + "'");
 
         return duplicateUniqueName;
+    }
+
+    /**
+     * Get all currently-active duplicate VisionModules that depend on the given source camera.
+     *
+     * @param sourceUniqueName The unique name of the source camera
+     * @return List of duplicate VisionModules, empty if there are none
+     */
+    public synchronized List<VisionModule> getDuplicateModules(String sourceUniqueName) {
+        var names = duplicateDependencies.get(sourceUniqueName);
+        if (names == null || names.isEmpty()) {
+            return List.of();
+        }
+        return vmm.getModules().stream().filter(m -> names.contains(m.uniqueName())).toList();
     }
 
     public synchronized boolean deleteVisionSource(String uniqueName) {

@@ -26,10 +26,10 @@ const sourceCameraName = (sourceUniqueName: string): string => {
         </tr>
         <tr>
           <td>Type:</td>
-          <td v-if="camera.type === 'PVUsbCameraInfo'" class="mb-3">USB Camera</td>
-          <td v-else-if="camera.type === 'PVCSICameraInfo'" class="mb-3">CSI Camera</td>
-          <td v-else-if="camera.type === 'PVFileCameraInfo'" class="mb-3">File Camera</td>
-          <td v-else-if="camera.type === 'PVDuplicateCameraInfo'" class="mb-3">Duplicate Camera</td>
+          <td v-if="camera.type === 'PVCameraInfo.PVUsbCameraInfo'" class="mb-3">USB Camera</td>
+          <td v-else-if="camera.type === 'PVCameraInfo.PVCSICameraInfo'" class="mb-3">CSI Camera</td>
+          <td v-else-if="camera.type === 'PVCameraInfo.PVFileCameraInfo'" class="mb-3">File Camera</td>
+          <td v-else-if="camera.type === 'PVCameraInfo.PVDuplicateCameraInfo'" class="mb-3">Duplicate Camera</td>
           <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr v-if="'sourceUniqueName' in camera && camera.sourceUniqueName !== null">

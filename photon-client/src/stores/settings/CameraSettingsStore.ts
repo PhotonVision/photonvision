@@ -106,6 +106,14 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     getSourceCameraName(): string | null {
       if (!this.cameraIsDuplicate) return null;
       return this.currentCameraSettings.sourceCameraNickname || null;
+    },
+    // Duplicate cameras are only ever created from a USB source (backend enforces this), so a
+    // duplicate's underlying hardware is USB even though its own matchedCameraInfo.type is
+    // "PVDuplicateCameraInfo".
+    isUsbCamera(): boolean {
+      return (
+        this.currentCameraSettings.matchedCameraInfo.type === "PVCameraInfo.PVUsbCameraInfo" || this.cameraIsDuplicate
+      );
     }
   },
   actions: {

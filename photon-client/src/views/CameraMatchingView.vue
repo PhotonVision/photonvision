@@ -89,7 +89,7 @@ const duplicateCamera = (sourceUniqueName: string) => {
 };
 
 const isCameraDuplicate = (module: any): boolean => {
-  return module.matchedCameraInfo?.type === "PVDuplicateCameraInfo";
+  return module.matchedCameraInfo?.type === "PVCameraInfo.PVDuplicateCameraInfo";
 };
 
 const cameraConnected = (uniquePath: string | undefined): boolean => {
@@ -146,7 +146,7 @@ const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null)
 const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
     return {
-      type: "PVFileCameraInfo",
+      type: "PVCameraInfo.PVFileCameraInfo",
       path: "",
       name: "",
       uniquePath: ""
@@ -154,7 +154,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   }
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => it.uniquePath === info.uniquePath) || {
-      type: "PVFileCameraInfo",
+      type: "PVCameraInfo.PVFileCameraInfo",
       path: "",
       name: "",
       uniquePath: ""
@@ -271,7 +271,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                       <v-btn
                         color="secondary"
                         style="width: 100%"
-                        :disabled="isCameraDuplicate(module) || module.matchedCameraInfo.type !== 'PVUsbCameraInfo'"
+                        :disabled="
+                          isCameraDuplicate(module) || module.matchedCameraInfo.type !== 'PVCameraInfo.PVUsbCameraInfo'
+                        "
                         :loading="duplicatingCamera"
                         :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                         @click="duplicateCamera(module.uniqueName)"
@@ -284,7 +286,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                     {{
                       isCameraDuplicate(module)
                         ? "This camera is already a duplicate and cannot be duplicated again."
-                        : module.matchedCameraInfo.type !== "PVUsbCameraInfo"
+                        : module.matchedCameraInfo.type !== "PVCameraInfo.PVUsbCameraInfo"
                           ? "This camera cannot be duplicated because it is not a USB camera."
                           : "Click to create a duplicate of this camera."
                     }}
@@ -421,9 +423,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4" class="pr-0">
         <v-card class="pr-0 rounded-12" color="surface">
           <v-card-title>
-            <span v-if="camera.type === 'PVUsbCameraInfo'">USB Camera:</span>
-            <span v-else-if="camera.type === 'PVCSICameraInfo'">CSI Camera:</span>
-            <span v-else-if="camera.type === 'PVFileCameraInfo'">File Camera:</span>
+            <span v-if="camera.type === 'PVCameraInfo.PVUsbCameraInfo'">USB Camera:</span>
+            <span v-else-if="camera.type === 'PVCameraInfo.PVCSICameraInfo'">CSI Camera:</span>
+            <span v-else-if="camera.type === 'PVCameraInfo.PVFileCameraInfo'">File Camera:</span>
             <span v-else>Unknown Camera:</span>
             &nbsp;<span>{{ camera.name }}</span>
           </v-card-title>
