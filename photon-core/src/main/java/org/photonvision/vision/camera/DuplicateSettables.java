@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.camera;
 
-import java.util.HashMap;
+import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -101,7 +101,7 @@ public class DuplicateSettables extends VisionSourceSettables {
     }
 
     @Override
-    public HashMap<Integer, VideoMode> getAllVideoModes() {
+    public List<VideoMode> getAllVideoModes() {
         return sourceSettables.getAllVideoModes();
     }
 

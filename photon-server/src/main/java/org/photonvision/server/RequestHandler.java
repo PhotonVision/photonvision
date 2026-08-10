@@ -1404,7 +1404,7 @@ public class RequestHandler {
 
         try {
             CommonCameraUniqueName request =
-                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+                    Jsonb.instance().type(CommonCameraUniqueName.class).fromJson(ctx.body());
 
             if (request.cameraUniqueName == null || request.cameraUniqueName.isEmpty()) {
                 ctx.status(400);
@@ -1423,7 +1423,7 @@ public class RequestHandler {
                 ctx.status(404);
                 ctx.result("Failed to create duplicate camera - source not found");
             }
-        } catch (IOException e) {
+        } catch (IllegalStateException | JsonException e) {
             ctx.status(401);
             logger.error("Failed to process duplicate camera request", e);
             ctx.result("Failed to process duplicate camera request");
