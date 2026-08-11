@@ -366,16 +366,7 @@ public class FindBoardCornersPipe
                         var objectPointsList = objectPoints.toList();
                         var imagePointsList = imagePoints.toList();
                         var idsList = ids.toList();
-                        while (currentId < idsList.size()) {
-                            // While current id is not equal to current index, swap with the correct index
-                            if (idsList.get(currentId) != currentId) {
-                                Collections.swap(objectPointsList, idsList.get(currentId), currentId);
-                                Collections.swap(imagePointsList, idsList.get(currentId), currentId);
-                                Collections.swap(idsList, idsList.get(currentId), currentId);
-                            } else {
-                                currentId++;
-                            }
-                        }
+                        sortRelatedSubranges(idsList, List.of(objectPointsList, imagePointsList), currentId);
                         logger.debug("Sorted ids: " + idsList);
                         objectPoints.fromList(objectPointsList);
                         imagePoints.fromList(imagePointsList);
@@ -430,6 +421,23 @@ public class FindBoardCornersPipe
         }
 
         return new FindBoardCornersPipeResult(inFrame.size(), objectPoints, imagePoints, level, ids);
+    }
+
+    public static void sortRelatedSubranges(
+            List<Integer> positions, List<List<?>> others, int startIndex) {
+        int currentIndex = startIndex;
+        while (currentIndex < positions.size()) {
+            /* While current position is not equal to current index, swap the current index's position with
+            the current position */
+            if (positions.get(currentIndex) != currentIndex) {
+                for (var other : others) {
+                    Collections.swap(other, positions.get(currentIndex), currentIndex);
+                }
+                Collections.swap(positions, positions.get(currentIndex), currentIndex);
+            } else {
+                currentIndex++;
+            }
+        }
     }
 
     @Override
