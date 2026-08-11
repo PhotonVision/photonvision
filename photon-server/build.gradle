@@ -72,8 +72,9 @@ node {
 
 tasks.register('copyClientUIToResources', Sync) {
     from "${projectDir}/../photon-client/dist/"
-    into "${projectDir}/src/main/resources/web/"
+    into "${buildDir}/ui/web/"
 }
+sourceSets.main.resources.srcDir "${buildDir}/ui/"
 
 tasks.register('buildClient', PnpmTask) {
     inputs.dir fileTree(dir: "${projectDir}/../photon-client", exclude: "dist/")
