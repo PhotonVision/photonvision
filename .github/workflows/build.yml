@@ -613,7 +613,8 @@ jobs:
           shrink_image: ${{ matrix.shrink_image || 'yes' }}
           commands: java -jar *.jar --smoketest --platform=${{ matrix.plat_override }}
       # Make sure log files contains the image metadata record
-      - run: |
+      - name: Verify image has metadata
+        run: |
           set -e
           logs=(photonvision_config/logs/*)
           if [ "${logs[0]}" = 'photonvision_config/logs/*' ]; then
