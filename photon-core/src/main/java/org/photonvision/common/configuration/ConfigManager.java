@@ -188,7 +188,9 @@ public class ConfigManager {
     }
 
     public static Path getImageMetadataPath() {
-        return Path.of(getRootFolder().toString(), "image-metadata.json");
+        // Every image PhotonVision provides places this file in /opt/photonvision/; hard-code that
+        // assumption
+        return Path.of("/opt/photonvision/image-metadata.json");
     }
 
     ConfigManager(Path configDirectory, ConfigProvider provider) {
