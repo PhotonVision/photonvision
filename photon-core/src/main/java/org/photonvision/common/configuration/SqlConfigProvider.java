@@ -230,6 +230,7 @@ public class SqlConfigProvider extends ConfigProvider {
     @Override
     public boolean saveToDisk() {
         logger.debug("Saving to disk");
+        var start_time = System.currentTimeMillis();
         var conn = createConn();
         if (conn == null) return false;
 
@@ -253,7 +254,8 @@ public class SqlConfigProvider extends ConfigProvider {
             }
         }
 
-        logger.info("Settings saved!");
+        var end_time = System.currentTimeMillis();
+        logger.info("Settings saved in " + (end_time - start_time) + " ms!");
         return true;
     }
 
