@@ -27,6 +27,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
+import org.photonvision.common.configuration.migrations.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -67,6 +69,9 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private final String dbPath;
     private final String url;
+
+    private final List<MigrationStep> migrations =
+            Arrays.asList(new V1_CreateTables(), new V2_AddOtherpathsColumn());
 
     private final Object m_mutex = new Object();
 
@@ -125,109 +130,12 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
-    private int getIntPragma(String pragma) {
-        int retval = 0;
-        try (Connection conn = createConn(true);
-                Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery("PRAGMA " + pragma + ";");
-            retval = rs.getInt(1);
-        } catch (SQLException e) {
-            logger.error("Error querying " + pragma, e);
-        }
-        return retval;
-    }
-
-    private int getSchemaVersion() {
-        return getIntPragma("schema_version");
-    }
-
-    public int getUserVersion() {
-        return getIntPragma("user_version");
-    }
-
-    private void setUserVersion(Connection conn, int value) {
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute("PRAGMA user_version = " + value + ";");
-        } catch (SQLException e) {
-            logger.error("Error setting user_version to ", e);
-        }
-    }
-
-    private void doMigration(int index) throws SQLException {
-        logger.debug("Running migration step " + index);
-        try (Connection conn = createConn();
-                Statement stmt = conn.createStatement()) {
-            for (String sql : DatabaseSchema.migrations[index].split(";")) {
-                stmt.addBatch(sql);
-            }
-            stmt.executeBatch();
-            setUserVersion(conn, index + 1);
-            tryCommit(conn);
-        } catch (SQLException e) {
-            logger.error("Error with migration step " + index, e);
-            throw e;
-        }
-    }
-
     private void initDatabase() {
-        int userVersion = getUserVersion();
-        int expectedVersion = DatabaseSchema.migrations.length;
-
-        if (userVersion < expectedVersion) {
-            // older database, run migrations
-
-            // first, check to see if this is one of the ones from 2024 beta that need
-            // special handling
-            if (userVersion == 0 && getSchemaVersion() > 0) {
-                String sql =
-                        "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('cameras') WHERE name='otherpaths_json';";
-                try (Connection conn = createConn(true);
-                        Statement stmt = conn.createStatement();
-                        ResultSet rs = stmt.executeQuery(sql); ) {
-                    if (rs.getInt("CNTREC") == 0) {
-                        // need to add otherpaths_json
-                        userVersion = 1;
-                    } else {
-                        // already there, no need to add the column
-                        userVersion = 2;
-                    }
-                    setUserVersion(conn, userVersion);
-                } catch (SQLException e) {
-                    logger.error(
-                            "Could not determine the version of the database. Try deleting "
-                                    + dbNameDefault
-                                    + "and restart photonvision.",
-                            e);
-                }
-            }
-
-            logger.debug("Older database version. Migrating ... ");
-            try {
-                for (int index = userVersion; index < expectedVersion; index++) {
-                    doMigration(index);
-                }
-                logger.debug("Database migration complete");
-            } catch (SQLException e) {
-                logger.error("Error with database migration", e);
-            }
-        }
-
-        // Warn if the database still isn't at the correct version
-        userVersion = getUserVersion();
-        if (userVersion > expectedVersion) {
-            // database must be from a newer version, so warn
-            logger.warn(
-                    "This database is from a newer version of PhotonVision. Check that you are running the right version of PhotonVision.");
-        } else if (userVersion < expectedVersion) {
-            // migration didn't work, so warn
-            logger.warn(
-                    "This database migration failed. Expected version: "
-                            + expectedVersion
-                            + ", got version: "
-                            + userVersion);
-        } else {
-            // migration worked
-            logger.info("Using correct database version: " + userVersion);
+        MigrationManager mm = new MigrationManager(migrations);
+        try (Connection conn = DriverManager.getConnection(url)) {
+            mm.run(conn);
+        } catch (SQLException e) {
+            logger.error("Error with database migration", e);
         }
     }
 
