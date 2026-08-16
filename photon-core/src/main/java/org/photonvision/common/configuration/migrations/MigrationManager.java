@@ -78,7 +78,7 @@ public class MigrationManager {
                             + currentVersion);
         } else if (currentVersion > expectedVersion) {
             logger.error(
-                    "\"This database is from a newer version of PhotonVision. Check that you are running the right version of PhotonVision.");
+                    "This database is from a newer version of PhotonVision. Check that you are running the right version of PhotonVision.");
         } else {
             logger.info("Using correct database version: " + currentVersion);
         }

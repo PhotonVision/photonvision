@@ -46,6 +46,8 @@ public abstract class MigrationStep {
                 }
                 stmt.executeBatch();
             }
+        } else {
+            logger.info("No SQL in this step.");
         }
     }
 
@@ -53,10 +55,10 @@ public abstract class MigrationStep {
 
     void run(Connection conn, int currentVersion) throws SQLException {
         if (currentVersion >= getVersion()) {
-            logger.info("Skipping migration step :" + getVersion() + " - " + getDescription());
+            logger.info("Skipping migration step: " + getVersion() + " - " + getDescription());
             return;
         }
-        logger.info("Running migration step :" + getVersion() + " - " + getDescription());
+        logger.info("Running migration step: " + getVersion() + " - " + getDescription());
         try {
             preUpdate(conn);
             upSchema(conn);
