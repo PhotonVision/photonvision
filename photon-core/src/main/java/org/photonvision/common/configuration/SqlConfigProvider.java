@@ -63,14 +63,14 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
 
-    private static final String dbName = "photon.sqlite";
-    // private final File rootFolder;
+    private static final String dbNameDefault = "photon.sqlite";
+
     private final String dbPath;
     private final String url;
 
     private final Object m_mutex = new Object();
 
-    public SqlConfigProvider(Path rootPath) {
+    public SqlConfigProvider(Path rootPath, String dbName) {
         File rootFolder = rootPath.toFile();
         // Make sure root dir exists
         if (!rootFolder.exists()) {
@@ -84,6 +84,10 @@ public class SqlConfigProvider extends ConfigProvider {
         url = "jdbc:sqlite:" + dbPath;
         logger.debug("Using database " + dbPath);
         initDatabase();
+    }
+
+    public SqlConfigProvider(Path rootPath) {
+        this(rootPath, dbNameDefault);
     }
 
     public PhotonConfiguration getConfig() {
@@ -191,7 +195,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 } catch (SQLException e) {
                     logger.error(
                             "Could not determine the version of the database. Try deleting "
-                                    + dbName
+                                    + dbNameDefault
                                     + "and restart photonvision.",
                             e);
                 }
