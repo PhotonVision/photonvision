@@ -18,9 +18,7 @@
 package org.photonvision.common.configuration;
 
 import io.avaje.json.JsonException;
-import io.avaje.jsonb.JsonType;
 import io.avaje.jsonb.Jsonb;
-import io.avaje.jsonb.Types;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -31,20 +29,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.configuration.migrations.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.camera.PVCameraInfo;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.apriltag.AprilTagFields;
-import org.wpilib.vision.camera.UsbCameraInfo;
 
 /**
  * Saves settings in a SQLite database file (called photon.sqlite).
@@ -71,7 +63,8 @@ public class SqlConfigProvider extends ConfigProvider {
     private final String url;
 
     private final List<MigrationStep> migrations =
-            Arrays.asList(new V1_CreateTables(), new V2_AddOtherpathsColumn());
+            Arrays.asList(
+                    new V1_CreateTables(), new V2_AddOtherpathsColumn(), new V3_ConsolidateCameraSettings());
 
     private final Object m_mutex = new Object();
 
@@ -499,25 +492,14 @@ public class SqlConfigProvider extends ConfigProvider {
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
 
-        // MIGRATION: 2026
-        // This is designed to always match for efficiency reasons, so that the whole camera config
-        // isn't scanned. The second capture group determines if the camera info is in the old or new
-        // format
-        final var cameraInfoPattern = Pattern.compile("\"(PV[\\w.]*CameraInfo)\"\\s*(:?)");
-
         // Query every single row of the cameras db
         PreparedStatement query = null;
         try {
             query =
                     conn.prepareStatement(
                             String.format(
-                                    "SELECT %s, %s, %s, %s, %s FROM %s",
-                                    Columns.CAM_UNIQUE_NAME,
-                                    Columns.CAM_CONFIG_JSON,
-                                    Columns.CAM_DRIVERMODE_JSON,
-                                    Columns.CAM_OTHERPATHS_JSON,
-                                    Columns.CAM_PIPELINE_JSONS,
-                                    Tables.CAMERAS));
+                                    "SELECT %s, %s FROM %s",
+                                    Columns.CAM_UNIQUE_NAME, Columns.CAM_CONFIG_JSON, Tables.CAMERAS));
 
             var result = query.executeQuery();
 
@@ -525,79 +507,12 @@ public class SqlConfigProvider extends ConfigProvider {
             while (result.next()) {
                 String uniqueName = "";
                 try {
-                    JsonType<List<String>> strListJsonb = Jsonb.instance().type(Types.listOf(String.class));
-
                     uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
 
-                    // A horrifying hack to keep backward compat with otherpaths
-                    // We -really- need to delete this -stupid- otherpaths column. I hate it.
-                    // MIGRATION: 2024
                     var configJson = result.getString(Columns.CAM_CONFIG_JSON);
-
-                    // MIGRATION: 2026
-                    var cameraInfoMatcher = cameraInfoPattern.matcher(configJson);
-                    if (cameraInfoMatcher.find() && cameraInfoMatcher.group(2).equals(":")) {
-                        logger.info("Legacy type-wrapper PVCameraInfo being migrated");
-                        configJson = PVCameraInfo.remapConfigJson(configJson, cameraInfoMatcher.group(1));
-                    }
 
                     CameraConfiguration config =
                             Jsonb.instance().type(CameraConfiguration.class).fromJson(configJson);
-
-                    // MIGRATION: 2024
-                    if (config.matchedCameraInfo == null) {
-                        logger.info("Legacy CameraConfiguration detected - upgrading");
-
-                        // manually create the matchedCameraInfo ourselves. Need to upgrade:
-                        // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
-                        config.matchedCameraInfo =
-                                Jsonb.instance()
-                                        .type(LegacyCameraConfigStruct.class)
-                                        .fromJson(configJson)
-                                        .matchedCameraInfo;
-
-                        // Except that otherPaths used to be its own column. so hack that in here as well
-                        var otherPaths =
-                                Jsonb.instance()
-                                        .type(String[].class)
-                                        .fromJson(result.getString(Columns.CAM_OTHERPATHS_JSON));
-                        if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
-                            usbInfo.otherPaths = otherPaths;
-                        }
-                    }
-
-                    // MIGRATION: 2026
-                    List<String> legacyPipelineSettings =
-                            strListJsonb.fromJson(result.getString(Columns.CAM_PIPELINE_JSONS));
-
-                    for (var pipelineJson : legacyPipelineSettings) {
-                        logger.info("Importing pipeline JSON into camera settings");
-                        if (pipelineJson.startsWith("[")) {
-                            logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
-                            pipelineJson = CVPipelineSettings.remapSettingsJson(pipelineJson);
-                        }
-
-                        try {
-                            config.pipelineSettings.add(
-                                    Jsonb.instance().type(CVPipelineSettings.class).fromJson(pipelineJson));
-                        } catch (IllegalStateException | JsonException e) {
-                            logger.error(
-                                    "Could not deserialize pipeline setting for camera " + config.nickname, e);
-                        }
-                    }
-
-                    // MIGRATION: 2026
-                    if (config.driveModeSettings == null) {
-                        logger.info("Importing driver mode JSON into camera settings");
-                        var driverModeJson = result.getString(Columns.CAM_DRIVERMODE_JSON);
-                        if (driverModeJson.startsWith("[")) {
-                            logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
-                            driverModeJson = CVPipelineSettings.remapSettingsJson(driverModeJson);
-                        }
-
-                        config.driveModeSettings =
-                                Jsonb.instance().type(DriverModePipelineSettings.class).fromJson(driverModeJson);
-                    }
 
                     loadedConfigurations.put(uniqueName, config);
                 } catch (IllegalStateException | JsonException e) {
