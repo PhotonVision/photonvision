@@ -33,7 +33,7 @@ public class V1_CreateTables extends MigrationStep {
          );""";
         // spotless:on
 
-    V1_CreateTables() {
+    public V1_CreateTables() {
         super(sqlString);
     }
 
