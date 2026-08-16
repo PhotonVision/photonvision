@@ -35,23 +35,29 @@ public abstract class MigrationStep {
         this.sql = sql;
     }
 
-    void preUpdate(Connection conn) throws SQLException {}
+    void preUpdate(Connection conn) throws SQLException {
+        logger.debug("running preUpdate()");
+    }
 
     void upSchema(Connection conn) throws SQLException {
+        logger.debug("running upSchema()");
         // this handles one or more SQL statements passed in to the constructor
-        if (sql != null || !sql.isEmpty()) {
+        if (!(sql == null || sql.isBlank())) {
             try (Statement stmt = conn.createStatement()) {
                 for (String command : sql.split(";")) {
-                    stmt.addBatch(command);
+                    if (!command.isBlank()) {
+                        logger.debug("SQL: " + command.strip());
+                        stmt.addBatch(command.strip());
+                    }
                 }
                 stmt.executeBatch();
             }
-        } else {
-            logger.info("No SQL in this step.");
         }
     }
 
-    void postUpdate(Connection conn) throws SQLException {}
+    void postUpdate(Connection conn) throws SQLException {
+        logger.debug("running postUpdate()");
+    }
 
     void run(Connection conn, int currentVersion) throws SQLException {
         if (currentVersion >= getVersion()) {
