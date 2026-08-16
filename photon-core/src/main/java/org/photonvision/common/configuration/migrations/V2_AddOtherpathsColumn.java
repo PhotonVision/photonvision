@@ -21,7 +21,7 @@ public class V2_AddOtherpathsColumn extends MigrationStep {
     private static final String sqlString =
             "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]';";
 
-    V2_AddOtherpathsColumn() {
+    public V2_AddOtherpathsColumn() {
         super(sqlString);
     }
 

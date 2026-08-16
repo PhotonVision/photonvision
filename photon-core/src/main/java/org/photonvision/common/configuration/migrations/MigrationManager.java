@@ -30,7 +30,7 @@ public class MigrationManager {
     private final List<MigrationStep> migrationSteps;
     private int expectedVersion = 0;
 
-    MigrationManager(List<MigrationStep> migrationSteps) {
+    public MigrationManager(List<MigrationStep> migrationSteps) {
         if (migrationSteps == null || migrationSteps.isEmpty()) {
             logger.error("Migration steps null or empty - no migrations to run!");
             this.migrationSteps = List.of();
