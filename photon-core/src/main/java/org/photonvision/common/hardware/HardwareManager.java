@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
+import org.photonvision.common.configuration.StatusLedConfig;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
@@ -100,15 +101,7 @@ public class HardwareManager {
                     }
                 };
 
-        statusLED =
-                hardwareConfig.statusLEDPins.isEmpty()
-                        ? Optional.empty()
-                        : Optional.of(
-                                StatusLED.ofType(
-                                        hardwareConfig.statusLEDType,
-                                        lazyDeviceFactory,
-                                        hardwareConfig.statusLEDPins,
-                                        hardwareConfig.statusLEDActiveHigh));
+        statusLED = hardwareConfig.statusLEDConfig.map(it -> it.create(lazyDeviceFactory.get()));
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
@@ -164,7 +157,8 @@ public class HardwareManager {
                 pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
             }
         }
-        for (int pin : hardwareConfig.statusLEDPins) {
+        for (int pin :
+                hardwareConfig.statusLEDConfig.map(StatusLedConfig::pins).orElseGet(() -> new int[0])) {
             pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
         }
 
