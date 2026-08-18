@@ -64,7 +64,10 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private final List<MigrationStep> migrations =
             Arrays.asList(
-                    new V1_CreateTables(), new V2_AddOtherpathsColumn(), new V3_ConsolidateCameraSettings());
+                    new V1_CreateTables(),
+                    new V2_AddOtherpathsColumn(),
+                    new V3_ConsolidateCameraSettings(),
+                    new V4_CleanUpCameraTable());
 
     private final Object m_mutex = new Object();
 
@@ -125,11 +128,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private void initDatabase() {
         MigrationManager mm = new MigrationManager(migrations);
-        try (Connection conn = DriverManager.getConnection(url)) {
-            mm.run(conn);
-        } catch (SQLException e) {
-            logger.error("Error with database migration", e);
-        }
+        mm.run(url);
     }
 
     @Override
