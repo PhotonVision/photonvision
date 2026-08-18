@@ -18,6 +18,7 @@
 package org.photonvision.common.configuration.migrations;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -50,35 +51,44 @@ public class MigrationManager {
                                 + ms.getVersion()
                                 + ", but should be "
                                 + i);
+                logger.error(
+                        "Migration can't be performed because migration steps are not properly configured.");
                 this.migrationSteps = List.of();
                 return;
             }
         }
-
         this.migrationSteps = migrationSteps;
         this.expectedVersion = migrationSteps.size();
     }
 
-    public void run(Connection conn) throws SQLException {
-        int currentVersion = getCurrentVersion(conn);
-        for (MigrationStep step : migrationSteps) {
-            if (step.getVersion() > currentVersion) {
-                step.run(conn, currentVersion);
-                currentVersion = step.getVersion();
-                setUserVersion(conn, currentVersion);
+    public void run(String dbUrl) {
+        int currentVersion = 0;
+        try (Connection conn = DriverManager.getConnection(dbUrl)) {
+            conn.setAutoCommit(false);
+
+            currentVersion = getCurrentVersion(conn);
+            try {
+                for (MigrationStep step : migrationSteps) {
+                    step.run(conn, currentVersion);
+                    currentVersion = getCurrentVersion(conn);
+                }
+            } catch (SQLException e) {
+                logger.error("Database migration failure: ", e);
             }
+        } catch (SQLException e) {
+            logger.error("Database connection error: ", e);
         }
-        currentVersion = getCurrentVersion(conn);
+
         if (currentVersion < expectedVersion) {
             // migration failed
             logger.error(
-                    "This database migration failed. Expected version: "
+                    "Database version mismatch. Expected version: "
                             + expectedVersion
                             + ", got version: "
                             + currentVersion);
         } else if (currentVersion > expectedVersion) {
             logger.error(
-                    "This database is from a newer version of PhotonVision. Check that you are running the right version of PhotonVision.");
+                    "The database is from a newer version of PhotonVision. Check that you are running the right version of PhotonVision.");
         } else {
             logger.info("Using correct database version: " + currentVersion);
         }

@@ -35,28 +35,19 @@ public abstract class MigrationStep {
         this.sql = sql;
     }
 
-    void preUpdate(Connection conn) throws SQLException {
-        logger.debug("running preUpdate()");
-    }
-
-    void upSchema(Connection conn) throws SQLException {
-        logger.debug("running upSchema()");
+    void update(Connection conn) throws SQLException {
         // this handles one or more SQL statements passed in to the constructor
         if (!(sql == null || sql.isBlank())) {
             try (Statement stmt = conn.createStatement()) {
                 for (String command : sql.split(";")) {
                     if (!command.isBlank()) {
                         logger.debug("SQL: " + command.strip());
-                        stmt.addBatch(command.strip());
+                        stmt.addBatch(command.strip() + ";");
                     }
                 }
                 stmt.executeBatch();
             }
         }
-    }
-
-    void postUpdate(Connection conn) throws SQLException {
-        logger.debug("running postUpdate()");
     }
 
     void run(Connection conn, int currentVersion) throws SQLException {
@@ -66,11 +57,19 @@ public abstract class MigrationStep {
         }
         logger.info("Running migration step: " + getVersion() + " - " + getDescription());
         try {
-            preUpdate(conn);
-            upSchema(conn);
-            postUpdate(conn);
+            update(conn);
+            setVersion(conn);
+            conn.commit();
         } catch (SQLException e) {
-            logger.error("Error running migration", e);
+            conn.rollback();
+            logger.error("Error running migration step!");
+            throw e;
+        }
+    }
+
+    private void setVersion(Connection conn) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("PRAGMA user_version = " + getVersion() + ";");
         }
     }
 }
