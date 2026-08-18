@@ -3,8 +3,11 @@
   "ledPins" : [ 13, 18 ],
   "ledsCanDim" : true,
   "ledPWMFrequency" : 1000,
-  "statusLEDType": "GreenYellow",
-  "statusLEDPins": [ 5, 4 ],
-  "statusLEDActiveHigh": false,
+  "statusLEDConfig": {
+    "type": "GreenYellow",
+    "greenPin": 5,
+    "yellowPin": 4,
+    "activeHigh": false
+  },
   "vendorFOV" : 75.76079874010732
 }
