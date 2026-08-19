@@ -62,6 +62,9 @@ jobs:
       with:
         java-version: 25
         distribution: temurin
+    - uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-provider: basic
     - name: Build javadocs/doxygen
       run: |
         chmod +x gradlew
