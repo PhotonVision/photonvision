@@ -167,8 +167,9 @@ public class VisionModuleManagerTest {
     public void setupManager() {
         ConfigManager.getInstance().load();
 
-        var conf = ConfigManager.getInstance().getConfig();
-        HardwareManager.initialize(conf.getHardwareConfig(), conf.getHardwareSettings());
+        // TODO: figure out a better variable name for this
+        var config = ConfigManager.getInstance().getConfig();
+        HardwareManager.initialize(config.getHardwareConfig(), config.getHardwareSettings());
 
         try (var vmm = new VisionModuleManager()) {
             var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
