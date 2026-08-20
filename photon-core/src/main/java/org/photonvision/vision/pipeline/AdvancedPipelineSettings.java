@@ -44,11 +44,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public boolean outputShouldDraw = true;
     public int outputMaximumTargets = 20;
 
-    // Static cropping. When enabled the input frame is cropped to the region described by
-    // staticCropX (x range, in pixels) and staticCropY (y range, in pixels) before any target
-    // detection is performed. The ranges are in the coordinate space of the rotated frame. The upper
-    // bounds are clamped down to the frame edge, so defaulting them to Integer.MAX_VALUE makes the
-    // default crop region the whole frame whatever resolution the camera is running at.
     public boolean staticCropEnabled = false;
     public IntegerCouple staticCropX = new IntegerCouple(0, Integer.MAX_VALUE);
     public IntegerCouple staticCropY = new IntegerCouple(0, Integer.MAX_VALUE);
