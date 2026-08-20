@@ -18,6 +18,8 @@
 package org.photonvision.vision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import org.junit.jupiter.api.Test;
@@ -48,5 +50,45 @@ public class QuirkyCameraTest {
 
         QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 8888);
         assertEquals(quirkless.quirks, noQuirks);
+    }
+
+    @Test
+    public void logitechC270Test() {
+        // Logitech's USB VID is 0x046D; the C270's PID is 0x0825. Matching is VID-first.
+        QuirkyCamera c270 = QuirkyCamera.getQuirkyCamera(0x046D, 0x0825);
+        assertTrue(c270.hasQuirk(CameraQuirk.CompletelyBroken));
+
+        // The swapped (PID-first) order must NOT match
+        QuirkyCamera swapped = QuirkyCamera.getQuirkyCamera(0x0825, 0x046D);
+        assertFalse(swapped.hasQuirks());
+    }
+
+    @Test
+    public void logitechC925eTest() {
+        // Logitech's USB VID is 0x046D; the C925-e's PID is 0x085B
+        QuirkyCamera c925e = QuirkyCamera.getQuirkyCamera(0x046D, 0x085B);
+        assertTrue(c925e.hasQuirk(CameraQuirk.AdjustableFocus));
+
+        QuirkyCamera swapped = QuirkyCamera.getQuirkyCamera(0x085B, 0x046D);
+        assertFalse(swapped.hasQuirks());
+    }
+
+    @Test
+    public void genericLogitechHdWebcamTest() {
+        // ARC International's USB VID is 0x05A3; this webcam's PID is 0x9331
+        QuirkyCamera hdWebcam = QuirkyCamera.getQuirkyCamera(0x05A3, 0x9331);
+        assertTrue(hdWebcam.hasQuirk(CameraQuirk.CompletelyBroken));
+
+        QuirkyCamera swapped = QuirkyCamera.getQuirkyCamera(0x9331, 0x05A3);
+        assertFalse(swapped.hasQuirks());
+    }
+
+    @Test
+    public void see3CamTest() {
+        // e-con Systems' USB VID is 0x2560; the See3CAM_24CUG's PID is 0xC128.
+        // This entry was already VID-first; pin it so it stays that way.
+        QuirkyCamera see3Cam = QuirkyCamera.getQuirkyCamera(0x2560, 0xC128, "See3Cam_24CUG");
+        assertTrue(see3Cam.hasQuirk(CameraQuirk.Gain));
+        assertTrue(see3Cam.hasQuirk(CameraQuirk.See3Cam_24CUG));
     }
 }

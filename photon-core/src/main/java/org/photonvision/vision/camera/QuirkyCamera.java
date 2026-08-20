@@ -31,9 +31,9 @@ public class QuirkyCamera {
                     new QuirkyCamera(
                             0x2560, 0xc128, "See3Cam_24CUG", CameraQuirk.Gain, CameraQuirk.See3Cam_24CUG),
                     // Chris's older generic "Logitech HD Webcam"
-                    new QuirkyCamera(0x9331, 0x5A3, CameraQuirk.CompletelyBroken),
+                    new QuirkyCamera(0x5A3, 0x9331, CameraQuirk.CompletelyBroken),
                     // Logitech C270
-                    new QuirkyCamera(0x825, 0x46D, CameraQuirk.CompletelyBroken),
+                    new QuirkyCamera(0x46D, 0x825, CameraQuirk.CompletelyBroken),
                     // A laptop internal camera someone found broken
                     new QuirkyCamera(0x0bda, 0x5510, CameraQuirk.CompletelyBroken),
                     // SnapCamera on Windows
@@ -48,7 +48,7 @@ public class QuirkyCamera {
                     new QuirkyCamera(
                             0x1415, 0x2000, CameraQuirk.Gain, CameraQuirk.FPSCap100, CameraQuirk.PsEyeControls),
                     // Logitech C925-e
-                    new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus),
+                    new QuirkyCamera(0x46D, 0x85B, CameraQuirk.AdjustableFocus),
                     // Generic arducam. Since OV2311 can't be differentiated
                     // at first boot, apply stickyFPS to the generic case, too
                     new QuirkyCamera(
