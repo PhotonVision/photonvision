@@ -18,9 +18,9 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
-import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.wpilib.vision.apriltag.AprilTagDetection;
 import org.wpilib.vision.apriltag.AprilTagDetector;
@@ -37,7 +37,6 @@ public class AprilTagDetectionPipe
      */
     private static final int MIN_DECIMATED_DIMENSION = 4;
 
->>>>>>> 68555288 (slop from the slop machine)
     private AprilTagDetector m_detector = new AprilTagDetector();
 
     public AprilTagDetectionPipe() {
@@ -55,10 +54,6 @@ public class AprilTagDetectionPipe
 
         if (m_detector == null) {
             throw new RuntimeException("Apriltag detector was released!");
-        }
-
-        if (tooSmallToDetect(in.getMat(), params.detectorParams().quadDecimate)) {
-            return List.of();
         }
 
         var ret = m_detector.detect(in.getMat());
@@ -87,20 +82,6 @@ public class AprilTagDetectionPipe
     public void release() {
         m_detector.close();
         m_detector = null;
-    }
-
-    /** Whether an image is too small for the native detector to safely handle. */
-    private static boolean tooSmallToDetect(Mat image, float quadDecimate) {
-        // Decimation below 1 doesn't shrink the image, and a zero factor would divide by zero.
-        double factor = Math.max(1.0, quadDecimate);
-
-        return decimatedDimension(image.cols(), factor) < MIN_DECIMATED_DIMENSION
-                || decimatedDimension(image.rows(), factor) < MIN_DECIMATED_DIMENSION;
-    }
-
-    /** The size of one dimension of the decimated image, matching apriltag's own arithmetic. */
-    private static int decimatedDimension(int dimension, double factor) {
-        return 1 + (int) ((dimension - 1) / factor);
     }
 
     public static record AprilTagDetectionPipeParams(
