@@ -2,8 +2,10 @@ package org.photonvision.vision.processes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
+import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.vision.frame.Frame;
@@ -11,7 +13,7 @@ import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe;
-import org.photonvision.vision.pipeline.ArucoPipeline;
+import org.photonvision.vision.pipeline.*;
 
 public class VisionRunnerTest {
     @BeforeAll
@@ -61,26 +63,65 @@ public class VisionRunnerTest {
         public void release() {}
     }
 
+    /**
+     * Pipelines under test, with needsColor/needsProcessed hardcoded from whether {@code process}
+     * reads {@code frame.colorImage} or {@code frame.processedImage} as input.
+     *
+     * <p>Aruco's {@code debugThreshold} color-copy behavior is covered separately.
+     */
+    @SuppressWarnings("rawtypes")
+    private enum PipelineUnderTest {
+        APRILTAG(AprilTagPipeline::new, false, true),
+
+        ARUCO(ArucoPipeline::new, false, true),
+        // When Aruco is used with debug threshold, we need to copy the color image
+        ARUCO_DEBUG(ArucoPipeline::new, true, true),
+
+        REFLECTIVE(ReflectivePipeline::new, false, true),
+        COLORED_SHAPE(ColoredShapePipeline::new, false, true),
+        OBJECT_DETECTION(ObjectDetectionPipeline::new, true, false),
+        FOCUS(FocusPipeline::new, true, false),
+        DRIVER_MODE(DriverModePipeline::new, true, false),
+        CALIBRATE_3D(Calibrate3dPipeline::new, true, false);
+
+        private final Supplier<? extends CVPipeline> factory;
+        private final boolean needsColor;
+        private final boolean needsProcessed;
+
+        PipelineUnderTest(
+                Supplier<? extends CVPipeline> factory, boolean needsColor, boolean needsProcessed) {
+            this.factory = factory;
+            this.needsColor = needsColor;
+            this.needsProcessed = needsProcessed;
+        }
+
+        CVPipeline create() {
+            return factory.get();
+        }
+    }
+
     @CartesianTest
-    public void testThresholdRequestsAruco(
-            @Values(booleans = {true, false}) boolean debugThreshold,
+    public void testFrameCopyRequests(
+            @Enum PipelineUnderTest pipelineUnderTest,
             @Values(booleans = {true, false}) boolean inputShouldShow,
             @Values(booleans = {true, false}) boolean outputShouldShow) {
-        try (var pipeline = new ArucoPipeline()) {
-            // given an Aruco pipeline with settings for debugThreshold, inputShouldShow,
-            // and outputShouldShow
+        try (var pipeline = pipelineUnderTest.create()) {
             var provider = new RecordingFrameProvider();
-            pipeline.getSettings().debugThreshold = debugThreshold;
             pipeline.getSettings().inputShouldShow = inputShouldShow;
             pipeline.getSettings().outputShouldShow = outputShouldShow;
 
-            // When we configure the frame provider based on pipeline settings
+            // Aruco with debug threshold is a special case
+            if (pipelineUnderTest == PipelineUnderTest.ARUCO_DEBUG) {
+                ArucoPipelineSettings arucoPipelineSettings =
+                        (ArucoPipelineSettings) pipeline.getSettings();
+
+                arucoPipelineSettings.debugThreshold = true;
+            }
+
             VisionRunner.configureFrameProviderForPipeline(provider, pipeline);
 
-            // Then the input color image is copied when expected
-            var expectedCopyInput = inputShouldShow || debugThreshold;
-            // And output is copied whn needed
-            boolean expectedCopyOutput = outputShouldShow;
+            boolean expectedCopyInput = pipelineUnderTest.needsColor || inputShouldShow;
+            boolean expectedCopyOutput = pipelineUnderTest.needsProcessed || outputShouldShow;
 
             assertEquals(expectedCopyInput, provider.copyInput);
             assertEquals(expectedCopyOutput, provider.copyOutput);
