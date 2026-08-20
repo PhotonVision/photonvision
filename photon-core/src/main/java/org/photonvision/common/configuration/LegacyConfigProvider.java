@@ -38,8 +38,8 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.vision.processes.VisionSource;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
 import org.zeroturnaround.zip.ZipUtil;
 
 class LegacyConfigProvider extends ConfigProvider {
@@ -123,7 +123,7 @@ class LegacyConfigProvider extends ConfigProvider {
         HardwareConfig hardwareConfig;
         HardwareSettings hardwareSettings;
         NetworkConfig networkConfig;
-        AprilTagFieldLayout atfl = null;
+        Field atfl = null;
 
         if (hardwareConfigFile.exists()) {
             try (var stream = new FileInputStream(hardwareConfigFile)) {
@@ -183,7 +183,7 @@ class LegacyConfigProvider extends ConfigProvider {
 
         if (apriltagFieldLayoutFile.exists()) {
             try (var stream = new FileInputStream(apriltagFieldLayoutFile)) {
-                atfl = Jsonb.instance().type(AprilTagFieldLayout.class).fromJson(stream);
+                atfl = Jsonb.instance().type(Field.class).fromJson(stream);
                 if (atfl == null) {
                     logger.error("Could not deserialize apriltag field layout! (still null)");
                 }
@@ -195,7 +195,7 @@ class LegacyConfigProvider extends ConfigProvider {
         if (atfl == null) {
             logger.info("Loading default apriltags for 2024 field...");
             try {
-                atfl = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+                atfl = Field.loadField(Fields.DEFAULT_FIELD);
             } catch (UncheckedIOException e) {
                 logger.error("Error loading WPILib field", e);
                 atfl = null;
@@ -203,7 +203,7 @@ class LegacyConfigProvider extends ConfigProvider {
             if (atfl == null) {
                 // what do we even do here lmao -- wpilib built-in should always work
                 logger.error("Field layout is *still* null??????");
-                atfl = new AprilTagFieldLayout(List.of(), 1, 1);
+                atfl = new Field("", "", "", null, 0, 0, "", null);
             }
         }
 

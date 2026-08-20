@@ -32,7 +32,7 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 public class Draw3dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {

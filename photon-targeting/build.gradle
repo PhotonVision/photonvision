@@ -58,7 +58,9 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            nativeUtils.useRequiredLibrary(it, "mrclib_shared")
         }
         "${nativeName}JNI"(JniNativeLibrarySpec) {
 
@@ -87,6 +89,7 @@ model {
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            nativeUtils.useRequiredLibrary(it, "mrclib_shared")
         }
     }
     testSuites {
@@ -118,11 +121,13 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "catch2_static")
             nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            nativeUtils.useRequiredLibrary(it, "mrclib_shared")
         }
     }
 
@@ -157,6 +162,14 @@ model {
     }
 }
 
+tasks.matching { it.name.startsWith('check') && it.name.contains('GoogleTestExe') }.configureEach {
+    timeout = java.time.Duration.ofMinutes(10)
+}
+
+test {
+    timeout = java.time.Duration.ofMinutes(10)
+}
+
 apply from: "${rootDir}/shared/javacpp/publish.gradle"
 
 // Add photon serde headers to our published sources
@@ -187,3 +200,5 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("fields")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("mrclib", mrclibVersion)

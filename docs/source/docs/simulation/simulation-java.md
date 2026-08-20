@@ -116,7 +116,7 @@ To use simulated object detection, you must provide an objDetClassId (zero-index
       visionSim.addVisionTargets(visionTarget);
 ```
 
-For convenience, an `AprilTagFieldLayout` can also be added to automatically create a target for each of its AprilTags.
+For convenience, a `Field` can also be added to automatically create a target for each of its AprilTags.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -124,7 +124,7 @@ For convenience, an `AprilTagFieldLayout` can also be added to automatically cre
    .. code-block:: java
 
       // The layout of AprilTags which we want to add to the vision system
-      AprilTagFieldLayout tagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.kDefaultField.m_resourceFile);
+      Field tagLayout = Field.loadField(Fields.DEFAULT_FIELD);
 
       visionSim.addAprilTags(tagLayout);
 ```

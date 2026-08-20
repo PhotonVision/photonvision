@@ -20,7 +20,7 @@ from typing import Optional
 import hal
 import wpilib
 import wpimath.units
-from robotpy_apriltag import AprilTagFieldLayout
+from robotpy_fields import Field
 from wpimath import (
     Pose2d,
     Pose3d,
@@ -47,12 +47,12 @@ class PhotonPoseEstimator:
 
     def __init__(
         self,
-        fieldTags: AprilTagFieldLayout,
+        fieldTags: Field,
         robotToCamera: Transform3d,
     ):
         """Create a new PhotonPoseEstimator.
 
-        :param fieldTags: A WPILib AprilTagFieldLayout linking AprilTag IDs to Pose3d objects
+        :param fieldTags: A WPILib Field linking AprilTag IDs to Pose3d objects
                            with respect to the FIRST field using the Field Coordinate System.
                            Note that setting the origin of this layout object will affect the
                            results from this class.
@@ -66,29 +66,29 @@ class PhotonPoseEstimator:
         self._headingBuffer = TimeInterpolatableRotation2dBuffer(1)
 
         # Usage reporting
-        hal.reportUsage(
+        hal.report_usage(
             "PhotonVision/PhotonPoseEstimator",
             str(PhotonPoseEstimator.instance_count),
         )
         PhotonPoseEstimator.instance_count += 1
 
     @property
-    def fieldTags(self) -> AprilTagFieldLayout:
-        """Get the AprilTagFieldLayout being used by the PositionEstimator.
+    def fieldTags(self) -> Field:
+        """Get the Field being used by the PositionEstimator.
 
         Note: Setting the origin of this layout will affect the results from this class.
 
-        :returns: the AprilTagFieldLayout
+        :returns: the Field
         """
         return self._fieldTags
 
     @fieldTags.setter
-    def fieldTags(self, fieldTags: AprilTagFieldLayout):
-        """Set the AprilTagFieldLayout being used by the PositionEstimator.
+    def fieldTags(self, fieldTags: Field):
+        """Set the Field being used by the PositionEstimator.
 
         Note: Setting the origin of this layout will affect the results from this class.
 
-        :param fieldTags: the AprilTagFieldLayout
+        :param fieldTags: the Field
         """
         self._fieldTags = fieldTags
 
@@ -102,8 +102,8 @@ class PhotonPoseEstimator:
         :param heading: field-relative robot heading at given timestamp
         """
         if isinstance(heading, Rotation3d):
-            heading = heading.toRotation2d()
-        self._headingBuffer.addSample(timestampSeconds, heading)
+            heading = heading.to_rotation2d()
+        self._headingBuffer.add_sample(timestampSeconds, heading)
 
     def resetHeadingData(
         self, timestampSeconds: wpimath.units.seconds, heading: Rotation2d | Rotation3d
@@ -159,7 +159,7 @@ class PhotonPoseEstimator:
         ) is None:
             return None
 
-        if (tagPose := self._fieldTags.getTagPose(bestTarget.fiducialId)) is None:
+        if (tagPose := self._fieldTags.get_tag_pose(bestTarget.fiducialId)) is None:
             return None
 
         camToTagTranslation = (
@@ -167,22 +167,22 @@ class PhotonPoseEstimator:
                 bestTarget.getBestCameraToTarget().translation().norm(),
                 Rotation3d(
                     0,
-                    -wpimath.units.degreesToRadians(bestTarget.getPitch()),
-                    -wpimath.units.degreesToRadians(bestTarget.getYaw()),
+                    -wpimath.units.degrees_to_radians(bestTarget.getPitch()),
+                    -wpimath.units.degrees_to_radians(bestTarget.getYaw()),
                 ),
             )
-            .rotateBy(self.robotToCamera.rotation())
-            .toTranslation2d()
-            .rotateBy(headingSample)
+            .rotate_by(self.robotToCamera.rotation())
+            .to_translation2d()
+            .rotate_by(headingSample)
         )
 
         fieldToCameraTranslation = (
-            tagPose.toPose2d().translation() - camToTagTranslation
+            tagPose.to_pose2d().translation() - camToTagTranslation
         )
         camToRobotTranslation: Translation2d = -(
-            self.robotToCamera.translation().toTranslation2d()
+            self.robotToCamera.translation().to_translation2d()
         )
-        camToRobotTranslation = camToRobotTranslation.rotateBy(headingSample)
+        camToRobotTranslation = camToRobotTranslation.rotate_by(headingSample)
         robotPose = Pose2d(
             fieldToCameraTranslation + camToRobotTranslation, headingSample
         )
@@ -207,9 +207,9 @@ class PhotonPoseEstimator:
             best_tf = result.multitagResult.estimatedPose.best
             best = (
                 Pose3d()
-                .transformBy(best_tf)  # field-to-camera
-                .relativeTo(self._fieldTags.getOrigin())
-                .transformBy(self.robotToCamera.inverse())  # field-to-robot
+                .transform_by(best_tf)  # field-to-camera
+                .relative_to(self._fieldTags.get_origin())
+                .transform_by(self.robotToCamera.inverse())  # field-to-robot
             )
             return EstimatedRobotPose(
                 best,
@@ -249,23 +249,23 @@ class PhotonPoseEstimator:
 
         targetFiducialId = lowestAmbiguityTarget.fiducialId
 
-        targetPosition = self._fieldTags.getTagPose(targetFiducialId)
+        targetPosition = self._fieldTags.get_tag_pose(targetFiducialId)
 
         if not targetPosition:
             self._reportFiducialPoseError(targetFiducialId)
             return None
 
         return EstimatedRobotPose(
-            targetPosition.transformBy(
+            targetPosition.transform_by(
                 lowestAmbiguityTarget.getBestCameraToTarget().inverse()
-            ).transformBy(self.robotToCamera.inverse()),
+            ).transform_by(self.robotToCamera.inverse()),
             result.getTimestampSeconds(),
             [lowestAmbiguityTarget],
         )
 
     def _reportFiducialPoseError(self, fiducialId: int) -> None:
         if fiducialId not in self._reportedErrors:
-            wpilib.reportError(
+            wpilib.report_error(
                 f"[PhotonPoseEstimator] Tried to get pose of unknown AprilTag: {fiducialId}",
                 False,
             )

@@ -34,6 +34,8 @@ import java.util.Optional;
 import java.util.Set;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Transform3d;
@@ -41,8 +43,6 @@ import org.wpilib.math.interpolation.TimeInterpolatableBuffer;
 import org.wpilib.smartdashboard.Field2d;
 import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.system.Timer;
-import org.wpilib.vision.apriltag.AprilTag;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
 /**
  * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
@@ -263,14 +263,14 @@ public class VisionSystemSim {
      *
      * @param tagLayout The field tag layout to get Apriltag poses and IDs from
      */
-    public void addAprilTags(AprilTagFieldLayout tagLayout) {
-        for (AprilTag tag : tagLayout.getTags()) {
+    public void addAprilTags(Field tagLayout) {
+        for (FieldTag tag : tagLayout.getTags()) {
             addVisionTargets(
                     "apriltag",
                     new VisionTargetSim(
-                            tagLayout.getTagPose(tag.ID).get(), // preserve alliance rotation
+                            tagLayout.getTagPose(tag.getID()).get(), // preserve alliance rotation
                             TargetModel.kAprilTag36h11,
-                            tag.ID));
+                            tag.getID()));
         }
     }
 

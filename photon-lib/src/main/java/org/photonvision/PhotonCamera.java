@@ -33,7 +33,6 @@ import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.timesync.TimeSyncSingleton;
-import org.wpilib.driverstation.Alert;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.linalg.MatBuilder;
@@ -52,6 +51,7 @@ import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.PubSubOption;
 import org.wpilib.networktables.StringSubscriber;
 import org.wpilib.system.Timer;
+import org.wpilib.util.Alert;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -140,8 +140,12 @@ public class PhotonCamera implements AutoCloseable {
         name = cameraName;
         disconnectAlert =
                 new Alert(
-                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", Alert.Level.MEDIUM);
-        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", Alert.Level.MEDIUM);
+                        PHOTON_ALERT_GROUP,
+                        "disconnected-" + InstanceCount,
+                        "PhotonCamera '" + name + "' is disconnected.",
+                        Alert.Level.MEDIUM);
+        timesyncAlert =
+                new Alert(PHOTON_ALERT_GROUP, "timesync-" + InstanceCount, "", Alert.Level.MEDIUM);
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();

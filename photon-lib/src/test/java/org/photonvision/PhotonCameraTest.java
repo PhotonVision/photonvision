@@ -79,7 +79,7 @@ class PhotonCameraTest {
     public void setup() {
         assertNull(inst);
 
-        HAL.initialize(500, 0);
+        HAL.initialize();
 
         inst = NetworkTableInstance.create();
         assertTrue(inst.isValid());

@@ -27,6 +27,7 @@ dependencies {
     wpilibNatives wpilibTools.deps.wpilib("ntcore")
     wpilibNatives wpilibTools.deps.wpilib("cscore")
     wpilibNatives wpilibTools.deps.wpilib("apriltag")
+    wpilibNatives wpilibTools.deps.wpilib("fields")
     wpilibNatives wpilibTools.deps.wpilib("hal")
     wpilibNatives wpilibTools.deps.wpilibOpenCv(openCVversion)
 

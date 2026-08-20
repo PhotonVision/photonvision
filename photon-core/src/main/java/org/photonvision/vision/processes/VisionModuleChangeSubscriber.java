@@ -37,7 +37,7 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.target.RobotOffsetPointOperation;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 @SuppressWarnings("unchecked")
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {

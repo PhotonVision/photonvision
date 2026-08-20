@@ -23,7 +23,7 @@ class RotTrlTransform3d:
     def inverse(self) -> Self:
         """The inverse of this transformation. Applying the inverse will "undo" this transformation."""
         invRot = self.rot.inverse()
-        invTrl = -(self.trl.rotateBy(invRot))
+        invTrl = -(self.trl.rotate_by(invRot))
         return type(self)(invRot, invTrl)
 
     def getTransform(self) -> Transform3d:
@@ -39,10 +39,10 @@ class RotTrlTransform3d:
         return self.rot
 
     def applyTranslation(self, trlToApply: Translation3d) -> Translation3d:
-        return trlToApply.rotateBy(self.rot) + self.trl
+        return trlToApply.rotate_by(self.rot) + self.trl
 
     def applyRotation(self, rotToApply: Rotation3d) -> Rotation3d:
-        return rotToApply.rotateBy(self.rot)
+        return rotToApply.rotate_by(self.rot)
 
     def applyPose(self, poseToApply: Pose3d) -> Pose3d:
         return Pose3d(
@@ -68,9 +68,9 @@ class RotTrlTransform3d:
     @classmethod
     def makeBetweenPoses(cls, initial: Pose3d, last: Pose3d) -> Self:
         return cls(
-            last.rotation().relativeTo(initial.rotation()),
+            last.rotation().relative_to(initial.rotation()),
             last.translation()
-            - initial.translation().rotateBy(
-                last.rotation().relativeTo(initial.rotation())
+            - initial.translation().rotate_by(
+                last.rotation().relative_to(initial.rotation())
             ),
         )

@@ -26,7 +26,7 @@ import org.opencv.imgproc.Moments;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.pipe.CVPipe;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 public class FindCirclesPipe
         extends CVPipe<Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams> {

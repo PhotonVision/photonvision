@@ -20,10 +20,9 @@ package org.photonvision.common.configuration;
 import io.avaje.jsonb.Json;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.photonvision.vision.processes.VisionSource;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.fields.Field;
 
 @Json
 public class PhotonConfiguration {
@@ -32,7 +31,7 @@ public class PhotonConfiguration {
     private NetworkConfig networkConfig;
 
     @Json.Property("atfl")
-    private AprilTagFieldLayout aprilTagFieldLayout;
+    private Field aprilTagFieldLayout;
 
     private NeuralNetworkModelsSettings neuralNetworkProperties;
     private Map<String, CameraConfiguration> cameraConfigurations;
@@ -41,7 +40,7 @@ public class PhotonConfiguration {
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
-            AprilTagFieldLayout atfl,
+            Field atfl,
             NeuralNetworkModelsSettings neuralNetworkProperties) {
         this(
                 hardwareConfig,
@@ -57,7 +56,7 @@ public class PhotonConfiguration {
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
-            AprilTagFieldLayout atfl,
+            Field atfl,
             NeuralNetworkModelsSettings neuralNetworkProperties,
             Map<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
@@ -73,7 +72,7 @@ public class PhotonConfiguration {
                 new HardwareConfig(),
                 new HardwareSettings(),
                 new NetworkConfig(),
-                new AprilTagFieldLayout(List.of(), 0, 0),
+                new Field("", "", "", null, 0, 0, "", null),
                 new NeuralNetworkModelsSettings());
     }
 
@@ -89,7 +88,7 @@ public class PhotonConfiguration {
         return hardwareSettings;
     }
 
-    public AprilTagFieldLayout getApriltagFieldLayout() {
+    public Field getApriltagFieldLayout() {
         return aprilTagFieldLayout;
     }
 
@@ -97,7 +96,7 @@ public class PhotonConfiguration {
         return neuralNetworkProperties;
     }
 
-    public void setApriltagFieldLayout(AprilTagFieldLayout atfl) {
+    public void setApriltagFieldLayout(Field atfl) {
         this.aprilTagFieldLayout = atfl;
     }
 
