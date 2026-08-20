@@ -37,6 +37,8 @@ I'm sure that we'll find a camera that doesn't play nice, because we can't have 
 
 Other things to note: This gets us an estimate at when the camera *started* collecting photons. The camera's sensor will remain collecting light for up to the total integration time, plus readout time for rolling shutter cameras.
 
+For the libcamera capture path, PhotonVision now applies a mid-exposure correction using the per-frame `ExposureTime` metadata from libcamera. The published timestamp is the midpoint of the integration window for global-shutter sensors. Rolling-shutter sensors have a residual row-dependent bias not yet corrected. If libcamera does not populate `ExposureTime` for a given frame, the driver returns 0 and the correction is skipped (behaviour matches the pre-correction code path).
+
 ## Latency Testing
 
 Here, I've got a RoboRIO with an LED, an Orange Pi 5, and a network switch on a test bench. The LED is assumed to turn on basically instantly once we apply current, and based on DMA testing, the total time to switch a digital output on is on the order of 10uS. The RoboRIO is running a TimeSync Server, and the Orange Pi is running a TimeSync Client.
