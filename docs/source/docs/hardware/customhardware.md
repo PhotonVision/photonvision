@@ -64,6 +64,23 @@ A pair of independent green and yellow LEDs. `activeHigh` is optional.
 ```
 
 :::
+
+:::{tab-item} SPI
+An addressable LED using the DotStar/APA102/SK9822 SPI-based protocol. This uses a hardware SPI peripheral be externally configured to use the right pins. The configuration within Photon selects which SPI peripheral and chip select line to use. `numLeds` controls the length of the chain. `brightness` can be no less than 0 and no greater than 31.
+
+```json
+{
+  "statusLEDConfig" : {
+    "type": "SPI",
+    "spiBus": 0,
+    "chipSelect": 0,
+    "numLeds": 11,
+    "brightness": 16,
+  },
+}
+```
+
+:::
 ::::
 
 For an explanation of the colors used for status LEDs, see {ref}`Status LEDs<docs/troubleshooting/status-leds:Status LEDs>`

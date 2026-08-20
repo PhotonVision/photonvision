@@ -72,7 +72,9 @@ myst:
 
 PhotonVision has support for multiple kinds of status LEDs. Make sure you reference the correct table for the type present on your hardware.
 
-## RGB LED
+## RGB/Addressable LEDs
+
+This applies to all types of addressable LEDs (APA102/SK9822)
 
  Color  | Flashing | Preview                   | Status
 --------|----------|:-------------------------:|-----------------------------------------------
