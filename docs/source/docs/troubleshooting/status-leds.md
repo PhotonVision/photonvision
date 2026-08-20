@@ -156,7 +156,7 @@ myst:
     width: 100%;
     height: 100%;
     position: relative;
-    top: -100%;
+    /* top: -100%; */
     background: transparent;
     animation: 2s infinite;
   }
@@ -196,14 +196,13 @@ Used on Luma P2
 
 This applies to all types of addressable LEDs (APA102/SK9822)
 
- Color  | Pattern | Preview                              | Status
---------|---------|:------------------------------------:|-----------------------------------------------
- Green  | Phaser  | []{.led-bar .green .phaser}          | Running normally, no targets visible
- Blue   | Solid   | []{.led-bar .blue}                   | Running normally, targets visible
- Yellow | Throb   | []{.led-bar .green .phaser .warning} | NT Disconnected, no targets visible
- Blue   | Throb   | []{.led-bar .blue .warning}          | NT Disconnected, targets visible
- Red    | Blink   | []{.led-bar .red .blink}             | Initializing or faulted, not running
- Off    | N/A     | []{.led-bar .off}                    | No power or initialization fault, not running
+ Color  | Pattern       | Preview                     | Status
+--------|---------------|:---------------------------:|-----------------------------------------------
+ Green  | Phaser        | []{.led-bar .green .phaser} | No targets visible
+ Blue   | Solid         | []{.led-bar .blue}          | Targets visible
+ Yellow | Blink overlay | []{.led-bar .off .warning}  | NT Disconnected
+ Red    | Blink         | []{.led-bar .red .blink}    | Initializing or faulted, not running
+ Off    | N/A           | []{.led-bar .off}           | No power or initialization fault, not running
 
 ## RGB LEDs
 
