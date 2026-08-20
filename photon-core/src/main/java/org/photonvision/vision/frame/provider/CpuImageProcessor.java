@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.frame.provider;
 
-import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.frame.Frame;
@@ -80,14 +79,7 @@ public abstract class CpuImageProcessor extends FrameProvider {
                         m_cropRect, input.colorImage.getMat().cols(), input.colorImage.getMat().rows());
         if (effectiveCrop != null) {
             m_cropPipe.setParams(effectiveCrop);
-            var cropResult = m_cropPipe.run(input.colorImage);
-            if (cropResult.output != null) {
-                // submat() returns a view into the parent buffer, so clone before copying back onto it.
-                Mat cropped = cropResult.output.getMat().clone();
-                cropResult.output.release();
-                cropped.copyTo(input.colorImage.getMat());
-                cropped.release();
-            } else {
+            if (!cropInPlace(m_cropPipe, input.colorImage)) {
                 effectiveCrop = null;
             }
         }

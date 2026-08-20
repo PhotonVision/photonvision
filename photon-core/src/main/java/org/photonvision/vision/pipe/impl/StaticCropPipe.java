@@ -21,32 +21,16 @@ import org.opencv.core.Rect;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 
+/**
+ * Crops an image to the rectangle given as the pipe's params. The output is a view into the input.
+ */
 public class StaticCropPipe extends CVPipe<CVMat, CVMat, Rect> {
-    private Rect cropArea = null;
-
-    public StaticCropPipe() {
-        super();
-    }
-
     @Override
     protected CVMat process(CVMat in) {
-        if (in.getMat().empty()) {
+        if (params == null || in.getMat().empty()) {
             return null;
         }
 
-        if (cropArea == null) {
-            return null;
-        }
-
-        return new CVMat(in.getMat().submat(cropArea));
-    }
-
-    @Override
-    public void setParams(Rect cropArea) {
-        if (this.cropArea == null || !this.cropArea.equals(cropArea)) {
-            this.cropArea = cropArea;
-        }
-
-        super.setParams(cropArea);
+        return new CVMat(in.getMat().submat(params));
     }
 }
