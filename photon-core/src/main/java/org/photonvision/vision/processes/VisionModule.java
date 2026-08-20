@@ -183,7 +183,8 @@ public class VisionModule implements AutoCloseable {
             visionSource.getSettables().setFOV(fov);
         }
 
-        // Configure LED's if supported by the underlying hardware. TODO: Is a null check necessary here?
+        // Configure LED's if supported by the underlying hardware. TODO: Is a null check necessary
+        // here?
         if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
