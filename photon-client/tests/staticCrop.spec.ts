@@ -20,11 +20,28 @@ test.describe("Static Crop", () => {
     await openInputTab(page);
   });
 
-  // Vuetify's v-switch exposes the ARIA "checkbox" role, not "switch".
+  // Vuetify's v-switch exposes the ARIA "checkbox" role, not "switch". The .last() picks the
+  // innermost matching row -- ancestor flex containers can also match the text filter once the
+  // dashboard lays out multiple stream cards.
   const cropSwitch = (page: Page): Locator =>
-    page.locator("div.d-flex").filter({ hasText: "Static Crop" }).getByRole("checkbox");
+    page
+      .locator("div.d-flex")
+      .filter({ hasText: "Static Crop" })
+      .filter({ has: page.getByRole("checkbox") })
+      .last()
+      .getByRole("checkbox");
   const cropRangeInputs = (page: Page, label: string): Locator =>
-    page.locator("div.d-flex").filter({ hasText: label }).locator("input[type=number]");
+    page
+      .locator("div.d-flex")
+      .filter({ hasText: label })
+      .filter({ has: page.locator("input[type=number]") })
+      .last()
+      .locator("input[type=number]");
+
+  // The Processed stream card: the one that shows only the cropped pixels inside the black box.
+  // (The Raw card, when shown, carries the full frame with the outside dimmed by the backend.)
+  const processedFrame = (page: Page): Locator =>
+    page.locator(".stream-frame").filter({ has: page.getByAltText("Processed Stream View") });
 
   const setOrientation = async (page: Page, name: string) => {
     await page.locator("div.d-flex").filter({ hasText: "Orientation" }).locator(".v-select").click();
@@ -111,7 +128,7 @@ test.describe("Static Crop", () => {
     // With no crop, the stream's frame box is transparent, and the stream actually renders --
     // Playwright visibility requires a non-empty bounding box, so this also guards against the
     // stream layout collapsing to zero size.
-    const frame = page.locator(".stream-frame").first();
+    const frame = processedFrame(page);
     await expect(frame).not.toHaveCSS("background-color", "rgb(0, 0, 0)");
     await expect(frame.locator("img")).toBeVisible();
     expect((await frame.locator("img").boundingBox())?.height ?? 0).toBeGreaterThan(50);
@@ -132,6 +149,12 @@ test.describe("Static Crop", () => {
     const stream = frame.locator("img");
     await expect(stream).toHaveAttribute("style", /width: 50%/);
     await expect(stream).toHaveAttribute("style", /left: 0%/);
+    // The crop region is outlined in PhotonVision yellow, with resize handles on its corners and
+    // border midpoints.
+    await expect(frame.locator(".crop-outline")).toHaveCSS("outline-color", "rgb(255, 216, 67)");
+    await expect(frame.locator(".crop-outline")).toHaveAttribute("style", /width: 50%/);
+    await expect(frame.locator(".crop-handle")).toHaveCount(8);
+    await expect(frame.locator(".crop-handle").first()).toBeVisible();
     await expect(stream).toBeVisible();
     const frameBox = await frame.boundingBox();
     const streamBox = await stream.boundingBox();
@@ -139,9 +162,188 @@ test.describe("Static Crop", () => {
     // The black box extends past the stream's right edge by about the cropped-away half.
     expect((streamBox?.width ?? 0) * 2).toBeCloseTo(frameBox?.width ?? 0, -1);
 
-    // Turning the crop off removes the box.
+    // Turning the crop off removes the box and the handles.
     await cropSwitch(page).uncheck();
     await expect(frame).not.toHaveCSS("background-color", "rgb(0, 0, 0)");
+    await expect(frame.locator(".crop-handle").first()).not.toBeVisible();
+  });
+
+  test("a crop region can be drawn on the stream", async ({ page }) => {
+    // Drawing mode is entered from the Input tab.
+    await page.getByRole("button", { name: "Draw Crop Region" }).click();
+    await expect(page.getByText("Drag a box on the camera stream")).toBeVisible();
+
+    // Drag a box over the middle of the stream: 25%..75% in x, 25%..60% in y. The stream card can
+    // be scrolled out of view when the Input tab is focused, so bring it back first.
+    const frame = processedFrame(page);
+    await frame.scrollIntoViewIfNeeded();
+    const box = await frame.boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) return;
+    await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.25);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.6, { steps: 5 });
+    await page.mouse.up();
+
+    // Drawing enables the crop and exits drawing mode.
+    await expect(cropSwitch(page)).toBeChecked();
+    await expect(page.getByText("Drag a box on the camera stream")).not.toBeVisible();
+
+    // The drawn fractions land in the crop sliders as pixel bounds of the (rotated) frame.
+    const xInputs = cropRangeInputs(page, "Crop X Range");
+    const yInputs = cropRangeInputs(page, "Crop Y Range");
+    const frameWidth = Number(await xInputs.nth(1).getAttribute("max"));
+    const frameHeight = Number(await yInputs.nth(1).getAttribute("max"));
+    const near = async (locator: Locator, expected: number) => {
+      await expect
+        .poll(async () => Math.abs(Number(await locator.inputValue()) - expected))
+        .toBeLessThanOrEqual(Math.max(10, frameWidth / 100));
+    };
+    await near(xInputs.nth(0), frameWidth * 0.25);
+    await near(xInputs.nth(1), frameWidth * 0.75);
+    await near(yInputs.nth(0), frameHeight * 0.25);
+    await near(yInputs.nth(1), frameHeight * 0.6);
+  });
+
+  test("the reset button restores the full-frame crop", async ({ page }) => {
+    await cropSwitch(page).check();
+
+    const xInputs = cropRangeInputs(page, "Crop X Range");
+    const yInputs = cropRangeInputs(page, "Crop Y Range");
+    const frameWidth = Number(await xInputs.nth(1).getAttribute("max"));
+    const frameHeight = Number(await yInputs.nth(1).getAttribute("max"));
+
+    // Shrink the crop, then reset it.
+    await xInputs.nth(1).fill("300");
+    await xInputs.nth(1).press("Enter");
+    await yInputs.nth(0).fill("100");
+    await yInputs.nth(0).press("Enter");
+    await expect(xInputs.nth(1)).toHaveValue("300");
+
+    await page.getByRole("button", { name: "Reset Crop" }).click();
+
+    // Back to the whole frame on both axes.
+    await expect(xInputs.nth(0)).toHaveValue("0");
+    await expect(xInputs.nth(1)).toHaveValue(String(frameWidth));
+    await expect(yInputs.nth(0)).toHaveValue("0");
+    await expect(yInputs.nth(1)).toHaveValue(String(frameHeight));
+  });
+
+  test("the crop region can be dragged to a new position", async ({ page }) => {
+    await cropSwitch(page).check();
+
+    // A crop region in the middle-left of the frame.
+    const xInputs = cropRangeInputs(page, "Crop X Range");
+    const yInputs = cropRangeInputs(page, "Crop Y Range");
+    const frameWidth = Number(await xInputs.nth(1).getAttribute("max"));
+    await xInputs.nth(0).fill("100");
+    await xInputs.nth(0).press("Enter");
+    await xInputs.nth(1).fill("500");
+    await xInputs.nth(1).press("Enter");
+    await yInputs.nth(0).fill("200");
+    await yInputs.nth(0).press("Enter");
+    await yInputs.nth(1).fill("500");
+    await yInputs.nth(1).press("Enter");
+
+    // Grab the visible crop region and drag it a quarter of the frame to the right.
+    const frame = processedFrame(page);
+    await frame.scrollIntoViewIfNeeded();
+    const stream = frame.locator("img");
+    const streamBox = await stream.boundingBox();
+    const frameBox = await frame.boundingBox();
+    expect(streamBox).not.toBeNull();
+    expect(frameBox).not.toBeNull();
+    if (!streamBox || !frameBox) return;
+    const grabX = streamBox.x + streamBox.width / 2;
+    const grabY = streamBox.y + streamBox.height / 2;
+    await page.mouse.move(grabX, grabY);
+    await page.mouse.down();
+    await page.mouse.move(grabX + frameBox.width * 0.25, grabY, { steps: 5 });
+
+    // The move is committed live while dragging, so the stream previews the new framing before the
+    // pointer is even released.
+    await expect.poll(async () => Number(await xInputs.nth(0).inputValue())).toBeGreaterThan(150);
+
+    await page.mouse.up();
+
+    const near = async (locator: Locator, expected: number) => {
+      await expect
+        .poll(async () => Math.abs(Number(await locator.inputValue()) - expected))
+        .toBeLessThanOrEqual(Math.max(10, frameWidth / 100));
+    };
+    // The region moved right by a quarter frame, keeping its 400px width and its y bounds.
+    await near(xInputs.nth(0), 100 + frameWidth * 0.25);
+    await near(xInputs.nth(1), 500 + frameWidth * 0.25);
+    await expect(yInputs.nth(0)).toHaveValue("200");
+    await expect(yInputs.nth(1)).toHaveValue("500");
+    // Width is preserved exactly, whatever the drag rounding did.
+    expect(Number(await xInputs.nth(1).inputValue()) - Number(await xInputs.nth(0).inputValue())).toBe(400);
+  });
+
+  test("the crop region borders can be dragged to resize it", async ({ page }) => {
+    await cropSwitch(page).check();
+
+    const xInputs = cropRangeInputs(page, "Crop X Range");
+    const yInputs = cropRangeInputs(page, "Crop Y Range");
+    const frameWidth = Number(await xInputs.nth(1).getAttribute("max"));
+    const frameHeight = Number(await yInputs.nth(1).getAttribute("max"));
+    await xInputs.nth(0).fill("400");
+    await xInputs.nth(0).press("Enter");
+    await xInputs.nth(1).fill("1200");
+    await xInputs.nth(1).press("Enter");
+    await yInputs.nth(0).fill("200");
+    await yInputs.nth(0).press("Enter");
+    await yInputs.nth(1).fill("600");
+    await yInputs.nth(1).press("Enter");
+
+    const frame = processedFrame(page);
+    await frame.scrollIntoViewIfNeeded();
+    const stream = frame.locator("img");
+    const frameBox = await frame.boundingBox();
+    let streamBox = await stream.boundingBox();
+    expect(frameBox).not.toBeNull();
+    expect(streamBox).not.toBeNull();
+    if (!frameBox || !streamBox) return;
+
+    const near = async (locator: Locator, expected: number) => {
+      await expect
+        .poll(async () => Math.abs(Number(await locator.inputValue()) - expected))
+        .toBeLessThanOrEqual(Math.max(10, frameWidth / 100));
+    };
+
+    // Drag the right border a tenth of the frame to the right: only x1 follows.
+    await page.mouse.move(streamBox.x + streamBox.width - 3, streamBox.y + streamBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(
+      streamBox.x + streamBox.width - 3 + frameBox.width * 0.1,
+      streamBox.y + streamBox.height / 2,
+      {
+        steps: 5
+      }
+    );
+    await page.mouse.up();
+
+    await near(xInputs.nth(1), 1200 + frameWidth * 0.1);
+    await expect(xInputs.nth(0)).toHaveValue("400");
+    await expect(yInputs.nth(0)).toHaveValue("200");
+    await expect(yInputs.nth(1)).toHaveValue("600");
+
+    // Drag the bottom-right corner inward and down: x1 and y1 follow, the other bounds hold.
+    streamBox = await stream.boundingBox();
+    expect(streamBox).not.toBeNull();
+    if (!streamBox) return;
+    const cornerX = streamBox.x + streamBox.width - 3;
+    const cornerY = streamBox.y + streamBox.height - 3;
+    await page.mouse.move(cornerX, cornerY);
+    await page.mouse.down();
+    await page.mouse.move(cornerX - frameBox.width * 0.05, cornerY + frameBox.height * 0.1, { steps: 5 });
+    await page.mouse.up();
+
+    const x1AfterFirstDrag = 1200 + frameWidth * 0.1;
+    await near(xInputs.nth(1), x1AfterFirstDrag - frameWidth * 0.05);
+    await near(yInputs.nth(1), 600 + frameHeight * 0.1);
+    await expect(xInputs.nth(0)).toHaveValue("400");
+    await expect(yInputs.nth(0)).toHaveValue("200");
   });
 
   test("an interior crop bound survives a frame resize", async ({ page }) => {

@@ -36,6 +36,8 @@ interface StateStore {
   multitagResultBuffer: Record<string, MultitagResult[]>;
 
   colorPickingMode: boolean;
+  // Whether the user is drawing a static-crop region on a camera stream
+  cropDrawingMode: boolean;
 
   calibrationData: {
     imageCount: number;
@@ -84,6 +86,7 @@ export const useStateStore = defineStore("state", {
       multitagResultBuffer: {},
 
       colorPickingMode: false,
+      cropDrawingMode: false,
 
       calibrationData: {
         imageCount: 0,
