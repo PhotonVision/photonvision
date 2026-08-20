@@ -19,16 +19,69 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
         "ledsCanDim" : true,
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
-        "statusLEDType": "RGB",
-        "statusLEDPins" : [ ],
-        "statusLEDActiveHigh" : false,
+        "statusLEDConfig" : {
+          "type": "RGB",
+          "redPin": 0,
+          "greenPin": 1,
+          "bluePin": 2,
+          "activeHigh": false,
+        },
       }
 ```
 
-There are currently two types of status LEDs supported:
+There are currently three types of status LEDs supported, each with different configuration options:
 
-* `RGB` (default): A singular LED mixing separate red, green, and blue inputs
-* `GreenYellow`: A pair of independent green and yellow LEDs
+::::{tab-set}
+:::{tab-item} RGB (default)
+A singular LED mixing separate red, green, and blue inputs. `activeHigh` is optional.
+
+```json
+{
+  "statusLEDConfig" : {
+    "type": "RGB",
+    "redPin": 0,
+    "greenPin": 1,
+    "bluePin": 2,
+    "activeHigh": false,
+  },
+}
+```
+
+:::
+
+:::{tab-item} GreenYellow
+A pair of independent green and yellow LEDs. `activeHigh` is optional.
+
+```json
+{
+  "statusLEDConfig" : {
+    "type": "GreenYellow",
+    "greenPin": 0,
+    "yellowPin": 1,
+    "activeHigh": false,
+  },
+}
+```
+
+:::
+
+:::{tab-item} SPI
+An addressable LED using the DotStar/APA102/SK9822 SPI-based protocol. This uses a hardware SPI peripheral be externally configured to use the right pins. The configuration within Photon selects which SPI peripheral and chip select line to use. `numLeds` controls the length of the chain. `brightness` can be no less than 0 and no greater than 31.
+
+```json
+{
+  "statusLEDConfig" : {
+    "type": "SPI",
+    "spiBus": 0,
+    "chipSelect": 0,
+    "numLeds": 11,
+    "brightness": 16,
+  },
+}
+```
+
+:::
+::::
 
 For an explanation of the colors used for status LEDs, see {ref}`Status LEDs<docs/troubleshooting/status-leds:Status LEDs>`
 
@@ -138,9 +191,13 @@ Here is a complete example `hardwareConfig.json`:
         "ledsCanDim" : true,
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
-        "statusLEDType": "RGB",
-        "statusLEDPins" : [ ],
-        "statusLEDActiveHigh" : false,
+        "statusLEDConfig" : {
+          "type": "RGB",
+          "redPin": 0,
+          "greenPin": 1,
+          "bluePin": 2,
+          "activeHigh": false,
+        },
         "getGPIOCommand" : "getGPIO {p}",
         "setGPIOCommand" : "setGPIO {p} {s}",
         "setPWMCommand" : "setPWM {p} {v}",
