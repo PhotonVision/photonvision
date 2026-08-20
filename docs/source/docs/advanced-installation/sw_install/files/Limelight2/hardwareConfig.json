@@ -2,8 +2,11 @@
   "deviceName" : "Limelight 2",
   "ledPins" : [ 17, 18 ],
   "ledsCanDim" : false,
-  "statusLEDType": "GreenYellow",
-  "statusLEDPins": [ 5, 4 ],
-  "statusLEDActiveHigh": false,
+  "statusLEDConfig": {
+    "type": "GreenYellow",
+    "greenPin": 5,
+    "yellowPin": 4,
+    "activeHigh": false
+  },
   "vendorFOV" : 75.76079874010732
 }
