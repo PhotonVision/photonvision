@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.frame.provider;
 
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -27,6 +29,7 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.GrayscalePipe;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipe.impl.RotateImagePipe;
+import org.photonvision.vision.pipe.impl.StaticCropPipe;
 
 public abstract class CpuImageProcessor extends FrameProvider {
     protected static class CapturedFrame {
@@ -45,7 +48,10 @@ public abstract class CpuImageProcessor extends FrameProvider {
     private final HSVPipe m_hsvPipe = new HSVPipe();
     private final RotateImagePipe m_rImagePipe = new RotateImagePipe();
     private final GrayscalePipe m_grayPipe = new GrayscalePipe();
+    private final StaticCropPipe m_cropPipe = new StaticCropPipe();
     FrameThresholdType m_processType;
+    // The requested crop, in the coordinate space of the rotated frame. Null disables cropping.
+    private Rect m_cropRect = null;
     boolean m_blockForFrames = true;
 
     private final Object m_mutex = new Object();
@@ -66,6 +72,25 @@ public abstract class CpuImageProcessor extends FrameProvider {
         var input = getInputMat();
 
         m_rImagePipe.run(input.colorImage.getMat());
+
+        // Statically crop the (already-rotated) color image so all downstream processing, drawing,
+        // and streaming operate on the cropped region. The crop is clamped to the current frame size.
+        Rect effectiveCrop =
+                clampCropToImage(
+                        m_cropRect, input.colorImage.getMat().cols(), input.colorImage.getMat().rows());
+        if (effectiveCrop != null) {
+            m_cropPipe.setParams(effectiveCrop);
+            var cropResult = m_cropPipe.run(input.colorImage);
+            if (cropResult.output != null) {
+                // submat() returns a view into the parent buffer, so clone before copying back onto it.
+                Mat cropped = cropResult.output.getMat().clone();
+                cropResult.output.release();
+                cropped.copyTo(input.colorImage.getMat());
+                cropped.release();
+            } else {
+                effectiveCrop = null;
+            }
+        }
 
         CVMat outputMat = null;
         if (!input.colorImage.getMat().empty()) {
@@ -92,7 +117,7 @@ public abstract class CpuImageProcessor extends FrameProvider {
                 m_processType,
                 input.captureTimestamp,
                 input.staticProps != null
-                        ? input.staticProps.rotate(m_rImagePipe.getParams().rotation())
+                        ? input.staticProps.rotate(m_rImagePipe.getParams().rotation()).crop(effectiveCrop)
                         : input.staticProps);
     }
 
@@ -107,6 +132,13 @@ public abstract class CpuImageProcessor extends FrameProvider {
     public void requestFrameRotation(ImageRotationMode rotationMode) {
         synchronized (m_mutex) {
             m_rImagePipe.setParams(new RotateImagePipe.RotateImageParams(rotationMode));
+        }
+    }
+
+    @Override
+    public void requestFrameCrop(Rect cropRect) {
+        synchronized (m_mutex) {
+            m_cropRect = cropRect;
         }
     }
 
