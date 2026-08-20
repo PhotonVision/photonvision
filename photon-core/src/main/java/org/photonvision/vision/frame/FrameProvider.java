@@ -18,10 +18,13 @@
 package org.photonvision.vision.frame;
 
 import java.util.function.Supplier;
+import org.opencv.core.Mat;
 import org.opencv.core.Rect;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.HSVPipe;
+import org.photonvision.vision.pipe.impl.StaticCropPipe;
 
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
@@ -78,6 +81,25 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
      * rotation has been applied.
      */
     public abstract void requestFrameCrop(Rect cropRect);
+
+    /**
+     * Crop the given image in place to the pipe's currently configured rectangle.
+     *
+     * @return Whether the image was actually cropped (an empty image is left untouched).
+     */
+    protected static boolean cropInPlace(StaticCropPipe cropPipe, CVMat image) {
+        var result = cropPipe.run(image);
+        if (result.output == null) {
+            return false;
+        }
+
+        // submat() returns a view into the parent buffer, so clone before copying back onto it.
+        Mat cropped = result.output.getMat().clone();
+        result.output.release();
+        cropped.copyTo(image.getMat());
+        cropped.release();
+        return true;
+    }
 
     /**
      * Clamp a requested crop rectangle to the bounds of an image of the given size, growing it to

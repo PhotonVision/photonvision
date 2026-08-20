@@ -199,7 +199,8 @@ public class CameraCalibrationCoefficients implements Releasable {
         double cy = getCameraIntrinsicsMat().get(1, 2)[0];
 
         // The principal point is expressed relative to the top-left of the image, so cropping simply
-        // shifts it by the crop origin.
+        // shifts it by the crop origin. See Multiple View Geometry in Computer Vision (Second Edition)
+        // Chapter 6.1 on finite cameras for explanation.
         croppedIntrinsics.put(0, 2, cx - cropRect.x);
         croppedIntrinsics.put(1, 2, cy - cropRect.y);
 

@@ -101,8 +101,8 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
                     clampCropToImage(m_cropRect, colorMat.getMat().cols(), colorMat.getMat().rows());
             if (effectiveCrop != null) {
                 m_cropPipe.setParams(effectiveCrop);
-                cropInPlace(colorMat);
-                cropInPlace(processedMat);
+                cropInPlace(m_cropPipe, colorMat);
+                cropInPlace(m_cropPipe, processedMat);
             }
 
             // Know frame is good -- increment sequence
@@ -132,18 +132,6 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     public void requestFrameCrop(Rect cropRect) {
         synchronized (settables.CAMERA_LOCK) {
             this.m_cropRect = cropRect;
-        }
-    }
-
-    /** Crop the given image in place to the crop pipe's currently configured rectangle. */
-    private void cropInPlace(CVMat image) {
-        var result = m_cropPipe.run(image);
-        if (result.output != null) {
-            // submat() returns a view into the parent buffer, so clone before copying back onto it.
-            Mat cropped = result.output.getMat().clone();
-            result.output.release();
-            cropped.copyTo(image.getMat());
-            cropped.release();
         }
     }
 
