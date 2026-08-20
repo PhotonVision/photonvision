@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.opencv.core.Rect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -35,6 +36,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
@@ -167,6 +169,59 @@ public class VisionRunner implements AutoCloseable {
         }
     }
 
+    /**
+     * Side of the square tiles apriltag thresholds the decimated image in. The tiling it lands on
+     * depends on where the image starts, so cropping to an origin off that grid moves every tile
+     * relative to the tag and nudges the corner estimates -- and with them the reported pose -- by up
+     * to a percent. Snapping the crop origin to a tile boundary keeps turning a crop on from moving
+     * the numbers a tag reports.
+     */
+    private static final int APRILTAG_TILE_SIZE = 4;
+
+    /**
+     * Build the static crop rectangle from pipeline settings, or null if cropping is disabled or the
+     * configured region is degenerate. The ranges are stored as [min, max] pixel couples.
+     */
+    static Rect cropRectFromSettings(AdvancedPipelineSettings settings) {
+        if (!settings.staticCropEnabled) {
+            return null;
+        }
+
+        // A pixel bound is never negative. Dropping the sign rather than trusting it keeps a garbage
+        // bound (a value that overflowed on its way in, say) from being read as a sliver of a crop
+        // one pixel from the origin.
+        int xLow =
+                Math.max(0, Math.min(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
+        int xHigh =
+                Math.max(0, Math.max(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
+        int yLow =
+                Math.max(0, Math.min(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
+        int yHigh =
+                Math.max(0, Math.max(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
+
+        int width = xHigh - xLow;
+        int height = yHigh - yLow;
+
+        if (width <= 0 || height <= 0) {
+            return null;
+        }
+
+        if (settings instanceof AprilTagPipelineSettings tagSettings) {
+            // Grow the region up to the tile boundary below it rather than moving it, so the crop still
+            // covers everything that was asked for.
+            int tile = APRILTAG_TILE_SIZE * Math.max(1, tagSettings.decimate);
+            int alignedX = (xLow / tile) * tile;
+            int alignedY = (yLow / tile) * tile;
+
+            width += xLow - alignedX;
+            height += yLow - alignedY;
+            xLow = alignedX;
+            yLow = alignedY;
+        }
+
+        return new Rect(xLow, yLow, width, height);
+    }
+
     private void update() {
         // wait for the camera to connect
         while (!frameSupplier.isConnected() && !Thread.interrupted()) {
@@ -209,14 +264,18 @@ public class VisionRunner implements AutoCloseable {
 
             frameSupplier.requestFrameThresholdType(wantedProcessType);
             var settings = pipeline.getSettings();
+            Rect cropRect = null;
             if (settings instanceof AdvancedPipelineSettings advanced) {
                 var hsvParams =
                         new HSVPipe.HSVParams(
                                 advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
                 // TODO who should deal with preventing this from happening _every single loop_?
                 frameSupplier.requestHsvSettings(hsvParams);
+
+                cropRect = cropRectFromSettings(advanced);
             }
             frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
+            frameSupplier.requestFrameCrop(cropRect);
             frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
             frameSupplier.requestBlockForFrames(settings.blockForFrames);
 

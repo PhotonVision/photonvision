@@ -18,12 +18,20 @@
 package org.photonvision.vision.frame;
 
 import java.util.function.Supplier;
+import org.opencv.core.Rect;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
+
+    /**
+     * Smallest crop handed downstream, in pixels per axis. A sliver of an image is useless for vision
+     * and some native detectors read out of bounds when given one -- apriltag segfaults on an image
+     * only a few pixels tall -- so a smaller crop is grown back to this size.
+     */
+    private static final int MIN_CROP_DIMENSION = 16;
 
     // Escape hatch to allow us to synchronously (from the main vision thread) run
     // extra
@@ -63,6 +71,49 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
 
     /** Ask the camera to rotate frames it outputs */
     public abstract void requestFrameRotation(ImageRotationMode rotationMode);
+
+    /**
+     * Ask the camera to statically crop the frames it outputs to the given rectangle. A null
+     * rectangle disables cropping. The rectangle is in the coordinate space of the frame after any
+     * rotation has been applied.
+     */
+    public abstract void requestFrameCrop(Rect cropRect);
+
+    /**
+     * Clamp a requested crop rectangle to the bounds of an image of the given size, growing it to
+     * {@link #MIN_CROP_DIMENSION} per axis if it is smaller than that.
+     *
+     * @return The clamped rectangle, or null if the crop is empty or would cover the entire image (in
+     *     which case cropping is a no-op).
+     */
+    protected static Rect clampCropToImage(Rect cropRect, int imageCols, int imageRows) {
+        if (cropRect == null || imageCols <= 0 || imageRows <= 0) {
+            return null;
+        }
+
+        int x = Math.max(0, Math.min(cropRect.x, imageCols - 1));
+        int y = Math.max(0, Math.min(cropRect.y, imageRows - 1));
+        int width = Math.max(0, Math.min(cropRect.width, imageCols - x));
+        int height = Math.max(0, Math.min(cropRect.height, imageRows - y));
+
+        if (width <= 0 || height <= 0) {
+            return null;
+        }
+
+        // Grow a too-small crop, then slide it back inside the image if growing pushed it off the edge.
+        // An image smaller than the minimum can't be satisfied, so it caps out at the image itself.
+        width = Math.min(Math.max(width, MIN_CROP_DIMENSION), imageCols);
+        height = Math.min(Math.max(height, MIN_CROP_DIMENSION), imageRows);
+        x = Math.min(x, imageCols - width);
+        y = Math.min(y, imageRows - height);
+
+        // A crop covering the entire image is a no-op; skip it to avoid needless copies.
+        if (x == 0 && y == 0 && width == imageCols && height == imageRows) {
+            return null;
+        }
+
+        return new Rect(x, y, width, height);
+    }
 
     /** Ask the camera to provide either the input, output, or both frames. */
     public abstract void requestFrameCopies(boolean copyInput, boolean copyOutput);

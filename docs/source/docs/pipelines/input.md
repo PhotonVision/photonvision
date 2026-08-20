@@ -1,6 +1,6 @@
 # Camera Tuning / Input
 
-PhotonVision's "Input" tab contains settings that affect the image captured by the currently selected camera. This includes camera exposure and brightness, as well as resolution and orientation.
+PhotonVision's "Input" tab contains settings that affect the image captured by the currently selected camera. This includes camera exposure and brightness, as well as resolution, orientation, and static cropping.
 
 ## Resolution
 
@@ -39,6 +39,25 @@ For AprilTag pipelines, your goal is to reduce the "motion blur" as much as poss
 ## Orientation
 
 Orientation can be used to rotate the image prior to vision processing. This can be useful for cases where the camera is not oriented parallel to the ground. Do note that this operation can in some cases significantly reduce FPS.
+
+## Static Crop
+
+Static crop restricts vision processing to a fixed rectangular region of the camera frame. When enabled, the input image is cropped to the region defined by the **Crop X Range** and **Crop Y Range** sliders (in pixels) before any target detection runs. The two range sliders set the left/right and top/bottom bounds of the region, and their maximums track the current frame dimensions. Both ranges default to the full frame (0 to the frame width or height), so enabling static crop without moving the sliders leaves the image untouched.
+
+Very small crops are grown to a minimum of 16 pixels per axis before processing, since a sliver of an image is useless for vision (and some detectors misbehave when given one). On an AprilTag pipeline the crop's top-left corner is also nudged up and left onto a multiple of four times the decimation factor: the detector thresholds the image in tiles of that size, and starting the image off that grid moves every tile relative to the tag, which would shift the reported pose slightly when you turn the crop on.
+
+A bound left sitting on the edge of the frame stays on the edge when the frame size changes: switch to a lower resolution and it shrinks to the new width or height, switch back up and it grows again. A bound you moved inside the frame keeps the pixel value you chose, and is only pulled in if the frame becomes too small to contain it.
+
+This is useful for:
+
+- **Ignoring irrelevant parts of the frame** — for example, cropping out the ceiling or a bumper that would otherwise produce false detections.
+- **Increasing FPS** — processing fewer pixels reduces the per-frame workload, which can meaningfully raise the frame rate at high resolutions.
+
+The crop is applied *after* orientation, so the crop region is defined in the coordinate space of the rotated image (the same image you see on the stream).
+
+:::{note}
+Camera calibration is automatically adjusted to account for the crop: the principal point is shifted by the crop origin while the focal lengths are preserved. This means 3D pose estimation (SolvePNP and AprilTag pose) remains accurate when a static crop is active -- a stationary tag reports the same pose whether the crop is on or off. Note, however, that any target lying outside the crop region can no longer be detected.
+:::
 
 ## Stream Resolution
 
