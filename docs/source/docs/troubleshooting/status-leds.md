@@ -28,6 +28,9 @@ myst:
   .red > svg.led, .red.led-bar {
     --on-color: red;
   }
+  .warning.led-bar {
+    --overlay-color: yellow;
+  }
 
   .anti-yellow > svg.led {
     --on-color: transparent;
@@ -84,7 +87,7 @@ myst:
     --off-color: transparent;
   }
 
-  .led-bar:after {
+  .led-bar:before {
     content: "";
     display: block;
     width: 100%;
@@ -93,7 +96,7 @@ myst:
     animation: 2s infinite cubic-bezier(0.37, 0, 0.63, 1);
   }
 
-  .led-bar.throb:after {
+  .led-bar.throb:before {
     animation-name: led-bar-throb;
   }
 
@@ -106,8 +109,7 @@ myst:
     }
   }
 
-  .led-bar.phaser::after {
-    content: "";
+  .led-bar.phaser::before {
     background: linear-gradient(
       to right,
       transparent 15%,
@@ -116,26 +118,25 @@ myst:
     );
     position: relative;
     left: 0%;
-    background-repeat: no-repeat;
     animation-name: led-bar-phaser;
   }
 
   @keyframes led-bar-phaser {
     0%, 100% {
-      left: -50%;
+      transform: scaleX(-1);
     }
     25% {
-      transform: scaleX(1);
+      left: -50%;
     }
     50% {
-      left: 50%;
+      transform: scaleX(1);
     }
     75% {
-      transform: scaleX(-1);
+      left: 50%;
     }
   }
 
-  .led-bar.blink:after {
+  .led-bar.blink:before {
     animation-name: led-bar-blink;
     animation-timing-function: steps(1);
   }
@@ -146,8 +147,41 @@ myst:
     }
   }
 
-  .led-bar.off:after {
+  .led-bar.off:before {
     content: initial;
+  }
+
+  .led-bar:after {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: -100%;
+    background: transparent;
+    animation: 2s infinite;
+  }
+
+  .led-bar.warning:after {
+    content: "";
+    animation-name: led-bar-double-blink;
+    animation-timing-function: steps(1);
+  }
+
+  @keyframes led-bar-double-blink {
+    30%, 60% {
+      background: linear-gradient(
+        to right,
+        var(--overlay-color),
+        var(--overlay-color) 8%,
+        transparent 15%,
+        transparent 85%,
+        var(--overlay-color) 92%,
+        var(--overlay-color)
+      );
+    }
+    40%, 70% {
+      background: transparent;
+    }
   }
 
 </style>
@@ -162,14 +196,14 @@ Used on Luma P2
 
 This applies to all types of addressable LEDs (APA102/SK9822)
 
- Color  | Pattern | Preview                     | Status
---------|---------|:---------------------------:|-----------------------------------------------
- Green  | Phaser  | []{.led-bar .green .phaser} | Running normally, no targets visible
- Blue   | Solid   | []{.led-bar .blue}          | Running normally, targets visible
- Yellow | Throb   | []{.led-bar .yellow .throb} | NT Disconnected, no targets visible
- Blue   | Throb   | []{.led-bar .blue .throb}   | NT Disconnected, targets visible
- Red    | Blink   | []{.led-bar .red .blink}    | Initializing or faulted, not running
- Off    | N/A     | []{.led-bar .off}           | No power or initialization fault, not running
+ Color  | Pattern | Preview                              | Status
+--------|---------|:------------------------------------:|-----------------------------------------------
+ Green  | Phaser  | []{.led-bar .green .phaser}          | Running normally, no targets visible
+ Blue   | Solid   | []{.led-bar .blue}                   | Running normally, targets visible
+ Yellow | Throb   | []{.led-bar .green .phaser .warning} | NT Disconnected, no targets visible
+ Blue   | Throb   | []{.led-bar .blue .warning}          | NT Disconnected, targets visible
+ Red    | Blink   | []{.led-bar .red .blink}             | Initializing or faulted, not running
+ Off    | N/A     | []{.led-bar .off}                    | No power or initialization fault, not running
 
 ## RGB LEDs
 
