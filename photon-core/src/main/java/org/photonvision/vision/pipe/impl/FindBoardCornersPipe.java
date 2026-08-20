@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.calib3d.Calib3d;
@@ -350,6 +351,30 @@ public class FindBoardCornersPipe
                 // Decimation was not used
                 level = 0.0f;
 
+                if (ids.rows() == params.boardWidth * params.boardHeight) {
+                    // All points are present, so ids are unnecessary
+                    // Ensure points are ordered by id, which OpenCV should guarantee
+                    int currentId = 0;
+                    // Scan for out of place elements first to determine if data conversion is necessary
+                    for (; currentId < ids.rows(); currentId++) {
+                        if (ids.at(int.class, currentId, 0).getV() != currentId) {
+                            break;
+                        }
+                    }
+                    if (currentId < ids.rows()) {
+                        // Continue sorting from end of scan if it did not complete
+                        var objectPointsList = objectPoints.toList();
+                        var imagePointsList = imagePoints.toList();
+                        var idsList = ids.toList();
+                        sortRelatedSubranges(idsList, List.of(objectPointsList, imagePointsList), currentId);
+                        logger.debug("Sorted ids: " + idsList);
+                        objectPoints.fromList(objectPointsList);
+                        imagePoints.fromList(imagePointsList);
+                    }
+                    ids.release();
+                    ids = null;
+                }
+
                 break;
             case CHESSBOARD:
                 // Reduce the image size to be much more manageable
@@ -396,6 +421,23 @@ public class FindBoardCornersPipe
         }
 
         return new FindBoardCornersPipeResult(inFrame.size(), objectPoints, imagePoints, level, ids);
+    }
+
+    public static void sortRelatedSubranges(
+            List<Integer> positions, List<List<?>> others, int startIndex) {
+        int currentIndex = startIndex;
+        while (currentIndex < positions.size()) {
+            /* While current position is not equal to current index, swap the current index's position with
+            the current position */
+            if (positions.get(currentIndex) != currentIndex) {
+                for (var other : others) {
+                    Collections.swap(other, positions.get(currentIndex), currentIndex);
+                }
+                Collections.swap(positions, positions.get(currentIndex), currentIndex);
+            } else {
+                currentIndex++;
+            }
+        }
     }
 
     @Override
