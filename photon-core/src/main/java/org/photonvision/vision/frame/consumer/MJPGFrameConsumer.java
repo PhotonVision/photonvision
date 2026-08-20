@@ -45,6 +45,15 @@ public class MJPGFrameConsumer implements AutoCloseable {
         this(name, 320, 240, port);
     }
 
+    /**
+     * Whether any client is currently consuming this stream. cscore only enables a source while at
+     * least one connected sink (an open MJPEG connection -- the web UI's stream view, a popped-out
+     * stream, a dashboard) is actively pulling frames from it.
+     */
+    public boolean isStreamConsumed() {
+        return cvSource != null && cvSource.isEnabled();
+    }
+
     public void accept(CVMat image) {
         long now = MathUtils.wpiNanoTime();
 
