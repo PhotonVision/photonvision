@@ -79,6 +79,11 @@ public class LinearPattern {
         return loopTime() > 0.4 ? baseColor : 0;
     }
 
+    /** Double blink the whole bar, two short pulses */
+    public int doubleBlink(int baseColor) {
+        return Math.abs(Math.abs(loopTime() - 0.5) - 0.15) < 0.05 ? baseColor : 0;
+    }
+
     /** Fade in and out over the whole bar */
     public int throb(int baseColor) {
         return fade(baseColor, (Math.sin(2.0 * Math.PI * loopTime()) + 1) / 2);

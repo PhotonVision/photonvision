@@ -79,6 +79,7 @@ public class LinearPatternTest {
         final List<Pair<String, IntUnaryOperator>> allPatterns =
                 List.of(
                         Pair.of("Blink", pattern::blink),
+                        Pair.of("Double Blink", pattern::doubleBlink),
                         Pair.of("Throb", pattern::throb),
                         Pair.of("Phaser", pattern::phaser),
                         Pair.of("Converge", pattern::converge),

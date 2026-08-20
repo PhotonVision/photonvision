@@ -80,17 +80,25 @@ public class SPIStatusLED implements StatusLED {
     protected void updateLED() {
         for (pattern.pixel = 0; pattern.pixel < pattern.numPixels; pattern.pixel++) {
             switch (status) {
-                case NT_CONNECTED_TARGETS_VISIBLE ->
+                case NT_CONNECTED_TARGETS_VISIBLE, NT_DISCONNECTED_TARGETS_VISIBLE ->
                         ledChain.setPixelColour(pattern.pixel, PixelColour.BLUE);
-                case NT_CONNECTED_TARGETS_MISSING ->
+                case NT_CONNECTED_TARGETS_MISSING, NT_DISCONNECTED_TARGETS_MISSING ->
                         ledChain.setPixelColour(pattern.pixel, pattern.phaser(PixelColour.GREEN));
-                case NT_DISCONNECTED_TARGETS_VISIBLE ->
-                        ledChain.setPixelColour(pattern.pixel, pattern.throb(PixelColour.BLUE));
-                case NT_DISCONNECTED_TARGETS_MISSING ->
-                        ledChain.setPixelColour(pattern.pixel, pattern.throb(PixelColour.YELLOW));
                 case GENERIC_ERROR ->
                         ledChain.setPixelColour(pattern.pixel, pattern.blink(PixelColour.RED));
             }
+        }
+
+        switch (status) {
+            case NT_DISCONNECTED_TARGETS_VISIBLE, NT_DISCONNECTED_TARGETS_MISSING:
+                var doubleBlink = pattern.doubleBlink(PixelColour.YELLOW);
+                if (doubleBlink != 0) {
+                    ledChain.setPixelColour(0, doubleBlink);
+                    ledChain.setPixelColour(pattern.numPixels - 1, doubleBlink);
+                }
+                break;
+            default:
+                break;
         }
 
         ledChain.render();
