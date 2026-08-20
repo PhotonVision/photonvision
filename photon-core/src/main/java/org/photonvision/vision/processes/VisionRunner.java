@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -34,7 +35,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.HSVPipe;
+import org.photonvision.vision.pipe.impl.StaticCropPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
@@ -179,6 +182,15 @@ public class VisionRunner implements AutoCloseable {
     private static final int APRILTAG_TILE_SIZE = 4;
 
     /**
+     * Smallest crop handed downstream, in pixels per axis. A sliver of an image is useless for vision
+     * and some native detectors read out of bounds when given one -- apriltag segfaults on an image
+     * only a few pixels tall -- so a smaller crop is grown back to this size.
+     */
+    private static final int MIN_CROP_DIMENSION = 16;
+
+    private final StaticCropPipe cropPipe = new StaticCropPipe();
+
+    /**
      * Build the static crop rectangle from pipeline settings, or null if cropping is disabled or the
      * configured region is degenerate. The ranges are stored as [min, max] pixel couples.
      */
@@ -220,6 +232,96 @@ public class VisionRunner implements AutoCloseable {
         }
 
         return new Rect(xLow, yLow, width, height);
+    }
+
+    /**
+     * Statically crop a captured frame: both images are cropped in place (identically, so their
+     * coordinates stay aligned) and the frame's static properties are replaced with ones describing
+     * the cropped image, keeping pose estimation consistent with the new framing.
+     *
+     * @param cropRect The requested crop, in the coordinate space of the (already-rotated) frame. It
+     *     is clamped to the frame bounds; null means no crop.
+     * @return The cropped frame, or the frame untouched if there is nothing to do.
+     */
+    static Frame cropFrame(StaticCropPipe cropPipe, Frame frame, Rect cropRect) {
+        var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
+        Rect effectiveCrop =
+                clampCropToImage(cropRect, reference.getMat().cols(), reference.getMat().rows());
+        if (effectiveCrop == null) {
+            return frame;
+        }
+
+        cropPipe.setParams(effectiveCrop);
+        boolean cropped = cropInPlace(cropPipe, frame.colorImage);
+        cropped |= cropInPlace(cropPipe, frame.processedImage);
+        if (!cropped) {
+            return frame;
+        }
+
+        return new Frame(
+                frame.sequenceID,
+                frame.colorImage,
+                frame.processedImage,
+                frame.type,
+                frame.timestampNanos,
+                frame.frameStaticProperties != null
+                        ? frame.frameStaticProperties.crop(effectiveCrop)
+                        : null);
+    }
+
+    /**
+     * Crop the given image in place to the pipe's currently configured rectangle.
+     *
+     * @return Whether the image was actually cropped (an empty image is left untouched).
+     */
+    private static boolean cropInPlace(StaticCropPipe cropPipe, CVMat image) {
+        var result = cropPipe.run(image);
+        if (result.output == null) {
+            return false;
+        }
+
+        // submat() returns a view into the parent buffer, so clone before copying back onto it.
+        Mat cropped = result.output.getMat().clone();
+        result.output.release();
+        cropped.copyTo(image.getMat());
+        cropped.release();
+        return true;
+    }
+
+    /**
+     * Clamp a requested crop rectangle to the bounds of an image of the given size, growing it to
+     * {@link #MIN_CROP_DIMENSION} per axis if it is smaller than that.
+     *
+     * @return The clamped rectangle, or null if the crop is empty or would cover the entire image (in
+     *     which case cropping is a no-op).
+     */
+    static Rect clampCropToImage(Rect cropRect, int imageCols, int imageRows) {
+        if (cropRect == null || imageCols <= 0 || imageRows <= 0) {
+            return null;
+        }
+
+        int x = Math.max(0, Math.min(cropRect.x, imageCols - 1));
+        int y = Math.max(0, Math.min(cropRect.y, imageRows - 1));
+        int width = Math.max(0, Math.min(cropRect.width, imageCols - x));
+        int height = Math.max(0, Math.min(cropRect.height, imageRows - y));
+
+        if (width <= 0 || height <= 0) {
+            return null;
+        }
+
+        // Grow a too-small crop, then slide it back inside the image if growing pushed it off the edge.
+        // An image smaller than the minimum can't be satisfied, so it caps out at the image itself.
+        width = Math.min(Math.max(width, MIN_CROP_DIMENSION), imageCols);
+        height = Math.min(Math.max(height, MIN_CROP_DIMENSION), imageRows);
+        x = Math.min(x, imageCols - width);
+        y = Math.min(y, imageRows - height);
+
+        // A crop covering the entire image is a no-op; skip it to avoid needless copies.
+        if (x == 0 && y == 0 && width == imageCols && height == imageRows) {
+            return null;
+        }
+
+        return new Rect(x, y, width, height);
     }
 
     private void update() {
@@ -275,12 +377,12 @@ public class VisionRunner implements AutoCloseable {
                 cropRect = cropRectFromSettings(advanced);
             }
             frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
-            frameSupplier.requestFrameCrop(cropRect);
             frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
             frameSupplier.requestBlockForFrames(settings.blockForFrames);
 
-            // Grab the new camera frame
-            var frame = frameSupplier.get();
+            // Grab the new camera frame, and statically crop it (a no-op when cropping is disabled).
+            // The frame is already rotated, so the crop applies in the rotated coordinate space.
+            var frame = cropFrame(cropPipe, frameSupplier.get(), cropRect);
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {

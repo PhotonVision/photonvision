@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
+import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;

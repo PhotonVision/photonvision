@@ -18,7 +18,6 @@
 package org.photonvision.vision.camera;
 
 import java.util.*;
-import org.opencv.core.Rect;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -68,12 +67,6 @@ public class TestSource extends VisionSource {
             public void requestFrameRotation(ImageRotationMode rotationMode) {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'requestFrameRotation'");
-            }
-
-            @Override
-            public void requestFrameCrop(Rect cropRect) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameCrop'");
             }
 
             @Override
