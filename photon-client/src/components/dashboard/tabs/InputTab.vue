@@ -69,8 +69,7 @@ const currentStreamResolutionIndex = computed<number>({
     });
   }
 });
-// Static cropping is only available for vision pipelines (not driver, calibration, or focus modes),
-// which are the pipelines backed by AdvancedPipelineSettings.
+
 const showStaticCrop = computed(
   () =>
     !useCameraSettingsStore().isDriverMode &&
