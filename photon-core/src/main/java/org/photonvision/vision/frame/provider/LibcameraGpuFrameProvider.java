@@ -18,7 +18,6 @@
 package org.photonvision.vision.frame.provider;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Rect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -30,14 +29,9 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
-import org.photonvision.vision.pipe.impl.StaticCropPipe;
 
 public class LibcameraGpuFrameProvider extends FrameProvider {
     private final LibcameraGpuSettables settables;
-
-    private final StaticCropPipe m_cropPipe = new StaticCropPipe();
-    // The requested crop, in the coordinate space of the rotated frame. Null disables cropping.
-    private Rect m_cropRect = null;
 
     static final Logger logger = new Logger(LibcameraGpuFrameProvider.class, LogGroup.Camera);
 
@@ -95,16 +89,6 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
             LibCameraJNI.releasePair(p_ptr);
 
-            // Frames from the GPU are already rotated, so the crop applies directly in this space.
-            // Crop the color and processed mats identically so their coordinates stay aligned.
-            Rect effectiveCrop =
-                    clampCropToImage(m_cropRect, colorMat.getMat().cols(), colorMat.getMat().rows());
-            if (effectiveCrop != null) {
-                m_cropPipe.setParams(effectiveCrop);
-                cropInPlace(m_cropPipe, colorMat);
-                cropInPlace(m_cropPipe, processedMat);
-            }
-
             // Know frame is good -- increment sequence
             ++sequenceID;
 
@@ -114,7 +98,7 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
                     processedMat,
                     type,
                     MathUtils.wpiNanoTime() - latency,
-                    settables.getFrameStaticProperties().rotate(settables.getRotation()).crop(effectiveCrop));
+                    settables.getFrameStaticProperties().rotate(settables.getRotation()));
         }
     }
 
@@ -126,13 +110,6 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     @Override
     public void requestFrameRotation(ImageRotationMode rotationMode) {
         this.settables.setRotation(rotationMode);
-    }
-
-    @Override
-    public void requestFrameCrop(Rect cropRect) {
-        synchronized (settables.CAMERA_LOCK) {
-            this.m_cropRect = cropRect;
-        }
     }
 
     @Override

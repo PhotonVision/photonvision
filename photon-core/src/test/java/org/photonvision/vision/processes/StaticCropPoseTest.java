@@ -29,6 +29,7 @@ import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.ImageRotationMode;
+import org.photonvision.vision.pipe.impl.StaticCropPipe;
 import org.photonvision.vision.pipeline.AprilTagPipeline;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.math.geometry.Transform3d;
@@ -73,9 +74,17 @@ public class StaticCropPoseTest {
         return provider;
     }
 
-    /** The pose of the first target found, run through the pipeline as the vision thread would. */
+    /**
+     * The pose of the first target found, run through the pipeline as the vision thread would: grab a
+     * frame, apply the static crop from the pipeline's settings, process.
+     */
     private static Transform3d poseFrom(AprilTagPipeline pipeline, FileFrameProvider provider) {
-        var result = pipeline.run(provider.get(), QuirkyCamera.DefaultCamera);
+        var frame =
+                VisionRunner.cropFrame(
+                        new StaticCropPipe(),
+                        provider.get(),
+                        VisionRunner.cropRectFromSettings(pipeline.getSettings()));
+        var result = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         assertFalse(result.targets.isEmpty(), "The tag should be found");
         return result.targets.get(0).getBestCameraToTarget3d();
     }
@@ -103,7 +112,6 @@ public class StaticCropPoseTest {
             settings.staticCropEnabled = true;
             settings.staticCropX.set(201, 501);
             settings.staticCropY.set(151, 401);
-            provider.requestFrameCrop(VisionRunner.cropRectFromSettings(settings));
 
             assertSamePose(uncropped, poseFrom(pipeline, provider), "Cropping at decimate " + decimate);
         }
@@ -123,7 +131,6 @@ public class StaticCropPoseTest {
         settings.staticCropEnabled = true;
         settings.staticCropX.set(101, 401);
         settings.staticCropY.set(103, 503);
-        provider.requestFrameCrop(VisionRunner.cropRectFromSettings(settings));
 
         assertSamePose(uncropped, poseFrom(pipeline, provider), "Cropping a rotated frame");
     }
@@ -140,11 +147,9 @@ public class StaticCropPoseTest {
         settings.staticCropEnabled = true;
         settings.staticCropX.set(201, 501);
         settings.staticCropY.set(151, 401);
-        provider.requestFrameCrop(VisionRunner.cropRectFromSettings(settings));
         poseFrom(pipeline, provider);
 
         settings.staticCropEnabled = false;
-        provider.requestFrameCrop(VisionRunner.cropRectFromSettings(settings));
 
         assertSamePose(uncropped, poseFrom(pipeline, provider), "Disabling the crop");
     }
