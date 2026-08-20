@@ -287,12 +287,8 @@ public class SqlConfigProvider extends ConfigProvider {
             // Replace this camera's row with the new settings
             var sqlString =
                     String.format(
-                            "REPLACE INTO %s (%s, %s, %s, %s) VALUES (?,?,?,?);",
-                            Tables.CAMERAS,
-                            Columns.CAM_UNIQUE_NAME,
-                            Columns.CAM_CONFIG_JSON,
-                            Columns.CAM_DRIVERMODE_JSON,
-                            Columns.CAM_PIPELINE_JSONS);
+                            "REPLACE INTO %s (%s, %s) VALUES (?, ?);",
+                            Tables.CAMERAS, Columns.CAM_UNIQUE_NAME, Columns.CAM_CONFIG_JSON);
 
             for (var c : config.getCameraConfigurations().entrySet()) {
                 PreparedStatement statement = conn.prepareStatement(sqlString);
@@ -300,11 +296,6 @@ public class SqlConfigProvider extends ConfigProvider {
                 var config = c.getValue();
                 statement.setString(1, c.getKey());
                 statement.setString(2, Jsonb.instance().type(CameraConfiguration.class).toJson(config));
-
-                // MIGRATION: 2026
-                // We used to serialize pipelines separately, but don't anymore
-                statement.setString(3, "null");
-                statement.setString(4, "[]");
 
                 statement.executeUpdate();
             }

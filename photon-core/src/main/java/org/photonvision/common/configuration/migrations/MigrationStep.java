@@ -35,6 +35,10 @@ public abstract class MigrationStep {
         this.sql = sql;
     }
 
+    protected MigrationStep() {
+        this.sql = "";
+    }
+
     void update(Connection conn) throws SQLException {
         // this handles one or more SQL statements passed in to the constructor
         if (!(sql == null || sql.isBlank())) {
@@ -58,7 +62,7 @@ public abstract class MigrationStep {
         logger.info("Running migration step: " + getVersion() + " - " + getDescription());
         try {
             update(conn);
-            setVersion(conn);
+            setDbVersion(conn);
             conn.commit();
         } catch (SQLException e) {
             conn.rollback();
@@ -67,7 +71,7 @@ public abstract class MigrationStep {
         }
     }
 
-    private void setVersion(Connection conn) throws SQLException {
+    private void setDbVersion(Connection conn) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.execute("PRAGMA user_version = " + getVersion() + ";");
         }
