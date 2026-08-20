@@ -145,6 +145,10 @@ public class HardwareManager {
 
     public static void initialize(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         if (instance == null) {
+            if (hardwareConfig == null || hardwareSettings == null) {
+                throw new IllegalArgumentException(
+                        "HardwareConfig and HardwareSettings must not be null when initializing HardwareManager.");
+            }
             instance = new HardwareManager(hardwareConfig, hardwareSettings);
         } else {
             instance.logger.warn("HardwareManager already initialized!");
@@ -179,10 +183,6 @@ public class HardwareManager {
     }
 
     public void setBrightnessPercent(int percent) {
-        if (hardwareSettings == null) {
-            logger.error("Could not set led brightness! No hardware settings found");
-            return;
-        }
         if (percent != hardwareSettings.ledBrightnessPercentage) {
             hardwareSettings.ledBrightnessPercentage = percent;
             visionLED.ifPresent(visionLED -> visionLED.setBrightness(percent));
@@ -208,10 +208,6 @@ public class HardwareManager {
             }
         }
         try {
-            if (hardwareConfig == null) {
-                logger.error("Could not restart device! No hardware configuration found");
-                return false;
-            }
             return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
         } catch (IOException e) {
             logger.error("Could not restart device!", e);
