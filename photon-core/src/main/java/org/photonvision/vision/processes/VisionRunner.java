@@ -173,13 +173,12 @@ public class VisionRunner implements AutoCloseable {
     }
 
     /**
-     * Side of the square tiles apriltag thresholds the decimated image in. Snapping the crop origin to this grid prevents crop's from changing reported pose.
+     * Side of the square tiles apriltag thresholds the decimated image in. Snapping the crop origin
+     * to this grid prevents crop's from changing reported pose.
      */
     private static final int APRILTAG_TILE_SIZE = 4;
 
-    /**
-     * Smallest crop handed downstream, in pixels per axis, prevents downstream crashes.
-     */
+    /** Smallest crop handed downstream, in pixels per axis, prevents downstream crashes. */
     private static final int MIN_CROP_DIMENSION = 16;
 
     private final StaticCropPipe cropPipe = new StaticCropPipe();
@@ -238,6 +237,17 @@ public class VisionRunner implements AutoCloseable {
      * @return The cropped frame, or the frame untouched if there is nothing to do.
      */
     static Frame cropFrame(StaticCropPipe cropPipe, Frame frame, Rect cropRect) {
+        return cropFrame(cropPipe, frame, cropRect, false);
+    }
+
+    /** How much the cropped-away area is dimmed in the input stream's context image. */
+    private static final double CONTEXT_DIM_FACTOR = 0.35;
+
+    /**
+     * @param keepContext Whether to also keep the full (uncropped) color image, with the cropped-away
+     *     area dimmed, for the input stream to show the crop in context.
+     */
+    static Frame cropFrame(StaticCropPipe cropPipe, Frame frame, Rect cropRect, boolean keepContext) {
         var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
         Rect effectiveCrop =
                 clampCropToImage(cropRect, reference.getMat().cols(), reference.getMat().rows());
@@ -245,22 +255,36 @@ public class VisionRunner implements AutoCloseable {
             return frame;
         }
 
+        // Compose the context image while the color image is still full-size: dim a copy of the
+        // whole frame, then paste the crop region back in at full brightness.
+        CVMat contextImage = null;
+        if (keepContext && !frame.colorImage.getMat().empty()) {
+            Mat dimmed = new Mat();
+            frame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
+            frame.colorImage.getMat().submat(effectiveCrop).copyTo(dimmed.submat(effectiveCrop));
+            contextImage = new CVMat(dimmed);
+        }
+
         cropPipe.setParams(effectiveCrop);
         boolean cropped = cropInPlace(cropPipe, frame.colorImage);
         cropped |= cropInPlace(cropPipe, frame.processedImage);
         if (!cropped) {
+            if (contextImage != null) contextImage.release();
             return frame;
         }
 
-        return new Frame(
-                frame.sequenceID,
-                frame.colorImage,
-                frame.processedImage,
-                frame.type,
-                frame.timestampNanos,
-                frame.frameStaticProperties != null
-                        ? frame.frameStaticProperties.crop(effectiveCrop)
-                        : null);
+        var croppedFrame =
+                new Frame(
+                        frame.sequenceID,
+                        frame.colorImage,
+                        frame.processedImage,
+                        frame.type,
+                        frame.timestampNanos,
+                        frame.frameStaticProperties != null
+                                ? frame.frameStaticProperties.crop(effectiveCrop)
+                                : null);
+        croppedFrame.contextColorImage = contextImage;
+        return croppedFrame;
     }
 
     /**
@@ -376,7 +400,7 @@ public class VisionRunner implements AutoCloseable {
 
             // Grab the new camera frame, and statically crop it (a no-op when cropping is disabled).
             // The frame is already rotated, so the crop applies in the rotated coordinate space.
-            var frame = cropFrame(cropPipe, frameSupplier.get(), cropRect);
+            var frame = cropFrame(cropPipe, frameSupplier.get(), cropRect, settings.inputShouldShow);
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {

@@ -4,7 +4,7 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
-import { computed, watch } from "vue";
+import { computed, onBeforeUnmount, watch } from "vue";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import { FrameEdgeCropBound, type ConfigurablePipelineSettings } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
@@ -142,6 +142,26 @@ watch(
   },
   { immediate: true }
 );
+
+// Drawing mode lets the user drag a rectangle on the camera stream to set the crop region; the
+// stream component watches this flag and writes the resulting bounds back to the pipeline settings.
+const toggleCropDrawing = () => {
+  useStateStore().cropDrawingMode = !useStateStore().cropDrawingMode;
+};
+
+// Reset the crop region to the full frame. The frame-edge sentinel keeps the reset value
+// resolution-independent, exactly like the defaults.
+const resetCrop = () => {
+  useStateStore().cropDrawingMode = false;
+  useCameraSettingsStore().changeCurrentPipelineSetting(
+    { staticCropX: [0, FrameEdgeCropBound], staticCropY: [0, FrameEdgeCropBound] },
+    true
+  );
+};
+// Don't leave a stray drawing mode behind when the tab goes away.
+onBeforeUnmount(() => {
+  useStateStore().cropDrawingMode = false;
+});
 
 const { mdAndDown } = useDisplay();
 
@@ -311,6 +331,21 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropY: value }, false)
       "
     />
+    <v-row v-if="showStaticCrop" class="pt-2 pb-2 ma-0">
+      <v-btn size="small" color="primary" class="text-black" @click="toggleCropDrawing">
+        <v-icon start size="large">
+          {{ useStateStore().cropDrawingMode ? "mdi-close" : "mdi-selection-drag" }}
+        </v-icon>
+        {{ useStateStore().cropDrawingMode ? "Cancel Drawing" : "Draw Crop Region" }}
+      </v-btn>
+      <v-btn size="small" color="primary" class="text-black ml-2" @click="resetCrop">
+        <v-icon start size="large"> mdi-restore </v-icon>
+        Reset Crop
+      </v-btn>
+      <span v-if="useStateStore().cropDrawingMode" class="pl-3 align-self-center">
+        Drag a box on the camera stream to set the crop region
+      </span>
+    </v-row>
     <pv-switch
       v-if="useCameraSettingsStore().isDriverMode"
       v-model="useCameraSettingsStore().currentPipelineSettings.crosshair"

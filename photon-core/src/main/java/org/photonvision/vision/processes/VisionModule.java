@@ -236,7 +236,11 @@ public class VisionModule implements AutoCloseable {
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
+                    // When cropping, stream the full frame with the cropped-away area dimmed so the
+                    // crop can be seen in context; the pipeline itself only ever sees the cropped image.
+                    if (frame != null)
+                        inputVideoStreamer.accept(
+                                frame.contextColorImage != null ? frame.contextColorImage : frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
