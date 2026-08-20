@@ -18,26 +18,15 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
-import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.wpilib.vision.apriltag.AprilTagDetection;
 import org.wpilib.vision.apriltag.AprilTagDetector;
 
 public class AprilTagDetectionPipe
         extends CVPipe<
-                CVMat, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams>
-        implements Releasable {
-    /**
-     * Smallest image, measured after decimation, that the native detector can be handed. apriltag's
-     * gradient_clusters() reads out of bounds -- a SIGSEGV, not an exception -- once a decimated
-     * dimension is down to two pixels, which a small enough static crop can produce. Nothing is
-     * detectable at that size anyway, so we skip the detector rather than feed it such an image.
-     */
-    private static final int MIN_DECIMATED_DIMENSION = 4;
-
+                CVMat, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams> {
     private AprilTagDetector m_detector = new AprilTagDetector();
 
     public AprilTagDetectionPipe() {
