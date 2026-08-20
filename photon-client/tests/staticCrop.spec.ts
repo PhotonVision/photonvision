@@ -107,6 +107,43 @@ test.describe("Static Crop", () => {
     await expect(cropXMax).toHaveValue(String(frameWidth));
   });
 
+  test("the stream shows a black box around the cropped region", async ({ page }) => {
+    // With no crop, the stream's frame box is transparent, and the stream actually renders --
+    // Playwright visibility requires a non-empty bounding box, so this also guards against the
+    // stream layout collapsing to zero size.
+    const frame = page.locator(".stream-frame").first();
+    await expect(frame).not.toHaveCSS("background-color", "rgb(0, 0, 0)");
+    await expect(frame.locator("img")).toBeVisible();
+    expect((await frame.locator("img").boundingBox())?.height ?? 0).toBeGreaterThan(50);
+
+    await cropSwitch(page).check();
+
+    const cropXMax = cropRangeInputs(page, "Crop X Range").nth(1);
+    const frameWidth = Number(await cropXMax.getAttribute("max"));
+
+    // Crop away the right half of the frame.
+    await cropXMax.fill(String(Math.floor(frameWidth / 2)));
+    await cropXMax.press("Enter");
+
+    // The cropped-away area shows as a black box around the (repositioned) stream.
+    await expect(frame).toHaveCSS("background-color", "rgb(0, 0, 0)");
+    // The stream image itself now occupies only the left half of the frame box, and both the black
+    // box and the stream have real on-screen size.
+    const stream = frame.locator("img");
+    await expect(stream).toHaveAttribute("style", /width: 50%/);
+    await expect(stream).toHaveAttribute("style", /left: 0%/);
+    await expect(stream).toBeVisible();
+    const frameBox = await frame.boundingBox();
+    const streamBox = await stream.boundingBox();
+    expect(frameBox?.height ?? 0).toBeGreaterThan(50);
+    // The black box extends past the stream's right edge by about the cropped-away half.
+    expect((streamBox?.width ?? 0) * 2).toBeCloseTo(frameBox?.width ?? 0, -1);
+
+    // Turning the crop off removes the box.
+    await cropSwitch(page).uncheck();
+    await expect(frame).not.toHaveCSS("background-color", "rgb(0, 0, 0)");
+  });
+
   test("an interior crop bound survives a frame resize", async ({ page }) => {
     await cropSwitch(page).check();
 

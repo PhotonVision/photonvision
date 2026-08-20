@@ -173,18 +173,12 @@ public class VisionRunner implements AutoCloseable {
     }
 
     /**
-     * Side of the square tiles apriltag thresholds the decimated image in. The tiling it lands on
-     * depends on where the image starts, so cropping to an origin off that grid moves every tile
-     * relative to the tag and nudges the corner estimates -- and with them the reported pose -- by up
-     * to a percent. Snapping the crop origin to a tile boundary keeps turning a crop on from moving
-     * the numbers a tag reports.
+     * Side of the square tiles apriltag thresholds the decimated image in. Snapping the crop origin to this grid prevents crop's from changing reported pose.
      */
     private static final int APRILTAG_TILE_SIZE = 4;
 
     /**
-     * Smallest crop handed downstream, in pixels per axis. A sliver of an image is useless for vision
-     * and some native detectors read out of bounds when given one -- apriltag segfaults on an image
-     * only a few pixels tall -- so a smaller crop is grown back to this size.
+     * Smallest crop handed downstream, in pixels per axis, prevents downstream crashes.
      */
     private static final int MIN_CROP_DIMENSION = 16;
 

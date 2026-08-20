@@ -34,7 +34,6 @@ public class StaticCropPipe extends CVPipe<CVMat, CVMat, Rect> {
         return new CVMat(in.getMat().submat(params));
     }
 
-    // This pipe holds no native memory -- its output views belong to the caller
     @Override
     public void release() {}
 }
