@@ -149,6 +149,22 @@ const toggleCropDrawing = () => {
   useStateStore().cropDrawingMode = !useStateStore().cropDrawingMode;
 };
 
+// Drawing happens on the Raw stream (it carries the full frame), so it must actually be streaming
+// while the mode is active: force it on for the duration and restore the user's choice after --
+// the same dance color picking does.
+let preDrawInputShouldShow = true;
+watch(
+  () => useStateStore().cropDrawingMode,
+  (drawing) => {
+    if (drawing) {
+      preDrawInputShouldShow = useCameraSettingsStore().currentPipelineSettings.inputShouldShow;
+      useCameraSettingsStore().changeCurrentPipelineSetting({ inputShouldShow: true }, true);
+    } else {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ inputShouldShow: preDrawInputShouldShow }, true);
+    }
+  }
+);
+
 // Reset the crop region to the full frame. The frame-edge sentinel keeps the reset value
 // resolution-independent, exactly like the defaults.
 const resetCrop = () => {

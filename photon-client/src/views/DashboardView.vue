@@ -17,6 +17,9 @@ const cameraViewType = computed<number[]>({
     // Only show the input stream in Color Picking Mode
     if (useStateStore().colorPickingMode) return [0];
 
+    // Only show the input stream while drawing a crop region -- it carries the full frame
+    if (useStateStore().cropDrawingMode) return [0];
+
     // Only show the output stream in Driver Mode or Calibration Mode or Focus Mode
     if (
       useCameraSettingsStore().isDriverMode ||

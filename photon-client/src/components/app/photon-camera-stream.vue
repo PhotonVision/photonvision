@@ -37,6 +37,11 @@ const streamStyle = computed<StyleValue>(() => {
   return {};
 });
 
+// All crop visualization and interaction lives on the Raw stream: its content is the full frame
+// (with the cropped-away area dimmed by the backend), so the region can be shown in context. The
+// Processed stream simply shows the cropped image.
+const isRawStream = props.streamType === "Raw";
+
 // The full frame dimensions in the coordinate space the static crop applies in: after rotation, so
 // 90° rotations (modes 1 and 3) swap width and height.
 const rotatedResolution = computed<{ width: number; height: number } | null>(() => {
@@ -55,6 +60,13 @@ const containerStyle = computed<StyleValue>(() => {
   const resolution = rotatedResolution.value;
   if (resolution === null) {
     return { aspectRatio: "1/1" };
+  }
+  // The Processed stream contains only the cropped pixels, so its card takes the crop's shape.
+  const region = cropRegion.value;
+  if (!isRawStream && region !== null) {
+    return {
+      aspectRatio: `${Math.round(region.width * resolution.width)}/${Math.round(region.height * resolution.height)}`
+    };
   }
   return {
     aspectRatio: `${resolution.width}/${resolution.height}`
@@ -107,22 +119,21 @@ onMounted(() => {
 });
 onBeforeUnmount(() => containerResizeObserver?.disconnect());
 
-// With a crop active, the streamed image only contains the cropped region. Show it at its true
-// position inside a black, full-frame-shaped box so the cropped-away area stays visible. The box is
-// sized to contain-fit the measured container, exactly like object-fit would letterbox a full frame,
-// and the (flex-centering) container centers it. While a crop region is being drawn the box is sized
-// the same way even with no crop active, so pointer positions on it map linearly to frame pixels.
+// On the Raw stream, the frame box is sized to exactly the full frame's on-screen rectangle
+// (contain-fit to the measured container) whenever the crop region is shown or drawn, so the region
+// overlays and pointer positions map linearly to frame pixels. The Processed stream (and the
+// no-crop case) just fills the container and lets the stream contain-fit as always.
 const frameStyle = computed<StyleValue>(() => {
   const resolution = rotatedResolution.value;
   const container = containerSize.value;
   if (
+    !isRawStream ||
     (cropRegion.value === null && !useStateStore().cropDrawingMode) ||
     resolution === null ||
     container === null ||
     container.width <= 0 ||
     container.height <= 0
   ) {
-    // No crop: fill the container and let the stream contain-fit as always.
     return { position: "absolute", inset: "0" };
   }
   const scale = Math.min(container.width / resolution.width, container.height / resolution.height);
@@ -130,7 +141,6 @@ const frameStyle = computed<StyleValue>(() => {
     position: "relative",
     width: `${resolution.width * scale}px`,
     height: `${resolution.height * scale}px`,
-    backgroundColor: cropRegion.value !== null && props.streamType === "Processed" ? "black" : undefined,
     cursor: useStateStore().cropDrawingMode ? "crosshair" : undefined
   };
 });
@@ -151,7 +161,7 @@ const pointerFraction = (event: PointerEvent): { x: number; y: number } | null =
 };
 
 const handleDrawStart = (event: PointerEvent) => {
-  if (!useStateStore().cropDrawingMode) return;
+  if (!isRawStream || !useStateStore().cropDrawingMode) return;
   const point = pointerFraction(event);
   if (point === null) return;
   (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
@@ -213,22 +223,11 @@ const regionGeometryStyle = (region: { left: number; top: number; width: number;
   height: `${region.height * 100}%`
 });
 
-// The Processed stream only contains the cropped pixels, so its image is drawn at the region's true
-// position inside the black box. The Raw stream carries the full frame (with the cropped-away area
-// dimmed by the backend), so it always fills the frame box.
-const cropPositionStyle = computed<StyleValue>(() => {
-  const preview = previewRegion.value;
-  if (preview === null || props.streamType !== "Processed") {
-    return {};
-  }
-  return regionGeometryStyle(preview);
-});
-
-// The crop region outlined in PhotonVision yellow, on both stream types: around the image itself on
-// the Processed stream, and around the crisp area of the dimmed full frame on the Raw stream.
+// The crop region outlined in PhotonVision yellow, around the crisp area of the dimmed full frame
+// on the Raw stream.
 const cropOutlineStyle = computed<StyleValue>(() => {
   const preview = previewRegion.value;
-  if (preview === null) {
+  if (preview === null || !isRawStream) {
     return { display: "none" };
   }
   return {
@@ -263,7 +262,8 @@ const handleBoxStyle = computed<StyleValue>(() => {
 // moves the window around the frame, grabbing a border (or corner) resizes it. Available whenever a
 // crop is shown and no other stream interaction mode is active.
 const canAdjustCrop = computed(
-  () => cropRegion.value !== null && !useStateStore().cropDrawingMode && !useStateStore().colorPickingMode
+  () =>
+    isRawStream && cropRegion.value !== null && !useStateStore().cropDrawingMode && !useStateStore().colorPickingMode
 );
 
 // Which crop borders a drag adjusts; none selected means the whole region moves.
@@ -535,7 +535,7 @@ onBeforeUnmount(() => {
         draggable="false"
         :src="streamSrc"
         :alt="streamDesc"
-        :style="[streamStyle, cropPositionStyle]"
+        :style="streamStyle"
         @error="handleStreamError"
         @pointerdown="handleRegionPointerDown"
         @pointermove="handleRegionPointerMove"

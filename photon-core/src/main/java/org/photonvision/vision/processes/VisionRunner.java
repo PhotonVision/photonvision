@@ -36,10 +36,9 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipe.impl.CropPipe;
 import org.photonvision.vision.pipe.impl.HSVPipe;
-import org.photonvision.vision.pipe.impl.StaticCropPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
-import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
@@ -59,6 +58,7 @@ public class VisionRunner implements AutoCloseable {
     private final QuirkyCamera cameraQuirks;
     private final Supplier<Integer> fpsLimitSupplier;
     private final Supplier<Boolean> enabledSupplier;
+    private final Supplier<Boolean> inputStreamConsumedSupplier;
 
     private long loopCount;
 
@@ -82,7 +82,8 @@ public class VisionRunner implements AutoCloseable {
             QuirkyCamera cameraQuirks,
             VisionModuleChangeSubscriber changeSubscriber,
             Supplier<Integer> fpsLimitSupplier,
-            Supplier<Boolean> enabledSupplier) {
+            Supplier<Boolean> enabledSupplier,
+            Supplier<Boolean> inputStreamConsumedSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
@@ -90,6 +91,7 @@ public class VisionRunner implements AutoCloseable {
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.enabledSupplier = enabledSupplier;
+        this.inputStreamConsumedSupplier = inputStreamConsumedSupplier;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -172,72 +174,18 @@ public class VisionRunner implements AutoCloseable {
         }
     }
 
-    /**
-     * Side of the square tiles apriltag thresholds the decimated image in. Snapping the crop origin
-     * to this grid prevents crop's from changing reported pose.
-     */
-    private static final int APRILTAG_TILE_SIZE = 4;
-
-    /** Smallest crop handed downstream, in pixels per axis, prevents downstream crashes. */
-    private static final int MIN_CROP_DIMENSION = 16;
-
-    private final StaticCropPipe cropPipe = new StaticCropPipe();
+    private final CropPipe cropPipe = new CropPipe();
 
     /**
-     * Build the static crop rectangle from pipeline settings, or null if cropping is disabled or the
-     * configured region is degenerate. The ranges are stored as [min, max] pixel couples.
-     */
-    static Rect cropRectFromSettings(AdvancedPipelineSettings settings) {
-        if (!settings.staticCropEnabled) {
-            return null;
-        }
-
-        // A pixel bound is never negative. Dropping the sign rather than trusting it keeps a garbage
-        // bound (a value that overflowed on its way in, say) from being read as a sliver of a crop
-        // one pixel from the origin.
-        int xLow =
-                Math.max(0, Math.min(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
-        int xHigh =
-                Math.max(0, Math.max(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
-        int yLow =
-                Math.max(0, Math.min(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
-        int yHigh =
-                Math.max(0, Math.max(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
-
-        int width = xHigh - xLow;
-        int height = yHigh - yLow;
-
-        if (width <= 0 || height <= 0) {
-            return null;
-        }
-
-        if (settings instanceof AprilTagPipelineSettings tagSettings) {
-            // Grow the region up to the tile boundary below it rather than moving it, so the crop still
-            // covers everything that was asked for.
-            int tile = APRILTAG_TILE_SIZE * Math.max(1, tagSettings.decimate);
-            int alignedX = (xLow / tile) * tile;
-            int alignedY = (yLow / tile) * tile;
-
-            width += xLow - alignedX;
-            height += yLow - alignedY;
-            xLow = alignedX;
-            yLow = alignedY;
-        }
-
-        return new Rect(xLow, yLow, width, height);
-    }
-
-    /**
-     * Statically crop a captured frame: both images are cropped in place (identically, so their
-     * coordinates stay aligned) and the frame's static properties are replaced with ones describing
-     * the cropped image, keeping pose estimation consistent with the new framing.
+     * Statically crop a captured frame to the region configured in the pipe's params: both images are
+     * cropped in place (identically, so their coordinates stay aligned) and the frame's static
+     * properties are replaced with ones describing the cropped image, keeping pose estimation
+     * consistent with the new framing.
      *
-     * @param cropRect The requested crop, in the coordinate space of the (already-rotated) frame. It
-     *     is clamped to the frame bounds; null means no crop.
      * @return The cropped frame, or the frame untouched if there is nothing to do.
      */
-    static Frame cropFrame(StaticCropPipe cropPipe, Frame frame, Rect cropRect) {
-        return cropFrame(cropPipe, frame, cropRect, false);
+    static Frame cropFrame(CropPipe cropPipe, Frame frame) {
+        return cropFrame(cropPipe, frame, false);
     }
 
     /** How much the cropped-away area is dimmed in the input stream's context image. */
@@ -247,10 +195,10 @@ public class VisionRunner implements AutoCloseable {
      * @param keepContext Whether to also keep the full (uncropped) color image, with the cropped-away
      *     area dimmed, for the input stream to show the crop in context.
      */
-    static Frame cropFrame(StaticCropPipe cropPipe, Frame frame, Rect cropRect, boolean keepContext) {
+    static Frame cropFrame(CropPipe cropPipe, Frame frame, boolean keepContext) {
         var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
         Rect effectiveCrop =
-                clampCropToImage(cropRect, reference.getMat().cols(), reference.getMat().rows());
+                cropPipe.effectiveCrop(reference.getMat().cols(), reference.getMat().rows());
         if (effectiveCrop == null) {
             return frame;
         }
@@ -265,7 +213,6 @@ public class VisionRunner implements AutoCloseable {
             contextImage = new CVMat(dimmed);
         }
 
-        cropPipe.setParams(effectiveCrop);
         boolean cropped = cropInPlace(cropPipe, frame.colorImage);
         cropped |= cropInPlace(cropPipe, frame.processedImage);
         if (!cropped) {
@@ -292,7 +239,7 @@ public class VisionRunner implements AutoCloseable {
      *
      * @return Whether the image was actually cropped (an empty image is left untouched).
      */
-    private static boolean cropInPlace(StaticCropPipe cropPipe, CVMat image) {
+    private static boolean cropInPlace(CropPipe cropPipe, CVMat image) {
         var result = cropPipe.run(image);
         if (result.output == null) {
             return false;
@@ -304,42 +251,6 @@ public class VisionRunner implements AutoCloseable {
         cropped.copyTo(image.getMat());
         cropped.release();
         return true;
-    }
-
-    /**
-     * Clamp a requested crop rectangle to the bounds of an image of the given size, growing it to
-     * {@link #MIN_CROP_DIMENSION} per axis if it is smaller than that.
-     *
-     * @return The clamped rectangle, or null if the crop is empty or would cover the entire image (in
-     *     which case cropping is a no-op).
-     */
-    static Rect clampCropToImage(Rect cropRect, int imageCols, int imageRows) {
-        if (cropRect == null || imageCols <= 0 || imageRows <= 0) {
-            return null;
-        }
-
-        int x = Math.max(0, Math.min(cropRect.x, imageCols - 1));
-        int y = Math.max(0, Math.min(cropRect.y, imageRows - 1));
-        int width = Math.max(0, Math.min(cropRect.width, imageCols - x));
-        int height = Math.max(0, Math.min(cropRect.height, imageRows - y));
-
-        if (width <= 0 || height <= 0) {
-            return null;
-        }
-
-        // Grow a too-small crop, then slide it back inside the image if growing pushed it off the edge.
-        // An image smaller than the minimum can't be satisfied, so it caps out at the image itself.
-        width = Math.min(Math.max(width, MIN_CROP_DIMENSION), imageCols);
-        height = Math.min(Math.max(height, MIN_CROP_DIMENSION), imageRows);
-        x = Math.min(x, imageCols - width);
-        y = Math.min(y, imageRows - height);
-
-        // A crop covering the entire image is a no-op; skip it to avoid needless copies.
-        if (x == 0 && y == 0 && width == imageCols && height == imageRows) {
-            return null;
-        }
-
-        return new Rect(x, y, width, height);
     }
 
     private void update() {
@@ -384,7 +295,7 @@ public class VisionRunner implements AutoCloseable {
 
             frameSupplier.requestFrameThresholdType(wantedProcessType);
             var settings = pipeline.getSettings();
-            Rect cropRect = null;
+            boolean croppablePipeline = false;
             if (settings instanceof AdvancedPipelineSettings advanced) {
                 var hsvParams =
                         new HSVPipe.HSVParams(
@@ -392,7 +303,10 @@ public class VisionRunner implements AutoCloseable {
                 // TODO who should deal with preventing this from happening _every single loop_?
                 frameSupplier.requestHsvSettings(hsvParams);
 
-                cropRect = cropRectFromSettings(advanced);
+                // setParams re-derives the crop rectangle, keeping it in step with the settings, which
+                // are mutated in place as the user adjusts them.
+                cropPipe.setParams(new CropPipe.CropPipeParams(advanced));
+                croppablePipeline = true;
             }
             frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
             frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
@@ -400,7 +314,13 @@ public class VisionRunner implements AutoCloseable {
 
             // Grab the new camera frame, and statically crop it (a no-op when cropping is disabled).
             // The frame is already rotated, so the crop applies in the rotated coordinate space.
-            var frame = cropFrame(cropPipe, frameSupplier.get(), cropRect, settings.inputShouldShow);
+            var frame = frameSupplier.get();
+            if (croppablePipeline) {
+                // The dimmed full-frame context image exists only for the input stream's viewers --
+                // skip composing it when nothing is actually consuming that stream.
+                boolean keepContext = settings.inputShouldShow && inputStreamConsumedSupplier.get();
+                frame = cropFrame(cropPipe, frame, keepContext);
+            }
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {

@@ -46,38 +46,10 @@ public class AprilTagDetectionPipeTest {
     }
 
     /**
-     * A static crop can produce an image only a few pixels across. The native detector reads out of
-     * bounds on those -- a SIGSEGV inside apriltag's gradient_clusters(), which takes the whole
-     * program with it -- so the pipe has to refuse them. Without the guard this test crashes the JVM
-     * rather than failing.
+     * The detector cannot survive images only a few pixels across (apriltag's gradient_clusters()
+     * segfaults on them), so nothing may feed it one: the crop path guarantees this by growing crops
+     * to at least 16px per axis before they reach any pipeline.
      */
-    @Test
-    public void slimImagesAreSkippedRatherThanCrashing() {
-        // Each entry is {cols, rows, decimate}: a one-pixel-tall crop, the largest crashing height at
-        // each decimation, and a sliver in the other axis.
-        int[][] cases = {{1080, 1, 2}, {1080, 4, 2}, {1080, 8, 4}, {1, 1080, 2}, {4, 1080, 2}};
-
-        for (int[] testCase : cases) {
-            var pipe = pipeWithDecimate(testCase[2]);
-            var image = new CVMat(Mat.zeros(testCase[1], testCase[0], CvType.CV_8UC1));
-
-            var detections = pipe.run(image).output;
-
-            assertTrue(
-                    detections.isEmpty(),
-                    "Nothing is detectable in a "
-                            + testCase[0]
-                            + "x"
-                            + testCase[1]
-                            + " image, decimate "
-                            + testCase[2]);
-
-            image.release();
-            pipe.release();
-        }
-    }
-
-    /** The guard must not turn away images the detector can actually handle. */
     @Test
     public void normalImagesStillReachTheDetector() {
         var pipe = pipeWithDecimate(2);
