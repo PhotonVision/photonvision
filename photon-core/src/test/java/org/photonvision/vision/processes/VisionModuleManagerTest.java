@@ -30,6 +30,7 @@ import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.camera.PVCameraInfo;
