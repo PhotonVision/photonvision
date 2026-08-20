@@ -31,11 +31,32 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.*;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class VisionRunnerTest {
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
+    }
+
+    /**
+     * Stand-in for ObjectDetectionPipeline since we cannot load JNI libraries in some environments
+     * {@link VisionRunner#configureFrameProviderForPipeline}.
+     */
+    private static final class ObjectDetectionStubPipeline
+            extends CVPipeline<CVPipelineResult, AdvancedPipelineSettings> {
+        ObjectDetectionStubPipeline() {
+            super(ObjectDetectionPipeline.PROCESSING_TYPE);
+            this.settings = new ObjectDetectionPipelineSettings();
+        }
+
+        @Override
+        protected void setPipeParamsImpl() {}
+
+        @Override
+        protected CVPipelineResult process(Frame frame, AdvancedPipelineSettings settings) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     // TODO consider some sort of test fixture
@@ -87,16 +108,25 @@ public class VisionRunnerTest {
      * <p>Aruco's {@code debugThreshold} color-copy behavior is covered separately.
      */
     @SuppressWarnings("rawtypes")
-    private enum PipelineUnderTest {
+    public enum PipelineUnderTest {
         APRILTAG(AprilTagPipeline::new, false, true),
 
         ARUCO(ArucoPipeline::new, false, true),
         // When Aruco is used with debug threshold, we need to copy the color image
-        ARUCO_DEBUG(ArucoPipeline::new, true, true),
+        ARUCO_DEBUG(
+                () -> {
+                    ArucoPipeline pipeline = new ArucoPipeline();
+                    pipeline.getSettings().debugThreshold = true;
+                    return pipeline;
+                },
+                true,
+                true),
 
         REFLECTIVE(ReflectivePipeline::new, false, true),
         COLORED_SHAPE(ColoredShapePipeline::new, false, true),
-        OBJECT_DETECTION(ObjectDetectionPipeline::new, true, false),
+        // Real ObjectDetectionPipeline constructs ObjectDetectionPipe, which eagerly Model::load()s
+        // the default NN and requires detector JNI unavailable in CI.
+        OBJECT_DETECTION(ObjectDetectionStubPipeline::new, true, false),
         FOCUS(FocusPipeline::new, true, false),
         DRIVER_MODE(DriverModePipeline::new, true, false),
         CALIBRATE_3D(Calibrate3dPipeline::new, true, false);
@@ -126,14 +156,6 @@ public class VisionRunnerTest {
             var provider = new RecordingFrameProvider();
             pipeline.getSettings().inputShouldShow = inputShouldShow;
             pipeline.getSettings().outputShouldShow = outputShouldShow;
-
-            // Aruco with debug threshold is a special case
-            if (pipelineUnderTest == PipelineUnderTest.ARUCO_DEBUG) {
-                ArucoPipelineSettings arucoPipelineSettings =
-                        (ArucoPipelineSettings) pipeline.getSettings();
-
-                arucoPipelineSettings.debugThreshold = true;
-            }
 
             VisionRunner.configureFrameProviderForPipeline(provider, pipeline);
 
