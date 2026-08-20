@@ -120,11 +120,14 @@ public class VisionEstimation {
         if (knownTags.size() == 1) {
             var camToTag =
                     OpenCVHelp.solvePNP_SQUARE(cameraMatrix, distCoeffs, tagModel.vertices, points);
-            if (!camToTag.isPresent()) return Optional.empty();
+            if (!camToTag.isPresent()) {
+                return Optional.empty();
+            }
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.get().best.inverse());
             var altPose = new Pose3d();
-            if (camToTag.get().ambiguity != 0)
+            if (camToTag.get().ambiguity != 0) {
                 altPose = knownTags.get(0).pose.transformBy(camToTag.get().alt.inverse());
+            }
 
             var o = new Pose3d();
             return Optional.of(
@@ -138,9 +141,13 @@ public class VisionEstimation {
         // multi-tag pnp
         else {
             var objectTrls = new ArrayList<Translation3d>();
-            for (var tag : knownTags) objectTrls.addAll(tagModel.getFieldVertices(tag.pose));
+            for (var tag : knownTags) {
+                objectTrls.addAll(tagModel.getFieldVertices(tag.pose));
+            }
             var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, points);
-            if (camToOrigin.isEmpty()) return Optional.empty();
+            if (camToOrigin.isEmpty()) {
+                return Optional.empty();
+            }
             return Optional.of(
                     new PnpResult(
                             camToOrigin.get().best.inverse(),
@@ -230,7 +237,9 @@ public class VisionEstimation {
 
         // Affine corner locations
         var objectTrls = new ArrayList<Translation3d>();
-        for (var tag : knownTags) objectTrls.addAll(tagModel.getFieldVertices(tag.pose));
+        for (var tag : knownTags) {
+            objectTrls.addAll(tagModel.getFieldVertices(tag.pose));
+        }
         var field2points = new SimpleMatrix(4, points.length);
         for (int i = 0; i < objectTrls.size(); i++) {
             field2points.set(0, i, objectTrls.get(i).getX());

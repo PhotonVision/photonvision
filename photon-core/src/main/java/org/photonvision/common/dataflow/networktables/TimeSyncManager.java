@@ -65,9 +65,13 @@ public class TimeSyncManager {
 
     public synchronized long getOffset() {
         // if we're a client, return the offset to server time
-        if (m_client != null) return m_client.getOffset();
+        if (m_client != null) {
+            return m_client.getOffset();
+        }
         // if we're a server, our time (wpi::nt::Now) is the same as network time
-        if (m_server != null) return 0;
+        if (m_server != null) {
+            return 0;
+        }
 
         // ????? should never hit
         logger.error("Client and server and null?");

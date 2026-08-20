@@ -96,8 +96,9 @@ public class ArucoPoseEstimatorPipe
 
             // check if we got a NaN result
             reprojectionErrors.get(0, 0, reprojErrors);
-            if (!Double.isNaN(reprojErrors[0])) break;
-            else { // add noise and retry
+            if (!Double.isNaN(reprojErrors[0])) {
+                break;
+            } else { // add noise and retry
                 double[] br = imagePoints.get(0, 0);
                 br[0] -= 0.001;
                 br[1] -= 0.001;
@@ -106,8 +107,9 @@ public class ArucoPoseEstimatorPipe
         }
 
         // create AprilTagPoseEstimate with results
-        if (tvecs.isEmpty())
+        if (tvecs.isEmpty()) {
             return new AprilTagPoseEstimate(new Transform3d(), new Transform3d(), 0, 0);
+        }
         return new AprilTagPoseEstimate(
                 new Transform3d(tvecToTranslation3d(tvecs.get(0)), rvecToRotation3d(rvecs.get(0))),
                 new Transform3d(tvecToTranslation3d(tvecs.get(1)), rvecToRotation3d(rvecs.get(1))),
@@ -136,9 +138,13 @@ public class ArucoPoseEstimatorPipe
     @Override
     public void release() {
         imagePoints.release();
-        for (var m : rvecs) m.release();
+        for (var m : rvecs) {
+            m.release();
+        }
         rvecs.clear();
-        for (var m : tvecs) m.release();
+        for (var m : tvecs) {
+            m.release();
+        }
         tvecs.clear();
         rvec.release();
         tvec.release();

@@ -74,7 +74,9 @@ public class ShellExec {
      * @return process exit code
      */
     public int executeBashCommand(String command, boolean wait, boolean debug) throws IOException {
-        if (debug) logger.debug("Executing \"" + command + "\"");
+        if (debug) {
+            logger.debug("Executing \"" + command + "\"");
+        }
 
         boolean success = false;
         Runtime r = Runtime.getRuntime();
@@ -90,7 +92,9 @@ public class ShellExec {
         // Consume streams, older jvm's had a memory leak if streams were not read,
         // some other jvm+OS combinations may block unless streams are consumed.
         int retcode = doProcess(wait, process);
-        if (debug) logger.debug("Got exit code " + retcode);
+        if (debug) {
+            logger.debug("Got exit code " + retcode);
+        }
         return retcode;
     }
 
@@ -202,7 +206,9 @@ public class ShellExec {
                 BufferedReader br = new BufferedReader(isr);
                 String line;
                 while ((line = br.readLine()) != null) {
-                    if (output != null) output.append(line).append(NL);
+                    if (output != null) {
+                        output.append(line).append(NL);
+                    }
                 }
             } catch (IOException ex) {
                 // ex.printStackTrace();

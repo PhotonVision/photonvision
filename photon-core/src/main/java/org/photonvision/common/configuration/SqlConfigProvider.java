@@ -231,7 +231,9 @@ public class SqlConfigProvider extends ConfigProvider {
     public boolean saveToDisk() {
         logger.debug("Saving to disk");
         var conn = createConn();
-        if (conn == null) return false;
+        if (conn == null) {
+            return false;
+        }
 
         synchronized (m_mutex) {
             if (config == null) {
@@ -300,7 +302,9 @@ public class SqlConfigProvider extends ConfigProvider {
     public void load() {
         logger.debug("Loading config...");
         var conn = createConn();
-        if (conn == null) return;
+        if (conn == null) {
+            return;
+        }
 
         synchronized (m_mutex) {
             var hardwareConfig =
@@ -354,7 +358,9 @@ public class SqlConfigProvider extends ConfigProvider {
             logger.error("SQL Err getting file " + filename, e);
         } finally {
             try {
-                if (query != null) query.close();
+                if (query != null) {
+                    query.close();
+                }
             } catch (SQLException e) {
                 logger.error("SQL Err closing config file query " + filename, e);
             }
@@ -503,9 +509,15 @@ public class SqlConfigProvider extends ConfigProvider {
             }
         } finally {
             try {
-                if (statement1 != null) statement1.close();
-                if (statement2 != null) statement2.close();
-                if (statement3 != null) statement3.close();
+                if (statement1 != null) {
+                    statement1.close();
+                }
+                if (statement2 != null) {
+                    statement2.close();
+                }
+                if (statement3 != null) {
+                    statement3.close();
+                }
             } catch (SQLException e) {
                 logger.error("SQL Err closing global settings query ", e);
             }
@@ -544,7 +556,9 @@ public class SqlConfigProvider extends ConfigProvider {
             return false;
         } finally {
             try {
-                if (statement1 != null) statement1.close();
+                if (statement1 != null) {
+                    statement1.close();
+                }
                 conn.close();
             } catch (SQLException e) {
                 logger.error("SQL Error saving file " + fname, e);
@@ -695,7 +709,9 @@ public class SqlConfigProvider extends ConfigProvider {
             logger.error("Err querying database to load cameras: ", e);
         } finally {
             try {
-                if (query != null) query.close();
+                if (query != null) {
+                    query.close();
+                }
             } catch (SQLException e) {
                 logger.error("SQL Err closing connection while loading cameras ", e);
             }

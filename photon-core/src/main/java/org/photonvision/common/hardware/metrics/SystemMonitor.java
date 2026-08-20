@@ -353,7 +353,9 @@ public class SystemMonitor {
      */
     public double getUsedDiskPct() {
         double usedPct;
-        if (fs == null) return -1.0;
+        if (fs == null) {
+            return -1.0;
+        }
         try {
             double total = fs.getTotalSpace();
             // note: df matches better with fs.getUnallocatedSpace(), but this is more conservative

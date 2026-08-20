@@ -42,7 +42,9 @@ public class DataChangeService {
 
         public void stop() {
             for (int idx : idxs) {
-                if (idx < 0) continue;
+                if (idx < 0) {
+                    continue;
+                }
                 getInstance().subscribers.set(idx, null);
             }
         }
@@ -79,7 +81,9 @@ public class DataChangeService {
             try {
                 var taken = eventQueue.take();
                 for (var sub : subscribers) {
-                    if (sub == null) continue;
+                    if (sub == null) {
+                        continue;
+                    }
                     if (sub.wantedSources.contains(taken.sourceType)
                             && sub.wantedDestinations.contains(taken.destType)) {
                         sub.onDataChangeEvent(taken);

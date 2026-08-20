@@ -70,7 +70,9 @@ public class PipelineManager implements AutoCloseable {
 
         this.driverModePipeline.setSettings(driverSettings);
 
-        if (userPipelines.isEmpty()) addPipeline(PipelineType.AprilTag);
+        if (userPipelines.isEmpty()) {
+            addPipeline(PipelineType.AprilTag);
+        }
 
         calibration3dPipeline = new Calibrate3dPipeline();
 
@@ -98,7 +100,9 @@ public class PipelineManager implements AutoCloseable {
             case FOCUS_INDEX -> focusPipeline.getSettings();
             default -> {
                 for (var setting : userPipelineSettings) {
-                    if (setting.pipelineIndex == index) yield setting;
+                    if (setting.pipelineIndex == index) {
+                        yield setting;
+                    }
                 }
                 yield null;
             }
@@ -118,7 +122,9 @@ public class PipelineManager implements AutoCloseable {
             case FOCUS_INDEX -> focusPipeline.getSettings().pipelineNickname;
             default -> {
                 for (var setting : userPipelineSettings) {
-                    if (setting.pipelineIndex == index) yield setting.pipelineNickname;
+                    if (setting.pipelineIndex == index) {
+                        yield setting.pipelineNickname;
+                    }
                 }
                 yield null;
             }
@@ -278,7 +284,9 @@ public class PipelineManager implements AutoCloseable {
      * @param wantsCalibration True to enter calibration mode, false to exit calibration mode.
      */
     public void setCalibrationMode(boolean wantsCalibration) {
-        if (!wantsCalibration) calibration3dPipeline.finishCalibration();
+        if (!wantsCalibration) {
+            calibration3dPipeline.finishCalibration();
+        }
         setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastUserPipelineIdx);
     }
 

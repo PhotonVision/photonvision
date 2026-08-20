@@ -163,7 +163,9 @@ public class VideoSimUtil {
     public static void warp36h11TagImage(
             int tagId, Point[] dstPoints, boolean antialiasing, Mat destination) {
         Mat tagImage = kTag36h11Images.get(tagId);
-        if (tagImage == null || tagImage.empty()) return;
+        if (tagImage == null || tagImage.empty()) {
+            return;
+        }
         var tagPoints = new MatOfPoint2f(kTag36h11MarkerPts);
         // points of tag image corners
         var tagImageCorners = new MatOfPoint2f(getImageCorners(tagImage.size()));
@@ -206,7 +208,9 @@ public class VideoSimUtil {
             Imgproc.resize(
                     tagImage, scaledTagImage, new Size(), scaleFactor, scaleFactor, Imgproc.INTER_NEAREST);
             tagPoints.fromArray(get36h11MarkerPts(scaleFactor));
-        } else tagImage.assignTo(scaledTagImage);
+        } else {
+            tagImage.assignTo(scaledTagImage);
+        }
 
         // constrain the bounding rect inside of the destination image
         boundingRect.x -= 1;
@@ -223,7 +227,9 @@ public class VideoSimUtil {
         }
         boundingRect.width = Math.min(destination.width() - boundingRect.x, boundingRect.width);
         boundingRect.height = Math.min(destination.height() - boundingRect.y, boundingRect.height);
-        if (boundingRect.width <= 0 || boundingRect.height <= 0) return;
+        if (boundingRect.width <= 0 || boundingRect.height <= 0) {
+            return;
+        }
 
         // upscale if supersampling
         Mat scaledDstPts = new Mat();
@@ -233,7 +239,9 @@ public class VideoSimUtil {
             boundingRect.y *= supersampling;
             boundingRect.width *= supersampling;
             boundingRect.height *= supersampling;
-        } else dstPointMat.assignTo(scaledDstPts);
+        } else {
+            dstPointMat.assignTo(scaledDstPts);
+        }
 
         // update transform relative to expanded, scaled bounding rect
         Core.subtract(scaledDstPts, new Scalar(boundingRect.tl().x, boundingRect.tl().y), scaledDstPts);
@@ -495,7 +503,9 @@ public class VideoSimUtil {
             Mat destination) {
         resolution = Math.hypot(destination.size().height, destination.size().width) * resolution;
         List<Translation3d> pts = new ArrayList<>(trls);
-        if (isClosed) pts.add(pts.get(0));
+        if (isClosed) {
+            pts.add(pts.get(0));
+        }
         List<Point[]> polyPointList = new ArrayList<>();
 
         for (int i = 0; i < pts.size() - 1; i++) {
@@ -504,15 +514,21 @@ public class VideoSimUtil {
 
             // check if line is inside camera fulcrum
             var inter = prop.getVisibleLine(camRt, pta, ptb);
-            if (inter.getSecond() == null) continue;
+            if (inter.getSecond() == null) {
+                continue;
+            }
 
             // cull line to the inside of the camera fulcrum
             double inter1 = inter.getFirst();
             double inter2 = inter.getSecond();
             var baseDelta = ptb.minus(pta);
             var old_pta = pta;
-            if (inter1 > 0) pta = old_pta.plus(baseDelta.times(inter1));
-            if (inter2 < 1) ptb = old_pta.plus(baseDelta.times(inter2));
+            if (inter1 > 0) {
+                pta = old_pta.plus(baseDelta.times(inter1));
+            }
+            if (inter2 < 1) {
+                ptb = old_pta.plus(baseDelta.times(inter2));
+            }
             baseDelta = ptb.minus(pta);
 
             // project points into 2d
