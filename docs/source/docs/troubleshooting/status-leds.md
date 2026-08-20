@@ -14,6 +14,27 @@ myst:
 ---
 <!-- markdownlint-disable-next-line MD033 MD041 -->
 <style>
+  /* colors */
+
+  .green > svg.led, .green.led-bar {
+    --on-color: limegreen;
+  }
+  .blue > svg.led, .blue.led-bar {
+    --on-color: blue;
+  }
+  .yellow > svg.led, .yellow.led-bar {
+    --on-color: yellow;
+  }
+  .red > svg.led, .red.led-bar {
+    --on-color: red;
+  }
+
+  .anti-yellow > svg.led {
+    --on-color: transparent;
+    --off-color: yellow;
+  }
+
+  /* classic LEDS */
   svg.led {
     --off-color: transparent;
     color: var(--on-color);
@@ -45,36 +66,112 @@ myst:
     animation-duration: 0.90s;
   }
 
-  .green > svg.led {
-    --on-color: limegreen;
-  }
-  .blue > svg.led {
-    --on-color: blue;
-  }
-  .yellow > svg.led {
-    --on-color: yellow;
-  }
-  .red > svg.led {
-    --on-color: red;
-  }
-
-  .anti-yellow > svg.led {
-    --on-color: transparent;
-    --off-color: yellow;
-  }
-
   .off > svg.led {
     color: var(--off-color);
   }
+
+  /* LED bars */
+
+  .led-bar {
+    display: block;
+    box-sizing: border-box;
+    width: calc(20px * 11);
+    height: 14px;
+    border: 2px solid black;
+    border-radius: 7px;
+    overflow: clip;
+    background: darkgrey;
+    --off-color: transparent;
+  }
+
+  .led-bar:after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--on-color);
+    animation: 2s infinite cubic-bezier(0.37, 0, 0.63, 1);
+  }
+
+  .led-bar.throb:after {
+    animation-name: led-bar-throb;
+  }
+
+  @keyframes led-bar-throb {
+    0%, 100% {
+      background: var(--off-color);
+    }
+    50% {
+      background: var(--on-color);
+    }
+  }
+
+  .led-bar.phaser::after {
+    content: "";
+    background: linear-gradient(
+      to right,
+      transparent 15%,
+      var(--on-color) 50%,
+      transparent 65%
+    );
+    position: relative;
+    left: 0%;
+    background-repeat: no-repeat;
+    animation-name: led-bar-phaser;
+  }
+
+  @keyframes led-bar-phaser {
+    0%, 100% {
+      left: -50%;
+    }
+    25% {
+      transform: scaleX(1);
+    }
+    50% {
+      left: 50%;
+    }
+    75% {
+      transform: scaleX(-1);
+    }
+  }
+
+  .led-bar.blink:after {
+    animation-name: led-bar-blink;
+    animation-timing-function: steps(1);
+  }
+
+  @keyframes led-bar-blink {
+    60% {
+      background: var(--off-color);
+    }
+  }
+
+  .led-bar.off:after {
+    content: initial;
+  }
+
 </style>
 
 # Status LEDs
 
 PhotonVision has support for multiple kinds of status LEDs. Make sure you reference the correct table for the type present on your hardware.
 
-## RGB/Addressable LEDs
+## Addressable LEDs
+
+Used on Luma P2
 
 This applies to all types of addressable LEDs (APA102/SK9822)
+
+ Color  | Pattern | Preview                     | Status
+--------|---------|:---------------------------:|-----------------------------------------------
+ Green  | Phaser  | []{.led-bar .green .phaser} | Running normally, no targets visible
+ Blue   | Solid   | []{.led-bar .blue}          | Running normally, targets visible
+ Yellow | Throb   | []{.led-bar .yellow .throb} | NT Disconnected, no targets visible
+ Blue   | Throb   | []{.led-bar .blue .throb}   | NT Disconnected, targets visible
+ Red    | Blink   | []{.led-bar .red .blink}    | Initializing or faulted, not running
+ Off    | N/A     | []{.led-bar .off}           | No power or initialization fault, not running
+
+## RGB LEDs
 
  Color  | Flashing | Preview                   | Status
 --------|----------|:-------------------------:|-----------------------------------------------
