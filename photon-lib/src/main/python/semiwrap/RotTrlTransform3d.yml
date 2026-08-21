@@ -1,0 +1,24 @@
+classes:
+  photon::RotTrlTransform3d:
+    methods:
+      RotTrlTransform3d:
+        overloads:
+          const wpi::math::Rotation3d&, const wpi::math::Translation3d&:
+          const wpi::math::Pose3d&, const wpi::math::Pose3d&:
+          const wpi::math::Transform3d&:
+          "":
+      MakeRelativeTo:
+      Inverse:
+      GetTransform:
+      GetTranslation:
+      GetRotation:
+      Apply:
+        overloads:
+          const wpi::math::Translation3d& [const]:
+          const wpi::math::Rotation3d& [const]:
+          const wpi::math::Pose3d& [const]:
+      ApplyTrls:
+        overloads:
+          const std::vector<wpi::math::Translation3d>& [const]:
+          const std::vector<wpi::math::Rotation3d>& [const]:
+      ApplyPoses:

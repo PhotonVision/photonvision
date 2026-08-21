@@ -1,0 +1,45 @@
+classes:
+  photon::SimCameraProperties:
+    methods:
+      SimCameraProperties:
+        overloads:
+          "":
+          std::string, int, int:
+      SetCalibration:
+        overloads:
+          int, int, wpi::math::Rotation2d:
+          int, int, const Eigen::Matrix<double, 3, 3>&, const Eigen::Matrix<double, 8, 1>&:
+      SetCalibError:
+      SetFPS:
+      SetExposureTime:
+      SetAvgLatency:
+      SetLatencyStdDev:
+      GetResWidth:
+      GetResHeight:
+      GetResArea:
+      GetAspectRatio:
+      GetIntrinsics:
+      GetDistCoeffs:
+      GetFPS:
+      GetFrameSpeed:
+      GetExposureTime:
+      GetAverageLatency:
+      GetLatencyStdDev:
+      GetContourAreaPercent:
+      GetPixelYaw:
+      GetPixelPitch:
+      GetPixelRot:
+      GetCorrectedPixelRot:
+      GetHorizFOV:
+      GetVertFOV:
+      GetDiagFOV:
+      GetVisibleLine:
+      EstPixelNoise:
+      EstLatency:
+      EstSecUntilNextFrame:
+      PERFECT_90DEG:
+      PI4_LIFECAM_320_240:
+      PI4_LIFECAM_640_480:
+      LL2_640_480:
+      LL2_960_720:
+      LL2_1280_720:

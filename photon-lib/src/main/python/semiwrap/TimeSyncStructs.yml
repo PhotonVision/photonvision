@@ -1,0 +1,11 @@
+classes:
+  wpi::tsp::TspPing:
+    attributes:
+      version:
+      message_id:
+      client_time:
+  wpi::tsp::TspPong:
+    attributes:
+      server_time:
+    methods:
+      TspPong:

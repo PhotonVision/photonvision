@@ -1,0 +1,5 @@
+classes:
+  photon::TargetCorner_PhotonStruct:
+    attributes:
+      x:
+      y:

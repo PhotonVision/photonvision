@@ -1,0 +1,16 @@
+classes:
+  photon::CameraTargetRelation:
+    attributes:
+      camPose:
+      camToTarg:
+      camToTargDist:
+      camToTargDistXY:
+      camToTargYaw:
+      camToTargPitch:
+      camToTargAngle:
+      targToCam:
+      targToCamYaw:
+      targToCamPitch:
+      targToCamAngle:
+    methods:
+      CameraTargetRelation:
