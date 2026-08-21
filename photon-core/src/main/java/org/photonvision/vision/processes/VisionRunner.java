@@ -33,8 +33,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.ArucoPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
@@ -90,6 +92,33 @@ public class VisionRunner implements AutoCloseable {
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
         logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
         changeSubscriber.processSettingChanges();
+    }
+
+    static void configureFrameProviderForPipeline(FrameProvider frameSupplier, CVPipeline pipeline) {
+        var wantedProcessType = pipeline.getThresholdType();
+
+        frameSupplier.requestFrameThresholdType(wantedProcessType);
+        var settings = pipeline.getSettings();
+        if (settings instanceof AdvancedPipelineSettings advanced) {
+            var hsvParams =
+                    new HSVPipe.HSVParams(
+                            advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
+            frameSupplier.requestHsvSettings(hsvParams);
+        }
+
+        // Use the pipeline threshold type to determine whether a color image is required,
+        // so we can request the correct frame copies for CSI cameras.
+        boolean needsColor = wantedProcessType == FrameThresholdType.NONE;
+
+        if (settings instanceof ArucoPipelineSettings ar) {
+            needsColor = ar.debugThreshold;
+        }
+
+        frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
+        frameSupplier.requestFrameCopies(
+                settings.inputShouldShow || needsColor,
+                settings.outputShouldShow || wantedProcessType != FrameThresholdType.NONE);
+        frameSupplier.requestBlockForFrames(settings.blockForFrames);
     }
 
     public void startProcess() {
@@ -205,20 +234,7 @@ public class VisionRunner implements AutoCloseable {
             // be doing
             // (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
-            var wantedProcessType = pipeline.getThresholdType();
-
-            frameSupplier.requestFrameThresholdType(wantedProcessType);
-            var settings = pipeline.getSettings();
-            if (settings instanceof AdvancedPipelineSettings advanced) {
-                var hsvParams =
-                        new HSVPipe.HSVParams(
-                                advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
-                // TODO who should deal with preventing this from happening _every single loop_?
-                frameSupplier.requestHsvSettings(hsvParams);
-            }
-            frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
-            frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
-            frameSupplier.requestBlockForFrames(settings.blockForFrames);
+            configureFrameProviderForPipeline(frameSupplier, pipeline);
 
             // Grab the new camera frame
             var frame = frameSupplier.get();
