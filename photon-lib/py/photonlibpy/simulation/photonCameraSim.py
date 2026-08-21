@@ -1,4 +1,5 @@
 import math
+import typing
 
 import cscore as cs
 import cv2 as cv
@@ -263,7 +264,7 @@ class PhotonCameraSim:
         targets.sort(key=distance, reverse=True)
 
         # all targets visible before noise
-        visibleTgts: list[tuple[VisionTargetSim, np.ndarray]] = []
+        visibleTgts: list[typing.Tuple[VisionTargetSim, np.ndarray]] = []
         # all targets actually detected by camera (after noise)
         detectableTgts: list[PhotonTrackedTarget] = []
 

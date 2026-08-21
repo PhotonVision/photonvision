@@ -18,6 +18,7 @@ class VisionTargetSim:
         :param pose:  Pose3d of the target in field-relative coordinates
         :param model: TargetModel which describes the shape of the target
         """
+        ...
 
     @overload
     def __init__(self, pose: Pose3d, model: TargetModel, id: int) -> None:
@@ -28,6 +29,7 @@ class VisionTargetSim:
         :param model: TargetModel which describes the geometry of the target (tag)
         :param id:    The ID of this fiducial tag
         """
+        ...
 
     @overload
     def __init__(
@@ -43,6 +45,7 @@ class VisionTargetSim:
         :param objDetConf:    The object detection confidence, or -1.0 to compute from target area
                               in the camera's field of view
         """
+        ...
 
     def __init__(
         self,

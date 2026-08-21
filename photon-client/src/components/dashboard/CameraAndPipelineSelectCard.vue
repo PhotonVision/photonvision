@@ -191,7 +191,7 @@ const cancelChangePipelineType = () => {
   showPipelineTypeChangeDialog.value = false;
 };
 
-// Pipeline duplication
+// Pipeline duplication'
 const duplicateCurrentPipeline = () => {
   useCameraSettingsStore().duplicatePipeline(useCameraSettingsStore().currentCameraSettings.currentPipelineIndex);
 };

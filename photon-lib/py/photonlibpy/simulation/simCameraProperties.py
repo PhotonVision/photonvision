@@ -291,7 +291,7 @@ class SimCameraProperties:
 
     def getVisibleLine(
         self, camRt: RotTrlTransform3d, a: Translation3d, b: Translation3d
-    ) -> tuple[float | None, float | None]:
+    ) -> typing.Tuple[float | None, float | None]:
         """Determines where the line segment defined by the two given translations intersects the camera's
         frustum/field-of-vision, if at all.
 
@@ -351,7 +351,7 @@ class SimCameraProperties:
         intersections = [float("nan"), float("nan"), float("nan"), float("nan")]
 
         # Optionally 3x1 vector
-        ipts: list[np.ndarray | None] = [None, None, None, None]
+        ipts: typing.List[np.ndarray | None] = [None, None, None, None]
 
         # find intersections
         for i, normal in enumerate(self.viewplanes):

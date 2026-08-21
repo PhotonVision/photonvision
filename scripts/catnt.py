@@ -19,21 +19,21 @@ def list_topics(inst: ntcore.NetworkTableInstance, root: str):
             headers=["Topic Name", "Type", "Type String"],
         )
     )
-    print()
+    print("")
     print(f"Tables under {root}")
     print(tabulate([[table] for table in subtables], headers=["Table Name"]))
-    print()
+    print("")
 
 
 def print_topic(inst: ntcore.NetworkTableInstance, topic: str):
     sub = inst.getTopic(topic).genericSubscribe(
         options=ntcore.PubSubOptions(sendAll=True, pollStorage=20)
     )
-    print()
+    print("")
     print(f"Subscribed to {topic}, typestring '{sub.getTopic().getTypeString()}'")
     print("Properties:")
     print(sub.getTopic().getProperties())
-    print()
+    print("")
 
     start_time = ntcore._now()
     count = 0

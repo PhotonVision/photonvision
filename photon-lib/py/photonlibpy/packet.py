@@ -16,8 +16,7 @@
 ###############################################################################
 
 import struct
-from collections.abc import Callable
-from typing import Generic, Protocol, TypeVar
+from typing import Callable, Generic, Optional, Protocol, TypeVar
 
 import wpilib
 from wpimath import Quaternion, Rotation3d, Transform3d, Translation3d
@@ -208,13 +207,13 @@ class Packet:
             retList.append(shim())
         return retList
 
-    def decodeOptional(self, serde: Serde[T]) -> T | None:
+    def decodeOptional(self, serde: Serde[T]) -> Optional[T]:
         if self.decodeBoolean():
             return serde.unpack(self)
         else:
             return None
 
-    def decodeOptionalShimmed(self, shim: Callable[[], T]) -> T | None:
+    def decodeOptionalShimmed(self, shim: Callable[[], T]) -> Optional[T]:
         if self.decodeBoolean():
             return shim()
         else:
@@ -303,7 +302,7 @@ class Packet:
         for item in values:
             shim(item)
 
-    def encodeOptional(self, value: T | None, serde: Serde[T]):
+    def encodeOptional(self, value: Optional[T], serde: Serde[T]):
         """
         Encodes an optional value using a specific serializer.
         """
@@ -315,7 +314,7 @@ class Packet:
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
 
-    def encodeOptionalShimmed(self, value: T | None, shim: Callable[[T], None]):
+    def encodeOptionalShimmed(self, value: Optional[T], shim: Callable[[T], None]):
         """
         Encodes an optional value using a specific shimmed serializer.
         """

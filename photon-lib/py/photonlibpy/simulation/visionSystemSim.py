@@ -1,3 +1,4 @@
+import typing
 
 import wpilib
 from robotpy_apriltag import AprilTagFieldLayout
@@ -32,14 +33,14 @@ class VisionSystemSim:
         self.dbgField: Field2d = Field2d()
         self.bufferLength: seconds = 1.5
 
-        self.camSimMap: dict[str, PhotonCameraSim] = {}
-        self.camTrfMap: dict[
+        self.camSimMap: typing.Dict[str, PhotonCameraSim] = {}
+        self.camTrfMap: typing.Dict[
             PhotonCameraSim, TimeInterpolatablePose3dBuffer
         ] = {}
         self.robotPoseBuffer: TimeInterpolatablePose3dBuffer = (
             TimeInterpolatablePose3dBuffer(self.bufferLength)
         )
-        self.targetSets: dict[str, list[VisionTargetSim]] = {}
+        self.targetSets: typing.Dict[str, list[VisionTargetSim]] = {}
 
         self.tableName: str = "VisionSystemSim-" + visionSystemName
         wpilib.SmartDashboard.putData(self.tableName + "/Sim Field", self.dbgField)
@@ -312,7 +313,7 @@ class VisionSystemSim:
             lateRobotPose = self.getRobotPose(timestampCapture)
             robotToCamera = self.getRobotToCamera(camSim, timestampCapture)
             if lateRobotPose is None or robotToCamera is None:
-                return
+                return None
             lateCameraPose = lateRobotPose + robotToCamera
             cameraPoses2d.append(lateCameraPose.toPose2d())
 

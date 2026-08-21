@@ -1,5 +1,5 @@
 import math
-from typing import Self
+from typing import List, Self
 
 from wpimath import Pose3d, Rotation2d, Rotation3d, Translation3d
 from wpimath.units import meters
@@ -14,7 +14,7 @@ class TargetModel:
         """Default constructor for initialising internal class members. DO NOT USE THIS!!! USE THE createPlanar,
         createCuboid, createSpheroid or create Arbitrary
         """
-        self.vertices: list[Translation3d] = []
+        self.vertices: List[Translation3d] = []
         self.isPlanar = False
         self.isSpherical = False
 
@@ -101,7 +101,7 @@ class TargetModel:
         return tm
 
     @classmethod
-    def createArbitrary(cls, verts: list[Translation3d]) -> Self:
+    def createArbitrary(cls, verts: List[Translation3d]) -> Self:
         """Creates a target model from arbitrary 3d vertices. Automatically determines if the given
         vertices are planar(x == 0). More than 2 vertices must be given. If this is a planar model, the
         vertices should define a non-intersecting contour.
@@ -115,7 +115,7 @@ class TargetModel:
 
         return tm
 
-    def _common_construction(self, verts: list[Translation3d]) -> None:
+    def _common_construction(self, verts: List[Translation3d]) -> None:
         self.isSpherical = False
         if len(verts) <= 2:
             self.vertices = []
@@ -129,7 +129,7 @@ class TargetModel:
 
         self.vertices = verts
 
-    def getFieldVertices(self, targetPose: Pose3d) -> list[Translation3d]:
+    def getFieldVertices(self, targetPose: Pose3d) -> List[Translation3d]:
         """This target's vertices offset from its field pose.
 
         Note: If this target is spherical, use {@link #getOrientedPose(Translation3d,
@@ -165,7 +165,7 @@ class TargetModel:
         )
         return Pose3d(tgtTrl, orientToCam)
 
-    def getVertices(self) -> list[Translation3d]:
+    def getVertices(self) -> List[Translation3d]:
         return self.vertices
 
     def getIsPlanar(self) -> bool:
