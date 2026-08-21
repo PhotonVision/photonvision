@@ -296,14 +296,15 @@ public class Main implements Callable<Integer> {
         logger.debug("Loading NetworkManager...");
         NetworkManager.getInstance().reinitialize();
 
+        var conf = ConfigManager.getInstance().getConfig();
+
         logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
-                .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+                .setConfig(conf.getNetworkConfig());
         NetworkTablesManager.getInstance().registerTimedTasks();
 
         logger.debug("Loading HardwareManager...");
         // Force load the hardware manager
-        var conf = ConfigManager.getInstance().getConfig();
         HardwareManager.initialize(conf.getHardwareConfig(), conf.getHardwareSettings());
 
         if (smoketest) {
