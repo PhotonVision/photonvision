@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { PipelineType, type AprilTagPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useDisplay } from "vuetify";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -17,6 +19,38 @@ const { mdAndDown } = useDisplay();
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
+
+// Whether this platform has a supported neural network backend at all
+const mlSupported = computed<boolean>(() => useSettingsStore().general.supportedBackends.length > 0);
+
+// Filters out models that are not supported by the current backend, and returns a flattened list.
+const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  const isSupported = (model: ObjectDetectionModelProperties) => {
+    // Check if model's family is in the list of supported backends
+    return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
+  };
+
+  // Filter models where the family is supported and flatten the list
+  return availableModels.filter(isSupported);
+});
+
+const modelWrapper = computed<SelectItem<string>[]>(() =>
+  supportedModels.value.map((model) => ({
+    name: model.nickname,
+    value: model.modelPath
+  }))
+);
+
+const selectedModel = computed<string>({
+  get: () => currentPipelineSettings.value.tagModel?.modelPath ?? "",
+  set: (value) => {
+    const tagModel = supportedModels.value.find((supportedModel) => supportedModel.modelPath === value);
+    if (tagModel) {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ tagModel }, true);
+    }
+  }
+});
 </script>
 
 <template>
@@ -90,5 +124,46 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
       "
     />
+    <pv-switch
+      v-if="mlSupported"
+      v-model="currentPipelineSettings.mltagEnabled"
+      :switch-cols="interactiveCols"
+      label="ML Assisted Detection"
+      tooltip="Uses an object detection model to find tags in the image, then runs the AprilTag detector on each detected region"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mltagEnabled: value }, false)
+      "
+    />
+    <template v-if="mlSupported && currentPipelineSettings.mltagEnabled">
+      <pv-select
+        v-model="selectedModel"
+        label="Tag Model"
+        tooltip="The object detection model used to find AprilTags in the camera feed"
+        :select-cols="interactiveCols"
+        :items="modelWrapper"
+      />
+      <pv-slider
+        v-model="currentPipelineSettings.mlConfidence"
+        :slider-cols="interactiveCols"
+        label="Confidence"
+        tooltip="The minimum confidence for a tag detection to be considered valid. Bigger numbers mean fewer but more probable detections are allowed through."
+        :min="0"
+        :max="1"
+        :step="0.01"
+        @update:modelValue="
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlConfidence: value }, false)
+        "
+      />
+      <pv-slider
+        v-model="currentPipelineSettings.mlNms"
+        :slider-cols="interactiveCols"
+        label="NMS Threshold"
+        tooltip="The Non-Maximum Suppression threshold used to filter out overlapping detections. Higher values mean more detections are allowed through, but may result in false positives."
+        :min="0"
+        :max="1"
+        :step="0.01"
+        @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlNms: value }, false)"
+      />
+    </template>
   </div>
 </template>
