@@ -24,6 +24,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -33,6 +35,8 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipe.impl.CropPipe;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
@@ -54,6 +58,7 @@ public class VisionRunner implements AutoCloseable {
     private final QuirkyCamera cameraQuirks;
     private final Supplier<Integer> fpsLimitSupplier;
     private final Supplier<Boolean> enabledSupplier;
+    private final Supplier<Boolean> inputStreamConsumedSupplier;
 
     private long loopCount;
 
@@ -77,7 +82,8 @@ public class VisionRunner implements AutoCloseable {
             QuirkyCamera cameraQuirks,
             VisionModuleChangeSubscriber changeSubscriber,
             Supplier<Integer> fpsLimitSupplier,
-            Supplier<Boolean> enabledSupplier) {
+            Supplier<Boolean> enabledSupplier,
+            Supplier<Boolean> inputStreamConsumedSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
@@ -85,6 +91,7 @@ public class VisionRunner implements AutoCloseable {
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.enabledSupplier = enabledSupplier;
+        this.inputStreamConsumedSupplier = inputStreamConsumedSupplier;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -167,6 +174,85 @@ public class VisionRunner implements AutoCloseable {
         }
     }
 
+    private final CropPipe cropPipe = new CropPipe();
+
+    /**
+     * Statically crop a captured frame to the region configured in the pipe's params: both images are
+     * cropped in place (identically, so their coordinates stay aligned) and the frame's static
+     * properties are replaced with ones describing the cropped image, keeping pose estimation
+     * consistent with the new framing.
+     *
+     * @return The cropped frame, or the frame untouched if there is nothing to do.
+     */
+    static Frame cropFrame(CropPipe cropPipe, Frame frame) {
+        return cropFrame(cropPipe, frame, false);
+    }
+
+    /** How much the cropped-away area is dimmed in the input stream's context image. */
+    private static final double CONTEXT_DIM_FACTOR = 0.35;
+
+    /**
+     * @param keepContext Whether to also keep the full (uncropped) color image, with the cropped-away
+     *     area dimmed, for the input stream to show the crop in context.
+     */
+    static Frame cropFrame(CropPipe cropPipe, Frame frame, boolean keepContext) {
+        var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
+        Rect effectiveCrop =
+                cropPipe.effectiveCrop(reference.getMat().cols(), reference.getMat().rows());
+        if (effectiveCrop == null) {
+            return frame;
+        }
+
+        // Compose the context image while the color image is still full-size: dim a copy of the
+        // whole frame, then paste the crop region back in at full brightness.
+        CVMat contextImage = null;
+        if (keepContext && !frame.colorImage.getMat().empty()) {
+            Mat dimmed = new Mat();
+            frame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
+            frame.colorImage.getMat().submat(effectiveCrop).copyTo(dimmed.submat(effectiveCrop));
+            contextImage = new CVMat(dimmed);
+        }
+
+        boolean cropped = cropInPlace(cropPipe, frame.colorImage);
+        cropped |= cropInPlace(cropPipe, frame.processedImage);
+        if (!cropped) {
+            if (contextImage != null) contextImage.release();
+            return frame;
+        }
+
+        var croppedFrame =
+                new Frame(
+                        frame.sequenceID,
+                        frame.colorImage,
+                        frame.processedImage,
+                        frame.type,
+                        frame.timestampNanos,
+                        frame.frameStaticProperties != null
+                                ? frame.frameStaticProperties.crop(effectiveCrop)
+                                : null);
+        croppedFrame.contextColorImage = contextImage;
+        return croppedFrame;
+    }
+
+    /**
+     * Crop the given image in place to the pipe's currently configured rectangle.
+     *
+     * @return Whether the image was actually cropped (an empty image is left untouched).
+     */
+    private static boolean cropInPlace(CropPipe cropPipe, CVMat image) {
+        var result = cropPipe.run(image);
+        if (result.output == null) {
+            return false;
+        }
+
+        // submat() returns a view into the parent buffer, so clone before copying back onto it.
+        Mat cropped = result.output.getMat().clone();
+        result.output.release();
+        cropped.copyTo(image.getMat());
+        cropped.release();
+        return true;
+    }
+
     private void update() {
         // wait for the camera to connect
         while (!frameSupplier.isConnected() && !Thread.interrupted()) {
@@ -209,19 +295,32 @@ public class VisionRunner implements AutoCloseable {
 
             frameSupplier.requestFrameThresholdType(wantedProcessType);
             var settings = pipeline.getSettings();
+            boolean croppablePipeline = false;
             if (settings instanceof AdvancedPipelineSettings advanced) {
                 var hsvParams =
                         new HSVPipe.HSVParams(
                                 advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
                 // TODO who should deal with preventing this from happening _every single loop_?
                 frameSupplier.requestHsvSettings(hsvParams);
+
+                // setParams re-derives the crop rectangle, keeping it in step with the settings, which
+                // are mutated in place as the user adjusts them.
+                cropPipe.setParams(new CropPipe.CropPipeParams(advanced));
+                croppablePipeline = true;
             }
             frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
             frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
             frameSupplier.requestBlockForFrames(settings.blockForFrames);
 
-            // Grab the new camera frame
+            // Grab the new camera frame, and statically crop it (a no-op when cropping is disabled).
+            // The frame is already rotated, so the crop applies in the rotated coordinate space.
             var frame = frameSupplier.get();
+            if (croppablePipeline) {
+                // The dimmed full-frame context image exists only for the input stream's viewers --
+                // skip composing it when nothing is actually consuming that stream.
+                boolean keepContext = settings.inputShouldShow && inputStreamConsumedSupplier.get();
+                frame = cropFrame(cropPipe, frame, keepContext);
+            }
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {

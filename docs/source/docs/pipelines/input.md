@@ -1,6 +1,6 @@
 # Camera Tuning / Input
 
-PhotonVision's "Input" tab contains settings that affect the image captured by the currently selected camera. This includes camera exposure and brightness, as well as resolution and orientation.
+PhotonVision's "Input" tab contains settings that affect the image captured by the currently selected camera. This includes camera exposure and brightness, as well as resolution, orientation, and static cropping.
 
 ## Resolution
 

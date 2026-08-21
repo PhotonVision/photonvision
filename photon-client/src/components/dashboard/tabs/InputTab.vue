@@ -3,7 +3,10 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
-import { computed } from "vue";
+import PvRangeSlider from "@/components/common/pv-range-slider.vue";
+import { computed, onBeforeUnmount, watch } from "vue";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+import { FrameEdgeCropBound, type ConfigurablePipelineSettings } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";
@@ -66,6 +69,116 @@ const currentStreamResolutionIndex = computed<number>({
     });
   }
 });
+
+const showStaticCrop = computed(
+  () =>
+    !useCameraSettingsStore().isDriverMode &&
+    !useCameraSettingsStore().isCalibrationMode &&
+    !useCameraSettingsStore().isFocusMode
+);
+
+// The crop is applied after rotation, so its bounds are the rotated frame dimensions. 90° rotations
+// (rotation modes 1 and 3) swap the width and height.
+const croppableResolution = computed<{ width: number; height: number }>(() => {
+  const resolution = useCameraSettingsStore().currentVideoFormat.resolution;
+  const rotation = useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode;
+  return rotation === 1 || rotation === 3
+    ? { width: resolution.height, height: resolution.width }
+    : { width: resolution.width, height: resolution.height };
+});
+
+const cropBounds = (range: WebsocketNumberPair | [number, number] | undefined): [number, number] =>
+  Object.values(range || { first: 0, second: FrameEdgeCropBound }) as [number, number];
+
+// The stored upper bounds default to a sentinel larger than any frame (the backend clamps the crop to
+// the frame edge), so clamp into the frame here: an unconfigured crop reads as the full 0-to-res
+// range instead of a value the slider can't display.
+const clampCropRange = (range: WebsocketNumberPair | [number, number] | undefined, max: number): [number, number] =>
+  cropBounds(range).map((bound) => Math.max(0, Math.min(bound, max))) as [number, number];
+
+const staticCropX = computed<[number, number]>({
+  get: () =>
+    clampCropRange(useCameraSettingsStore().currentPipelineSettings.staticCropX, croppableResolution.value.width),
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.staticCropX = v)
+});
+const staticCropY = computed<[number, number]>({
+  get: () =>
+    clampCropRange(useCameraSettingsStore().currentPipelineSettings.staticCropY, croppableResolution.value.height),
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.staticCropY = v)
+});
+
+// The stored crop doesn't know the frame size, so changing the resolution (or rotating the frame) can
+// leave bounds outside it -- and clamping them for display isn't enough, because the stored setting is
+// what the next frame size is applied to. An upper bound that was sitting on the frame edge means "the
+// whole frame", so store it as the frame-edge sentinel: it then shrinks and grows with the frame
+// instead of freezing at the pixel count of whichever resolution was selected when it was last set.
+// Interior bounds are the ones the user actually picked, so they are left alone.
+watch(
+  [() => croppableResolution.value.width, () => croppableResolution.value.height],
+  ([width, height], [oldWidth, oldHeight] = [width, height]) => {
+    // No camera or no video mode yet -- there's nothing meaningful to clamp against.
+    if (width <= 0 || height <= 0) return;
+
+    const settings = useCameraSettingsStore().currentPipelineSettings;
+    const changes: ConfigurablePipelineSettings = {};
+
+    for (const [axis, max, oldMax] of [
+      ["staticCropX", width, oldWidth],
+      ["staticCropY", height, oldHeight]
+    ] as ["staticCropX" | "staticCropY", number, number][]) {
+      const [first, second] = cropBounds(settings[axis]);
+      const updated: [number, number] = [
+        // A start point past the end of the frame is meaningless, so pull it inside.
+        Math.max(0, Math.min(first, max)),
+        // At or past the smaller of the two frames, the bound either covered the old frame's edge or
+        // no longer fits in the new one. Either way it belongs on the edge from here on.
+        second >= Math.min(oldMax, max) ? FrameEdgeCropBound : second
+      ];
+
+      if (updated[0] !== first || updated[1] !== second) changes[axis] = updated;
+    }
+
+    if (Object.keys(changes).length) useCameraSettingsStore().changeCurrentPipelineSetting(changes);
+  },
+  { immediate: true }
+);
+
+// Drawing mode lets the user drag a rectangle on the camera stream to set the crop region; the
+// stream component watches this flag and writes the resulting bounds back to the pipeline settings.
+const toggleCropDrawing = () => {
+  useStateStore().cropDrawingMode = !useStateStore().cropDrawingMode;
+};
+
+// Drawing happens on the Raw stream (it carries the full frame), so it must actually be streaming
+// while the mode is active: force it on for the duration and restore the user's choice after --
+// the same dance color picking does.
+let preDrawInputShouldShow = true;
+watch(
+  () => useStateStore().cropDrawingMode,
+  (drawing) => {
+    if (drawing) {
+      preDrawInputShouldShow = useCameraSettingsStore().currentPipelineSettings.inputShouldShow;
+      useCameraSettingsStore().changeCurrentPipelineSetting({ inputShouldShow: true }, true);
+    } else {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ inputShouldShow: preDrawInputShouldShow }, true);
+    }
+  }
+);
+
+// Reset the crop region to the full frame. The frame-edge sentinel keeps the reset value
+// resolution-independent, exactly like the defaults.
+const resetCrop = () => {
+  useStateStore().cropDrawingMode = false;
+  useCameraSettingsStore().changeCurrentPipelineSetting(
+    { staticCropX: [0, FrameEdgeCropBound], staticCropY: [0, FrameEdgeCropBound] },
+    true
+  );
+};
+// Don't leave a stray drawing mode behind when the tab goes away.
+onBeforeUnmount(() => {
+  useStateStore().cropDrawingMode = false;
+});
+
 const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
@@ -196,6 +309,59 @@ const interactiveCols = computed(() =>
       :items="streamResolutions"
       :select-cols="interactiveCols"
     />
+    <pv-switch
+      v-if="showStaticCrop"
+      v-model="useCameraSettingsStore().currentPipelineSettings.staticCropEnabled"
+      label="Static Crop"
+      :switch-cols="interactiveCols"
+      tooltip="Crops the camera frame to a fixed region before processing. Camera calibration is adjusted so 3D pose estimation stays accurate."
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropEnabled: args }, false)
+      "
+    />
+    <pv-range-slider
+      v-if="showStaticCrop"
+      v-model="staticCropX"
+      label="Crop X Range"
+      tooltip="Left and right pixel bounds of the crop region (after rotation)"
+      :disabled="!useCameraSettingsStore().currentPipelineSettings.staticCropEnabled"
+      :min="0"
+      :max="croppableResolution.width"
+      :step="1"
+      :slider-cols="interactiveCols"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropX: value }, false)
+      "
+    />
+    <pv-range-slider
+      v-if="showStaticCrop"
+      v-model="staticCropY"
+      label="Crop Y Range"
+      tooltip="Top and bottom pixel bounds of the crop region (after rotation)"
+      :disabled="!useCameraSettingsStore().currentPipelineSettings.staticCropEnabled"
+      :min="0"
+      :max="croppableResolution.height"
+      :step="1"
+      :slider-cols="interactiveCols"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropY: value }, false)
+      "
+    />
+    <v-row v-if="showStaticCrop" class="pt-2 pb-2 ma-0">
+      <v-btn size="small" color="primary" class="text-black" @click="toggleCropDrawing">
+        <v-icon start size="large">
+          {{ useStateStore().cropDrawingMode ? "mdi-close" : "mdi-selection-drag" }}
+        </v-icon>
+        {{ useStateStore().cropDrawingMode ? "Cancel Drawing" : "Draw Crop Region" }}
+      </v-btn>
+      <v-btn size="small" color="primary" class="text-black ml-2" @click="resetCrop">
+        <v-icon start size="large"> mdi-restore </v-icon>
+        Reset Crop
+      </v-btn>
+      <span v-if="useStateStore().cropDrawingMode" class="pl-3 align-self-center">
+        Drag a box on the camera stream to set the crop region
+      </span>
+    </v-row>
     <pv-switch
       v-if="useCameraSettingsStore().isDriverMode"
       v-model="useCameraSettingsStore().currentPipelineSettings.crosshair"
