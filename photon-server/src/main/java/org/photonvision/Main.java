@@ -299,8 +299,7 @@ public class Main implements Callable<Integer> {
         var conf = ConfigManager.getInstance().getConfig();
 
         logger.debug("Loading NetworkTablesManager...");
-        NetworkTablesManager.getInstance()
-                .setConfig(conf.getNetworkConfig());
+        NetworkTablesManager.getInstance().setConfig(conf.getNetworkConfig());
         NetworkTablesManager.getInstance().registerTimedTasks();
 
         logger.debug("Loading HardwareManager...");
