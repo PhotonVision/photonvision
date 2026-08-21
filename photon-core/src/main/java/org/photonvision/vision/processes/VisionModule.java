@@ -44,6 +44,7 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.DuplicateVisionSource;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.photonvision.vision.frame.Frame;
@@ -507,6 +508,31 @@ public class VisionModule implements AutoCloseable {
         return true;
     }
 
+    /**
+     * Copy the current camera hardware settings (exposure, brightness, gain, white balance, video
+     * mode index, etc.) from another module's current pipeline settings into this module's current
+     * pipeline settings.
+     *
+     * <p>Used to keep a duplicate camera's displayed/stored settings in sync with its source, since
+     * {@link org.photonvision.vision.camera.DuplicateSettables} can't report the source's live values
+     * through getters for anything but video mode and exposure/white-balance range.
+     *
+     * @param sourceModule The module (source camera) to copy settings from
+     */
+    public void syncCameraSettingsFromSource(VisionModule sourceModule) {
+        var src = sourceModule.pipelineManager.getCurrentPipelineSettings();
+        var dst = this.pipelineManager.getCurrentPipelineSettings();
+        for (var field : src.getClass().getFields()) {
+            if (!field.getName().startsWith("camera")) continue;
+            try {
+                field.set(dst, field.get(src));
+            } catch (IllegalAccessException e) {
+                logger.error("Failed to sync camera setting " + field.getName(), e);
+            }
+        }
+        saveAndBroadcastAll();
+    }
+
     private boolean camShouldControlLEDs() {
         // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use
         // for
@@ -624,6 +650,20 @@ public class VisionModule implements AutoCloseable {
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
+
+        // Set duplicate camera information
+        if (visionSource instanceof DuplicateVisionSource duplicateSource) {
+            ret.isDuplicateCamera = true;
+            ret.inputSettingsReadOnly = true;
+            var source = duplicateSource.getSourceVisionSource();
+            ret.sourceUniqueName = source.getCameraConfiguration().uniqueName;
+            ret.sourceCameraNickname = source.getCameraConfiguration().nickname;
+        } else {
+            ret.isDuplicateCamera = false;
+            ret.inputSettingsReadOnly = false;
+            ret.sourceUniqueName = null;
+            ret.sourceCameraNickname = null;
+        }
 
         return ret;
     }

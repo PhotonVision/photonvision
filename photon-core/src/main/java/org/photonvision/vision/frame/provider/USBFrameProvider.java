@@ -30,31 +30,47 @@ import org.wpilib.vision.camera.UsbCamera;
 import org.wpilib.vision.stream.CameraServer;
 
 public class USBFrameProvider extends CpuImageProcessor {
-    private final Logger logger;
+    protected final Logger logger;
 
-    private UsbCamera camera = null;
-    private CvSink cvSink = null;
-
-    @SuppressWarnings("SpellCheckingInspection")
-    private VisionSourceSettables settables;
-
-    private Runnable connectedCallback;
-
-    private long lastTime = 0;
+    protected UsbCamera camera = null;
+    protected CvSink cvSink = null;
 
     @SuppressWarnings("SpellCheckingInspection")
-    public USBFrameProvider(
-            UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
+    protected VisionSourceSettables settables;
+
+    protected Runnable connectedCallback;
+
+    protected long lastTime = 0;
+
+    /**
+     * Protected constructor for subclasses that want to provide their own CvSink. Used by
+     * DuplicateFrameProvider to create a unique CvSink and avoid CameraServer caching.
+     */
+    protected USBFrameProvider(
+            UsbCamera camera,
+            CvSink cvSink,
+            VisionSourceSettables visionSettables,
+            Runnable connectedCallback,
+            String loggerName) {
         this.camera = camera;
-        this.cvSink = CameraServer.getVideo(this.camera);
-        this.logger =
-                new Logger(
-                        USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
+        this.cvSink = cvSink;
+        this.logger = new Logger(USBFrameProvider.class, loggerName, LogGroup.Camera);
         this.cvSink.setEnabled(true);
 
         this.settables = visionSettables;
 
         this.connectedCallback = connectedCallback;
+    }
+
+    @SuppressWarnings("SpellCheckingInspection")
+    public USBFrameProvider(
+            UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
+        this(
+                camera,
+                CameraServer.getVideo(camera),
+                visionSettables,
+                connectedCallback,
+                visionSettables.getConfiguration().nickname);
     }
 
     final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;

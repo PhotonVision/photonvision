@@ -99,6 +99,21 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     hasConnected(): boolean {
       return this.currentCameraSettings.hasConnected;
+    },
+    cameraIsDuplicate(): boolean {
+      return this.currentCameraSettings.isDuplicateCamera || false;
+    },
+    getSourceCameraName(): string | null {
+      if (!this.cameraIsDuplicate) return null;
+      return this.currentCameraSettings.sourceCameraNickname || null;
+    },
+    // Duplicate cameras are only ever created from a USB source (backend enforces this), so a
+    // duplicate's underlying hardware is USB even though its own matchedCameraInfo.type is
+    // "PVDuplicateCameraInfo".
+    isUsbCamera(): boolean {
+      return (
+        this.currentCameraSettings.matchedCameraInfo.type === "PVCameraInfo.PVUsbCameraInfo" || this.cameraIsDuplicate
+      );
     }
   },
   actions: {
@@ -145,7 +160,11 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           isEnabled: d.isEnabled,
           isConnected: d.isConnected,
           hasConnected: d.hasConnected,
-          mismatch: d.mismatch
+          mismatch: d.mismatch,
+          isDuplicateCamera: d.isDuplicateCamera || false,
+          sourceUniqueName: d.sourceUniqueName,
+          sourceCameraNickname: d.sourceCameraNickname,
+          inputSettingsReadOnly: d.inputSettingsReadOnly || false
         };
         return acc;
       }, {});
@@ -359,6 +378,18 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         this.currentCameraSettings.nickname = newName;
       }
       return axios.post("/settings/camera/setNickname", payload);
+    },
+    /**
+     * Create a duplicate camera from an existing source camera.
+     *
+     * @param sourceUniqueName the unique name of the source camera to duplicate.
+     * @return HTTP request promise to the backend with the new duplicate's uniqueName
+     */
+    async createDuplicateCamera(sourceUniqueName: string) {
+      const payload = {
+        cameraUniqueName: sourceUniqueName
+      };
+      return axios.post("/utils/duplicateCamera", payload);
     },
     /**
      * Start the 3D calibration process for the provided camera.

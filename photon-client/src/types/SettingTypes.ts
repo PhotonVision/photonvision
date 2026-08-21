@@ -75,29 +75,41 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
+// NOTE: these discriminant values must match what avaje-jsonb actually serializes on the
+// backend, which is the fully-qualified nested class name (e.g. "PVCameraInfo.PVUsbCameraInfo"),
+// not the bare simple name. See PVCameraInfo.java's generated JSON adapter.
 interface PVCameraInfoBase {
-  type: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+  type:
+    | "PVCameraInfo.PVUsbCameraInfo"
+    | "PVCameraInfo.PVCSICameraInfo"
+    | "PVCameraInfo.PVFileCameraInfo"
+    | "PVCameraInfo.PVDuplicateCameraInfo";
   path: string;
   name: string;
   uniquePath: string;
 }
 
 export interface PVUsbCameraInfo extends PVCameraInfoBase {
-  type: "PVUsbCameraInfo";
+  type: "PVCameraInfo.PVUsbCameraInfo";
   dev: number;
   otherPaths: string[];
   vendorId: number;
   productId: number;
 }
 export interface PVCSICameraInfo extends PVCameraInfoBase {
-  type: "PVCSICameraInfo";
+  type: "PVCameraInfo.PVCSICameraInfo";
   baseName: string;
 }
 export interface PVFileCameraInfo extends PVCameraInfoBase {
-  type: "PVFileCameraInfo";
+  type: "PVCameraInfo.PVFileCameraInfo";
 }
 
-export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
+export interface PVDuplicateCameraInfo extends PVCameraInfoBase {
+  type: "PVCameraInfo.PVDuplicateCameraInfo";
+  sourceUniqueName: string;
+}
+
+export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | PVDuplicateCameraInfo;
 
 export interface VsmState {
   disabledConfigs: WebsocketCameraSettingsUpdate[];
@@ -265,6 +277,11 @@ export interface UiCameraConfiguration {
   isConnected: boolean;
   hasConnected: boolean;
   mismatch: boolean;
+
+  isDuplicateCamera: boolean;
+  sourceUniqueName?: string;
+  sourceCameraNickname?: string;
+  inputSettingsReadOnly: boolean;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -422,7 +439,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   minWhiteBalanceTemp: 2000,
   maxWhiteBalanceTemp: 10000,
   matchedCameraInfo: {
-    type: "PVFileCameraInfo",
+    type: "PVCameraInfo.PVFileCameraInfo",
     name: "Foobar",
     path: "/dev/foobar",
     uniquePath: "/dev/foobar2"
@@ -431,7 +448,9 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   isEnabled: true,
   isConnected: true,
   hasConnected: true,
-  mismatch: false
+  mismatch: false,
+  isDuplicateCamera: false,
+  inputSettingsReadOnly: false
 });
 
 export enum CalibrationBoardTypes {
