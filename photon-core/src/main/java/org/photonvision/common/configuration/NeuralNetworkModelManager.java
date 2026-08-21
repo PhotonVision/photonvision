@@ -152,6 +152,26 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "apriltagV4-yolo11.rknn"),
+                        "AprilTag v4",
+                        new LinkedList<String>(List.of("apriltag")),
+                        640,
+                        640,
+                        Family.RKNN,
+                        Version.YOLOV11));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "apriltagV4-yolo11.tflite"),
+                        "AprilTag v4",
+                        new LinkedList<String>(List.of("apriltag")),
+                        640,
+                        640,
+                        Family.RUBIK,
+                        Version.YOLOV11));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.rknn"),
                         "COCO",
                         cocoLabels,

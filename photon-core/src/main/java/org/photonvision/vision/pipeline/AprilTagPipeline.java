@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -30,14 +31,20 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.objects.Model;
+import org.photonvision.vision.objects.NullModel;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.AprilTagDetectionPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
+import org.photonvision.vision.pipe.impl.CropPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
+import org.photonvision.vision.pipe.impl.ObjectDetectionPipe;
+import org.photonvision.vision.pipe.impl.ObjectDetectionPipe.ObjectDetectionPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
@@ -59,6 +66,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             new AprilTagPoseEstimatorPipe();
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+    private final ObjectDetectionPipe objectDetectionPipe = new ObjectDetectionPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
 
@@ -128,6 +136,23 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl, tagModel));
             }
         }
+
+        if (settings.mltagEnabled) {
+            Optional<Model> selectedModel =
+                    settings.tagModel != null
+                            ? NeuralNetworkModelManager.getInstance().getModel(settings.tagModel.modelPath())
+                            : Optional.empty();
+
+            if (selectedModel.isEmpty()) {
+                logger.error("ML Tag is enabled but no model is found.");
+            }
+
+            objectDetectionPipe.setParams(
+                    new ObjectDetectionPipeParams(
+                            settings.mlConfidence,
+                            settings.mlNms,
+                            selectedModel.orElseGet(NullModel::getInstance)));
+        }
     }
 
     @Override
@@ -139,11 +164,58 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
-        CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
-                aprilTagDetectionPipe.run(frame.processedImage);
-        sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+        List<AprilTagDetection> detections = new ArrayList<>();
+        boolean mltagNoneFound = true;
+        if (settings.mltagEnabled) {
+            var odResults = objectDetectionPipe.run(frame.colorImage);
+            sumPipeNanosElapsed += odResults.nanosElapsed;
+            var inputMat = frame.processedImage.getMat();
+            for (var result : odResults.output) {
+                var bbox = result.bbox().boundingRect();
+                var cropRect = CropPipe.clampCropToImage(bbox, inputMat.cols(), inputMat.rows());
+                var cropped =
+                        cropRect != null ? new CVMat(inputMat.submat(cropRect)) : frame.processedImage;
 
-        List<AprilTagDetection> detections = tagDetectionPipeResult.output;
+                CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
+                        aprilTagDetectionPipe.run(cropped);
+                sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+
+                if (cropped != frame.processedImage) {
+                    cropped.release();
+                }
+
+                double offsetX = cropRect != null ? cropRect.x : 0;
+                double offsetY = cropRect != null ? cropRect.y : 0;
+                for (var tagDetection : tagDetectionPipeResult.output) {
+                    var corners = tagDetection.getCorners();
+                    var newCorners = new double[8];
+                    for (var i = 0; i < corners.length; i += 2) {
+                        newCorners[i] = corners[i] + offsetX;
+                        newCorners[i + 1] = corners[i + 1] + offsetY;
+                    }
+
+                    detections.add(
+                            new AprilTagDetection(
+                                    tagDetection.getFamily(),
+                                    tagDetection.getId(),
+                                    tagDetection.getHamming(),
+                                    tagDetection.getDecisionMargin(),
+                                    tagDetection.getHomography(),
+                                    tagDetection.getCenterX() + offsetX,
+                                    tagDetection.getCenterY() + offsetY,
+                                    newCorners));
+                    mltagNoneFound = false;
+                }
+            }
+        }
+
+        if (!settings.mltagEnabled || mltagNoneFound) {
+            CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
+            tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
+            sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+            detections = tagDetectionPipeResult.output;
+        }
+
         List<AprilTagDetection> usedDetections = new ArrayList<>();
         List<TrackedTarget> targetList = new ArrayList<>();
 
