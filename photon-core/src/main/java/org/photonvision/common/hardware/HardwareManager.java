@@ -60,14 +60,6 @@ public class HardwareManager {
 
     public final Optional<VisionLED> visionLED;
 
-    public static HardwareManager getInstance() {
-        if (instance == null) {
-            var conf = ConfigManager.getInstance().getConfig();
-            instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
-        }
-        return instance;
-    }
-
     private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
@@ -142,6 +134,25 @@ public class HardwareManager {
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+    }
+
+    public static HardwareManager getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("HardwareManager not initialized! Call initialize() first.");
+        }
+        return instance;
+    }
+
+    public static void initialize(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+        if (instance == null) {
+            if (hardwareConfig == null || hardwareSettings == null) {
+                throw new IllegalArgumentException(
+                        "HardwareConfig and HardwareSettings must not be null when initializing HardwareManager.");
+            }
+            instance = new HardwareManager(hardwareConfig, hardwareSettings);
+        } else {
+            instance.logger.warn("HardwareManager already initialized!");
+        }
     }
 
     public static NativeDeviceFactoryInterface configureCustomGPIO(HardwareConfig hardwareConfig) {

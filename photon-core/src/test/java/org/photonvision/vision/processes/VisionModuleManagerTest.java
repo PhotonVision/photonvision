@@ -30,6 +30,7 @@ import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -165,6 +166,10 @@ public class VisionModuleManagerTest {
     @Test
     public void setupManager() {
         ConfigManager.getInstance().load();
+
+        // TODO: figure out a better variable name for this
+        var config = ConfigManager.getInstance().getConfig();
+        HardwareManager.initialize(config.getHardwareConfig(), config.getHardwareSettings());
 
         try (var vmm = new VisionModuleManager()) {
             var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
