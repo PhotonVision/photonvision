@@ -18,6 +18,16 @@ test.describe("Static Crop", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:5800/#/dashboard");
     await openInputTab(page);
+
+    // The backend keeps pipeline settings in memory across tests (resetBackend only clears the
+    // config directory), and CI runs several browser projects against one server -- so normalize
+    // the crop state instead of assuming defaults: full-frame bounds, crop off.
+    await page.getByRole("button", { name: "Reset Crop" }).click();
+    const toggle = cropSwitch(page);
+    if (await toggle.isChecked()) {
+      await toggle.uncheck();
+      await expect(toggle).not.toBeChecked();
+    }
   });
 
   // Vuetify's v-switch exposes the ARIA "checkbox" role, not "switch". The .last() picks the
@@ -59,12 +69,34 @@ test.describe("Static Crop", () => {
     await expect(rawFrame(page)).toBeVisible();
   };
 
+  // A bounding box that has stopped moving: stream cards reflow when the Raw card appears, and a
+  // box measured mid-reflow sends drag coordinates to the wrong place.
+  const stableBoundingBox = async (locator: Locator) => {
+    let previous = await locator.boundingBox();
+    for (let attempt = 0; attempt < 20; attempt++) {
+      await locator.page().waitForTimeout(150);
+      const current = await locator.boundingBox();
+      if (
+        previous &&
+        current &&
+        Math.abs(current.x - previous.x) < 1 &&
+        Math.abs(current.y - previous.y) < 1 &&
+        Math.abs(current.width - previous.width) < 1 &&
+        Math.abs(current.height - previous.height) < 1
+      ) {
+        return current;
+      }
+      previous = current;
+    }
+    return previous;
+  };
+
   const setOrientation = async (page: Page, name: string) => {
     await page.locator("div.d-flex").filter({ hasText: "Orientation" }).locator(".v-select").click();
     await page.getByRole("option", { name, exact: true }).click();
   };
 
-  test("controls are present and default to disabled", async ({ page }) => {
+  test("controls are present and start disabled", async ({ page }) => {
     await expect(page.getByText("Static Crop", { exact: true })).toBeVisible();
     await expect(page.getByText("Crop X Range", { exact: true })).toBeVisible();
     await expect(page.getByText("Crop Y Range", { exact: true })).toBeVisible();
@@ -188,7 +220,7 @@ test.describe("Static Crop", () => {
     // 25%..60% in y. The stream card can be scrolled out of view, so bring it back first.
     const frame = rawFrame(page);
     await frame.scrollIntoViewIfNeeded();
-    const box = await frame.boundingBox();
+    const box = await stableBoundingBox(frame);
     expect(box).not.toBeNull();
     if (!box) return;
     await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.25);
@@ -260,7 +292,7 @@ test.describe("Static Crop", () => {
     await showRawStream(page);
     const frame = rawFrame(page);
     await frame.scrollIntoViewIfNeeded();
-    const frameBox = await frame.boundingBox();
+    const frameBox = await stableBoundingBox(frame);
     expect(frameBox).not.toBeNull();
     if (!frameBox) return;
     // The region is x[100,500] y[200,500] of the full frame; grab its center.
@@ -310,7 +342,7 @@ test.describe("Static Crop", () => {
     await showRawStream(page);
     const frame = rawFrame(page);
     await frame.scrollIntoViewIfNeeded();
-    const frameBox = await frame.boundingBox();
+    const frameBox = await stableBoundingBox(frame);
     expect(frameBox).not.toBeNull();
     if (!frameBox) return;
     // Screen position of a frame-pixel coordinate on the Raw view.
@@ -336,9 +368,14 @@ test.describe("Static Crop", () => {
     await expect(yInputs.nth(1)).toHaveValue("600");
 
     // Drag the bottom-right corner inward and down: x1 and y1 follow, the other bounds hold.
+    // Changing the crop reshapes the Processed card, which can shift this card's position in the
+    // row -- re-measure before computing the corner's screen position.
+    const frameBox2 = await stableBoundingBox(frame);
+    expect(frameBox2).not.toBeNull();
+    if (!frameBox2) return;
     const newX1 = Number(await xInputs.nth(1).inputValue());
-    const cornerX = screenX(newX1) - 3;
-    const cornerY = screenY(600) - 3;
+    const cornerX = frameBox2.x + (newX1 / frameWidth) * frameBox2.width - 3;
+    const cornerY = frameBox2.y + (600 / frameHeight) * frameBox2.height - 3;
     await page.mouse.move(cornerX, cornerY);
     await page.mouse.down();
     await page.mouse.move(cornerX - frameBox.width * 0.05, cornerY + frameBox.height * 0.1, { steps: 5 });
