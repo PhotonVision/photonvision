@@ -24,24 +24,68 @@ import java.sql.Statement;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
+/**
+ * Base class for a versioned database migration.
+ *
+ * <p>A migration can execute semicolon-delimited SQL supplied to the constructor or override {@link
+ * #update(Connection)} for custom migration logic. Each step runs transactionally and updates the
+ * database user version after a successful update.
+ */
 public abstract class MigrationStep {
     protected final Logger logger;
     protected final String sql;
 
+    /**
+     * Returns the schema version produced by this migration step.
+     *
+     * <p>The version must be an integer with a value one higher than the last step. {@link
+     * MigrationManager#MigrationManager(java.util.List)} will throw a runtime warning if this isn't
+     * true.
+     *
+     * @return migration version
+     */
     public abstract int getVersion();
 
+    /**
+     * Returns the human-readable description used when logging this migration step.
+     *
+     * @return migration description
+     */
     public abstract String getDescription();
 
+    /**
+     * Creates a migration step that executes the supplied SQL statements during {@link
+     * #update(Connection)}.
+     *
+     * @param sql semicolon-delimited SQL statements for this migration step
+     */
     protected MigrationStep(String sql) {
-        logger = new Logger(getClass(), LogGroup.Config);
+        logger = new Logger(MigrationStep.class, getClass().getSimpleName(), LogGroup.Config);
         this.sql = sql;
     }
 
+    /**
+     * Creates a migration step with no default SQL statements.
+     *
+     * <p>Subclasses using this constructor are expected to override {@link #update(Connection)}.
+     */
     protected MigrationStep() {
-        logger = new Logger(getClass(), LogGroup.Config);
-        this.sql = "";
+        this("");
     }
 
+    /**
+     * Method called by {@link #runStep(Connection, int)} to make the changes associated with this
+     * step. As supplied, the method executes the sql statemens passed to the initializer.
+     *
+     * <p>Override this method to provide your own code for a step. <code>autoCommit</code> is `false`
+     * on the connection to prevent partial changes to the database. If you overide the method, don't
+     * call <code>conn.commit()</code> as doing so will override the atomicity of the step and could
+     * leave the database in a partially-migrated state.
+     *
+     * @param conn connection to SQLite database
+     * @throws SQLException if there are problems with the database write
+     * @throws IOException if there are problems with JSON parsing or serializing
+     */
     void update(Connection conn) throws SQLException, IOException {
         // this handles one or more SQL statements passed in to the constructor
         if (!(sql == null || sql.isBlank())) {
@@ -57,7 +101,7 @@ public abstract class MigrationStep {
         }
     }
 
-    void runStep(Connection conn, int currentVersion) throws IOException {
+    public final void runStep(Connection conn, int currentVersion) throws IOException {
         if (currentVersion >= getVersion()) {
             logger.info("Skipping migration step: " + getVersion() + " - " + getDescription());
             return;
