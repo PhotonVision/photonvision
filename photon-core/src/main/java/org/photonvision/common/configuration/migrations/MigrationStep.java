@@ -25,7 +25,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public abstract class MigrationStep {
-    protected static final Logger logger = new Logger(MigrationStep.class, LogGroup.Config);
+    protected final Logger logger;
     protected final String sql;
 
     public abstract int getVersion();
@@ -33,10 +33,12 @@ public abstract class MigrationStep {
     public abstract String getDescription();
 
     protected MigrationStep(String sql) {
+        logger = new Logger(getClass(), LogGroup.Config);
         this.sql = sql;
     }
 
     protected MigrationStep() {
+        logger = new Logger(getClass(), LogGroup.Config);
         this.sql = "";
     }
 
