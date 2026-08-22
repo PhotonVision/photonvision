@@ -62,9 +62,12 @@ public abstract class MigrationStep {
         }
         logger.info("Running migration step: " + getVersion() + " - " + getDescription());
         try {
+            boolean autoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
             update(conn);
             setUserVersion(conn);
             conn.commit();
+            conn.setAutoCommit(autoCommit);
         } catch (Exception e) {
             try {
                 conn.rollback();
