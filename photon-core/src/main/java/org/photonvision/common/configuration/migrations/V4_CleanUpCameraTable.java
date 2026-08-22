@@ -18,7 +18,7 @@
 package org.photonvision.common.configuration.migrations;
 
 public class V4_CleanUpCameraTable extends MigrationStep {
-    private static final String sqlString = 
+    private static final String sqlString =
     """
     ALTER TABLE cameras DROP COLUMN drivermode_json;
     ALTER TABLE cameras DROP COLUMN pipeline_jsons;

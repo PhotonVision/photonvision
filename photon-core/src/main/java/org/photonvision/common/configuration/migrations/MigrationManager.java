@@ -60,7 +60,6 @@ public class MigrationManager {
     }
 
     public void runMigration(Connection conn) {
-
         int currentVersion = SqlConfigProvider.getUserVersion(conn);
         try {
             for (MigrationStep step : migrationSteps) {
