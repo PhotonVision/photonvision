@@ -72,9 +72,11 @@ public class V3_ConsolidateCameraSettings extends MigrationStep {
             // migrate legacy PVCameraInfo type
             if (!matchedCameraInfo.containsKey("type")) {
                 String cameraType = matchedCameraInfo.keySet().iterator().next();
-                logger.debug("Legacy " + cameraType + " type-wrapper being migrated");
+                logger.debug(
+                        String.format(
+                                "Migrating legacy %s type-wrapper for camera %s",
+                                cameraType, configJson.getString("nickname")));
                 String type = String.format("PVCameraInfo.%s", cameraType);
-                logger.debug(String.format("matchedCameraInfo.%s", cameraType));
                 var cameraInfo = configJson.getMap(String.format("matchedCameraInfo.%s", cameraType));
                 matchedCameraInfo.put("type", type);
                 matchedCameraInfo.putAll(cameraInfo);
@@ -84,6 +86,7 @@ public class V3_ConsolidateCameraSettings extends MigrationStep {
             // Check for other_paths that haven't been migrated
             if (!configJson.hasKey("matchedCameraInfo.otherPaths")) {
                 try (var otherPathsJson = new DynamicJsonEditor(cameraData.get("otherpaths_json"))) {
+                    logger.debug("Migrating legacy otherPaths");
                     matchedCameraInfo.put("otherPaths", otherPathsJson.getList(""));
                 } catch (IOException | JsonException e) {
                     logger.warn("Couldn't deserialize otherpaths_json. Skipping.\n" + e);
@@ -102,6 +105,9 @@ public class V3_ConsolidateCameraSettings extends MigrationStep {
                         String type = (String) oldWrapperIterator.next();
                         @SuppressWarnings("unchecked")
                         var pipeline = (Map<String, Object>) oldWrapperIterator.next();
+                        logger.debug(
+                                String.format(
+                                        "Migrating legacy %s, \"%s\"", type, pipeline.get("pipelineNickname")));
                         pipeline.put("type", type);
                         pipelines.add(pipeline);
                         pipelineJson.close();
@@ -117,6 +123,7 @@ public class V3_ConsolidateCameraSettings extends MigrationStep {
                 try (var legacyDriverModeJson = new DynamicJsonEditor(cameraData.get("drivermode_json"))) {
                     var oldWrapperIterator = legacyDriverModeJson.getList("").iterator();
                     String type = (String) oldWrapperIterator.next();
+                    logger.debug(String.format("Migrating legacy %s", type));
                     @SuppressWarnings("unchecked")
                     var pipeline = (Map<String, Object>) oldWrapperIterator.next();
                     configJson.getMap("").put("driveModeSettings", pipeline);
