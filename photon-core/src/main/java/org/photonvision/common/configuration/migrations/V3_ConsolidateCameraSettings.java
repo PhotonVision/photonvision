@@ -101,10 +101,10 @@ public class V3_ConsolidateCameraSettings extends MigrationStep {
                     List<Map<String, Object>> pipelines = new ArrayList<Map<String, Object>>();
                     for (String pipelineString : rawPipelineJsons.getList("", String.class)) {
                         var pipelineJson = new DynamicJsonEditor(pipelineString);
-                        var oldWrapperIterator = pipelineJson.getList("").iterator();
-                        String type = (String) oldWrapperIterator.next();
+                        var oldWrapper = pipelineJson.getList("");
+                        String type = (String) oldWrapper.get(0);
                         @SuppressWarnings("unchecked")
-                        var pipeline = (Map<String, Object>) oldWrapperIterator.next();
+                        var pipeline = (Map<String, Object>) oldWrapper.get(1);
                         logger.debug(
                                 String.format(
                                         "Migrating legacy %s, \"%s\"", type, pipeline.get("pipelineNickname")));
@@ -121,23 +121,25 @@ public class V3_ConsolidateCameraSettings extends MigrationStep {
             // Migrate drivermode_json
             if (!configJson.hasKey("driveModeSettings")) {
                 try (var legacyDriverModeJson = new DynamicJsonEditor(cameraData.get("drivermode_json"))) {
-                    var oldWrapperIterator = legacyDriverModeJson.getList("").iterator();
-                    String type = (String) oldWrapperIterator.next();
+                    var oldWrapper = legacyDriverModeJson.getList("");
+                    String type = (String) oldWrapper.get(0);
                     logger.debug(String.format("Migrating legacy %s", type));
                     @SuppressWarnings("unchecked")
-                    var pipeline = (Map<String, Object>) oldWrapperIterator.next();
+                    var pipeline = (Map<String, Object>) oldWrapper.get(1);
                     configJson.getMap("").put("driveModeSettings", pipeline);
                 } catch (IOException | JsonException e) {
                     logger.warn("Couldn't deserialize drivermode_json. Skipping.\n" + e);
                 }
             }
 
+            // for debugging, remove before merge
+            // try {
+            //     logger.debug("Migrated config_json:\n" + configJson.export(true));
+            // } catch (IOException | JsonException e) {
+            //     logger.error("Error serializing configJson.", e);
+            // }
+
             // update camera in database
-            try {
-                logger.debug("Migrated config_json:\n" + configJson.export(true));
-            } catch (IOException | JsonException e) {
-                logger.error("Error serializing configJson.", e);
-            }
             var sqlString =
                     "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES (?, ?, ?, ?);";
             try (var statement = conn.prepareStatement(sqlString)) {
