@@ -61,6 +61,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private final String dbPath;
     private final String url;
+    private int dbVersion;
 
     private final List<MigrationStep> migrations =
             Arrays.asList(
@@ -126,9 +127,42 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
+    private static int getIntPragma(Connection conn, String pragma) {
+        int retval = 0;
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery("PRAGMA " + pragma + ";");
+            retval = rs.getInt(1);
+        } catch (SQLException e) {
+            logger.error("Error querying " + pragma, e);
+        }
+        return retval;
+    }
+
+    public static int getSchemaVersion(Connection conn) {
+        return getIntPragma(conn, "schema_version");
+    }
+
+    public static int getUserVersion(Connection conn) {
+        return getIntPragma(conn, "user_version");
+    }
+
+    public int getDbVersion() {
+        return this.dbVersion;
+    }
+
+    public int getExpectedVersion() {
+        return migrations.getLast().getVersion();
+    }
+
     private void initDatabase() {
         MigrationManager mm = new MigrationManager(migrations);
-        mm.run(url);
+        try (var conn = DriverManager.getConnection(url)) {
+            mm.runMigration(conn);
+            this.dbVersion = getUserVersion(conn);
+        } catch (SQLException e) {
+            // Can't connect to the database to run the migration.
+            logger.error("Failed to connect to database at " + url, e);
+        }
     }
 
     @Override

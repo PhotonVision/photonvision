@@ -17,12 +17,10 @@
 
 package org.photonvision.common.configuration.migrations;
 
+import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
+import org.photonvision.common.configuration.SqlConfigProvider;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -58,25 +56,19 @@ public class MigrationManager {
             }
         }
         this.migrationSteps = migrationSteps;
-        this.expectedVersion = migrationSteps.size();
+        this.expectedVersion = migrationSteps.getLast().getVersion();
     }
 
-    public void run(String dbUrl) {
-        int currentVersion = 0;
-        try (Connection conn = DriverManager.getConnection(dbUrl)) {
-            conn.setAutoCommit(false);
+    public void runMigration(Connection conn) {
 
-            currentVersion = getCurrentVersion(conn);
-            try {
-                for (MigrationStep step : migrationSteps) {
-                    step.run(conn, currentVersion);
-                    currentVersion = getCurrentVersion(conn);
-                }
-            } catch (SQLException e) {
-                logger.error("Database migration failure: ", e);
+        int currentVersion = SqlConfigProvider.getUserVersion(conn);
+        try {
+            for (MigrationStep step : migrationSteps) {
+                step.runStep(conn, currentVersion);
+                currentVersion = SqlConfigProvider.getUserVersion(conn);
             }
-        } catch (SQLException e) {
-            logger.error("Database connection error: ", e);
+        } catch (IOException e) {
+            logger.error("Database migration failure: ", e);
         }
 
         if (currentVersion < expectedVersion) {
@@ -91,37 +83,6 @@ public class MigrationManager {
                     "The database is from a newer version of PhotonVision. Check that you are running the right version of PhotonVision.");
         } else {
             logger.info("Using correct database version: " + currentVersion);
-        }
-    }
-
-    private int getIntPragma(Connection conn, String pragma) {
-        int retval = 0;
-        try (Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery("PRAGMA " + pragma + ";");
-            retval = rs.getInt(1);
-        } catch (SQLException e) {
-            logger.error("Error querying " + pragma, e);
-        }
-        return retval;
-    }
-
-    public int getSchemaVersion(Connection conn) {
-        return getIntPragma(conn, "schema_version");
-    }
-
-    public int getUserVersion(Connection conn) {
-        return getIntPragma(conn, "user_version");
-    }
-
-    public int getCurrentVersion(Connection conn) throws SQLException {
-        return getUserVersion(conn);
-    }
-
-    private void setUserVersion(Connection conn, int value) {
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute("PRAGMA user_version = " + value + ";");
-        } catch (SQLException e) {
-            logger.error("Error setting user_version to ", e);
         }
     }
 }

@@ -17,6 +17,7 @@
 
 package org.photonvision.common.configuration.migrations;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -27,9 +28,9 @@ public abstract class MigrationStep {
     protected static final Logger logger = new Logger(MigrationStep.class, LogGroup.Config);
     protected final String sql;
 
-    abstract int getVersion();
+    public abstract int getVersion();
 
-    abstract String getDescription();
+    public abstract String getDescription();
 
     protected MigrationStep(String sql) {
         this.sql = sql;
@@ -39,7 +40,7 @@ public abstract class MigrationStep {
         this.sql = "";
     }
 
-    void update(Connection conn) throws SQLException {
+    void update(Connection conn) throws SQLException, IOException {
         // this handles one or more SQL statements passed in to the constructor
         if (!(sql == null || sql.isBlank())) {
             try (Statement stmt = conn.createStatement()) {
@@ -54,7 +55,7 @@ public abstract class MigrationStep {
         }
     }
 
-    void run(Connection conn, int currentVersion) throws SQLException {
+    void runStep(Connection conn, int currentVersion) throws IOException {
         if (currentVersion >= getVersion()) {
             logger.info("Skipping migration step: " + getVersion() + " - " + getDescription());
             return;
@@ -62,16 +63,20 @@ public abstract class MigrationStep {
         logger.info("Running migration step: " + getVersion() + " - " + getDescription());
         try {
             update(conn);
-            setDbVersion(conn);
+            setUserVersion(conn);
             conn.commit();
-        } catch (SQLException e) {
-            conn.rollback();
+        } catch (Exception e) {
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackException) {
+                e.addSuppressed(rollbackException);
+            }
             logger.error("Error running migration step!");
-            throw e;
+            throw new IOException("Migration step " + getVersion() + " failed: " + getDescription(), e);
         }
     }
 
-    private void setDbVersion(Connection conn) throws SQLException {
+    private void setUserVersion(Connection conn) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.execute("PRAGMA user_version = " + getVersion() + ";");
         }
