@@ -62,8 +62,8 @@ public class SQLConfigTest {
         cfgLoader.load();
 
         assertEquals(
-                DatabaseSchema.migrations.length,
-                cfgLoader.getUserVersion(),
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
                 "Database isn't at the correct version");
     }
 
