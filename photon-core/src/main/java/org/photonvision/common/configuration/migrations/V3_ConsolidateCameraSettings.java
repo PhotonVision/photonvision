@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 public class V3_ConsolidateCameraSettings extends MigrationStep {
-
     @Override
     public int getVersion() {
         return 3;
@@ -40,7 +39,6 @@ public class V3_ConsolidateCameraSettings extends MigrationStep {
 
     @Override
     void update(Connection conn) throws SQLException, IOException {
-
         // Fetch all camera data first, then close the result set before making modifications
         var query =
                 conn.prepareStatement(
