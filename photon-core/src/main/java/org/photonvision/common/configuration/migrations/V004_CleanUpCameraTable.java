@@ -17,33 +17,26 @@
 
 package org.photonvision.common.configuration.migrations;
 
-public class V1_CreateTables extends MigrationStep {
+public class V004_CleanUpCameraTable extends MigrationStep {
     private static final String sqlString =
-            // spotless:off
-        """
-        CREATE TABLE IF NOT EXISTS global (
-         filename TINYTEXT PRIMARY KEY,
-         contents mediumtext NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS cameras (
-         unique_name TINYTEXT PRIMARY KEY,
-         config_json text NOT NULL,
-         drivermode_json text NOT NULL,
-         pipeline_jsons mediumtext NOT NULL
-         );""";
-        // spotless:on
+    """
+    ALTER TABLE cameras DROP COLUMN drivermode_json;
+    ALTER TABLE cameras DROP COLUMN pipeline_jsons;
+    ALTER TABLE cameras DROP COLUMN otherpaths_json;
+    """;
 
-    public V1_CreateTables() {
+    public V004_CleanUpCameraTable() {
         super(sqlString);
     }
 
     @Override
     public int getVersion() {
-        return 1;
+        return 4;
     }
 
     @Override
     public String getDescription() {
-        return "Create initial tables";
+        return "Drop unused columns from cameras table";
     }
+
 }

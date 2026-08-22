@@ -17,21 +17,33 @@
 
 package org.photonvision.common.configuration.migrations;
 
-public class V2_AddOtherpathsColumn extends MigrationStep {
+public class V001_CreateTables extends MigrationStep {
     private static final String sqlString =
-            "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]';";
+            // spotless:off
+        """
+        CREATE TABLE IF NOT EXISTS global (
+         filename TINYTEXT PRIMARY KEY,
+         contents mediumtext NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS cameras (
+         unique_name TINYTEXT PRIMARY KEY,
+         config_json text NOT NULL,
+         drivermode_json text NOT NULL,
+         pipeline_jsons mediumtext NOT NULL
+         );""";
+        // spotless:on
 
-    public V2_AddOtherpathsColumn() {
+    public V001_CreateTables() {
         super(sqlString);
     }
 
     @Override
     public int getVersion() {
-        return 2;
+        return 1;
     }
 
     @Override
     public String getDescription() {
-        return "Add otherpaths column to cameras table";
+        return "Create initial tables";
     }
 }

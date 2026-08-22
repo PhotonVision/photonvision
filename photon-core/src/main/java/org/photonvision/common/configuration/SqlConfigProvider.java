@@ -65,10 +65,10 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private final List<MigrationStep> migrations =
             Arrays.asList(
-                    new V1_CreateTables(),
-                    new V2_AddOtherpathsColumn(),
-                    new V3_ConsolidateCameraSettings(),
-                    new V4_CleanUpCameraTable());
+                    new V001_CreateTables(),
+                    new V002_AddOtherpathsColumn(),
+                    new V003_ConsolidateCameraSettings(),
+                    new V004_CleanUpCameraTable());
 
     private final Object m_mutex = new Object();
 

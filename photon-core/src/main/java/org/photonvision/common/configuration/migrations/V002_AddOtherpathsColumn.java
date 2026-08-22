@@ -17,26 +17,21 @@
 
 package org.photonvision.common.configuration.migrations;
 
-public class V4_CleanUpCameraTable extends MigrationStep {
+public class V002_AddOtherpathsColumn extends MigrationStep {
     private static final String sqlString =
-    """
-    ALTER TABLE cameras DROP COLUMN drivermode_json;
-    ALTER TABLE cameras DROP COLUMN pipeline_jsons;
-    ALTER TABLE cameras DROP COLUMN otherpaths_json;
-    """;
+            "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]';";
 
-    public V4_CleanUpCameraTable() {
+    public V002_AddOtherpathsColumn() {
         super(sqlString);
     }
 
     @Override
     public int getVersion() {
-        return 4;
+        return 2;
     }
 
     @Override
     public String getDescription() {
-        return "Drop unused columns from cameras table";
+        return "Add otherpaths column to cameras table";
     }
-
 }

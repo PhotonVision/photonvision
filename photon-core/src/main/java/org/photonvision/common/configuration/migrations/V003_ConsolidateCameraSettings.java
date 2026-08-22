@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class V3_ConsolidateCameraSettings extends MigrationStep {
+public class V003_ConsolidateCameraSettings extends MigrationStep {
     @Override
     public int getVersion() {
         return 3;
