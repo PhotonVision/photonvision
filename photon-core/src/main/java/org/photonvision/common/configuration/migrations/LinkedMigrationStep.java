@@ -25,7 +25,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class LinkedMigrationStep {
-    private final Logger logger;
+    private static final Logger logger = new Logger(LinkedMigrationStep.class, LogGroup.Config);
     private final LinkedMigrationStep predecessor;
     private final int version;
     private final MigrationFunction migrate;
@@ -34,7 +34,6 @@ public class LinkedMigrationStep {
         this.predecessor = predecessor;
         this.version = version;
         this.migrate = migrate;
-        this.logger = new Logger(getClass(), String.format("%s", version), LogGroup.Config);
     }
 
     public static LinkedMigrationStep fromSql(
@@ -67,12 +66,25 @@ public class LinkedMigrationStep {
             logger.info("Creating database");
         }
         // run the migration
-        logger.info(String.format("Running migration step %s", this.version));
-        conn.setAutoCommit(false);
-        this.migrate.apply(conn);
-        setUserVersion(conn, this.version);
-        conn.commit();
-        logger.info(String.format("Migration step %s succeeded.", this.version));
+        var autoCommit = conn.getAutoCommit();
+
+        try {
+            logger.info(String.format("Running migration step %s", this.version));
+            conn.setAutoCommit(false);
+            this.migrate.apply(conn);
+            setUserVersion(conn, this.version);
+            conn.commit();
+            logger.info(String.format("Migration step %s succeeded.", this.version));
+        } catch (SQLException e) {
+            try {
+                conn.rollback();
+            } catch (SQLException e2) {
+                e.addSuppressed(e2);
+            }
+            throw e;
+        } finally {
+            conn.setAutoCommit(autoCommit);
+        }
     }
 
     @FunctionalInterface
@@ -85,6 +97,7 @@ public class LinkedMigrationStep {
         return (Connection conn) -> {
             try (Statement stmt = conn.createStatement()) {
                 for (String command : sql.split(";")) {
+                    // logger.debug(command);
                     if (!command.isBlank()) {
                         stmt.addBatch(command.strip() + ";");
                     }

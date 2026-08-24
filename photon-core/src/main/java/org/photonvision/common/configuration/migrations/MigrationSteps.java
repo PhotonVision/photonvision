@@ -34,14 +34,14 @@ public class MigrationSteps {
 
     public static LinkedMigrationStep buildMigrations() {
         LinkedMigrationStep step;
-        step = LinkedMigrationStep.fromSql(null, 2, sql02);
+        step = LinkedMigrationStep.fromSql(null, 2, schema01);
         step = LinkedMigrationStep.fromMigrationFunction(step, 3, update2026CameraConfig);
         step = LinkedMigrationStep.fromSql(step, 4, sql04);
 
         return step;
     }
 
-    private static final String sql02 =
+    private static final String schema01 =
         """
         CREATE TABLE IF NOT EXISTS global (
          filename TINYTEXT PRIMARY KEY,
