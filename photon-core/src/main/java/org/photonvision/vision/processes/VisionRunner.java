@@ -41,6 +41,9 @@ import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.wpilib.driverstation.Alert;
+import org.wpilib.driverstation.Alert.Level;
+import org.wpilib.smartdashboard.SmartDashboard;
 
 /**
  * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer; it must be closed
@@ -59,6 +62,11 @@ public class VisionRunner implements AutoCloseable {
     private final Supplier<Integer> fpsLimitSupplier;
     private final Supplier<Boolean> enabledSupplier;
     private final Supplier<Boolean> inputStreamConsumedSupplier;
+
+    // Warns (on the driver station, via NetworkTables) while the raw stream is being watched with
+    // static cropping enabled: composing the uncropped preview costs extra processing per frame.
+    private final Alert croppedRawStreamAlert;
+    private boolean croppedRawStreamAlertShown = false;
 
     private long loopCount;
 
@@ -92,6 +100,15 @@ public class VisionRunner implements AutoCloseable {
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.enabledSupplier = enabledSupplier;
         this.inputStreamConsumedSupplier = inputStreamConsumedSupplier;
+
+        croppedRawStreamAlert =
+                new Alert(
+                        "PhotonAlerts",
+                        "Raw stream open with static cropping enabled on "
+                                + frameSupplier.getName()
+                                + " -- extra processing is used to compose the uncropped preview",
+                        Level.MEDIUM);
+        croppedRawStreamAlert.set(false);
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -175,6 +192,14 @@ public class VisionRunner implements AutoCloseable {
     }
 
     private final CropPipe cropPipe = new CropPipe();
+
+    /** Raise or clear the alert, only touching NetworkTables when the state actually changes. */
+    private void updateCroppedRawStreamAlert(boolean shown) {
+        if (shown == croppedRawStreamAlertShown) return;
+        croppedRawStreamAlertShown = shown;
+        croppedRawStreamAlert.set(shown);
+        SmartDashboard.updateValues();
+    }
 
     /**
      * Statically crop a captured frame to the region configured in the pipe's params: both images are
@@ -315,12 +340,14 @@ public class VisionRunner implements AutoCloseable {
             // Grab the new camera frame, and statically crop it (a no-op when cropping is disabled).
             // The frame is already rotated, so the crop applies in the rotated coordinate space.
             var frame = frameSupplier.get();
+            boolean keepContext = false;
             if (croppablePipeline) {
                 // The dimmed full-frame context image exists only for the input stream's viewers --
                 // skip composing it when nothing is actually consuming that stream.
-                boolean keepContext = settings.inputShouldShow && inputStreamConsumedSupplier.get();
+                keepContext = settings.inputShouldShow && inputStreamConsumedSupplier.get();
                 frame = cropFrame(cropPipe, frame, keepContext);
             }
+            updateCroppedRawStreamAlert(keepContext);
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {

@@ -388,6 +388,30 @@ test.describe("Static Crop", () => {
     await expect(yInputs.nth(0)).toHaveValue("200");
   });
 
+  test("a warning banner shows while the raw stream is open with cropping enabled", async ({ page }) => {
+    const banner = page.getByText(/static cropping enabled while the raw stream is open/i);
+
+    // Crop on, but raw stream closed: no banner.
+    await cropSwitch(page).check();
+    if (
+      await rawFrame(page)
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await page.getByRole("button", { name: "Raw", exact: true }).click();
+      await expect(rawFrame(page)).not.toBeVisible();
+    }
+    await expect(banner).not.toBeVisible();
+
+    // Opening the raw stream raises the warning.
+    await showRawStream(page);
+    await expect(banner).toBeVisible();
+
+    // Disabling the crop clears it, even with the raw stream still open.
+    await cropSwitch(page).uncheck();
+    await expect(banner).not.toBeVisible();
+  });
+
   test("an interior crop bound survives a frame resize", async ({ page }) => {
     await cropSwitch(page).check();
 

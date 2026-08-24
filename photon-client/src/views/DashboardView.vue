@@ -94,6 +94,20 @@ const disabledCameras = computed<string>(() => {
     .join(", ");
 });
 
+// Cameras whose raw stream is shown while static cropping is enabled: composing the uncropped
+// preview for the raw stream costs extra processing per frame.
+const croppedRawStreamCameras = computed<string>(() => {
+  return Object.values(useCameraSettingsStore().cameras)
+    .filter(
+      (c) =>
+        "staticCropEnabled" in c.pipelineSettings &&
+        c.pipelineSettings.staticCropEnabled &&
+        c.pipelineSettings.inputShouldShow
+    )
+    .map((c) => c.nickname)
+    .join(", ");
+});
+
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
 </script>
 
@@ -121,6 +135,19 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     >
       <span>
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
+      </span>
+    </v-alert>
+    <v-alert
+      v-if="croppedRawStreamCameras"
+      class="mb-3"
+      color="warning"
+      density="compact"
+      icon="mdi-alert-outline"
+      :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+    >
+      <span>
+        {{ croppedRawStreamCameras }} have static cropping enabled while the raw stream is open! Composing the uncropped
+        preview uses extra processing per frame -- close the raw stream when you're done adjusting the crop.
       </span>
     </v-alert>
     <v-alert
