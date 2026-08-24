@@ -30,7 +30,6 @@ import org.photonvision.common.logging.Logger;
 import io.avaje.json.JsonException;
 
 public class MigrationSteps {
-
     private static final Logger logger = new Logger(MigrationSteps.class, LogGroup.Config);
 
     public static LinkedMigrationStep buildMigrations() {
