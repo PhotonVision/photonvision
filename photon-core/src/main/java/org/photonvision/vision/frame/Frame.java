@@ -38,9 +38,8 @@ public class Frame implements Releasable {
 
     /**
      * When the frame is statically cropped, the full (uncropped) color image with the cropped-away
-     * area dimmed, for the input stream to show the crop in context. Null when not cropping or when
-     * the input stream isn't shown. Coordinates in this image are full-frame, not crop-relative --
-     * nothing but display may consume it.
+     * area dimmed, for the input stream to show the crop in context. Coordinates in this image are
+     * full-frame, not crop-relative -- nothing but display may consume it.
      */
     public CVMat contextColorImage = null;
 

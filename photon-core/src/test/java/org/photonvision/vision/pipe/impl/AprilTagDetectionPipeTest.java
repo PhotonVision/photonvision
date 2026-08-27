@@ -55,8 +55,6 @@ public class AprilTagDetectionPipeTest {
         var pipe = pipeWithDecimate(2);
         var image = new CVMat(Mat.zeros(480, 640, CvType.CV_8UC1));
 
-        // A blank image detects nothing, but it has to get there without being skipped -- the run
-        // completing at all is what says the guard let it through.
         assertTrue(pipe.run(image).output.isEmpty(), "A blank image has no tags in it");
 
         image.release();

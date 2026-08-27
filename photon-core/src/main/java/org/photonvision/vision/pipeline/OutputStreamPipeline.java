@@ -134,8 +134,7 @@ public class OutputStreamPipeline implements Releasable {
         if (!outEmpty)
             sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
-        // The input stream's full-frame context image (present when cropping) streams at the same
-        // divisor as everything else
+        // The input stream's full-frame context image streams at the same divisor as everything else
         var contextImage = inputAndOutputFrame.contextColorImage;
         if (contextImage != null && !contextImage.getMat().empty()) {
             sumPipeNanosElapsed += resizeImagePipe.run(contextImage.getMat()).nanosElapsed;

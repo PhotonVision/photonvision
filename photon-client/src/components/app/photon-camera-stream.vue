@@ -105,8 +105,6 @@ const cropRegion = computed<{ left: number; top: number; width: number; height: 
   };
 });
 
-// The container's own box can be letterboxed by its parent, so to place the black frame box we need
-// its real dimensions -- measured with a ResizeObserver rather than derived in CSS.
 const streamContainer = useTemplateRef("streamContainer");
 const containerSize = ref<{ width: number; height: number } | null>(null);
 let containerResizeObserver: ResizeObserver | undefined;
@@ -259,8 +257,7 @@ const handleBoxStyle = computed<StyleValue>(() => {
 });
 
 // Dragging the visible crop region adjusts the crop without re-drawing it: grabbing its interior
-// moves the window around the frame, grabbing a border (or corner) resizes it. Available whenever a
-// crop is shown and no other stream interaction mode is active.
+// moves the window around the frame, grabbing a border (or corner) resizes it.
 const canAdjustCrop = computed(
   () =>
     isRawStream && cropRegion.value !== null && !useStateStore().cropDrawingMode && !useStateStore().colorPickingMode

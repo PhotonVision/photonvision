@@ -166,9 +166,7 @@ public class FrameStaticProperties {
         }
 
         // The crop rect changed, so the previously cached properties are now garbage -- free the
-        // native calibration memory they own. The frame provider that calls this and the pipeline that
-        // consumes the frame run on the same thread, so the frame built from the superseded properties
-        // has been fully processed by the time a new crop rect arrives here.
+        // native calibration memory they own.
         releaseCachedCrop();
 
         cachedCropRect = cropRect.clone();

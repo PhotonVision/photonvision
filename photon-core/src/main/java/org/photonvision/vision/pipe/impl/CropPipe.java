@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.util.Objects;
+import java.util.Optional;
 import org.opencv.core.Rect;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
@@ -24,10 +26,9 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 
 /**
- * Crops an image to the static crop region configured in the pipeline settings given as the pipe's
- * params. The crop rectangle is rebuilt on every {@link #setParams} call (the settings object is
- * mutated in place elsewhere, so it must not be cached against), and clamped into each input image
- * as it is processed. The output is a view into the input.
+ * The crop rectangle is rebuilt on every {@link #setParams} call (the settings object is mutated in
+ * place elsewhere, so it must not be cached against), and clamped into each input image as it is
+ * processed. The output is a view into the input.
  */
 public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     /**
@@ -42,13 +43,33 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     /** The rectangle derived from the current params, before clamping to an image. */
     private Rect cropRect = null;
 
-    public static record CropPipeParams(AdvancedPipelineSettings settings) {}
+    /**
+     * @param settings The pipeline settings the crop rectangle is derived from.
+     * @param cropRegion When present, used as the crop range directly, overriding whatever the
+     *     settings describe -- for crops to sizes determined in code rather than by the user.
+     */
+    public static record CropPipeParams(
+            AdvancedPipelineSettings settings, Optional<Rect> cropRegion) {
+        public CropPipeParams {
+            Objects.requireNonNull(cropRegion, "cropRegion must be an Optional, not null");
+        }
+
+        public CropPipeParams(AdvancedPipelineSettings settings) {
+            this(settings, Optional.empty());
+        }
+    }
 
     @Override
     public void setParams(CropPipeParams newParams) {
-        // Always rebuild -- the settings instance is mutated in place, so an equality check against
-        // the previous params would never see a change.
-        this.cropRect = cropRectFromSettings(newParams.settings());
+        this.cropRect =
+                newParams
+                        .cropRegion()
+                        .map(region -> alignForAprilTag(region, newParams.settings()))
+                        .orElseGet(
+                                () ->
+                                        newParams.settings() != null
+                                                ? cropRectFromSettings(newParams.settings())
+                                                : null);
         super.setParams(newParams);
     }
 
@@ -103,20 +124,25 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
             return null;
         }
 
-        if (settings instanceof AprilTagPipelineSettings tagSettings) {
-            // Grow the region up to the tile boundary below it rather than moving it, so the crop still
-            // covers everything that was asked for.
-            int tile = APRILTAG_TILE_SIZE * Math.max(1, tagSettings.decimate);
-            int alignedX = (xLow / tile) * tile;
-            int alignedY = (yLow / tile) * tile;
+        return alignForAprilTag(new Rect(xLow, yLow, width, height), settings);
+    }
 
-            width += xLow - alignedX;
-            height += yLow - alignedY;
-            xLow = alignedX;
-            yLow = alignedY;
+    /**
+     * Snap a crop rectangle's origin down onto apriltag's threshold-tile grid when the settings
+     * belong to an AprilTag pipeline, growing the region up to the tile boundary rather than moving
+     * it, so the crop still covers everything that was asked for.
+     */
+    private static Rect alignForAprilTag(Rect rect, AdvancedPipelineSettings settings) {
+        if (rect == null || !(settings instanceof AprilTagPipelineSettings tagSettings)) {
+            return rect;
         }
 
-        return new Rect(xLow, yLow, width, height);
+        int tile = APRILTAG_TILE_SIZE * Math.max(1, tagSettings.decimate);
+        int alignedX = (rect.x / tile) * tile;
+        int alignedY = (rect.y / tile) * tile;
+
+        return new Rect(
+                alignedX, alignedY, rect.width + rect.x - alignedX, rect.height + rect.y - alignedY);
     }
 
     /**
