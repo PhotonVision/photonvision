@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.CvType;
@@ -161,88 +160,6 @@ public class CropPipeTest {
         assertNotNull(out);
         assertEquals(16, out.getMat().cols());
         assertEquals(16, out.getMat().rows());
-
-        out.release();
-        in.release();
-    }
-
-    @Test
-    public void explicitCropRegionOverridesTheSettings() {
-        // The settings describe a disabled crop; the explicit region wins regardless.
-        var settings = settings(new IntegerCouple(0, 0), new IntegerCouple(0, 0));
-        settings.staticCropEnabled = false;
-        CropPipe pipe = new CropPipe();
-        pipe.setParams(new CropPipe.CropPipeParams(settings, Optional.of(new Rect(10, 20, 40, 30))));
-
-        CVMat in = new CVMat(new Mat(100, 100, CvType.CV_8UC1, new Scalar(0)));
-        CVMat out = pipe.run(in).output;
-
-        assertNotNull(
-                out, "An explicit crop region should be used even when the settings disable cropping");
-        assertEquals(40, out.getMat().cols());
-        assertEquals(30, out.getMat().rows());
-
-        out.release();
-        in.release();
-    }
-
-    @Test
-    public void explicitCropRegionNeedsNoSettings() {
-        CropPipe pipe = new CropPipe();
-        pipe.setParams(new CropPipe.CropPipeParams(null, Optional.of(new Rect(10, 20, 40, 30))));
-
-        CVMat in = new CVMat(new Mat(100, 100, CvType.CV_8UC1, new Scalar(0)));
-        CVMat out = pipe.run(in).output;
-
-        assertNotNull(out, "A code-determined crop should work without any pipeline settings");
-        assertEquals(40, out.getMat().cols());
-        assertEquals(30, out.getMat().rows());
-
-        out.release();
-        in.release();
-    }
-
-    @Test
-    public void explicitCropRegionIsAlignedForAprilTagPipelines() {
-        // Decimate 2 makes the threshold tile 8px; an origin off that grid would shift the detector's
-        // tiling relative to the tag and nudge the reported pose, so it is snapped down and the
-        // region grown to compensate -- exactly as for settings-derived crops.
-        var settings = new AprilTagPipelineSettings();
-        settings.decimate = 2;
-        CropPipe pipe = new CropPipe();
-        pipe.setParams(new CropPipe.CropPipeParams(settings, Optional.of(new Rect(21, 13, 40, 30))));
-
-        // A marked pixel identifies where the crop actually started.
-        Mat source = Mat.zeros(100, 100, CvType.CV_8UC1);
-        source.put(13, 21, new byte[] {(byte) 200});
-        CVMat in = new CVMat(source);
-        CVMat out = pipe.run(in).output;
-
-        assertNotNull(out);
-        assertEquals(45, out.getMat().cols(), "x snaps 21 -> 16, growing the width by 5");
-        assertEquals(35, out.getMat().rows(), "y snaps 13 -> 8, growing the height by 5");
-
-        byte[] pixel = new byte[1];
-        out.getMat().get(13 - 8, 21 - 16, pixel);
-        assertEquals(200, pixel[0] & 0xFF, "The crop should start at the aligned origin");
-
-        out.release();
-        in.release();
-    }
-
-    @Test
-    public void emptyCropRegionFallsBackToTheSettings() {
-        CropPipe pipe = new CropPipe();
-        pipe.setParams(
-                new CropPipe.CropPipeParams(
-                        settings(new IntegerCouple(10, 50), new IntegerCouple(20, 50)), Optional.empty()));
-
-        CVMat in = new CVMat(new Mat(100, 100, CvType.CV_8UC1, new Scalar(0)));
-        CVMat out = pipe.run(in).output;
-
-        assertNotNull(out);
-        assertEquals(40, out.getMat().cols(), "An empty region means the settings decide the crop");
-        assertEquals(30, out.getMat().rows());
 
         out.release();
         in.release();

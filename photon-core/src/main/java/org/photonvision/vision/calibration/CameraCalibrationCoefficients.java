@@ -200,7 +200,8 @@ public class CameraCalibrationCoefficients implements Releasable {
 
         // The principal point is expressed relative to the top-left of the image, so cropping simply
         // shifts it by the crop origin. See Multiple View Geometry in Computer Vision (Second Edition)
-        // Chapter 6.1 on finite cameras for explanation.
+        // Chapter 6.1 on finite cameras for explanation. The textbook can be found here:
+        // https://github.com/mohit6199/ECE661/blob/main/Multiple%20View%20Geometry%20in%20Computer%20Vision%20(Second%20Edition).pdf
         croppedIntrinsics.put(0, 2, cx - cropRect.x);
         croppedIntrinsics.put(1, 2, cy - cropRect.y);
 

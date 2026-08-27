@@ -17,8 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.Objects;
-import java.util.Optional;
 import org.opencv.core.Rect;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
@@ -43,40 +41,22 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     /** The rectangle derived from the current params, before clamping to an image. */
     private Rect cropRect = null;
 
-    /**
-     * @param settings The pipeline settings the crop rectangle is derived from.
-     * @param cropRegion When present, used as the crop range directly, overriding whatever the
-     *     settings describe -- for crops to sizes determined in code rather than by the user.
-     */
-    public static record CropPipeParams(
-            AdvancedPipelineSettings settings, Optional<Rect> cropRegion) {
-        public CropPipeParams {
-            Objects.requireNonNull(cropRegion, "cropRegion must be an Optional, not null");
-        }
-
-        public CropPipeParams(AdvancedPipelineSettings settings) {
-            this(settings, Optional.empty());
-        }
-    }
+    public static record CropPipeParams(AdvancedPipelineSettings settings) {}
 
     @Override
     public void setParams(CropPipeParams newParams) {
-        this.cropRect =
-                newParams
-                        .cropRegion()
-                        .map(region -> alignForAprilTag(region, newParams.settings()))
-                        .orElseGet(
-                                () ->
-                                        newParams.settings() != null
-                                                ? cropRectFromSettings(newParams.settings())
-                                                : null);
+        this.cropRect = cropRectFromSettings(newParams.settings());
         super.setParams(newParams);
     }
 
     /**
      * The crop rectangle that applies to an image of the given size: the configured region clamped
-     * into the image. Null when cropping is disabled, the region is degenerate, or it covers the
-     * whole image (all of which make cropping a no-op).
+     * into the image.
+     *
+     * @param imageCols The image's width, in pixels.
+     * @param imageRows The image's height, in pixels.
+     * @return The clamped rectangle, or null when cropping is disabled, the region is degenerate, or
+     *     it covers the whole image (all of which make cropping a no-op).
      */
     public Rect effectiveCrop(int imageCols, int imageRows) {
         return clampCropToImage(cropRect, imageCols, imageRows);
@@ -97,8 +77,12 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     }
 
     /**
-     * Build the static crop rectangle from pipeline settings, or null if cropping is disabled or the
-     * configured region is degenerate. The ranges are stored as [min, max] pixel couples.
+     * Build the static crop rectangle from pipeline settings. The ranges are stored as [min, max]
+     * pixel couples.
+     *
+     * @param settings The pipeline settings describing the crop.
+     * @return The crop rectangle, or null if cropping is disabled or the configured region is
+     *     degenerate.
      */
     public static Rect cropRectFromSettings(AdvancedPipelineSettings settings) {
         if (!settings.staticCropEnabled) {
@@ -124,31 +108,29 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
             return null;
         }
 
-        return alignForAprilTag(new Rect(xLow, yLow, width, height), settings);
-    }
+        if (settings instanceof AprilTagPipelineSettings tagSettings) {
+            // Grow the region up to the tile boundary below it rather than moving it, so the crop still
+            // covers everything that was asked for.
+            int tile = APRILTAG_TILE_SIZE * Math.max(1, tagSettings.decimate);
+            int alignedX = (xLow / tile) * tile;
+            int alignedY = (yLow / tile) * tile;
 
-    /**
-     * Snap a crop rectangle's origin down onto apriltag's threshold-tile grid when the settings
-     * belong to an AprilTag pipeline, growing the region up to the tile boundary rather than moving
-     * it, so the crop still covers everything that was asked for.
-     */
-    private static Rect alignForAprilTag(Rect rect, AdvancedPipelineSettings settings) {
-        if (rect == null || !(settings instanceof AprilTagPipelineSettings tagSettings)) {
-            return rect;
+            width += xLow - alignedX;
+            height += yLow - alignedY;
+            xLow = alignedX;
+            yLow = alignedY;
         }
 
-        int tile = APRILTAG_TILE_SIZE * Math.max(1, tagSettings.decimate);
-        int alignedX = (rect.x / tile) * tile;
-        int alignedY = (rect.y / tile) * tile;
-
-        return new Rect(
-                alignedX, alignedY, rect.width + rect.x - alignedX, rect.height + rect.y - alignedY);
+        return new Rect(xLow, yLow, width, height);
     }
 
     /**
      * Clamp a requested crop rectangle to the bounds of an image of the given size, growing it to
      * {@link #MIN_CROP_DIMENSION} per axis if it is smaller than that.
      *
+     * @param cropRect The requested crop rectangle; may be null for no crop.
+     * @param imageCols The image's width, in pixels.
+     * @param imageRows The image's height, in pixels.
      * @return The clamped rectangle, or null if the crop is empty or would cover the entire image (in
      *     which case cropping is a no-op).
      */

@@ -193,7 +193,11 @@ public class VisionRunner implements AutoCloseable {
 
     private final CropPipe cropPipe = new CropPipe();
 
-    /** Raise or clear the alert, only touching NetworkTables when the state actually changes. */
+    /**
+     * Raise or clear the alert, only touching NetworkTables when the state actually changes.
+     *
+     * @param shown Whether the alert should be active.
+     */
     private void updateCroppedRawStreamAlert(boolean shown) {
         if (shown == croppedRawStreamAlertShown) return;
         croppedRawStreamAlertShown = shown;
@@ -207,6 +211,8 @@ public class VisionRunner implements AutoCloseable {
      * properties are replaced with ones describing the cropped image, keeping pose estimation
      * consistent with the new framing.
      *
+     * @param cropPipe The pipe holding the crop region, with params already set.
+     * @param frame The (already-rotated) frame to crop.
      * @return The cropped frame, or the frame untouched if there is nothing to do.
      */
     static Frame cropFrame(CropPipe cropPipe, Frame frame) {
@@ -217,8 +223,11 @@ public class VisionRunner implements AutoCloseable {
     private static final double CONTEXT_DIM_FACTOR = 0.35;
 
     /**
+     * @param cropPipe The pipe holding the crop region, with params already set.
+     * @param frame The (already-rotated) frame to crop.
      * @param keepContext Whether to also keep the full (uncropped) color image, with the cropped-away
      *     area dimmed, for the input stream to show the crop in context.
+     * @return The cropped frame, or the frame untouched if there is nothing to do.
      */
     static Frame cropFrame(CropPipe cropPipe, Frame frame, boolean keepContext) {
         var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
@@ -262,6 +271,8 @@ public class VisionRunner implements AutoCloseable {
     /**
      * Crop the given image in place to the pipe's currently configured rectangle.
      *
+     * @param cropPipe The pipe holding the crop region, with params already set.
+     * @param image The image to crop in place.
      * @return Whether the image was actually cropped (an empty image is left untouched).
      */
     private static boolean cropInPlace(CropPipe cropPipe, CVMat image) {

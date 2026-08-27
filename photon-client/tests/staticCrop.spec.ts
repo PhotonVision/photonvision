@@ -101,7 +101,6 @@ test.describe("Static Crop", () => {
     await expect(page.getByText("Crop X Range", { exact: true })).toBeVisible();
     await expect(page.getByText("Crop Y Range", { exact: true })).toBeVisible();
 
-    // Crop is off by default.
     await expect(cropSwitch(page)).not.toBeChecked();
 
     // The range slider itself is disabled while the crop is off (Vuetify marks this with a class on

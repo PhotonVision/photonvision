@@ -100,6 +100,15 @@ public class FrameStaticProperties {
      * Instantiates frame static properties with explicit optical parameters, bypassing the pinhole
      * derivation. Used when transforming existing properties (e.g. cropping) where the focal lengths
      * and principal point are already known and must be preserved rather than recomputed.
+     *
+     * @param imageWidth The width of the image, in pixels.
+     * @param imageHeight The height of the image, in pixels.
+     * @param fov The FOV (Field Of Vision) of the image in degrees.
+     * @param horizontalFocalLength The horizontal focal length, in pixels.
+     * @param verticalFocalLength The vertical focal length, in pixels.
+     * @param centerX The principal point's x coordinate, in pixels.
+     * @param centerY The principal point's y coordinate, in pixels.
+     * @param cal The camera calibration these properties describe, or null if uncalibrated.
      */
     private FrameStaticProperties(
             int imageWidth,

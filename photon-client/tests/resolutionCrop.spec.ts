@@ -79,7 +79,6 @@ test("resolution change scaling and reset", async ({ page }) => {
     await page.waitForTimeout(1500);
   };
 
-  // Start from the largest 16:9-ish mode available.
   const start = names.find((n) => /1920x1080/.test(n)) ?? names[0];
   await pick(new RegExp(start.split(" ")[0]));
   const [sw, sh] = start.split(" ")[0].split("x").map(Number);
