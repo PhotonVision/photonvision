@@ -43,3 +43,24 @@ Orientation can be used to rotate the image prior to vision processing. This can
 ## Stream Resolution
 
 This changes the resolution which is used to stream frames from PhotonVision. This does not change the resolution used to perform vision processing. This is useful to reduce bandwidth consumption on the field. In some high-resolution cases, decreasing stream resolution can increase processing FPS.
+
+## Static Cropping
+
+This allows the image to be cropped prior to vision processing. This is useful for excluding areas of the image that will not be used in the processing pipeline, and the reduced workload for the pipeline can increase performance in some cases. It may also be useful for excluding parts of the image that are causing bad results (e.g. picking up a badly positioned apriltag).
+
+:::{important}
+Having the raw stream open with static cropping has a significant impact on performance. the raw stream should only be open when configuring the cropped area.
+:::
+
+:::{note}
+If the resolution changes after cropping and the new resolution has the same aspect ratio as the original, the crop is scaled directly to the new resolution. If, on the other hand, the new resolution has a different aspect ratio, the crop is reset to zero.
+:::
+
+The borders of the cropped box can be adjusted either with the sliders at the bottom or adjusted directly on the raw stream with the box
+
+```{raw} html
+<video width="85%" controls>
+    <source src="../../_static/assets/static_cropping.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+```
