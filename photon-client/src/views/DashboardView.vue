@@ -98,12 +98,7 @@ const disabledCameras = computed<string>(() => {
 // preview for the raw stream costs extra processing per frame.
 const croppedRawStreamCameras = computed<string>(() => {
   return Object.values(useCameraSettingsStore().cameras)
-    .filter(
-      (c) =>
-        "staticCropEnabled" in c.pipelineSettings &&
-        c.pipelineSettings.staticCropEnabled &&
-        c.pipelineSettings.inputShouldShow
-    )
+    .filter((c) => c.pipelineSettings.staticCropEnabled && c.pipelineSettings.inputShouldShow)
     .map((c) => c.nickname)
     .join(", ");
 });

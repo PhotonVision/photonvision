@@ -80,7 +80,8 @@ const containerStyle = computed<StyleValue>(() => {
 const cropRegion = computed<{ left: number; top: number; width: number; height: number } | null>(() => {
   const resolution = rotatedResolution.value;
   const settings = props.cameraSettings.pipelineSettings;
-  if (resolution === null || !("staticCropEnabled" in settings) || !settings.staticCropEnabled) {
+  // A settings object without crop support (driver mode) reads as undefined -> falsy here.
+  if (resolution === null || !settings.staticCropEnabled) {
     return null;
   }
 
