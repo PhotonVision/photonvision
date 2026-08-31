@@ -71,7 +71,8 @@ public class LinkedMigrationStep {
             return this.run(conn, getUserVersion(conn));
         } catch (SQLException e) {
             throw new MigrationException(
-                    String.format("Failed to read database verison during migration step %s", this.version), e);
+                    String.format("Failed to read database verison during migration step %s", this.version),
+                    e);
         }
     }
 
@@ -92,8 +93,7 @@ public class LinkedMigrationStep {
             } else {
                 // this step doesn't know how to migrate the database it received, throw an exception
                 throw new MigrationException(
-                        String.format(
-                                "Migration not possible for database version %s.", currentVersion));
+                        String.format("Migration not possible for database version %s.", currentVersion));
             }
         }
         return this.version;
@@ -135,9 +135,7 @@ public class LinkedMigrationStep {
             }
 
             try (Connection conn = DriverManager.getConnection(url)) {
-
             } catch (SQLException e) {
-
             }
 
             // Copy JSON files from conf subdirectory

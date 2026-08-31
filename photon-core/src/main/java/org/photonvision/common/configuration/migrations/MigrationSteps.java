@@ -68,7 +68,7 @@ public class MigrationSteps {
         // Fetch all camera data first, then close the result set before making modifications
         var cameraDataList = new ArrayList<Map<String, String>>();
 
-        try {        
+        try {
             var query =
                     conn.prepareStatement(
                             "SELECT unique_name, config_json, drivermode_json, pipeline_jsons, otherpaths_json FROM cameras;");
@@ -89,7 +89,6 @@ public class MigrationSteps {
             result.close();
             query.close();
         } catch (SQLException e) {
-
         }
 
         // Now process the collected data
