@@ -22,8 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
@@ -60,6 +62,22 @@ public class CropPipeTest {
         assertNotNull(out, "Cropping a non-empty Mat with a valid region should produce output");
         assertEquals(40, out.getMat().cols(), "Cropped width should match the configured range");
         assertEquals(30, out.getMat().rows(), "Cropped height should match the configured range");
+
+        try {
+            Field rectField = pipe.getClass().getDeclaredField("cropRect");
+            rectField.setAccessible(true);
+            Rect cropRect = (Rect) rectField.get(pipe);
+
+            // Checks the pixels inside are equal with any values in diff meaning no
+            Mat diff = new Mat();
+            Core.compare(out.getMat(), in.getMat().submat(cropRect), diff, Core.CMP_NE);
+            boolean isIdentical = (Core.countNonZero(diff) == 0);
+            diff.release();
+
+            assertTrue(isIdentical, "Cropped output should match the equivalent submat of the input");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         out.release();
         in.release();
