@@ -18,6 +18,7 @@
 package org.photonvision.common.configuration.migrations;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,14 +35,14 @@ public class MigrationSteps {
 
     public static LinkedMigrationStep buildMigrations() {
         LinkedMigrationStep step;
-        step = LinkedMigrationStep.fromSql(null, 2, schema01);
-        step = LinkedMigrationStep.fromMigrationFunction(step, 3, update2026CameraConfig);
-        step = LinkedMigrationStep.fromSql(step, 4, sql04);
+        step = LinkedMigrationStep.createDatabase(2, schema02);
+        step = LinkedMigrationStep.migrateUsingFunction(step, 3, update2026CameraConfig);
+        step = LinkedMigrationStep.migrateUsingSQL(step, 4, sql04);
 
         return step;
     }
 
-    private static final String schema01 =
+    private static final String schema02 =
         """
         CREATE TABLE IF NOT EXISTS global (
          filename TINYTEXT PRIMARY KEY,
@@ -65,26 +66,31 @@ public class MigrationSteps {
 
     private static MigrationFunction update2026CameraConfig = (conn) -> {
         // Fetch all camera data first, then close the result set before making modifications
-        var query =
-                conn.prepareStatement(
-                        "SELECT unique_name, config_json, drivermode_json, pipeline_jsons, otherpaths_json FROM cameras;");
-        var result = query.executeQuery();
-
-        // Collect all camera data into a list to release the result set
         var cameraDataList = new ArrayList<Map<String, String>>();
-        while (result.next()) {
-            var cameraData = new HashMap<String, String>();
-            cameraData.put("unique_name", result.getString("unique_name"));
-            cameraData.put("config_json", result.getString("config_json"));
-            cameraData.put("drivermode_json", result.getString("drivermode_json"));
-            cameraData.put("pipeline_jsons", result.getString("pipeline_jsons"));
-            cameraData.put("otherpaths_json", result.getString("otherpaths_json"));
-            cameraDataList.add(cameraData);
-        }
 
-        // Close the result set and query statement immediately
-        result.close();
-        query.close();
+        try {        
+            var query =
+                    conn.prepareStatement(
+                            "SELECT unique_name, config_json, drivermode_json, pipeline_jsons, otherpaths_json FROM cameras;");
+            var result = query.executeQuery();
+
+            // Collect all camera data into a list to release the result set
+            while (result.next()) {
+                var cameraData = new HashMap<String, String>();
+                cameraData.put("unique_name", result.getString("unique_name"));
+                cameraData.put("config_json", result.getString("config_json"));
+                cameraData.put("drivermode_json", result.getString("drivermode_json"));
+                cameraData.put("pipeline_jsons", result.getString("pipeline_jsons"));
+                cameraData.put("otherpaths_json", result.getString("otherpaths_json"));
+                cameraDataList.add(cameraData);
+            }
+
+            // Close the result set and query statement immediately
+            result.close();
+            query.close();
+        } catch (SQLException e) {
+
+        }
 
         // Now process the collected data
         try {

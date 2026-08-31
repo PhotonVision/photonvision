@@ -155,6 +155,8 @@ public class SqlConfigProvider extends ConfigProvider {
         } catch (SQLException e) {
             // Can't connect to the database to run the migration.
             logger.error("Failed to connect to database at " + url, e);
+        } catch (MigrationException e) {
+            logger.error("Migration failure! ", e);
         }
     }
 
