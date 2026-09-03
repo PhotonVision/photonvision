@@ -112,12 +112,35 @@ public class StaticCropPoseTest {
 
             var uncropped = poseFrom(pipeline, provider);
 
-            var settings = pipeline.getSettings();
-            settings.staticCropEnabled = true;
-            settings.staticCropX.set(201, 501);
-            settings.staticCropY.set(151, 401);
+            // Space on both sides
+            {
+                var settings = pipeline.getSettings();
+                settings.staticCropEnabled = true;
+                settings.staticCropX.set(201, 501);
+                settings.staticCropY.set(151, 401);
 
-            assertSamePose(uncropped, poseFrom(pipeline, provider), "Cropping at decimate " + decimate);
+                assertSamePose(uncropped, poseFrom(pipeline, provider), "Cropping at decimate " + decimate);
+            }
+
+            // Expand up
+            {
+                var settings = pipeline.getSettings();
+                settings.staticCropEnabled = true;
+                settings.staticCropX.set(0, 501);
+                settings.staticCropY.set(0, 401);
+
+                assertSamePose(uncropped, poseFrom(pipeline, provider), "Cropping at decimate " + decimate);
+            }
+
+            // Expand down
+            {
+                var settings = pipeline.getSettings();
+                settings.staticCropEnabled = true;
+                settings.staticCropX.set(201, 640);
+                settings.staticCropY.set(151, 480);
+
+                assertSamePose(uncropped, poseFrom(pipeline, provider), "Cropping at decimate " + decimate);
+            }
         }
     }
 
