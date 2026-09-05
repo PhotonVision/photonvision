@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import org.opencv.core.Mat;
 import org.opencv.core.Rect;
+import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
@@ -74,6 +76,62 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
         }
 
         return new CVMat(in.getMat().submat(effective));
+    }
+
+    /** How much the cropped-away area is dimmed in the input stream's context image. */
+    private static final double CONTEXT_DIM_FACTOR = 0.35;
+
+    public Frame cropFrame(Frame frame) {
+        return cropFrame(frame, false);
+    }
+
+    public Frame cropFrame(Frame frame, boolean keepContext) {
+        var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
+        Rect effectiveCrop = effectiveCrop(reference.getMat().cols(), reference.getMat().rows());
+        if (effectiveCrop == null) {
+            return frame;
+        }
+
+        CVMat contextImage = null;
+        if (keepContext && !frame.colorImage.getMat().empty()) {
+            Mat dimmed = new Mat();
+            frame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
+            frame.colorImage.getMat().submat(effectiveCrop).copyTo(dimmed.submat(effectiveCrop));
+            contextImage = new CVMat(dimmed);
+        }
+
+        boolean cropped = cropInPlace(frame.colorImage);
+        cropped |= cropInPlace(frame.processedImage);
+        if (!cropped) {
+            if (contextImage != null) contextImage.release();
+            return frame;
+        }
+
+        var croppedFrame =
+                new Frame(
+                        frame.sequenceID,
+                        frame.colorImage,
+                        frame.processedImage,
+                        frame.type,
+                        frame.timestampNanos,
+                        frame.frameStaticProperties != null
+                                ? frame.frameStaticProperties.crop(effectiveCrop)
+                                : null);
+        croppedFrame.contextColorImage = contextImage;
+        return croppedFrame;
+    }
+
+    private boolean cropInPlace(CVMat image) {
+        var result = run(image);
+        if (result.output == null) {
+            return false;
+        }
+
+        Mat cropped = result.output.getMat().clone();
+        result.output.release();
+        cropped.copyTo(image.getMat());
+        cropped.release();
+        return true;
     }
 
     /**

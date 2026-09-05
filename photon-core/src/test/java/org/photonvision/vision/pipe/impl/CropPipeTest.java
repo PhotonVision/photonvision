@@ -32,6 +32,8 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
@@ -50,6 +52,55 @@ public class CropPipeTest {
                 new CropPipe.CropPipeParams(
                         settings(new IntegerCouple(x0, x1), new IntegerCouple(y0, y1))));
         return pipe;
+    }
+
+    /** A frame whose color image is a uniform gray, bright enough to measure dimming against. */
+    private static Frame uniformFrame(int cols, int rows, int value) {
+        return new Frame(
+                0,
+                new CVMat(new Mat(rows, cols, CvType.CV_8UC3, new Scalar(value, value, value))),
+                new CVMat(new Mat(rows, cols, CvType.CV_8UC1, new Scalar(value))),
+                FrameThresholdType.GREYSCALE,
+                0,
+                null);
+    }
+
+    @Test
+    public void cropFrameKeepsADimmedFullFrameContextImage() {
+        var pipe = pipeFor(100, 300, 50, 200);
+        var frame = uniformFrame(640, 480, 200);
+
+        var cropped = pipe.cropFrame(frame, true);
+
+        assertEquals(200, cropped.colorImage.getMat().cols());
+        assertEquals(150, cropped.colorImage.getMat().rows());
+
+        var context = cropped.contextColorImage;
+        assertNotNull(context, "Cropping with keepContext should produce a context image");
+        assertEquals(640, context.getMat().cols());
+        assertEquals(480, context.getMat().rows());
+
+        byte[] pixel = new byte[3];
+        context.getMat().get(100, 150, pixel);
+        assertEquals(200, pixel[0] & 0xFF, "Pixels inside the crop stay at full brightness");
+        context.getMat().get(10, 10, pixel);
+        int dimmed = pixel[0] & 0xFF;
+        assertTrue(
+                dimmed > 0 && dimmed < 120, "Pixels outside the crop should be dimmed, got " + dimmed);
+
+        cropped.release();
+        assertTrue(context.isReleased(), "The context image is owned by the frame");
+    }
+
+    @Test
+    public void cropFrameWithoutContextKeepsNoExtraImage() {
+        var pipe = pipeFor(100, 300, 50, 200);
+        var frame = uniformFrame(640, 480, 200);
+
+        var cropped = pipe.cropFrame(frame, false);
+
+        assertNull(cropped.contextColorImage, "No context image unless asked for");
+        cropped.release();
     }
 
     @Test
@@ -261,7 +312,8 @@ public class CropPipeTest {
         settings.decimate = 1;
         var rect = CropPipe.cropRectFromSettings(settings);
         assertEquals(0, rect.x, "x origin should remain at the frame edge");
-        assertEquals(837, rect.x + rect.width, "The requested region's right edge should still be covered");
+        assertEquals(
+                837, rect.x + rect.width, "The requested region's right edge should still be covered");
         assertTrue(rect.width > 0, "Width should be positive");
     }
 

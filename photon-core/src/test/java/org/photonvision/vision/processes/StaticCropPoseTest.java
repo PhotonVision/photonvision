@@ -29,7 +29,6 @@ import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.ImageRotationMode;
-import org.photonvision.vision.pipe.impl.CropPipe;
 import org.photonvision.vision.pipeline.AprilTagPipeline;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.math.geometry.Transform3d;
@@ -78,16 +77,9 @@ public class StaticCropPoseTest {
      * The pose of the first target found, run through the pipeline as the vision thread would: grab a
      * frame, apply the static crop from the pipeline's settings, process.
      */
-    /** A crop pipe configured from the pipeline's settings, as the vision loop does each frame. */
-    private static CropPipe cropPipeFor(
-            org.photonvision.vision.pipeline.AdvancedPipelineSettings settings) {
-        var pipe = new CropPipe();
-        pipe.setParams(new CropPipe.CropPipeParams(settings));
-        return pipe;
-    }
-
     private static Transform3d poseFrom(AprilTagPipeline pipeline, FileFrameProvider provider) {
-        var frame = VisionRunner.cropFrame(cropPipeFor(pipeline.getSettings()), provider.get());
+        provider.setCropParams(pipeline.getSettings());
+        var frame = provider.cropFrame(provider.get(), false);
         var result = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         assertFalse(result.targets.isEmpty(), "The tag should be found");
         return result.targets.get(0).getBestCameraToTarget3d();
