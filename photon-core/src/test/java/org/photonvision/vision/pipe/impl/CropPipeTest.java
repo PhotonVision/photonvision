@@ -248,6 +248,23 @@ public class CropPipeTest {
         assertEquals(401, rect.y + rect.height, "The requested region should still be covered");
     }
 
+    @Test
+    public void apriltagCropAtFrameEdgeKeepsZeroOrigin() {
+        // Regression test for a bug where a zero low bound moved the aligned origin
+        // past the high bound producing negative widths (e.g. Rect "-1x...").
+        var settings = new AprilTagPipelineSettings();
+        settings.staticCropEnabled = true;
+        // Low bound touching the left edge
+        settings.staticCropX = new IntegerCouple(0, 837);
+        settings.staticCropY = new IntegerCouple(92, 441);
+
+        settings.decimate = 1;
+        var rect = CropPipe.cropRectFromSettings(settings);
+        assertEquals(0, rect.x, "x origin should remain at the frame edge");
+        assertEquals(837, rect.x + rect.width, "The requested region's right edge should still be covered");
+        assertTrue(rect.width > 0, "Width should be positive");
+    }
+
     /**
      * Only the apriltag detector cares about the tiling, so other pipelines get what they asked for.
      */

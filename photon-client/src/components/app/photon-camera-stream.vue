@@ -64,8 +64,12 @@ const containerStyle = computed<StyleValue>(() => {
   // The Processed stream contains only the cropped pixels, so its card takes the crop's shape.
   const region = cropRegion.value;
   if (!isRawStream && region !== null) {
+    // Keep the card size stable even when a processed (cropped-only) stream is shown.
+    // Previously the card adopted the crop's aspect ratio which caused the surrounding
+    // Cameras view to grow/shrink while adjusting the crop. Use the full-frame
+    // aspect ratio so adjusting the crop doesn't change the overall layout.
     return {
-      aspectRatio: `${Math.round(region.width * resolution.width)}/${Math.round(region.height * resolution.height)}`
+      aspectRatio: `${resolution.width}/${resolution.height}`
     };
   }
   return {

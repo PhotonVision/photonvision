@@ -112,8 +112,12 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
             // Grow the region up to the tile boundary below it rather than moving it, so the crop still
             // covers everything that was asked for.
             int tile = APRILTAG_TILE_SIZE * Math.max(1, tagSettings.decimate);
-            int alignedX = (xLow == 0) ? xHigh + (xHigh % tile) : xLow - (xLow % tile);
-            int alignedY = (yLow == 0) ? yHigh + (yHigh % tile) : yLow - (yLow % tile);
+            // Snap the crop origin outward to the nearest tile boundary below it. If the low bound
+            // is already at 0 (touching the left/top edge), keep it at 0 rather than moving it
+            // to a value computed from the high bound (which could overflow past the image and
+            // produce negative widths).
+            int alignedX = xLow - (xLow % tile);
+            int alignedY = yLow - (yLow % tile);
 
             width += xLow - alignedX;
             height += yLow - alignedY;
