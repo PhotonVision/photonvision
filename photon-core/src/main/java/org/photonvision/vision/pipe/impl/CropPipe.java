@@ -169,7 +169,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
         if (settings instanceof AprilTagPipelineSettings tagSettings) {
             // Grow the region up to the tile boundary below it rather than moving it, so the crop still
             // covers everything that was asked for.
-            int tile = APRILTAG_TILE_SIZE * Math.max(1, tagSettings.decimate);
+            int tile = APRILTAG_TILE_SIZE * tagSettings.decimate;
             // Snap the crop origin outward to the nearest tile boundary below it. If the low bound
             // is already at 0 (touching the left/top edge), keep it at 0 rather than moving it
             // to a value computed from the high bound (which could overflow past the image and
