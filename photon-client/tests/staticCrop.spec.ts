@@ -182,12 +182,12 @@ test.describe("Static Crop", () => {
     await cropXMax.fill(String(Math.floor(frameWidth / 2)));
     await cropXMax.press("Enter");
 
-    // The processed card reshapes to the crop -- no black box, no repositioned image, just the
-    // cropped pixels at the crop's aspect ratio.
+    // The processed card keeps the full-frame aspect ratio while only the cropped pixels remain in
+    // view; the crop overlays stay on the Raw view.
     const container = page.locator(".stream-container").filter({ has: page.getByAltText("Processed Stream View") });
     await expect(container).toHaveAttribute(
       "style",
-      new RegExp(`aspect-ratio: ${Math.floor(frameWidth / 2)}\\s*/\\s*${frameHeight}`)
+      new RegExp(`aspect-ratio: ${frameWidth}\\s*\\/\\s*${frameHeight}`)
     );
     await expect(frame).not.toHaveCSS("background-color", "rgb(0, 0, 0)");
     await expect(frame.locator("img")).not.toHaveAttribute("style", /width: 50%/);
@@ -204,10 +204,11 @@ test.describe("Static Crop", () => {
     await expect(raw.locator(".crop-handle")).toHaveCount(8);
     await expect(raw.locator(".crop-handle").first()).toBeVisible();
 
-    // Turning the crop off removes the overlays and restores the processed card's shape.
+    // Turning the crop off removes the overlays and keeps the processed card at the same full-frame
+    // aspect ratio.
     await cropSwitch(page).uncheck();
     await expect(raw.locator(".crop-outline")).not.toBeVisible();
-    await expect(container).toHaveAttribute("style", new RegExp(`aspect-ratio: ${frameWidth}\\s*/`));
+    await expect(container).toHaveAttribute("style", new RegExp(`aspect-ratio: ${frameWidth}\\s*\\/\\s*${frameHeight}`));
   });
 
   test("a crop region can be drawn on the stream", async ({ page }) => {
