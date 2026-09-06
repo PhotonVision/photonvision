@@ -77,10 +77,11 @@ const containerStyle = computed<StyleValue>(() => {
   };
 });
 
-// The static crop region as fractions of the full (rotated) frame, or null when cropping is off or
-// covers the whole frame. Mirrors the backend's clamping: bounds are clamped into the frame (the
-// stored upper bounds default to a larger-than-any-frame sentinel meaning "the frame edge") and a
-// reversed range is normalized.
+// The static crop region as fractions of the full (rotated) frame, or null when cropping is off.
+// Mirrors the backend's clamping: bounds are clamped into the frame (the stored upper bounds
+// default to a larger-than-any-frame sentinel meaning "the frame edge") and a reversed range is
+// normalized. A whole-frame region still shows, so an enabled crop is always adjustable on the
+// stream even before it is narrowed.
 const cropRegion = computed<{ left: number; top: number; width: number; height: number } | null>(() => {
   const resolution = rotatedResolution.value;
   const settings = props.cameraSettings.pipelineSettings;
@@ -98,9 +99,8 @@ const cropRegion = computed<{ left: number; top: number; width: number; height: 
   const [x0, x1] = clampedRange(settings.staticCropX, resolution.width);
   const [y0, y1] = clampedRange(settings.staticCropY, resolution.height);
 
-  // A degenerate or whole-frame region means the backend doesn't crop at all.
+  // A degenerate region means the backend doesn't crop at all.
   if (x1 - x0 <= 0 || y1 - y0 <= 0) return null;
-  if (x0 === 0 && y0 === 0 && x1 === resolution.width && y1 === resolution.height) return null;
 
   return {
     left: x0 / resolution.width,
@@ -123,7 +123,7 @@ onMounted(() => {
 onBeforeUnmount(() => containerResizeObserver?.disconnect());
 
 // On the Raw stream, the frame box is sized to exactly the full frame's on-screen rectangle
-// (contain-fit to the measured container) whenever the crop region is shown or drawn, so the region
+// (contain-fit to the measured container) whenever the crop region is shown, so the region
 // overlays and pointer positions map linearly to frame pixels. The Processed stream (and the
 // no-crop case) just fills the container and lets the stream contain-fit as always.
 const frameStyle = computed<StyleValue>(() => {
@@ -131,7 +131,7 @@ const frameStyle = computed<StyleValue>(() => {
   const container = containerSize.value;
   if (
     !isRawStream ||
-    (cropRegion.value === null && !useStateStore().cropDrawingMode) ||
+    cropRegion.value === null ||
     resolution === null ||
     container === null ||
     container.width <= 0 ||
@@ -143,73 +143,11 @@ const frameStyle = computed<StyleValue>(() => {
   return {
     position: "relative",
     width: `${resolution.width * scale}px`,
-    height: `${resolution.height * scale}px`,
-    cursor: useStateStore().cropDrawingMode ? "crosshair" : undefined
+    height: `${resolution.height * scale}px`
   };
 });
 
-// Drag-to-select a crop region. The selection is tracked as fractions of the full-frame box, so it
-// is resolution- and zoom-independent until the pointer is released, when it is converted to pixel
-// bounds in the rotated frame and written to the pipeline's static crop settings.
 const streamFrame = useTemplateRef("streamFrame");
-const dragSelection = ref<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
-
-const pointerFraction = (event: PointerEvent): { x: number; y: number } | null => {
-  const rect = streamFrame.value?.getBoundingClientRect();
-  if (!rect || rect.width <= 0 || rect.height <= 0) return null;
-  return {
-    x: Math.max(0, Math.min((event.clientX - rect.left) / rect.width, 1)),
-    y: Math.max(0, Math.min((event.clientY - rect.top) / rect.height, 1))
-  };
-};
-
-const handleDrawStart = (event: PointerEvent) => {
-  if (!isRawStream || !useStateStore().cropDrawingMode) return;
-  const point = pointerFraction(event);
-  if (point === null) return;
-  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-  dragSelection.value = { x0: point.x, y0: point.y, x1: point.x, y1: point.y };
-};
-
-const handleDrawMove = (event: PointerEvent) => {
-  if (dragSelection.value === null) return;
-  const point = pointerFraction(event);
-  if (point === null) return;
-  dragSelection.value = { ...dragSelection.value, x1: point.x, y1: point.y };
-};
-
-const handleDrawEnd = () => {
-  const selection = dragSelection.value;
-  const resolution = rotatedResolution.value;
-  dragSelection.value = null;
-  if (selection === null || resolution === null || !useStateStore().cropDrawingMode) return;
-
-  const x0 = Math.round(Math.min(selection.x0, selection.x1) * resolution.width);
-  const x1 = Math.round(Math.max(selection.x0, selection.x1) * resolution.width);
-  const y0 = Math.round(Math.min(selection.y0, selection.y1) * resolution.height);
-  const y1 = Math.round(Math.max(selection.y0, selection.y1) * resolution.height);
-
-  // Ignore accidental clicks and slivers -- a real region is at least a few pixels each way.
-  if (x1 - x0 < 4 || y1 - y0 < 4) return;
-
-  useCameraSettingsStore().changeCurrentPipelineSetting(
-    { staticCropEnabled: true, staticCropX: [x0, x1], staticCropY: [y0, y1] },
-    true,
-    props.cameraSettings.uniqueName
-  );
-  useStateStore().cropDrawingMode = false;
-};
-
-const selectionStyle = computed<StyleValue>(() => {
-  const selection = dragSelection.value;
-  if (selection === null) return { display: "none" };
-  return {
-    left: `${Math.min(selection.x0, selection.x1) * 100}%`,
-    top: `${Math.min(selection.y0, selection.y1) * 100}%`,
-    width: `${Math.abs(selection.x1 - selection.x0) * 100}%`,
-    height: `${Math.abs(selection.y1 - selection.y0) * 100}%`
-  };
-});
 
 // The crop region geometry currently on screen: while the region is being moved or resized this is
 // the dragged geometry (the throttled live commits catch the backend up as the pointer travels).
@@ -261,12 +199,9 @@ const handleBoxStyle = computed<StyleValue>(() => {
   return regionGeometryStyle(preview);
 });
 
-// Dragging the visible crop region adjusts the crop without re-drawing it: grabbing its interior
-// moves the window around the frame, grabbing a border (or corner) resizes it.
-const canAdjustCrop = computed(
-  () =>
-    isRawStream && cropRegion.value !== null && !useStateStore().cropDrawingMode && !useStateStore().colorPickingMode
-);
+// Dragging the visible crop region adjusts the crop: grabbing its interior moves the window around
+// the frame, grabbing a border (or corner) resizes it.
+const canAdjustCrop = computed(() => isRawStream && cropRegion.value !== null && !useStateStore().colorPickingMode);
 
 // Which crop borders a drag adjusts; none selected means the whole region moves.
 type DragEdges = { left: boolean; right: boolean; top: boolean; bottom: boolean };
@@ -478,7 +413,7 @@ const handleRegionPointerLeave = () => {
 };
 
 const overlayStyle = computed<StyleValue>(() => {
-  if (useStateStore().colorPickingMode || useStateStore().cropDrawingMode || streamSrc.value === emptyStreamSrc) {
+  if (useStateStore().colorPickingMode || streamSrc.value === emptyStreamSrc) {
     return { display: "none" };
   } else {
     return {};
@@ -521,14 +456,7 @@ onBeforeUnmount(() => {
 <template>
   <div ref="streamContainer" class="stream-container" :style="containerStyle">
     <pv-loading class="stream-loading" />
-    <div
-      ref="streamFrame"
-      class="stream-frame"
-      :style="frameStyle"
-      @pointerdown.prevent="handleDrawStart"
-      @pointermove="handleDrawMove"
-      @pointerup="handleDrawEnd"
-    >
+    <div ref="streamFrame" class="stream-frame" :style="frameStyle">
       <img
         :id="id"
         ref="mjpgStream"
@@ -544,7 +472,6 @@ onBeforeUnmount(() => {
         @pointerup="handleRegionPointerUp"
         @pointerleave="handleRegionPointerLeave"
       />
-      <div class="crop-selection" :style="selectionStyle" />
       <div class="crop-outline" :style="cropOutlineStyle" />
       <div class="crop-handles" :style="handleBoxStyle">
         <div
@@ -614,13 +541,6 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(0, 0, 0, 0.6);
   border-radius: 1px;
   transform: translate(-50%, -50%);
-}
-
-.crop-selection {
-  position: absolute;
-  border: 2px dashed #ffd843;
-  background-color: rgba(255, 216, 67, 0.15);
-  pointer-events: none;
 }
 
 .stream-video {

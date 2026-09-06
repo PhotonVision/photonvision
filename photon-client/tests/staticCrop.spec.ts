@@ -208,44 +208,43 @@ test.describe("Static Crop", () => {
     // aspect ratio.
     await cropSwitch(page).uncheck();
     await expect(raw.locator(".crop-outline")).not.toBeVisible();
-    await expect(container).toHaveAttribute("style", new RegExp(`aspect-ratio: ${frameWidth}\\s*\\/\\s*${frameHeight}`));
+    await expect(container).toHaveAttribute(
+      "style",
+      new RegExp(`aspect-ratio: ${frameWidth}\\s*\\/\\s*${frameHeight}`)
+    );
   });
 
-  test("a crop region can be drawn on the stream", async ({ page }) => {
-    // Drawing mode is entered from the Input tab.
-    await page.getByRole("button", { name: "Draw Crop Region" }).click();
-    await expect(page.getByText("Drag a box on the camera stream")).toBeVisible();
+  test("enabling the crop shows the adjustable region on the raw stream", async ({ page }) => {
+    await showRawStream(page);
+    const raw = rawFrame(page);
 
-    // Drawing mode shows only the Raw stream; drag a box over the middle of it: 25%..75% in x,
-    // 25%..60% in y. The stream card can be scrolled out of view, so bring it back first.
-    const frame = rawFrame(page);
-    await frame.scrollIntoViewIfNeeded();
-    const box = await stableBoundingBox(frame);
+    // No crop, no overlays.
+    await expect(raw.locator(".crop-outline")).not.toBeVisible();
+
+    // Enabling the crop shows the box and handles immediately, before the region is narrowed --
+    // the default region covers the whole frame.
+    await cropSwitch(page).check();
+    await expect(raw.locator(".crop-outline")).toBeVisible();
+    await expect(raw.locator(".crop-outline")).toHaveAttribute("style", /width: 100%/);
+    await expect(raw.locator(".crop-handle")).toHaveCount(8);
+    await expect(raw.locator(".crop-handle").first()).toBeVisible();
+
+    // The whole-frame region is adjustable in place: drag the right border a quarter frame inward.
+    const xInputs = cropRangeInputs(page, "Crop X Range");
+    const frameWidth = Number(await xInputs.nth(1).getAttribute("max"));
+    await raw.scrollIntoViewIfNeeded();
+    const box = await stableBoundingBox(raw);
     expect(box).not.toBeNull();
     if (!box) return;
-    await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.25);
+    await page.mouse.move(box.x + box.width - 3, box.y + box.height * 0.5);
     await page.mouse.down();
-    await page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.6, { steps: 5 });
+    await page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.5, { steps: 5 });
     await page.mouse.up();
 
-    // Drawing enables the crop and exits drawing mode.
-    await expect(cropSwitch(page)).toBeChecked();
-    await expect(page.getByText("Drag a box on the camera stream")).not.toBeVisible();
-
-    // The drawn fractions land in the crop sliders as pixel bounds of the (rotated) frame.
-    const xInputs = cropRangeInputs(page, "Crop X Range");
-    const yInputs = cropRangeInputs(page, "Crop Y Range");
-    const frameWidth = Number(await xInputs.nth(1).getAttribute("max"));
-    const frameHeight = Number(await yInputs.nth(1).getAttribute("max"));
-    const near = async (locator: Locator, expected: number) => {
-      await expect
-        .poll(async () => Math.abs(Number(await locator.inputValue()) - expected))
-        .toBeLessThanOrEqual(Math.max(10, frameWidth / 100));
-    };
-    await near(xInputs.nth(0), frameWidth * 0.25);
-    await near(xInputs.nth(1), frameWidth * 0.75);
-    await near(yInputs.nth(0), frameHeight * 0.25);
-    await near(yInputs.nth(1), frameHeight * 0.6);
+    await expect
+      .poll(async () => Math.abs(Number(await xInputs.nth(1).inputValue()) - frameWidth * 0.75))
+      .toBeLessThanOrEqual(Math.max(10, frameWidth / 100));
+    await expect(xInputs.nth(0)).toHaveValue("0");
   });
 
   test("the reset button restores the full-frame crop", async ({ page }) => {
