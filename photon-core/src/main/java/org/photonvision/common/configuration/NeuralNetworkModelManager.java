@@ -59,6 +59,8 @@ public class NeuralNetworkModelManager {
 
     final List<Family> supportedBackends = new ArrayList<>();
 
+    public static final String SHIPPED_TAG_MODEL_NICKNAME = "AprilTag v4";
+
     /**
      * This function stores the properties of the shipped object detection models. It is stored as a
      * function so that it can be dynamic, to adjust for the models directory.
@@ -153,7 +155,7 @@ public class NeuralNetworkModelManager {
         nnProps.addModelProperties(
                 new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "apriltagV4-yolo11.rknn"),
-                        "AprilTag v4",
+                        SHIPPED_TAG_MODEL_NICKNAME,
                         new LinkedList<String>(List.of("apriltag")),
                         640,
                         640,
@@ -163,7 +165,7 @@ public class NeuralNetworkModelManager {
         nnProps.addModelProperties(
                 new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "apriltagV4-yolo11.tflite"),
-                        "AprilTag v4",
+                        SHIPPED_TAG_MODEL_NICKNAME,
                         new LinkedList<String>(List.of("apriltag")),
                         640,
                         640,
@@ -317,6 +319,33 @@ public class NeuralNetworkModelManager {
                 if (model.isPresent()) {
                     return model;
                 }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * The shipped AprilTag detector model, if it is loaded for a supported backend. This is the
+     * default model for ML-assisted AprilTag detection.
+     */
+    public Optional<Model> getDefaultTagModel() {
+        if (models == null) {
+            return Optional.empty();
+        }
+
+        for (Family backend : supportedBackends) {
+            var backendModels = models.get(backend);
+            if (backendModels == null) {
+                continue;
+            }
+
+            Optional<Model> model =
+                    backendModels.stream()
+                            .filter(m -> SHIPPED_TAG_MODEL_NICKNAME.equals(m.getNickname()))
+                            .findFirst();
+            if (model.isPresent()) {
+                return model;
             }
         }
 

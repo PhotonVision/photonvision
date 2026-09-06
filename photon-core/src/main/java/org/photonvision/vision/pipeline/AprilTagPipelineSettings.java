@@ -18,8 +18,10 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.Objects;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.target.TargetModel;
 
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
@@ -47,6 +49,11 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         cameraExposureRaw = 20;
         cameraAutoExposure = false;
         ledMode = false;
+        tagModel =
+                NeuralNetworkModelManager.getInstance()
+                        .getDefaultTagModel()
+                        .map(Model::getProperties)
+                        .orElse(null);
     }
 
     @Override
