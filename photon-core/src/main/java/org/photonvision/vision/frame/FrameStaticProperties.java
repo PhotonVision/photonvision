@@ -41,11 +41,6 @@ public class FrameStaticProperties {
     private final FrameStaticProperties[] cachedRotationStaticProperties =
             new FrameStaticProperties[4];
 
-    // The crop rectangle rarely changes between frames, so cache the last cropped result to avoid
-    // reallocating native calibration memory every frame.
-    private Rect cachedCropRect = null;
-    private FrameStaticProperties cachedCropStaticProperties = null;
-
     /**
      * Instantiates a new Frame static properties.
      *
@@ -132,9 +127,14 @@ public class FrameStaticProperties {
     }
 
     /**
-     * Produce frame static properties for a statically-cropped image. Cropping shrinks the image and
+     * Derive frame static properties for a statically-cropped image. Cropping shrinks the image and
      * shifts the origin to the crop's top-left corner, so the principal point shifts by the crop
      * origin while the focal lengths (which depend on the lens, not the framing) are preserved.
+     *
+     * <p>When calibrated, each call allocates fresh derived calibration coefficients holding native
+     * memory; the caller owns them and must release them when done. A caller cropping every frame
+     * should cache the result per rectangle, as {@link org.photonvision.vision.pipe.impl.CropPipe}
+     * does.
      *
      * @param cropRect The crop rectangle, in pixel coordinates of this image. Must lie within the
      *     image bounds. A null rectangle is treated as a no-op.
@@ -142,61 +142,27 @@ public class FrameStaticProperties {
      */
     public FrameStaticProperties crop(Rect cropRect) {
         if (cropRect == null) {
-            // Cropping is disabled, so the cached crop can never be reused; don't hold its native
-            // calibration memory alive until the next crop happens to come along.
-            releaseCachedCrop();
             return this;
         }
 
-        if (cropRect.equals(cachedCropRect)) {
-            return cachedCropStaticProperties;
-        }
-
-        FrameStaticProperties cropped;
         if (cameraCalibration != null) {
             // Derive optical parameters from the shifted intrinsics so everything stays self
             // consistent with the cropped calibration used for pose estimation.
-            cropped =
-                    new FrameStaticProperties(
-                            cropRect.width, cropRect.height, fov, cameraCalibration.cropCoefficients(cropRect));
-        } else {
-            // No calibration: keep the focal lengths (the lens is unchanged) and shift the principal
-            // point to match the new image origin.
-            cropped =
-                    new FrameStaticProperties(
-                            cropRect.width,
-                            cropRect.height,
-                            fov,
-                            horizontalFocalLength,
-                            verticalFocalLength,
-                            centerX - cropRect.x,
-                            centerY - cropRect.y,
-                            null);
+            return new FrameStaticProperties(
+                    cropRect.width, cropRect.height, fov, cameraCalibration.cropCoefficients(cropRect));
         }
 
-        // The crop rect changed, so the previously cached properties are now garbage -- free the
-        // native calibration memory they own.
-        releaseCachedCrop();
-
-        cachedCropRect = cropRect.clone();
-        cachedCropStaticProperties = cropped;
-        return cropped;
-    }
-
-    /**
-     * Discard the cached cropped properties, releasing the derived calibration coefficients they own.
-     */
-    private void releaseCachedCrop() {
-        if (cachedCropStaticProperties != null
-                && cachedCropStaticProperties.cameraCalibration != null
-                // Only release coefficients derived here -- never the ones this instance borrowed from
-                // its camera, which outlive any single crop.
-                && cachedCropStaticProperties.cameraCalibration != cameraCalibration) {
-            cachedCropStaticProperties.cameraCalibration.release();
-        }
-
-        cachedCropRect = null;
-        cachedCropStaticProperties = null;
+        // No calibration: keep the focal lengths (the lens is unchanged) and shift the principal
+        // point to match the new image origin.
+        return new FrameStaticProperties(
+                cropRect.width,
+                cropRect.height,
+                fov,
+                horizontalFocalLength,
+                verticalFocalLength,
+                centerX - cropRect.x,
+                centerY - cropRect.y,
+                null);
     }
 
     public FrameStaticProperties rotate(ImageRotationMode rotation) {

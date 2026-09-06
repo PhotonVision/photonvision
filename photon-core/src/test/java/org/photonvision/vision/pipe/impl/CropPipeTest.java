@@ -19,10 +19,14 @@ package org.photonvision.vision.pipe.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Core;
@@ -30,9 +34,14 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraLensModel;
+import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
@@ -56,13 +65,124 @@ public class CropPipeTest {
 
     /** A frame whose color image is a uniform gray, bright enough to measure dimming against. */
     private static Frame uniformFrame(int cols, int rows, int value) {
+        return uniformFrame(cols, rows, value, null);
+    }
+
+    /** A uniform-gray frame carrying the given static properties. */
+    private static Frame uniformFrame(int cols, int rows, int value, FrameStaticProperties props) {
         return new Frame(
                 0,
                 new CVMat(new Mat(rows, cols, CvType.CV_8UC3, new Scalar(value, value, value))),
                 new CVMat(new Mat(rows, cols, CvType.CV_8UC1, new Scalar(value))),
                 FrameThresholdType.GREYSCALE,
                 0,
-                null);
+                props);
+    }
+
+    /** A 640x480 calibration with an easily-checked principal point and focal length. */
+    private static CameraCalibrationCoefficients calibration() {
+        return new CameraCalibrationCoefficients(
+                new Size(640, 480),
+                new JsonMatOfDouble(3, 3, new double[] {600, 0, 320, 0, 600, 240, 0, 0, 1}),
+                new JsonMatOfDouble(1, 5, new double[] {0.1, -0.2, 0.001, 0.002, 0.03}),
+                new double[] {},
+                List.of(),
+                new Size(),
+                1,
+                CameraLensModel.LENSMODEL_OPENCV);
+    }
+
+    @Test
+    public void croppedPropertiesAreCachedPerRectangle() {
+        var pipe = pipeFor(100, 300, 50, 200);
+        var props = new FrameStaticProperties(640, 480, 70.0, null);
+
+        var first = pipe.cropFrame(uniformFrame(640, 480, 200, props));
+        var second = pipe.cropFrame(uniformFrame(640, 480, 200, props));
+        assertSame(
+                first.frameStaticProperties,
+                second.frameStaticProperties,
+                "An unchanged crop should reuse the derived properties");
+
+        first.release();
+        second.release();
+    }
+
+    @Test
+    public void changingTheCropReleasesTheSupersededCalibration() {
+        var cal = calibration();
+        var props = new FrameStaticProperties(640, 480, 70.0, cal);
+        var pipe = pipeFor(100, 300, 50, 200);
+
+        var first = pipe.cropFrame(uniformFrame(640, 480, 200, props));
+        var firstCal = first.frameStaticProperties.cameraCalibration;
+        // Force the lazy native allocation that the release has to clean up.
+        assertNotNull(firstCal.getCameraIntrinsicsMat());
+        first.release();
+
+        pipe.setParams(
+                new CropPipe.CropPipeParams(
+                        settings(new IntegerCouple(120, 320), new IntegerCouple(60, 210))));
+        var second = pipe.cropFrame(uniformFrame(640, 480, 200, props));
+        var secondCal = second.frameStaticProperties.cameraCalibration;
+        assertNotSame(firstCal, secondCal);
+
+        assertThrows(
+                RuntimeException.class,
+                () -> firstCal.getCameraIntrinsicsMat(),
+                "The superseded cropped calibration should have been released");
+        assertNotNull(
+                secondCal.getCameraIntrinsicsMat(),
+                "The current cropped calibration should still be usable");
+        assertNotNull(
+                cal.getCameraIntrinsicsMat(), "The camera's own calibration should not be released");
+        second.release();
+    }
+
+    @Test
+    public void disablingTheCropReleasesTheCachedCalibration() {
+        var cal = calibration();
+        var props = new FrameStaticProperties(640, 480, 70.0, cal);
+        var pipe = pipeFor(100, 300, 50, 200);
+
+        var cropped = pipe.cropFrame(uniformFrame(640, 480, 200, props));
+        var croppedCal = cropped.frameStaticProperties.cameraCalibration;
+        assertNotNull(croppedCal.getCameraIntrinsicsMat());
+        cropped.release();
+
+        var disabled = settings(new IntegerCouple(100, 300), new IntegerCouple(50, 200));
+        disabled.staticCropEnabled = false;
+        pipe.setParams(new CropPipe.CropPipeParams(disabled));
+        var frame = uniformFrame(640, 480, 200, props);
+        assertSame(frame, pipe.cropFrame(frame), "A disabled crop should pass the frame through");
+
+        assertThrows(
+                RuntimeException.class,
+                () -> croppedCal.getCameraIntrinsicsMat(),
+                "Disabling the crop should release the cached cropped calibration");
+        assertNotNull(
+                cal.getCameraIntrinsicsMat(), "The camera's own calibration should not be released");
+        frame.release();
+    }
+
+    @Test
+    public void releasingThePipeReleasesTheCachedCalibration() {
+        var cal = calibration();
+        var props = new FrameStaticProperties(640, 480, 70.0, cal);
+        var pipe = pipeFor(100, 300, 50, 200);
+
+        var cropped = pipe.cropFrame(uniformFrame(640, 480, 200, props));
+        var croppedCal = cropped.frameStaticProperties.cameraCalibration;
+        assertNotNull(croppedCal.getCameraIntrinsicsMat());
+        cropped.release();
+
+        pipe.release();
+        assertThrows(
+                RuntimeException.class,
+                () -> croppedCal.getCameraIntrinsicsMat(),
+                "Releasing the pipe should release the cached cropped calibration");
+        assertNotNull(
+                cal.getCameraIntrinsicsMat(), "The camera's own calibration should not be released");
     }
 
     @Test

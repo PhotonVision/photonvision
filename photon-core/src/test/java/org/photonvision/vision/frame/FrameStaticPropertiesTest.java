@@ -19,10 +19,8 @@ package org.photonvision.vision.frame;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
@@ -72,16 +70,16 @@ public class FrameStaticPropertiesTest {
     }
 
     @Test
-    public void cropResultIsCachedPerRectangle() {
+    public void cropIsAPureDerivation() {
+        // Caching (and the native-memory management it entails) is CropPipe's job; the derivation
+        // itself hands each caller a fresh instance it owns.
         var props = new FrameStaticProperties(640, 480, 70.0, null);
 
-        var rect = new Rect(10, 20, 300, 200);
-        var first = props.crop(rect);
+        var first = props.crop(new Rect(10, 20, 300, 200));
         var second = props.crop(new Rect(10, 20, 300, 200));
-        assertSame(first, second, "Repeated crops with an equal rectangle should be cached");
-
-        var third = props.crop(new Rect(0, 0, 320, 240));
-        assertNotSame(first, third, "A different crop rectangle should produce a new instance");
+        assertNotSame(first, second, "Each crop call should produce a new instance");
+        assertEquals(first.centerX, second.centerX, EPS);
+        assertEquals(first.centerY, second.centerY, EPS);
     }
 
     /** A 640x480 calibration with an easily-checked principal point and focal length. */
@@ -117,51 +115,5 @@ public class FrameStaticPropertiesTest {
                 new Size(200, 150),
                 cropped.cameraCalibration.resolution,
                 "The cropped calibration should describe the cropped resolution");
-    }
-
-    @Test
-    public void changingCropRectangleReleasesTheSupersededCalibration() {
-        var cal = calibration();
-        var props = new FrameStaticProperties(640, 480, 70.0, cal);
-
-        var first = props.crop(new Rect(0, 0, 320, 240));
-        // Force the lazy native allocation that the release has to clean up.
-        assertNotNull(first.cameraCalibration.getCameraIntrinsicsMat());
-
-        var second = props.crop(new Rect(10, 10, 320, 240));
-        assertNotSame(first.cameraCalibration, second.cameraCalibration);
-
-        assertThrows(
-                RuntimeException.class,
-                () -> first.cameraCalibration.getCameraIntrinsicsMat(),
-                "The superseded cropped calibration should have been released");
-        assertNotNull(
-                second.cameraCalibration.getCameraIntrinsicsMat(),
-                "The current cropped calibration should still be usable");
-        assertNotNull(
-                cal.getCameraIntrinsicsMat(), "The camera's own calibration should not be released");
-    }
-
-    @Test
-    public void disablingCropReleasesTheCachedCalibration() {
-        var cal = calibration();
-        var props = new FrameStaticProperties(640, 480, 70.0, cal);
-
-        var rect = new Rect(0, 0, 320, 240);
-        var cropped = props.crop(rect);
-        assertNotNull(cropped.cameraCalibration.getCameraIntrinsicsMat());
-
-        assertSame(props, props.crop(null));
-        assertThrows(
-                RuntimeException.class,
-                () -> cropped.cameraCalibration.getCameraIntrinsicsMat(),
-                "Disabling the crop should release the cached cropped calibration");
-
-        // The cache is fully cleared, so the same rectangle produces fresh, usable properties.
-        var recropped = props.crop(rect);
-        assertNotSame(cropped, recropped);
-        assertNotNull(recropped.cameraCalibration.getCameraIntrinsicsMat());
-        assertNotNull(
-                cal.getCameraIntrinsicsMat(), "The camera's own calibration should not be released");
     }
 }

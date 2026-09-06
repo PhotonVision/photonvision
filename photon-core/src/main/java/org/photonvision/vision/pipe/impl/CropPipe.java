@@ -20,6 +20,7 @@ package org.photonvision.vision.pipe.impl;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
@@ -81,6 +82,51 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     /** How much the cropped-away area is dimmed in the input stream's context image. */
     private static final double CONTEXT_DIM_FACTOR = 0.35;
 
+    // Cropping calibrated frame static properties derives fresh calibration coefficients that hold
+    // native memory, and neither the source properties nor the crop rectangle changes frame to
+    // frame -- so cache the last derivation and release it once it is superseded.
+    private FrameStaticProperties cachedSourceProperties = null;
+    private Rect cachedCropRect = null;
+    private FrameStaticProperties cachedCroppedProperties = null;
+
+    /**
+     * Frame static properties describing the given source properties cropped to the given rectangle,
+     * cached against both.
+     *
+     * @param source The uncropped frame's properties.
+     * @param cropRect The crop rectangle applied to the frame.
+     * @return The cropped properties. Owned by this pipe: released when the crop changes, so callers
+     *     must not hold them across frames.
+     */
+    private FrameStaticProperties croppedProperties(FrameStaticProperties source, Rect cropRect) {
+        if (source != cachedSourceProperties || !cropRect.equals(cachedCropRect)) {
+            releaseCachedProperties();
+            cachedCroppedProperties = source.crop(cropRect);
+            cachedSourceProperties = source;
+            cachedCropRect = cropRect.clone();
+        }
+        return cachedCroppedProperties;
+    }
+
+    /**
+     * Discard the cached cropped properties, releasing the derived calibration coefficients they own.
+     */
+    private void releaseCachedProperties() {
+        if (cachedCroppedProperties != null
+                && cachedCroppedProperties.cameraCalibration != null
+                // Only release coefficients the crop derived -- never the ones borrowed from the
+                // camera, which outlive any single crop.
+                && (cachedSourceProperties == null
+                        || cachedCroppedProperties.cameraCalibration
+                                != cachedSourceProperties.cameraCalibration)) {
+            cachedCroppedProperties.cameraCalibration.release();
+        }
+
+        cachedSourceProperties = null;
+        cachedCropRect = null;
+        cachedCroppedProperties = null;
+    }
+
     public Frame cropFrame(Frame frame) {
         return cropFrame(frame, false);
     }
@@ -89,6 +135,9 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
         var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
         Rect effectiveCrop = effectiveCrop(reference.getMat().cols(), reference.getMat().rows());
         if (effectiveCrop == null) {
+            // Cropping is a no-op, so the cached cropped properties can never be reused; don't hold
+            // their native calibration memory alive until a crop happens to come along again.
+            releaseCachedProperties();
             return frame;
         }
 
@@ -115,7 +164,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
                         frame.type,
                         frame.timestampNanos,
                         frame.frameStaticProperties != null
-                                ? frame.frameStaticProperties.crop(effectiveCrop)
+                                ? croppedProperties(frame.frameStaticProperties, effectiveCrop)
                                 : null);
         croppedFrame.contextColorImage = contextImage;
         return croppedFrame;
@@ -226,5 +275,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     }
 
     @Override
-    public void release() {}
+    public void release() {
+        releaseCachedProperties();
+    }
 }
