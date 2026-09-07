@@ -390,7 +390,9 @@ public class FindBoardCornersPipe
         if (!boardFound) {
             objectPoints.release();
             imagePoints.release();
-            if (ids != null) ids.release();
+            if (ids != null) {
+                ids.release();
+            }
             // If we can't find a calibration board, give up
             return null;
         }
@@ -451,8 +453,12 @@ public class FindBoardCornersPipe
         public void release() {
             objectPoints.release();
             imagePoints.release();
-            if (ids != null) ids.release();
-            if (inputImage != null) inputImage.release();
+            if (ids != null) {
+                ids.release();
+            }
+            if (inputImage != null) {
+                inputImage.release();
+            }
         }
     }
 }

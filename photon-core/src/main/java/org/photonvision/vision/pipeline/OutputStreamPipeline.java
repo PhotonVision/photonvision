@@ -127,12 +127,14 @@ public class OutputStreamPipeline implements Releasable {
 
         // Resize both in place before doing any conversion
         boolean inEmpty = inMat.empty();
-        if (!inEmpty)
+        if (!inEmpty) {
             sumPipeNanosElapsed += pipeProfileNanos[0] = resizeImagePipe.run(inMat).nanosElapsed;
+        }
 
         boolean outEmpty = outMat.empty();
-        if (!outEmpty)
+        if (!outEmpty) {
             sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
+        }
 
         // Only attempt drawing on a non-empty frame
         if (!outEmpty) {

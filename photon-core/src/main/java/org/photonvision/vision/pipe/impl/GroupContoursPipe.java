@@ -64,7 +64,9 @@ public class GroupContoursPipe
                 for (int i = 0; i < input.size() - 1; i++) {
                     // make a list of the desired count of contours to group
                     // (Just make sure we don't get an index out of bounds exception
-                    if (i < 0 || i + groupingCount > input.size()) continue;
+                    if (i < 0 || i + groupingCount > input.size()) {
+                        continue;
+                    }
 
                     // If we're in two or more mode, just try to group everything
                     List<Contour> groupingSet = input.subList(i, i + groupingCount);

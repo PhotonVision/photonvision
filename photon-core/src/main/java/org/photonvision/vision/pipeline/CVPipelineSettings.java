@@ -67,8 +67,12 @@ public class CVPipelineSettings implements Cloneable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         CVPipelineSettings that = (CVPipelineSettings) o;
         return pipelineIndex == that.pipelineIndex
                 && Double.compare(that.cameraExposureRaw, cameraExposureRaw) == 0

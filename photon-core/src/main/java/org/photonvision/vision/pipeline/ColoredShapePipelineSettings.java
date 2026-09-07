@@ -45,9 +45,15 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         ColoredShapePipelineSettings that = (ColoredShapePipelineSettings) o;
         return Double.compare(that.accuracyPercentage, accuracyPercentage) == 0
                 && circleDetectThreshold == that.circleDetectThreshold

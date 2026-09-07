@@ -239,7 +239,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     }
 
     private void drawThresholdFrame(Mat greyMat, Mat outputMat, int windowSize, double constant) {
-        if (windowSize % 2 == 0) windowSize++;
+        if (windowSize % 2 == 0) {
+            windowSize++;
+        }
         Imgproc.adaptiveThreshold(
                 greyMat,
                 outputMat,

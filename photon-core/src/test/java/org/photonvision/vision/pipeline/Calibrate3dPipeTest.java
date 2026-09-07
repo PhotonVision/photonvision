@@ -152,7 +152,7 @@ public class Calibrate3dPipeTest {
         File squareDir = Path.of(squareBase, dataset.path).toFile();
         File charucoDir = Path.of(charucoBase, dataset.path).toFile();
 
-        if (dataset.boardType == BoardType.CHESSBOARD)
+        if (dataset.boardType == BoardType.CHESSBOARD) {
             calibrateCommon(
                     dataset.size,
                     squareDir,
@@ -160,7 +160,7 @@ public class Calibrate3dPipeTest {
                     dataset.boardType,
                     useMrCal,
                     dataset.useOldPattern);
-        else if (dataset.boardType == BoardType.CHARUCOBOARD)
+        } else if (dataset.boardType == BoardType.CHARUCOBOARD) {
             calibrateCommon(
                     dataset.size,
                     charucoDir,
@@ -168,6 +168,7 @@ public class Calibrate3dPipeTest {
                     dataset.boardType,
                     useMrCal,
                     dataset.useOldPattern);
+        }
     }
 
     public static void calibrateCommon(

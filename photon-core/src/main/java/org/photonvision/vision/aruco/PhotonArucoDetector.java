@@ -90,7 +90,9 @@ public class PhotonArucoDetector implements Releasable {
         }
 
         ids.release();
-        for (var m : cornerMats) m.release();
+        for (var m : cornerMats) {
+            m.release();
+        }
         cornerMats.clear();
 
         // sort tags by ID
@@ -102,7 +104,9 @@ public class PhotonArucoDetector implements Releasable {
     @Override
     public void release() {
         ids.release();
-        for (var m : cornerMats) m.release();
+        for (var m : cornerMats) {
+            m.release();
+        }
         cornerMats.clear();
     }
 }

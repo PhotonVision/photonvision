@@ -250,24 +250,46 @@ public class USBCameraSource extends VisionSource {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         USBCameraSource other = (USBCameraSource) obj;
         if (camera == null) {
-            if (other.camera != null) return false;
-        } else if (!camera.equals(other.camera)) return false;
+            if (other.camera != null) {
+                return false;
+            }
+        } else if (!camera.equals(other.camera)) {
+            return false;
+        }
         if (settables == null) {
-            if (other.settables != null) return false;
-        } else if (!settables.equals(other.settables)) return false;
+            if (other.settables != null) {
+                return false;
+            }
+        } else if (!settables.equals(other.settables)) {
+            return false;
+        }
         if (usbFrameProvider == null) {
-            if (other.usbFrameProvider != null) return false;
-        } else if (!usbFrameProvider.equals(other.usbFrameProvider)) return false;
+            if (other.usbFrameProvider != null) {
+                return false;
+            }
+        } else if (!usbFrameProvider.equals(other.usbFrameProvider)) {
+            return false;
+        }
         if (getCameraConfiguration().cameraQuirks == null) {
-            if (other.getCameraConfiguration().cameraQuirks != null) return false;
+            if (other.getCameraConfiguration().cameraQuirks != null) {
+                return false;
+            }
         } else if (!getCameraConfiguration()
                 .cameraQuirks
-                .equals(other.getCameraConfiguration().cameraQuirks)) return false;
+                .equals(other.getCameraConfiguration().cameraQuirks)) {
+            return false;
+        }
         return true;
     }
 

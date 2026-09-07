@@ -42,7 +42,9 @@ public class DrawCalibrationPipe
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        if (!params.drawAllSnapshots()) return null;
+        if (!params.drawAllSnapshots()) {
+            return null;
+        }
 
         var image = in.getFirst();
 

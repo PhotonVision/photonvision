@@ -102,7 +102,9 @@ public class FindCirclesPipe
         }
 
         // Release everything we don't use
-        for (var c : unmatchedContours) c.release();
+        for (var c : unmatchedContours) {
+            c.release();
+        }
 
         return output;
     }

@@ -59,7 +59,9 @@ public class Contour implements Releasable {
 
     public Contour(RotatedRect obb) {
         Point[] pts = new Point[4];
-        for (int i = 0; i < 4; ++i) pts[i] = new Point();
+        for (int i = 0; i < 4; ++i) {
+            pts[i] = new Point();
+        }
 
         obb.points(pts);
 
@@ -165,16 +167,24 @@ public class Contour implements Releasable {
                 switch (intersectionDirection) {
                     case None -> {}
                     case Up -> {
-                        if (intersectionY < massY) isIntersecting = true;
+                        if (intersectionY < massY) {
+                            isIntersecting = true;
+                        }
                     }
                     case Down -> {
-                        if (intersectionY > massY) isIntersecting = true;
+                        if (intersectionY > massY) {
+                            isIntersecting = true;
+                        }
                     }
                     case Left -> {
-                        if (intersectionX < massX) isIntersecting = true;
+                        if (intersectionX < massX) {
+                            isIntersecting = true;
+                        }
                     }
                     case Right -> {
-                        if (intersectionX > massX) isIntersecting = true;
+                        if (intersectionX > massX) {
+                            isIntersecting = true;
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -222,10 +232,18 @@ public class Contour implements Releasable {
 
     @Override
     public void release() {
-        if (mat != null) mat.release();
-        if (mat2f != null) mat2f.release();
-        if (convexHull != null) convexHull.release();
-        if (approxPolyDp != null) approxPolyDp.release();
+        if (mat != null) {
+            mat.release();
+        }
+        if (mat2f != null) {
+            mat2f.release();
+        }
+        if (convexHull != null) {
+            convexHull.release();
+        }
+        if (approxPolyDp != null) {
+            approxPolyDp.release();
+        }
     }
 
     protected static MatOfPoint2f convertIndexesToPoints(MatOfPoint contour, MatOfInt indexes) {

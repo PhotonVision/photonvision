@@ -146,7 +146,9 @@ public class SimCameraProperties {
         boolean success = false;
         for (var calib : data.calibrations) {
             // check if this calibration entry is our desired resolution
-            if (calib.resolution.width != width || calib.resolution.height != height) continue;
+            if (calib.resolution.width != width || calib.resolution.height != height) {
+                continue;
+            }
             // get the relevant calibration values
             double avgViewError = Arrays.stream(calib.perViewErrors).average().orElse(0);
             // assign the read JSON values to this CameraProperties
@@ -158,7 +160,9 @@ public class SimCameraProperties {
             setCalibError(avgViewError, calib.standardDeviation);
             success = true;
         }
-        if (!success) throw new IOException("Requested resolution not found in calibration");
+        if (!success) {
+            throw new IOException("Requested resolution not found in calibration");
+        }
     }
 
     public SimCameraProperties setRandomSeed(long seed) {
@@ -526,7 +530,9 @@ public class SimCameraProperties {
         var relb = camRt.apply(b);
 
         // check if both ends are behind camera
-        if (rela.getX() <= 0 && relb.getX() <= 0) return new Pair<>(null, null);
+        if (rela.getX() <= 0 && relb.getX() <= 0) {
+            return new Pair<>(null, null);
+        }
 
         var av = new DMatrix3(rela.getX(), rela.getY(), rela.getZ());
         var bv = new DMatrix3(relb.getX(), relb.getY(), relb.getZ());
@@ -539,20 +545,30 @@ public class SimCameraProperties {
         boolean bVisible = true;
         for (DMatrix3 normal : viewplanes) {
             double aVisibility = CommonOps_DDF3.dot(av, normal);
-            if (aVisibility < 0) aVisible = false;
+            if (aVisibility < 0) {
+                aVisible = false;
+            }
             double bVisibility = CommonOps_DDF3.dot(bv, normal);
-            if (bVisibility < 0) bVisible = false;
+            if (bVisibility < 0) {
+                bVisible = false;
+            }
             // both ends are outside at least one of the same viewplane
-            if (aVisibility <= 0 && bVisibility <= 0) return new Pair<>(null, null);
+            if (aVisibility <= 0 && bVisibility <= 0) {
+                return new Pair<>(null, null);
+            }
         }
         // both ends are inside frustum
-        if (aVisible && bVisible) return new Pair<>((double) 0, 1.0);
+        if (aVisible && bVisible) {
+            return new Pair<>((double) 0, 1.0);
+        }
 
         // parametrized (t=0 at a, t=1 at b) intersections with viewplanes
         double[] intersections = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
         // intersection points
         List<DMatrix3> ipts = new ArrayList<>();
-        for (double val : intersections) ipts.add(null);
+        for (double val : intersections) {
+            ipts.add(null);
+        }
 
         // find intersections
         for (int i = 0; i < viewplanes.size(); i++) {
@@ -567,7 +583,9 @@ public class SimCameraProperties {
                     CommonOps_DDF3.dot(av, normal) / CommonOps_DDF3.dot(normal, normal), normal, a_projn);
             // this projection lets us determine the scalar multiple t of ab where
             // (t * ab + a) is a vector which lies on the plane
-            if (Math.abs(CommonOps_DDF3.dot(abv, a_projn)) < 1e-5) continue; // line is parallel to plane
+            if (Math.abs(CommonOps_DDF3.dot(abv, a_projn)) < 1e-5) {
+                continue;
+            } // line is parallel to plane
             intersections[i] = CommonOps_DDF3.dot(a_projn, a_projn) / -CommonOps_DDF3.dot(abv, a_projn);
 
             // vector a to the viewplane
@@ -591,10 +609,14 @@ public class SimCameraProperties {
             }
 
             // discard duplicate intersections
-            if (ipts.get(i) == null) continue;
+            if (ipts.get(i) == null) {
+                continue;
+            }
             for (int j = i - 1; j >= 0; j--) {
                 var oipt = ipts.get(j);
-                if (oipt == null) continue;
+                if (oipt == null) {
+                    continue;
+                }
                 var diff = new DMatrix3();
                 CommonOps_DDF3.subtract(oipt, intersectpt, diff);
                 if (CommonOps_DDF3.elementMaxAbs(diff) < 1e-4) {
@@ -610,8 +632,11 @@ public class SimCameraProperties {
         double inter2 = Double.NaN;
         for (double inter : intersections) {
             if (!Double.isNaN(inter)) {
-                if (Double.isNaN(inter1)) inter1 = inter;
-                else inter2 = inter;
+                if (Double.isNaN(inter1)) {
+                    inter1 = inter;
+                } else {
+                    inter2 = inter;
+                }
             }
         }
 
@@ -619,18 +644,28 @@ public class SimCameraProperties {
         if (!Double.isNaN(inter2)) {
             double max = Math.max(inter1, inter2);
             double min = Math.min(inter1, inter2);
-            if (aVisible) min = 0;
-            if (bVisible) max = 1;
+            if (aVisible) {
+                min = 0;
+            }
+            if (bVisible) {
+                max = 1;
+            }
             return new Pair<>(min, max);
         }
         // one viewplane intersection
         else if (!Double.isNaN(inter1)) {
-            if (aVisible) return new Pair<>((double) 0, inter1);
-            if (bVisible) return new Pair<>(inter1, 1.0);
+            if (aVisible) {
+                return new Pair<>((double) 0, inter1);
+            }
+            if (bVisible) {
+                return new Pair<>(inter1, 1.0);
+            }
             return new Pair<>(inter1, null);
         }
         // no intersections
-        else return new Pair<>(null, null);
+        else {
+            return new Pair<>(null, null);
+        }
     }
 
     /**
@@ -640,7 +675,9 @@ public class SimCameraProperties {
      * @return The points with noise
      */
     public Point[] estPixelNoise(Point[] points) {
-        if (avgErrorPx == 0 && errorStdDevPx == 0) return points;
+        if (avgErrorPx == 0 && errorStdDevPx == 0) {
+            return points;
+        }
 
         Point[] noisyPts = new Point[points.length];
         for (int i = 0; i < points.length; i++) {

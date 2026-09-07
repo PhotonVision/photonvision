@@ -163,7 +163,9 @@ public final class OpenCVHelp {
      * @return The average of all the points
      */
     public static Point avgPoint(Point[] points) {
-        if (points == null || points.length == 0) return null;
+        if (points == null || points.length == 0) {
+            return null;
+        }
         var pointMat = new MatOfPoint2f(points);
         Core.reduce(pointMat, pointMat, 0, Core.REDUCE_AVG);
         var avgPt = pointMat.toArray()[0];
@@ -255,7 +257,9 @@ public final class OpenCVHelp {
         var reordered = new ArrayList<>(elements);
         for (int i = 0; i < size; i++) {
             int index = (i * dir + shiftStart * dir) % size;
-            if (index < 0) index = size + index;
+            if (index < 0) {
+                index = size + index;
+            }
             reordered.set(i, elements.get(index));
         }
         return reordered;
@@ -561,8 +565,9 @@ public final class OpenCVHelp {
                 }
 
                 // check if we got a NaN result
-                if (!Double.isNaN(errors[0])) break;
-                else { // add noise and retry
+                if (!Double.isNaN(errors[0])) {
+                    break;
+                } else { // add noise and retry
                     double[] br = imageMat.get(0, 0);
                     br[0] -= 0.001;
                     br[1] -= 0.001;
@@ -571,11 +576,15 @@ public final class OpenCVHelp {
             }
 
             // check if solvePnP failed with NaN results and retrying failed
-            if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
+            if (Double.isNaN(errors[0])) {
+                throw new Exception("SolvePNP_SQUARE NaN result");
+            }
 
-            if (alt != null)
+            if (alt != null) {
                 return Optional.of(new PnpResult(best, alt, errors[0] / errors[1], errors[0], errors[1]));
-            else return Optional.empty();
+            } else {
+                return Optional.empty();
+            }
         }
         // solvePnP failed
         catch (Exception e) {
@@ -588,8 +597,12 @@ public final class OpenCVHelp {
             imageMat.release();
             cameraMatrixMat.release();
             distCoeffsMat.release();
-            for (var v : rvecs) v.release();
-            for (var v : tvecs) v.release();
+            for (var v : rvecs) {
+                v.release();
+            }
+            for (var v : tvecs) {
+                v.release();
+            }
             rvec.release();
             tvec.release();
             reprojectionError.release();
@@ -653,7 +666,9 @@ public final class OpenCVHelp {
             var best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
 
             // check if solvePnP failed with NaN results
-            if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
+            if (Double.isNaN(error[0])) {
+                throw new Exception("SolvePNP_SQPNP NaN result");
+            }
 
             return Optional.of(new PnpResult(best, error[0]));
         } catch (Exception e) {
@@ -666,8 +681,12 @@ public final class OpenCVHelp {
             imageMat.release();
             cameraMatrixMat.release();
             distCoeffsMat.release();
-            for (var v : rvecs) v.release();
-            for (var v : tvecs) v.release();
+            for (var v : rvecs) {
+                v.release();
+            }
+            for (var v : tvecs) {
+                v.release();
+            }
             rvec.release();
             tvec.release();
             reprojectionError.release();

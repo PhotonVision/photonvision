@@ -86,12 +86,19 @@ public class TargetCalculations {
         // https://namkeenman.wordpress.com/2015/12/18/open-cv-determine-angle-of-rotatedrect-minarearect/
         var angle = minAreaRect.angle;
 
-        if (isLandscape && minAreaRect.size.width < minAreaRect.size.height) angle += 90;
-        else if (!isLandscape && minAreaRect.size.height < minAreaRect.size.width) angle += 90;
+        if (isLandscape && minAreaRect.size.width < minAreaRect.size.height) {
+            angle += 90;
+        } else if (!isLandscape && minAreaRect.size.height < minAreaRect.size.width) {
+            angle += 90;
+        }
 
         // Ensure skew is bounded on [-90, 90]
-        while (angle > 90) angle -= 180;
-        while (angle < -90) angle += 180;
+        while (angle > 90) {
+            angle -= 180;
+        }
+        while (angle < -90) {
+            angle += 180;
+        }
 
         return angle;
     }
@@ -108,21 +115,35 @@ public class TargetCalculations {
         Point right = getMiddle(vertices[3], vertices[0]);
 
         boolean orientationCorrect = minAreaRect.size.width > minAreaRect.size.height;
-        if (!isLandscape) orientationCorrect = !orientationCorrect;
+        if (!isLandscape) {
+            orientationCorrect = !orientationCorrect;
+        }
 
         switch (offsetRegion) {
             case Top:
-                if (orientationCorrect) return (left.y < right.y) ? left : right;
-                else return (top.y < bottom.y) ? top : bottom;
+                if (orientationCorrect) {
+                    return (left.y < right.y) ? left : right;
+                } else {
+                    return (top.y < bottom.y) ? top : bottom;
+                }
             case Bottom:
-                if (orientationCorrect) return (left.y > right.y) ? left : right;
-                else return (top.y > bottom.y) ? top : bottom;
+                if (orientationCorrect) {
+                    return (left.y > right.y) ? left : right;
+                } else {
+                    return (top.y > bottom.y) ? top : bottom;
+                }
             case Left:
-                if (orientationCorrect) return (top.x < bottom.x) ? top : bottom;
-                else return (left.x < right.x) ? left : right;
+                if (orientationCorrect) {
+                    return (top.x < bottom.x) ? top : bottom;
+                } else {
+                    return (left.x < right.x) ? left : right;
+                }
             case Right:
-                if (orientationCorrect) return (top.x > bottom.x) ? top : bottom;
-                else return (left.x > right.x) ? left : right;
+                if (orientationCorrect) {
+                    return (top.x > bottom.x) ? top : bottom;
+                } else {
+                    return (left.x > right.x) ? left : right;
+                }
             default:
                 return minAreaRect.center;
         }
@@ -160,7 +181,9 @@ public class TargetCalculations {
     }
 
     public static double getAspectRatio(RotatedRect rect, boolean isLandscape) {
-        if (rect.size.width == 0 || rect.size.height == 0) return 0;
+        if (rect.size.width == 0 || rect.size.height == 0) {
+            return 0;
+        }
         double ratio = rect.size.width / rect.size.height;
 
         // In landscape, we should be shorter than we are wide (that is, aspect ratio should be >1)

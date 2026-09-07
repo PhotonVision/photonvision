@@ -100,7 +100,9 @@ public class CVPipelineResult implements Releasable {
         for (TrackedTarget tt : targets) {
             tt.release();
         }
-        if (inputAndOutputFrame != null) inputAndOutputFrame.release();
+        if (inputAndOutputFrame != null) {
+            inputAndOutputFrame.release();
+        }
     }
 
     /**

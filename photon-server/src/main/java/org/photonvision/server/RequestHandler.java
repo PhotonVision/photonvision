@@ -1178,7 +1178,9 @@ public class RequestHandler {
             try {
                 for (File cameraDir : cameraDirs) {
                     var cameraSnapshots = cameraDir.listFiles();
-                    if (cameraSnapshots == null) continue;
+                    if (cameraSnapshots == null) {
+                        continue;
+                    }
 
                     String cameraUniqueName = cameraDir.getName();
 
@@ -1216,10 +1218,14 @@ public class RequestHandler {
                 var camData = new HashMap<String, ArrayList<Map<String, Object>>>();
                 for (var cameraDir : cameraDirs) {
                     var resolutionDirs = cameraDir.listFiles();
-                    if (resolutionDirs == null) continue;
+                    if (resolutionDirs == null) {
+                        continue;
+                    }
                     for (var resolutionDir : resolutionDirs) {
                         var calibImages = resolutionDir.listFiles();
-                        if (calibImages == null) continue;
+                        if (calibImages == null) {
+                            continue;
+                        }
                         var resolutionImages = new ArrayList<Map<String, Object>>();
                         for (var calibImg : calibImages) {
                             var snapshotData = new HashMap<String, Object>();

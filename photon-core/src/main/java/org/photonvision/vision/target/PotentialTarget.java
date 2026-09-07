@@ -81,7 +81,11 @@ public class PotentialTarget implements Releasable {
         for (var sc : m_subContours) {
             sc.release();
         }
-        if (!m_subContours.isEmpty()) m_subContours.clear();
-        if (shape != null) shape.release();
+        if (!m_subContours.isEmpty()) {
+            m_subContours.clear();
+        }
+        if (shape != null) {
+            shape.release();
+        }
     }
 }

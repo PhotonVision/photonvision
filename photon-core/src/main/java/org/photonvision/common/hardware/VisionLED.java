@@ -150,7 +150,9 @@ public class VisionLED implements AutoCloseable {
                     };
             setInternal(newLedMode, true);
 
-            if (modeConsumer != null) modeConsumer.accept(newLedMode.value);
+            if (modeConsumer != null) {
+                modeConsumer.accept(newLedMode.value);
+            }
         }
     }
 

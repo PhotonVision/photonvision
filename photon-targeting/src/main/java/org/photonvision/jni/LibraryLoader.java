@@ -34,7 +34,9 @@ public class LibraryLoader {
     private static boolean hasTargetingLoaded = false;
 
     public static boolean loadWpiLibraries() {
-        if (hasWpiLoaded) return true;
+        if (hasWpiLoaded) {
+            return true;
+        }
 
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
@@ -70,7 +72,9 @@ public class LibraryLoader {
     }
 
     public static boolean loadTargeting() {
-        if (hasTargetingLoaded) return true;
+        if (hasTargetingLoaded) {
+            return true;
+        }
         try {
             CombinedRuntimeLoader.loadLibraries(LibraryLoader.class, "photontargetingJNI");
             hasTargetingLoaded = true;

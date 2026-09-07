@@ -146,15 +146,25 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     }
 
     private void removeEntries() {
-        if (pipelineIndexListener != null) pipelineIndexListener.remove();
-        if (driverModeListener != null) driverModeListener.remove();
+        if (pipelineIndexListener != null) {
+            pipelineIndexListener.remove();
+        }
+        if (driverModeListener != null) {
+            driverModeListener.remove();
+        }
         ts.removeEntries();
     }
 
     private void updateEntries() {
-        if (pipelineIndexListener != null) pipelineIndexListener.remove();
-        if (driverModeListener != null) driverModeListener.remove();
-        if (fpsLimitListener != null) fpsLimitListener.remove();
+        if (pipelineIndexListener != null) {
+            pipelineIndexListener.remove();
+        }
+        if (driverModeListener != null) {
+            driverModeListener.remove();
+        }
+        if (fpsLimitListener != null) {
+            fpsLimitListener.remove();
+        }
 
         ts.updateEntries();
 
@@ -187,8 +197,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (result
                 instanceof
                 CalibrationPipelineResult) // If the data is from a calibration pipeline, override the list
-            // of targets to be null to prevent the data from being sent and
-            // continue to post blank/zero data to the network tables
+        // of targets to be null to prevent the data from being sent and
+        // continue to post blank/zero data to the network tables
+        {
             acceptedResult =
                     new CVPipelineResult(
                             result.sequenceID,
@@ -196,7 +207,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                             result.fps,
                             List.of(),
                             result.inputAndOutputFrame);
-        else acceptedResult = result;
+        } else {
+            acceptedResult = result;
+        }
         var now = NetworkTablesJNI.now();
         var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
 

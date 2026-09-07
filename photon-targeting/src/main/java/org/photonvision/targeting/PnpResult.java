@@ -100,22 +100,39 @@ public class PnpResult implements ProtobufSerializable, PhotonStructSerializable
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         PnpResult other = (PnpResult) obj;
         if (best == null) {
-            if (other.best != null) return false;
-        } else if (!best.equals(other.best)) return false;
-        if (Double.doubleToLongBits(bestReprojErr) != Double.doubleToLongBits(other.bestReprojErr))
+            if (other.best != null) {
+                return false;
+            }
+        } else if (!best.equals(other.best)) {
             return false;
+        }
+        if (Double.doubleToLongBits(bestReprojErr) != Double.doubleToLongBits(other.bestReprojErr)) {
+            return false;
+        }
         if (alt == null) {
-            if (other.alt != null) return false;
-        } else if (!alt.equals(other.alt)) return false;
-        if (Double.doubleToLongBits(altReprojErr) != Double.doubleToLongBits(other.altReprojErr))
+            if (other.alt != null) {
+                return false;
+            }
+        } else if (!alt.equals(other.alt)) {
             return false;
-        if (Double.doubleToLongBits(ambiguity) != Double.doubleToLongBits(other.ambiguity))
+        }
+        if (Double.doubleToLongBits(altReprojErr) != Double.doubleToLongBits(other.altReprojErr)) {
             return false;
+        }
+        if (Double.doubleToLongBits(ambiguity) != Double.doubleToLongBits(other.ambiguity)) {
+            return false;
+        }
         return true;
     }
 

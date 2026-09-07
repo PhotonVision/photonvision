@@ -96,7 +96,9 @@ public class Logger {
             String logMessage, LogLevel level, LogGroup group, String clazz, boolean color) {
         var date = getDate();
         var builder = new StringBuilder();
-        if (color) builder.append(level.colorCode);
+        if (color) {
+            builder.append(level.colorCode);
+        }
         builder
                 .append("[")
                 .append(date)
@@ -108,7 +110,9 @@ public class Logger {
                 .append(level.name())
                 .append("] ")
                 .append(logMessage);
-        if (color) builder.append(ANSI_RESET);
+        if (color) {
+            builder.append(ANSI_RESET);
+        }
         return builder.toString();
     }
 
@@ -133,7 +137,9 @@ public class Logger {
 
     public static void cleanLogs(Path folderToClean) {
         File[] logs = folderToClean.toFile().listFiles();
-        if (logs == null) return;
+        if (logs == null) {
+            return;
+        }
         LinkedList<File> logFileList = new LinkedList<>(Arrays.asList(logs));
         HashMap<File, Date> logFileStartDateMap = new HashMap<>();
 

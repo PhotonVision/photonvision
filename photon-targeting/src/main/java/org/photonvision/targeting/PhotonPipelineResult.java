@@ -201,19 +201,37 @@ public class PhotonPipelineResult
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         PhotonPipelineResult other = (PhotonPipelineResult) obj;
         if (metadata == null) {
-            if (other.metadata != null) return false;
-        } else if (!metadata.equals(other.metadata)) return false;
+            if (other.metadata != null) {
+                return false;
+            }
+        } else if (!metadata.equals(other.metadata)) {
+            return false;
+        }
         if (targets == null) {
-            if (other.targets != null) return false;
-        } else if (!targets.equals(other.targets)) return false;
+            if (other.targets != null) {
+                return false;
+            }
+        } else if (!targets.equals(other.targets)) {
+            return false;
+        }
         if (multitagResult == null) {
-            if (other.multitagResult != null) return false;
-        } else if (!multitagResult.equals(other.multitagResult)) return false;
+            if (other.multitagResult != null) {
+                return false;
+            }
+        } else if (!multitagResult.equals(other.multitagResult)) {
+            return false;
+        }
         return true;
     }
 

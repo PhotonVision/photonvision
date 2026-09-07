@@ -72,6 +72,15 @@ jobs:
             exit $exit_code
           fi
         name: Run spotless
+      - run: |
+          set +e
+          ./gradlew checkstyleMain checkstyleTest
+          exit_code=$?
+          if test "$exit_code" -ne "0"; then
+            echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
+            exit $exit_code
+          fi
+        name: Run checkstyle
   client-lint-format:
     name: "PhotonClient Lint and Formatting"
     defaults:

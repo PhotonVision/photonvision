@@ -150,9 +150,13 @@ public class VisionSystemSim {
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim, double timeSeconds) {
         var trfBuffer = camTrfMap.get(cameraSim);
-        if (trfBuffer == null) return Optional.empty();
+        if (trfBuffer == null) {
+            return Optional.empty();
+        }
         var sample = trfBuffer.getSample(timeSeconds);
-        if (sample.isEmpty()) return Optional.empty();
+        if (sample.isEmpty()) {
+            return Optional.empty();
+        }
         return Optional.of(new Transform3d(new Pose3d(), sample.orElse(new Pose3d())));
     }
 
@@ -190,14 +194,18 @@ public class VisionSystemSim {
      */
     public boolean adjustCamera(PhotonCameraSim cameraSim, Transform3d robotToCamera) {
         var trfBuffer = camTrfMap.get(cameraSim);
-        if (trfBuffer == null) return false;
+        if (trfBuffer == null) {
+            return false;
+        }
         trfBuffer.addSample(Timer.getMonotonicTimestamp(), new Pose3d().plus(robotToCamera));
         return true;
     }
 
     /** Reset the previous transforms for all cameras to their current transform. */
     public void resetCameraTransforms() {
-        for (var cam : camTrfMap.keySet()) resetCameraTransforms(cam);
+        for (var cam : camTrfMap.keySet()) {
+            resetCameraTransforms(cam);
+        }
     }
 
     /**
@@ -209,7 +217,9 @@ public class VisionSystemSim {
     public boolean resetCameraTransforms(PhotonCameraSim cameraSim) {
         double now = Timer.getMonotonicTimestamp();
         var trfBuffer = camTrfMap.get(cameraSim);
-        if (trfBuffer == null) return false;
+        if (trfBuffer == null) {
+            return false;
+        }
         var lastTrf = new Transform3d(new Pose3d(), trfBuffer.getSample(now).orElse(new Pose3d()));
         trfBuffer.clear();
         adjustCamera(cameraSim, lastTrf);
@@ -327,7 +337,9 @@ public class VisionSystemSim {
                                 if (removeList.contains(t)) {
                                     removedSet.add(t);
                                     return true;
-                                } else return false;
+                                } else {
+                                    return false;
+                                }
                             });
         }
         return removedSet;
@@ -400,7 +412,9 @@ public class VisionSystemSim {
                                 .getObject(entry.getKey())
                                 .setPoses(entry.getValue().stream().map(t -> t.getPose().toPose2d()).toList()));
 
-        if (robotPoseMeters == null) return;
+        if (robotPoseMeters == null) {
+            return;
+        }
 
         // save "real" robot poses over time
         double now = Timer.getMonotonicTimestamp();
@@ -416,8 +430,11 @@ public class VisionSystemSim {
         for (var camSim : camSimMap.values()) {
             // check if this camera is ready to process and get latency
             var optTimestamp = camSim.consumeNextEntryTime();
-            if (optTimestamp.isEmpty()) continue;
-            else processed = true;
+            if (optTimestamp.isEmpty()) {
+                continue;
+            } else {
+                processed = true;
+            }
             // when this result "was" read by NT
             long timestampNT = optTimestamp.get();
             // this result's processing latency in milliseconds
@@ -437,11 +454,17 @@ public class VisionSystemSim {
             // display debug results
             for (var target : camResult.getTargets()) {
                 var trf = target.getBestCameraToTarget();
-                if (trf.equals(kEmptyTrf)) continue;
+                if (trf.equals(kEmptyTrf)) {
+                    continue;
+                }
                 visTgtPoses2d.add(lateCameraPose.transformBy(trf).toPose2d());
             }
         }
-        if (processed) dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d);
-        if (!cameraPoses2d.isEmpty()) dbgField.getObject("cameras").setPoses(cameraPoses2d);
+        if (processed) {
+            dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d);
+        }
+        if (!cameraPoses2d.isEmpty()) {
+            dbgField.getObject("cameras").setPoses(cameraPoses2d);
+        }
     }
 }

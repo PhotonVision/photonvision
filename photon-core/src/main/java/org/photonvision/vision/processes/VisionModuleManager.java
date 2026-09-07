@@ -37,7 +37,9 @@ public class VisionModuleManager implements AutoCloseable {
 
     public VisionModule getModule(String uniqueName) {
         for (var module : visionModules) {
-            if (module.getStateAsCameraConfig().uniqueName.equals(uniqueName)) return module;
+            if (module.getStateAsCameraConfig().uniqueName.equals(uniqueName)) {
+                return module;
+            }
         }
         return null;
     }

@@ -34,12 +34,15 @@ public class NumberListUtils {
         int n = collection.size() / 2;
 
         if (collection.size() % 2 == 0) // even number of items; find the middle two and average them
-        result =
+        {
+            result =
                     (nthSmallest(collection, n - 1, comp).doubleValue()
                                     + nthSmallest(collection, n, comp).doubleValue())
                             / 2.0;
-        else // odd number of items; return the one in the middle
-        result = nthSmallest(collection, n, comp).doubleValue();
+        } else // odd number of items; return the one in the middle
+        {
+            result = nthSmallest(collection, n, comp).doubleValue();
+        }
 
         return result;
     }
@@ -93,21 +96,29 @@ public class NumberListUtils {
             int order = comp.compare(obj, pivot);
 
             if (order < 0) // obj < pivot
-            underPivot.add(obj);
-            else if (order > 0) // obj > pivot
-            overPivot.add(obj);
-            else // obj = pivot
-            equalPivot.add(obj);
+            {
+                underPivot.add(obj);
+            } else if (order > 0) // obj > pivot
+            {
+                overPivot.add(obj);
+            } else // obj = pivot
+            {
+                equalPivot.add(obj);
+            }
         } // for each obj in collection
 
         // recurse on the appropriate collection
 
-        if (n < underPivot.size()) result = nthSmallest(underPivot, n, comp);
-        else if (n < underPivot.size() + equalPivot.size()) // equal to pivot; just return it
-        result = pivot;
-        else // everything in underPivot and equalPivot is too small.  Adjust n accordingly in the
-            // recursion.
+        if (n < underPivot.size()) {
+            result = nthSmallest(underPivot, n, comp);
+        } else if (n < underPivot.size() + equalPivot.size()) // equal to pivot; just return it
+        {
+            result = pivot;
+        } else // everything in underPivot and equalPivot is too small.  Adjust n accordingly in the
+        // recursion.
+        {
             result = nthSmallest(overPivot, n - underPivot.size() - equalPivot.size(), comp);
+        }
 
         return result;
     }
