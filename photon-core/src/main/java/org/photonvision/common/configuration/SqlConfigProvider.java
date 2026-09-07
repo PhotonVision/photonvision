@@ -61,7 +61,7 @@ public class SqlConfigProvider extends ConfigProvider {
     private final String dbPath;
     private final String url;
     private int dbVersion;
-    private LinkedMigrationStep migrations;
+    private MigrationManager migrations;
 
     private final Object m_mutex = new Object();
 
@@ -78,7 +78,7 @@ public class SqlConfigProvider extends ConfigProvider {
         dbPath = Path.of(rootFolder.toString(), dbName).toAbsolutePath().toString();
         url = "jdbc:sqlite:" + dbPath;
         logger.debug("Using database " + dbPath);
-        migrations = MigrationSteps.buildMigrations();
+        migrations = DbMigration.getMigration();
         initDatabase();
     }
 
@@ -149,12 +149,9 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     private void initDatabase() {
-        try (var conn = DriverManager.getConnection(url)) {
-            this.dbVersion = migrations.run(conn);
+        try {
+            dbVersion = migrations.run(url);
             logger.info("Using database version: " + dbVersion);
-        } catch (SQLException e) {
-            // Can't connect to the database to run the migration.
-            logger.error("Failed to connect to database at " + url, e);
         } catch (MigrationException e) {
             logger.error("Migration failure! ", e);
         }

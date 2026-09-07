@@ -40,15 +40,24 @@ public class PathManager {
     }
 
     private PathManager() {
-        this.configDirectoryFile = new File(getRootFolder().toUri());
+        this.configDirectoryFile = new File(getConfigDir().toUri());
     }
 
-    public Path getRootFolder() {
-        return Path.of("photonvision_config");
+    public Path getRootDir() {
+        // get the path where the current jar is running
+        return Path.of(System.getProperty("user.dir"));
+    }
+
+    public Path getConfigDir() {
+        return getRootDir().resolve("photonvision_config");
+    }
+
+    public Path getDefaultsDir() {
+        return getRootDir().resolve("conf.d");
     }
 
     public Path getLogsDir() {
-        return Path.of(configDirectoryFile.toString(), "logs");
+        return getConfigDir().resolve("logs");
     }
 
     public static final String LOG_PREFIX = "photonvision-";

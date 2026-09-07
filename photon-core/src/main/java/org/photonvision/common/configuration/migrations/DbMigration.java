@@ -24,22 +24,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.photonvision.common.configuration.migrations.LinkedMigrationStep.MigrationFunction;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 import io.avaje.json.JsonException;
 
-public class MigrationSteps {
-    private static final Logger logger = new Logger(MigrationSteps.class, LogGroup.Config);
+public class DbMigration {
+    private static final Logger logger = new Logger(DbMigration.class, LogGroup.Config);
 
-    public static LinkedMigrationStep buildMigrations() {
-        LinkedMigrationStep step = null;
-        step = LinkedMigrationStep.migrateUsingSQL(step, 2, schema02);
-        step = LinkedMigrationStep.migrateUsingFunction(step, 3, update2026CameraConfig);
-        step = LinkedMigrationStep.migrateUsingSQL(step, 4, schema04);
-
-        return step;
+    public static final MigrationManager getMigration() {
+        return new MigrationManager.MigrationBuilder(2)
+            .addStep(2, schema02)
+            .addStep(3, update2026CameraConfig)
+            .addStep(4, sql04)
+            .build();
     }
 
     private static final String schema02 =
@@ -63,12 +61,12 @@ public class MigrationSteps {
         ALTER TABLE cameras DROP COLUMN pipeline_jsons;
         ALTER TABLE cameras DROP COLUMN otherpaths_json;
         """;
-    
+
     private static final String schema04 =
         """
         CREATE TABLE IF NOT EXISTS new_global (
             filename TEXT PRIMARY KEY,
-            contents JSON NOT NULL 
+            contents JSON NOT NULL
         );
         INSERT INTO new_global (filename, contents)
         SELECT filename, contents
@@ -78,10 +76,10 @@ public class MigrationSteps {
         );
         DROP TABLE IF EXISTS global;
         ALTER TABLE new_global RENAME global;
-        
+
         CREATE TABLE IF NOT EXISTS new_cameras (
             unique_name TEXT PRIMARY KEY,
-            config_json JSON NOT NULL 
+            config_json JSON NOT NULL
         );
         INSERT INTO new_cameras (unique_name, config_json)
         SELECT unique_name, config_json
