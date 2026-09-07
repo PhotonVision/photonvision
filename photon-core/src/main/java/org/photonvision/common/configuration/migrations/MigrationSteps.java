@@ -34,10 +34,10 @@ public class MigrationSteps {
     private static final Logger logger = new Logger(MigrationSteps.class, LogGroup.Config);
 
     public static LinkedMigrationStep buildMigrations() {
-        LinkedMigrationStep step;
-        step = LinkedMigrationStep.createDatabase(2, schema02);
+        LinkedMigrationStep step = null;
+        step = LinkedMigrationStep.migrateUsingSQL(step, 2, schema02);
         step = LinkedMigrationStep.migrateUsingFunction(step, 3, update2026CameraConfig);
-        step = LinkedMigrationStep.migrateUsingSQL(step, 4, sql04);
+        step = LinkedMigrationStep.migrateUsingSQL(step, 4, schema04);
 
         return step;
     }
@@ -45,22 +45,52 @@ public class MigrationSteps {
     private static final String schema02 =
         """
         CREATE TABLE IF NOT EXISTS global (
-         filename TINYTEXT PRIMARY KEY,
-         contents mediumtext NOT NULL
+            filename TEXT PRIMARY KEY,
+            contents JSON NOT NULL
         );
         CREATE TABLE IF NOT EXISTS cameras (
-         unique_name TINYTEXT PRIMARY KEY,
-         config_json text NOT NULL,
-         drivermode_json text NOT NULL,
-         pipeline_jsons mediumtext NOT NULL,
-         otherpaths_json TEXT NOT NULL DEFAULT '[]');
-         """;
+            unique_name TINYTEXT PRIMARY KEY,
+            config_json text NOT NULL,
+            drivermode_json text NOT NULL,
+            pipeline_jsons mediumtext NOT NULL,
+            otherpaths_json TEXT NOT NULL DEFAULT '[]'
+        );
+        """;
 
     private static final String sql04 =
         """
         ALTER TABLE cameras DROP COLUMN drivermode_json;
         ALTER TABLE cameras DROP COLUMN pipeline_jsons;
         ALTER TABLE cameras DROP COLUMN otherpaths_json;
+        """;
+    
+    private static final String schema04 =
+        """
+        CREATE TABLE IF NOT EXISTS new_global (
+            filename TEXT PRIMARY KEY,
+            contents JSON NOT NULL 
+        );
+        INSERT INTO new_global (filename, contents)
+        SELECT filename, contents
+        FROM global
+        WHERE EXISTS (
+            SELECT 1 FROM sqlite_master WHERE type='table' AND name='global'
+        );
+        DROP TABLE IF EXISTS global;
+        ALTER TABLE new_global RENAME global;
+        
+        CREATE TABLE IF NOT EXISTS new_cameras (
+            unique_name TEXT PRIMARY KEY,
+            config_json JSON NOT NULL 
+        );
+        INSERT INTO new_cameras (unique_name, config_json)
+        SELECT unique_name, config_json
+        FROM cameras
+        WHERE EXISTS (
+            SELECT 1 FROM sqlite_master WHERE type='table' AND name='cameras'
+        );
+        DROP TABLE IF EXISTS cameras;
+        ALTER TABLE new_cameras RENAME TO cameras;
         """;
 
 

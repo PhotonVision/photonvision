@@ -150,8 +150,8 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private void initDatabase() {
         try (var conn = DriverManager.getConnection(url)) {
-            migrations.run(conn);
-            this.dbVersion = getUserVersion(conn);
+            this.dbVersion = migrations.run(conn);
+            logger.info("Using database version: " + dbVersion);
         } catch (SQLException e) {
             // Can't connect to the database to run the migration.
             logger.error("Failed to connect to database at " + url, e);

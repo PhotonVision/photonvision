@@ -85,7 +85,7 @@ public class LinkedMigrationStep {
                 currentVersion = predecessor.run(conn, currentVersion);
             }
             if (currentVersion == expectedVersion) {
-                // the databse version is the one that this step expects, so run the migration step
+                // the databse version is expected, so run the migration step
                 executeMigrationStep(conn);
                 if (newDatabase) {
                     // apply defaults from conf directory if it exists and matches this version
