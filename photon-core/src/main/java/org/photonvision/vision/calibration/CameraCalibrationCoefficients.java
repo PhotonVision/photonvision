@@ -18,16 +18,33 @@
 package org.photonvision.vision.calibration;
 
 import io.avaje.jsonb.Json;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
+import org.opencv.core.Point3;
 import org.opencv.core.Size;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.mrcal.MrCalJNI;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
+import org.wpilib.math.geometry.Pose3d;
 
 @Json
 public class CameraCalibrationCoefficients implements Releasable {
+    private static final Logger logger =
+            new Logger(CameraCalibrationCoefficients.class, LogGroup.Data);
+
+    // Mirror of
+    // https://github.com/dkogan/mrcal/blob/c311b0acdb29d3f6c1a5abeaf17dc6a7e2ab10d9/mrcal/cameramodel.py#L377
+    // We must pass the exact optimization state vector back to mrcal when computing uncertainty, but
+    // we re-estimate the camera to object pose using SolvePNP
+    // So we need to keep this + the observation camera to object around. This input shall not change
+    // with "calibration rotation"
+    public static record OptimizationInputs(List<Pose3d> rt_cam_ref) {}
+
     /** The unrotated resolution of the calibration */
     public final Size resolution;
 
@@ -44,6 +61,9 @@ public class CameraCalibrationCoefficients implements Releasable {
     public final double calobjectSpacing;
 
     public final CameraLensModel lensmodel;
+
+    // Solver optimization inputs, or null if not available (e.g. legacy calibrations)
+    public final OptimizationInputs optimizationInputs;
 
     /**
      * Contains all camera calibration data for a particular resolution of a camera. Designed for use
@@ -71,7 +91,8 @@ public class CameraCalibrationCoefficients implements Releasable {
             List<BoardObservation> observations,
             Size calobjectSize,
             double calobjectSpacing,
-            CameraLensModel lensmodel) {
+            CameraLensModel lensmodel,
+            OptimizationInputs optimizationInputs) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
@@ -79,6 +100,7 @@ public class CameraCalibrationCoefficients implements Releasable {
         this.calobjectSize = calobjectSize;
         this.calobjectSpacing = calobjectSpacing;
         this.lensmodel = lensmodel;
+        this.optimizationInputs = optimizationInputs;
 
         // Legacy migration just to make sure that observations is at worst empty and never null
         if (observations == null) {
@@ -180,7 +202,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 observations,
                 calobjectSize,
                 calobjectSpacing,
-                lensmodel);
+                lensmodel,
+                optimizationInputs);
     }
 
     public Mat getCameraIntrinsicsMat() {
@@ -233,6 +256,123 @@ public class CameraCalibrationCoefficients implements Releasable {
                 observations,
                 calobjectSize,
                 calobjectSpacing,
-                lensmodel);
+                lensmodel,
+                null);
+    }
+
+    /**
+     * Convert from WPILib geometry types to a raw RT array
+     *
+     * @return array of size [numObservations * 6] where each group of 6 is (rvec[0], rvec[1],
+     *     rvec[2], tvec[0], tvec[1], tvec[2]) for the
+     */
+    private double[] optimizationInputsRtToRef() {
+        int numObs = optimizationInputs.rt_cam_ref.size();
+        double[] ret = new double[numObs * 6];
+
+        for (int i = 0; i < numObs; i++) {
+            var pose = optimizationInputs.rt_cam_ref.get(i);
+            var r = pose.getRotation().toVector();
+            var t = pose.getTranslation().toVector();
+            ret[i * 6 + 0] = r.get(0);
+            ret[i * 6 + 1] = r.get(1);
+            ret[i * 6 + 2] = r.get(2);
+            ret[i * 6 + 3] = t.get(0);
+            ret[i * 6 + 4] = t.get(1);
+            ret[i * 6 + 5] = t.get(2);
+        }
+
+        return ret;
+    }
+
+    /**
+     * Estimate uncertainty across a grid of points. Returned list is (u, v, uncertainty) in pixels.
+     * Please find a better home for this code
+     */
+    public List<Point3> estimateUncertainty() {
+        if (this.optimizationInputs == null) {
+            logger.error("Cannot compute uncertainty without optimization inputs");
+            throw new RuntimeException("Cannot compute uncertainty without optimization inputs");
+        }
+
+        // number of intersections
+        int boardWidth = (int) calobjectSize.width;
+        int boardHeight = (int) calobjectSize.height;
+
+        double[] xylevels = new double[boardWidth * boardHeight * 3 * observations.size()];
+        var rt_ref_frames = optimizationInputsRtToRef();
+
+        int xylevelsIdx = 0;
+        for (var board : observations) {
+            if (board.locationInImageSpace.size() != board.cornersUsed.length) {
+                throw new RuntimeException(
+                        "Length mismatch! Got "
+                                + board.locationInImageSpace.size()
+                                + " corners but "
+                                + board.cornersUsed.length
+                                + " used flags");
+            }
+
+            var corners = board.locationInImageSpace;
+
+            // xylevels is row-major per chessboard
+            for (int boardCornerIdx = 0; boardCornerIdx < corners.size(); boardCornerIdx++) {
+                var corner = corners.get(boardCornerIdx);
+                double level = board.cornersUsed[boardCornerIdx] ? 1.0 : -1.0;
+
+                xylevels[xylevelsIdx * 3 + 0] = corner.x;
+                xylevels[xylevelsIdx * 3 + 1] = corner.y;
+                xylevels[xylevelsIdx * 3 + 2] = level;
+
+                xylevelsIdx += 1;
+            }
+        }
+
+        double warpX, warpY;
+        if (calobjectWarp == null || calobjectWarp.length != 2) {
+            warpX = 0;
+            warpY = 0;
+        } else {
+            warpX = calobjectWarp[0];
+            warpY = calobjectWarp[1];
+        }
+
+        var mrcalIntrinsics = new double[12];
+        Arrays.fill(mrcalIntrinsics, 0);
+        // core is fx fy cx cy
+        var core = this.cameraIntrinsics.getAsWpilibMat();
+        mrcalIntrinsics[0] = core.get(0, 0);
+        mrcalIntrinsics[1] = core.get(1, 1);
+        mrcalIntrinsics[2] = core.get(0, 2);
+        mrcalIntrinsics[3] = core.get(1, 2);
+        // distortion
+        System.arraycopy(
+                this.getDistCoeffsArr(), 0, mrcalIntrinsics, 4, this.getDistCoeffsArr().length);
+
+        var uncertainty = // x, y, uncertainty
+                MrCalJNI.compute_uncertainty(
+                        xylevels,
+                        mrcalIntrinsics,
+                        rt_ref_frames,
+                        boardWidth,
+                        boardHeight,
+                        calobjectSpacing,
+                        (int) resolution.width,
+                        (int) resolution.height,
+                        60,
+                        40,
+                        warpX,
+                        warpY);
+        if (uncertainty == null) {
+            logger.error("Failed to compute uncertainty");
+            throw new RuntimeException("Failed to compute uncertainty");
+        }
+
+        var ret = new ArrayList<Point3>();
+        for (int j = 0; j < uncertainty.length; j += 3) {
+            ret.add(new Point3(uncertainty[j + 0], uncertainty[j + 1], uncertainty[j + 2]));
+        }
+
+        return ret;
     }
 }
