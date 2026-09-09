@@ -387,6 +387,69 @@ test.describe("Static Crop", () => {
     await expect(yInputs.nth(0)).toHaveValue("200");
   });
 
+  test("borders and corners can be grabbed from outside the region", async ({ page }) => {
+    await cropSwitch(page).check();
+
+    const xInputs = cropRangeInputs(page, "Crop X Range");
+    const yInputs = cropRangeInputs(page, "Crop Y Range");
+    const frameWidth = Number(await xInputs.nth(1).getAttribute("max"));
+    const frameHeight = Number(await yInputs.nth(1).getAttribute("max"));
+    await xInputs.nth(0).fill("400");
+    await xInputs.nth(0).press("Enter");
+    await xInputs.nth(1).fill("800");
+    await xInputs.nth(1).press("Enter");
+    await yInputs.nth(0).fill("200");
+    await yInputs.nth(0).press("Enter");
+    await yInputs.nth(1).fill("400");
+    await yInputs.nth(1).press("Enter");
+
+    await showRawStream(page);
+    const frame = rawFrame(page);
+    await frame.scrollIntoViewIfNeeded();
+    const frameBox = await stableBoundingBox(frame);
+    expect(frameBox).not.toBeNull();
+    if (!frameBox) return;
+    const screenX = (px: number) => frameBox.x + (px / frameWidth) * frameBox.width;
+    const screenY = (px: number) => frameBox.y + (px / frameHeight) * frameBox.height;
+
+    const near = async (locator: Locator, expected: number) => {
+      await expect
+        .poll(async () => Math.abs(Number(await locator.inputValue()) - expected))
+        .toBeLessThanOrEqual(Math.max(10, frameWidth / 100));
+    };
+
+    // Grab the right border from 8px OUTSIDE the region (over the dimmed surroundings) and drag it
+    // a tenth of the frame right: the border follows just as if grabbed from inside.
+    await page.mouse.move(screenX(800) + 8, screenY(300));
+    await page.mouse.down();
+    await page.mouse.move(screenX(800) + 8 + frameBox.width * 0.1, screenY(300), { steps: 5 });
+    await page.mouse.up();
+
+    await near(xInputs.nth(1), 800 + frameWidth * 0.1);
+    await expect(xInputs.nth(0)).toHaveValue("400");
+    await expect(yInputs.nth(0)).toHaveValue("200");
+    await expect(yInputs.nth(1)).toHaveValue("400");
+
+    // Grab the bottom-right corner from diagonally outside it and drag outward: x1 and y1 follow.
+    // The first drag reshaped the Processed card, which can shift this card -- re-measure first.
+    const frameBox2 = await stableBoundingBox(frame);
+    expect(frameBox2).not.toBeNull();
+    if (!frameBox2) return;
+    const newX1 = Number(await xInputs.nth(1).inputValue());
+    const cornerX = frameBox2.x + (newX1 / frameWidth) * frameBox2.width + 6;
+    const cornerY = frameBox2.y + (400 / frameHeight) * frameBox2.height + 6;
+    await page.mouse.move(cornerX, cornerY);
+    await page.mouse.down();
+    await page.mouse.move(cornerX + frameBox2.width * 0.05, cornerY + frameBox2.height * 0.1, { steps: 5 });
+    await page.mouse.up();
+
+    const x1AfterFirstDrag = 800 + frameWidth * 0.1;
+    await near(xInputs.nth(1), x1AfterFirstDrag + frameWidth * 0.05);
+    await near(yInputs.nth(1), 400 + frameHeight * 0.1);
+    await expect(xInputs.nth(0)).toHaveValue("400");
+    await expect(yInputs.nth(0)).toHaveValue("200");
+  });
+
   test("a warning banner shows while the raw stream is open with cropping enabled", async ({ page }) => {
     const banner = page.getByText(/static cropping enabled while the raw stream is open/i);
 

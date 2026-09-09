@@ -232,10 +232,15 @@ const edgesToCursor = (edges: DragEdges | null, dragging: boolean): string | und
   return dragging ? "grabbing" : "grab";
 };
 
-// Hit-test the pointer against the crop region's on-screen rectangle: null when outside the region
-// (on the Raw stream the pointer can be on the dimmed surroundings), otherwise which borders are
-// within grabbing distance. The border zone is capped by the region size, so small regions keep a
-// movable middle.
+// How far from a border, in screen pixels, a grab still catches it. The zone extends to both sides
+// of the border: nobody lands on a 2px outline exactly, and coming at a corner from the dimmed
+// outside has to work as well as from the inside.
+const EDGE_GRAB_DISTANCE = 12;
+
+// Hit-test the pointer against the crop region's on-screen rectangle: which borders are within
+// grabbing distance (from either side), the interior (none selected -- a move), or null when the
+// pointer is outside the region and not near any border. Only the inward reach is capped by the
+// region size, so small regions keep a movable middle without shrinking the outside target.
 const edgeHitTest = (event: PointerEvent): DragEdges | null => {
   const frameRect = streamFrame.value?.getBoundingClientRect();
   const region = previewRegion.value;
@@ -246,19 +251,29 @@ const edgeHitTest = (event: PointerEvent): DragEdges | null => {
   const width = region.width * frameRect.width;
   const height = region.height * frameRect.height;
   if (width <= 0 || height <= 0) return null;
+  const right = left + width;
+  const bottom = top + height;
 
-  if (event.clientX < left || event.clientX > left + width || event.clientY < top || event.clientY > top + height) {
-    return null;
+  const inwardX = Math.min(EDGE_GRAB_DISTANCE, width / 4);
+  const inwardY = Math.min(EDGE_GRAB_DISTANCE, height / 4);
+  // Near a border's line and within (or just past) the span it covers on the other axis.
+  const alongX = event.clientX >= left - EDGE_GRAB_DISTANCE && event.clientX <= right + EDGE_GRAB_DISTANCE;
+  const alongY = event.clientY >= top - EDGE_GRAB_DISTANCE && event.clientY <= bottom + EDGE_GRAB_DISTANCE;
+
+  const edges = {
+    left: alongY && event.clientX >= left - EDGE_GRAB_DISTANCE && event.clientX <= left + inwardX,
+    right: alongY && event.clientX >= right - inwardX && event.clientX <= right + EDGE_GRAB_DISTANCE,
+    top: alongX && event.clientY >= top - EDGE_GRAB_DISTANCE && event.clientY <= top + inwardY,
+    bottom: alongX && event.clientY >= bottom - inwardY && event.clientY <= bottom + EDGE_GRAB_DISTANCE
+  };
+  if (edges.left || edges.right || edges.top || edges.bottom) return edges;
+
+  // Inside the region away from every border: a move.
+  if (event.clientX > left && event.clientX < right && event.clientY > top && event.clientY < bottom) {
+    return edges;
   }
 
-  const thresholdX = Math.min(10, width / 4);
-  const thresholdY = Math.min(10, height / 4);
-  return {
-    left: event.clientX - left <= thresholdX,
-    right: left + width - event.clientX <= thresholdX,
-    top: event.clientY - top <= thresholdY,
-    bottom: top + height - event.clientY <= thresholdY
-  };
+  return null;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
@@ -535,8 +550,8 @@ onBeforeUnmount(() => {
 
 .crop-handle {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background-color: #ffd843;
   border: 1px solid rgba(0, 0, 0, 0.6);
   border-radius: 1px;
