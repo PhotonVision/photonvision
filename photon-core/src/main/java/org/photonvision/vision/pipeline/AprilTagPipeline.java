@@ -217,16 +217,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 var cropped = cropPipe.run(frame.processedImage);
                 sumPipeNanosElapsed += cropped.nanosElapsed;
 
-                // Null output means the crop was a no-op; detect on the full frame in that case
-                var croppedMat = cropped.output != null ? cropped.output : frame.processedImage;
-
                 CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
-                        aprilTagDetectionPipe.run(croppedMat);
+                        aprilTagDetectionPipe.run(cropped.output);
                 sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
-
-                if (croppedMat != frame.processedImage) {
-                    croppedMat.release();
-                }
 
                 var cropRect = cropPipe.effectiveCrop(inputMat.cols(), inputMat.rows());
                 double offsetX = cropRect != null ? cropRect.x : 0;
