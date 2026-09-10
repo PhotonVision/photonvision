@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.awt.Color;
 import java.util.List;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -42,6 +43,7 @@ public class OutputStreamPipeline implements Releasable {
 
     private final Draw2dArucoPipe draw2dArucoPipe = new Draw2dArucoPipe();
     private final Draw3dArucoPipe draw3dArucoPipe = new Draw3dArucoPipe();
+    private final Draw2dTargetsPipe draw2dMLTargetsPipe = new Draw2dTargetsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
@@ -105,6 +107,19 @@ public class OutputStreamPipeline implements Releasable {
                         settings.targetModel,
                         settings.streamingFrameDivisor));
 
+        // Boxes for the regions the ML tag detector proposed -- orange, so they read as candidate
+        // regions rather than decoded tags, which draw over them
+        var drawMLParams =
+                new Draw2dTargetsPipe.Draw2dTargetsParams(
+                        settings.outputShouldDraw,
+                        settings.outputMaximumTargets,
+                        settings.streamingFrameDivisor);
+        drawMLParams.showCentroid = false;
+        drawMLParams.showMaximumBox = false;
+        drawMLParams.showContourNumber = false;
+        drawMLParams.rotatedBoxColor = Color.ORANGE;
+        draw2dMLTargetsPipe.setParams(drawMLParams);
+
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
 
@@ -119,6 +134,14 @@ public class OutputStreamPipeline implements Releasable {
             Frame inputAndOutputFrame,
             AdvancedPipelineSettings settings,
             List<TrackedTarget> targetsToDraw) {
+        return process(inputAndOutputFrame, settings, targetsToDraw, List.of());
+    }
+
+    public CVPipelineResult process(
+            Frame inputAndOutputFrame,
+            AdvancedPipelineSettings settings,
+            List<TrackedTarget> targetsToDraw,
+            List<TrackedTarget> mlTargetsToDraw) {
         setPipeParams(inputAndOutputFrame.frameStaticProperties, settings);
         var inMat = inputAndOutputFrame.colorImage.getMat();
         var outMat = inputAndOutputFrame.processedImage.getMat();
@@ -148,6 +171,12 @@ public class OutputStreamPipeline implements Releasable {
                 sumPipeNanosElapsed += pipeProfileNanos[2] = outputMatPipeResult.nanosElapsed;
             } else {
                 pipeProfileNanos[2] = 0;
+            }
+
+            // Draw the regions the ML tag detector proposed first, so decoded targets draw over them
+            if (!mlTargetsToDraw.isEmpty()) {
+                var drawMLTargetsResult = draw2dMLTargetsPipe.run(Pair.of(outMat, mlTargetsToDraw));
+                sumPipeNanosElapsed += drawMLTargetsResult.nanosElapsed;
             }
 
             // Draw 2D Crosshair on output

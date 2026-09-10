@@ -37,6 +37,12 @@ public class CVPipelineResult implements Releasable {
     public Optional<MultiTargetPNPResult> multiTagResult;
     public final List<String> objectDetectionClassNames;
 
+    /**
+     * Targets that exist only to be drawn on the output stream (the regions the ML tag detector
+     * proposed), never published as real targets.
+     */
+    public List<TrackedTarget> mlTargets = List.of();
+
     public CVPipelineResult(
             long sequenceID,
             double processingNanos,
@@ -99,6 +105,9 @@ public class CVPipelineResult implements Releasable {
 
     public void release() {
         for (TrackedTarget tt : targets) {
+            tt.release();
+        }
+        for (TrackedTarget tt : mlTargets) {
             tt.release();
         }
         if (inputAndOutputFrame != null) inputAndOutputFrame.release();
