@@ -17,13 +17,19 @@
 
 package org.photonvision.vision.objects;
 
+import java.nio.file.Path;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 
 public interface Model {
     public ObjectDetector load();
 
-    public String getUID();
+    /**
+     * Gets the path to the model file. This is being used as a UID.
+     *
+     * @return the path to the model file (for use as a UID)
+     */
+    public Path getPath();
 
     public String getNickname();
 

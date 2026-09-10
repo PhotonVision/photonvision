@@ -29,12 +29,17 @@
 
 from typing import TYPE_CHECKING
 
+
 from ..packet import Packet
 from ..targeting import *  # noqa
 
+
+
 if TYPE_CHECKING:
     from ..targeting import MultiTargetPNPResult  # noqa
+
     from ..targeting import PnpResult  # noqa
+
 
 
 class MultiTargetPNPResultSerde:
@@ -50,7 +55,7 @@ class MultiTargetPNPResultSerde:
         ret.encodeBytes(PnpResult.photonStruct.pack(value.estimatedPose).getData())
 
         # fiducialIDsUsed is a custom VLA!
-        ret.encodeShortList(value.fiducialIDsUsed)
+        ret.encodeListShimmed(value.fiducialIDsUsed, ret.encode16)
         return ret
 
     @staticmethod
@@ -60,8 +65,8 @@ class MultiTargetPNPResultSerde:
         # estimatedPose is of non-intrinsic type PnpResult
         ret.estimatedPose = PnpResult.photonStruct.unpack(packet)
 
-        # fiducialIDsUsed is a custom VLA!
-        ret.fiducialIDsUsed = packet.decodeShortList()
+        # fiducialIDsUsed is an intrinsic VLA!
+        ret.fiducialIDsUsed = packet.decodeListShimmed(packet.decode16)
 
         return ret
 

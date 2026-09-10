@@ -29,12 +29,17 @@
 
 from typing import TYPE_CHECKING
 
+
 from ..packet import Packet
 from ..targeting import *  # noqa
 
+
+
 if TYPE_CHECKING:
     from ..targeting import PhotonTrackedTarget  # noqa
+
     from ..targeting import TargetCorner  # noqa
+
 
 
 class PhotonTrackedTargetSerde:
@@ -67,8 +72,10 @@ class PhotonTrackedTargetSerde:
         # objDetectConf is of intrinsic type float32
         ret.encodeFloat(value.objDetectConf)
 
+        # bestCameraToTarget is of shimmed type Transform3d
         ret.encodeTransform(value.bestCameraToTarget)
 
+        # altCameraToTarget is of shimmed type Transform3d
         ret.encodeTransform(value.altCameraToTarget)
 
         # poseAmbiguity is of intrinsic type float64

@@ -22,7 +22,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.cli.*;
+import java.util.concurrent.Callable;
 import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.LoadJNI.JNITypes;
@@ -57,91 +57,49 @@ import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Rotation2d;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
-public class Main {
+@Command(
+        name = "java -jar photonvision.jar",
+        mixinStandardHelpOptions = true,
+        version = PhotonVersion.versionString)
+public class Main implements Callable<Integer> {
     public static final int DEFAULT_WEBPORT = 5800;
 
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
 
-    private static boolean isTestMode = false;
-    private static boolean isSmoketest = false;
-    private static Path testModeFolder = null;
-    private static boolean printDebugLogs;
+    @Option(
+            names = {"-d", "--debug"},
+            description = "Enable debug logging prints")
+    private boolean debugMode;
 
-    private static boolean handleArgs(String[] args) throws ParseException {
-        final var options = new Options();
-        options.addOption("d", "debug", false, "Enable debug logging prints");
-        options.addOption("h", "help", false, "Show this help text and exit");
-        options.addOption(
-                "t",
-                "test-mode",
-                false,
-                "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
+    @Option(
+            names = {"-t", "--test-mode"},
+            description = "Run in test mode with 2019 and 2020 WPI field images in place of cameras")
+    private boolean testMode;
 
-        options.addOption("f", "folder", true, "Point test mode to a specific folder");
-        options.addOption("n", "disable-networking", false, "Disables control device network settings");
-        options.addOption(
-                "c",
-                "clear-config",
-                false,
-                "Clears PhotonVision pipeline and networking settings. Preserves log files");
-        options.addOption(
-                "s",
-                "smoketest",
-                false,
-                "Exit Photon after loading native libraries and camera configs, but before starting up camera runners");
-        options.addOption("p", "platform", true, "Specify platform override, based on Platform enum");
+    @Option(
+            names = {"-n", "--disable-networking"},
+            description = "Disables control device network settings")
+    private boolean disableNetworking;
 
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(options, args);
+    @Option(
+            names = {"-c", "--clear-config"},
+            description = "Clears PhotonVision pipeline and networking settings. Preserves log files")
+    private boolean clearConfig;
 
-        if (cmd.hasOption("help")) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("java -jar photonvision.jar [options]", options);
-            return false; // exit program
-        } else {
-            if (cmd.hasOption("debug")) {
-                printDebugLogs = true;
-                logger.info("Enabled debug logging");
-            }
+    @Option(
+            names = {"-s", "--smoketest"},
+            description =
+                    "Exit Photon after loading native libraries and camera configs, but before starting up camera runners")
+    private boolean smoketest;
 
-            if (cmd.hasOption("test-mode")) {
-                isTestMode = true;
-                logger.info("Running in test mode - Cameras will not be used");
-
-                if (cmd.hasOption("path")) {
-                    Path p = Path.of(System.getProperty("PATH_PREFIX", "") + cmd.getOptionValue("path"));
-                    logger.info("Loading from Path " + p.toAbsolutePath().toString());
-                    testModeFolder = p;
-                }
-            }
-
-            if (cmd.hasOption("disable-networking")) {
-                NetworkManager.getInstance().networkingIsDisabled = true;
-            }
-
-            if (cmd.hasOption("clear-config")) {
-                ConfigManager.getInstance().clearConfig();
-            }
-
-            if (cmd.hasOption("smoketest")) {
-                isSmoketest = true;
-            }
-
-            if (cmd.hasOption("platform")) {
-                String platStr = cmd.getOptionValue("platform");
-                try {
-                    Platform plat = Platform.valueOf(platStr);
-                    Platform.overridePlatform(plat);
-                    logger.info("Overrode platform to: " + plat);
-                } catch (IllegalArgumentException e) {
-                    logger.error("Invalid platform override: " + platStr);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+    @Option(
+            names = {"-p", "--platform"},
+            description = "Specify platform override, based on Platform enum")
+    private Optional<Platform> platform;
 
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
@@ -213,20 +171,21 @@ public class Main {
         VisionSourceManager.getInstance().registerLoadedConfigs(cameraConfigs);
     }
 
-    private static void tryLoadJNI(JNITypes type) {
+    private void tryLoadJNI(JNITypes type) {
         try {
             LoadJNI.forceLoad(type);
             logger.info("Loaded " + type.name() + "-JNI");
         } catch (IOException e) {
             logger.error("Failed to load " + type.name() + "-JNI!", e);
-            if (isSmoketest) {
+            if (smoketest) {
                 System.exit(1);
             }
         }
     }
 
-    public static void main(String[] args) {
-        var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
+    @Override
+    public Integer call() {
+        var logLevel = debugMode ? LogLevel.TRACE : LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
         Logger.setLevel(LogGroup.WebServer, logLevel);
         Logger.setLevel(LogGroup.VisionModule, logLevel);
@@ -250,19 +209,32 @@ public class Main {
             logger.info("PhotonVision image version: unknown");
         }
 
-        try {
-            if (!handleArgs(args)) {
-                System.exit(1);
-            }
-        } catch (ParseException e) {
-            logger.error("Failed to parse command-line options!", e);
+        if (debugMode) {
+            logger.info("Enabled debug logging");
+        }
+
+        if (testMode) {
+            logger.info("Running in test mode - Cameras will not be used");
+        }
+
+        if (disableNetworking) {
+            NetworkManager.getInstance().networkingIsDisabled = true;
+        }
+
+        if (clearConfig) {
+            ConfigManager.getInstance().clearConfig();
+        }
+
+        if (platform.isPresent()) {
+            Platform.overridePlatform(platform.get());
+            logger.info("Overrode platform to: " + platform);
         }
 
         // We don't want to trigger an exit in test mode or smoke test. This is
         // specifically for MacOS.
-        if (!(Platform.isSupported() || isSmoketest || isTestMode)) {
+        if (!(Platform.isSupported() || smoketest || testMode)) {
             logger.error("This platform is unsupported!");
-            System.exit(1);
+            return 1;
         }
 
         try {
@@ -270,17 +242,17 @@ public class Main {
 
             if (!success) {
                 logger.error("Failed to load native libraries! Giving up :(");
-                System.exit(1);
+                return 1;
             }
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
-            System.exit(1);
+            return 1;
         }
         logger.info("WPILib and photon-targeting JNI libraries loaded.");
 
         if (!HAL.initialize(500, 0)) {
             logger.error("Failed to initialize the HAL! Giving up :(");
-            System.exit(1);
+            return 1;
         }
 
         if (Platform.isRaspberryPi()) {
@@ -333,26 +305,24 @@ public class Main {
         // Force load the hardware manager
         HardwareManager.getInstance();
 
-        if (isSmoketest) {
+        if (smoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
-            System.exit(0);
+            return 0;
         }
 
         logger.debug("Loading SystemMonitor...");
         SystemMonitor.getInstance().logSystemInformation();
         SystemMonitor.getInstance().startMonitor(500, 1000);
 
-        // todo - should test mode just add test mode sources, but still allow local usb cameras to be
-        // added?
-        if (!isTestMode) {
+        // todo - should test mode just add test mode sources, but still allow local usb
+        // cameras to be added?
+        if (!testMode) {
             logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
         } else {
-            if (testModeFolder == null) {
-                addTestModeSources();
-            }
+            addTestModeSources();
         }
 
         VisionSourceManager.getInstance().registerTimedTasks();
@@ -360,5 +330,13 @@ public class Main {
         logger.info("Starting server...");
         HardwareManager.getInstance().setError(Optional.empty());
         Server.initialize(DEFAULT_WEBPORT);
+        return -1; // Don't exit, the server is running
+    }
+
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new Main()).execute(args);
+        if (exitCode >= 0) {
+            System.exit(exitCode);
+        }
     }
 }

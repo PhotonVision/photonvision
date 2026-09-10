@@ -85,6 +85,9 @@ public class MultiTargetPNPPipe
         }
     }
 
+    @Override
+    public void release() {}
+
     public static record MultiTargetPNPPipeParams(
             CameraCalibrationCoefficients cameraCoefficients,
             AprilTagFieldLayout atfl,

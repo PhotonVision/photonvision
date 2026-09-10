@@ -41,10 +41,10 @@ ext {
 
     javalinVersion = "6.7.0"
     libcameraDriverVersion = "v2027.0.0-alpha-1"
-    rknnVersion = "dev-v2026.0.1-3-g14c3ecb"
+    rknnVersion = "v2027.0.0"
     tfliteVersion = "v2027.0.2-alpha-1"
     wpilibYear = "2027_alpha5"
-    mrcalVersion = "v2027.0.2";
+    mrcalVersion = "dev-v2027.0.2-6-gb65c352";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
@@ -65,7 +65,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/src/generated/**', "**/bin/generated-sources/**"
+            exclude '**/build/**', '**/build-*/**', '**/src/generated/**', '**/src/generated-test/**', "**/bin/generated-sources/**", "photon-serde-tests/src/**"
         }
         toggleOffOn()
         googleJavaFormat()

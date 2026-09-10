@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: 3.14
       - name: Install wpiformat
-        run: pip3 install wpiformat==2025.79
+        run: pip3 install wpiformat==2026.68
       - name: Run
         run: wpiformat
       - name: Check output
@@ -104,6 +104,15 @@ jobs:
         run: |
           set +e
           pnpm run format-ci
+          exit_code=$?
+          if test "$exit_code" -ne "0"; then
+            echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
+            exit $exit_code
+          fi
+      - name: Run Typechecking
+        run: |
+          set +e
+          pnpm run type-check
           exit_code=$?
           if test "$exit_code" -ne "0"; then
             echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"

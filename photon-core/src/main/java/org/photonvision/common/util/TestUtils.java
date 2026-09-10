@@ -19,7 +19,6 @@ package org.photonvision.common.util;
 
 import io.avaje.json.JsonException;
 import io.avaje.jsonb.Jsonb;
-import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,6 +27,11 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipeline.ReflectivePipeline;
+import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.math.geometry.Rotation2d;
@@ -372,13 +376,10 @@ public class TestUtils {
     private static final int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
-        if (frame.empty()) return;
-        try {
-            HighGui.imshow(title, frame);
-            HighGui.waitKey(timeoutMs);
-            HighGui.destroyAllWindows();
-        } catch (HeadlessException ignored) {
-        }
+        if (frame.empty() || Boolean.getBoolean("java.awt.headless")) return;
+        HighGui.imshow(title, frame);
+        HighGui.waitKey(timeoutMs);
+        HighGui.destroyAllWindows();
     }
 
     public static void showImage(Mat frame, int timeoutMs) {
@@ -391,6 +392,22 @@ public class TestUtils {
 
     public static void showImage(Mat frame) {
         showImage(frame, DefaultTimeoutMillis);
+    }
+
+    public static void continuouslyRunPipeline(
+            FrameProvider frameProvider, ReflectivePipelineSettings settings) {
+        try (var pipeline = new ReflectivePipeline()) {
+            while (true) {
+                CVPipelineResult pipelineResult =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+                TestUtils.printTestResults(pipelineResult);
+                int preRelease = CVMat.getMatCount();
+                pipelineResult.release();
+                int postRelease = CVMat.getMatCount();
+
+                System.out.printf("Pre: %d, Post: %d\n", preRelease, postRelease);
+            }
+        }
     }
 
     public static void printTestResults(CVPipelineResult pipelineResult) {

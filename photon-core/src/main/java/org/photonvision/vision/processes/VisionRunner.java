@@ -38,9 +38,12 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-/** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
+/**
+ * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer; it must be closed
+ * prior to the frame supplier closing
+ */
 @SuppressWarnings("rawtypes")
-public class VisionRunner {
+public class VisionRunner implements AutoCloseable {
     private final Logger logger;
     private final Thread visionProcessThread;
     private final FrameProvider frameSupplier;
@@ -101,6 +104,10 @@ public class VisionRunner {
         } catch (InterruptedException e) {
             logger.error("Exception killing process thread", e);
         }
+    }
+
+    public boolean isRunning() {
+        return visionProcessThread.isAlive();
     }
 
     public Future<Void> runSynchronously(Runnable runnable) {
@@ -243,12 +250,25 @@ public class VisionRunner {
                 waitUntilNextTick(start);
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
-                    pipelineResultConsumer.accept(pipelineResult);
+                    try {
+                        pipelineResultConsumer.accept(pipelineResult);
+                    } catch (Exception ex) {
+                        logger.error("Exception on loop " + loopCount, ex);
+                        pipelineResult.release();
+                    }
                 } catch (Exception ex) {
-                    logger.error("Exception on loop " + loopCount, ex);
+                    logger.error("Pipeline exception on loop " + loopCount, ex);
+                    frame.release();
                 }
                 loopCount++;
             }
+        }
+    }
+
+    @Override
+    public void close() {
+        if (visionProcessThread.isAlive()) {
+            stopProcess();
         }
     }
 }
