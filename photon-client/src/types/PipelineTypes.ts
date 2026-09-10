@@ -293,6 +293,7 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   mltagEnabled: boolean;
   mlConfidence: number;
   mlNms: number;
+  mlPadding: number;
   tagModel: ObjectDetectionModelProperties | null;
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
@@ -319,8 +320,9 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   doMultiTarget: false,
   doSingleTargetAlways: false,
   mltagEnabled: false,
-  mlConfidence: 0.8,
-  mlNms: 0.8,
+  mlConfidence: 0.5,
+  mlNms: 0.45,
+  mlPadding: 0.15,
   tagModel: null
 };
 

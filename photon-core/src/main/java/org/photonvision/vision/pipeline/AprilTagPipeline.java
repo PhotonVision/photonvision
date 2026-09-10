@@ -75,13 +75,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
 
-    /**
-     * How much each side of an ML detection's bounding box grows before the region is cropped, as a
-     * fraction of the box's size. The model boxes tags tightly, and a tag whose border touches the
-     * crop edge loses its quiet zone and goes undetected.
-     */
-    private static final double ML_CROP_PADDING_FACTOR = 0.15;
-
     public AprilTagPipeline() {
         super(PROCESSING_TYPE);
         settings = new AprilTagPipelineSettings();
@@ -206,8 +199,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 var bbox = result.bbox().boundingRect();
 
                 // Pad the region; clamping below keeps it inside the image
-                int padX = (int) Math.ceil(bbox.width * ML_CROP_PADDING_FACTOR);
-                int padY = (int) Math.ceil(bbox.height * ML_CROP_PADDING_FACTOR);
+                int padX = (int) Math.ceil(bbox.width * settings.mlPadding);
+                int padY = (int) Math.ceil(bbox.height * settings.mlPadding);
                 bbox.x -= padX;
                 bbox.y -= padY;
                 bbox.width += 2 * padX;

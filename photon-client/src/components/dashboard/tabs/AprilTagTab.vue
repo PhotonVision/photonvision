@@ -164,6 +164,18 @@ const selectedModel = computed<string>({
         :step="0.01"
         @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlNms: value }, false)"
       />
+      <pv-slider
+        v-model="currentPipelineSettings.mlPadding"
+        :slider-cols="interactiveCols"
+        label="Crop Padding"
+        tooltip="How much each side of a detection's bounding box grows before the region is cropped, as a fraction of the box's size. Padding keeps the tag's quiet zone inside the crop; too little makes tags at the crop edge go undetected."
+        :min="0"
+        :max="1"
+        :step="0.01"
+        @update:modelValue="
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlPadding: value }, false)
+        "
+      />
     </template>
   </div>
 </template>

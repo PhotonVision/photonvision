@@ -38,8 +38,10 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public boolean doSingleTargetAlways = false;
 
     public boolean mltagEnabled = false;
-    public double mlConfidence = 0.8;
-    public double mlNms = 0.8;
+    public double mlConfidence = 0.5;
+    public double mlNms = 0.45;
+    public double mlPadding = 0.15;
+
     public NeuralNetworkModelsSettings.ModelProperties tagModel = null;
 
     public AprilTagPipelineSettings() {
@@ -76,6 +78,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + (mltagEnabled ? 1231 : 1237);
         result = prime * result + (int) Math.round(mlConfidence);
         result = prime * result + (int) Math.round(mlNms);
+        result = prime * result + (int) Math.round(mlPadding);
         result = prime * result + Objects.hashCode(tagModel);
         return result;
     }
@@ -100,6 +103,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (mltagEnabled != other.mltagEnabled) return false;
         if (mlConfidence != other.mlConfidence) return false;
         if (mlNms != other.mlNms) return false;
+        if (mlPadding != other.mlPadding) return false;
         if (!Objects.equals(tagModel, other.tagModel)) return false;
         return true;
     }
