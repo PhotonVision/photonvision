@@ -54,8 +54,6 @@ public enum CameraQuirk {
     See3Cam_24CUG,
     /** Thrifty OV9281 has 1-2400 in V4L2 exposure_absolute units (100 μs each). */
     ThriftyOV9281Controls,
-    /**
-     * Only MJPEG video modes are usable.
-     */
+    /** Only MJPEG video modes are usable. */
     MJPEGOnly,
 }
