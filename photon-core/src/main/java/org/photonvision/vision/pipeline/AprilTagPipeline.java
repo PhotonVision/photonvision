@@ -36,7 +36,6 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.NullModel;
-import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
@@ -76,6 +75,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ObjectDetectionPipe objectDetectionPipe = new ObjectDetectionPipe();
+    private final CropPipe cropPipe = new CropPipe();
     private final Collect2dTargetsPipe collect2dMLTargetsPipe = new Collect2dTargetsPipe();
     private final Draw2dTargetsPipe draw2dMLTargetsPipe = new Draw2dTargetsPipe();
 
@@ -229,9 +229,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 bbox.width += 2 * padX;
                 bbox.height += 2 * padY;
 
-                var cropRect = CropPipe.clampCropToImage(bbox, inputMat.cols(), inputMat.rows());
-                var cropped =
-                        cropRect != null ? new CVMat(inputMat.submat(cropRect)) : frame.processedImage;
+                cropPipe.setParams(new CropPipe.CropPipeParams(bbox, settings));
+                var cropped = cropPipe.run(frame.processedImage);
+                sumPipeNanosElapsed += cropped.nanosElapsed;
+
 
                 CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
                         aprilTagDetectionPipe.run(cropped);
@@ -241,6 +242,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     cropped.release();
                 }
 
+                var cropRect = cropPipe.effectiveCrop(inputMat.cols(), inputMat.rows());
                 double offsetX = cropRect != null ? cropRect.x : 0;
                 double offsetY = cropRect != null ? cropRect.y : 0;
                 for (var tagDetection : tagDetectionPipeResult.output) {
@@ -407,6 +409,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         multiTagPNPPipe.release();
         calculateFPSPipe.release();
         objectDetectionPipe.release();
+        cropPipe.release();
         collect2dMLTargetsPipe.release();
         draw2dMLTargetsPipe.release();
         super.release();
