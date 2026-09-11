@@ -30,13 +30,13 @@
 from typing import TYPE_CHECKING
 
 
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
 
 
 
 if TYPE_CHECKING:
-    from ..targeting import PnpResult  # noqa
+    from ..targeting import PnpResult
 
 
 
@@ -67,7 +67,7 @@ class PnpResultSerde:
 
     @staticmethod
     def unpack(packet: "Packet") -> "PnpResult":
-        ret = PnpResult()
+        ret = targeting.PnpResult()
 
         ret.best = packet.decodeTransform()
 
@@ -86,4 +86,4 @@ class PnpResultSerde:
 
 
 # Hack ourselves into the base class
-PnpResult.photonStruct = PnpResultSerde()
+targeting.PnpResult.photonStruct = PnpResultSerde()

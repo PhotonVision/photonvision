@@ -30,13 +30,13 @@
 from typing import TYPE_CHECKING
 
 
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
 
 
 
 if TYPE_CHECKING:
-    from ..targeting import PhotonPipelineMetadata  # noqa
+    from ..targeting import PhotonPipelineMetadata
 
 
 
@@ -64,7 +64,7 @@ class PhotonPipelineMetadataSerde:
 
     @staticmethod
     def unpack(packet: "Packet") -> "PhotonPipelineMetadata":
-        ret = PhotonPipelineMetadata()
+        ret = targeting.PhotonPipelineMetadata()
 
         # sequenceID is of intrinsic type int64
         ret.sequenceID = packet.decodeLong()
@@ -82,4 +82,4 @@ class PhotonPipelineMetadataSerde:
 
 
 # Hack ourselves into the base class
-PhotonPipelineMetadata.photonStruct = PhotonPipelineMetadataSerde()
+targeting.PhotonPipelineMetadata.photonStruct = PhotonPipelineMetadataSerde()

@@ -30,19 +30,19 @@
 from typing import TYPE_CHECKING
 
 
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
 
 
 
 if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult  # noqa
+    from ..targeting import MultiTargetPNPResult
 
-    from ..targeting import PhotonPipelineMetadata  # noqa
+    from ..targeting import PhotonPipelineMetadata
 
-    from ..targeting import PhotonPipelineResult  # noqa
+    from ..targeting import PhotonPipelineResult
 
-    from ..targeting import PhotonTrackedTarget  # noqa
+    from ..targeting import PhotonTrackedTarget
 
 
 
@@ -56,30 +56,30 @@ class PhotonPipelineResultSerde:
         ret = Packet()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata
-        ret.encodeBytes(PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData())
+        ret.encodeBytes(targeting.PhotonPipelineMetadata.photonStruct.pack(value.metadata).getData())
 
         # targets is a custom VLA!
-        ret.encodeList(value.targets, PhotonTrackedTarget.photonStruct)
+        ret.encodeList(value.targets, targeting.PhotonTrackedTarget.photonStruct)
 
         # multitagResult is optional! it better not be a VLA too
-        ret.encodeOptional(value.multitagResult, MultiTargetPNPResult.photonStruct)
+        ret.encodeOptional(value.multitagResult, targeting.MultiTargetPNPResult.photonStruct)
         return ret
 
     @staticmethod
     def unpack(packet: "Packet") -> "PhotonPipelineResult":
-        ret = PhotonPipelineResult()
+        ret = targeting.PhotonPipelineResult()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata
-        ret.metadata = PhotonPipelineMetadata.photonStruct.unpack(packet)
+        ret.metadata = targeting.PhotonPipelineMetadata.photonStruct.unpack(packet)
 
         # targets is a custom VLA!
-        ret.targets = packet.decodeList(PhotonTrackedTarget.photonStruct)
+        ret.targets = packet.decodeList(targeting.PhotonTrackedTarget.photonStruct)
 
         # multitagResult is optional! it better not be a VLA too
-        ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct)
+        ret.multitagResult = packet.decodeOptional(targeting.MultiTargetPNPResult.photonStruct)
 
         return ret
 
 
 # Hack ourselves into the base class
-PhotonPipelineResult.photonStruct = PhotonPipelineResultSerde()
+targeting.PhotonPipelineResult.photonStruct = PhotonPipelineResultSerde()

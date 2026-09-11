@@ -30,13 +30,13 @@
 from typing import TYPE_CHECKING
 
 
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
 
 
 
 if TYPE_CHECKING:
-    from ..targeting import TargetCorner  # noqa
+    from ..targeting import TargetCorner
 
 
 
@@ -58,7 +58,7 @@ class TargetCornerSerde:
 
     @staticmethod
     def unpack(packet: "Packet") -> "TargetCorner":
-        ret = TargetCorner()
+        ret = targeting.TargetCorner()
 
         # x is of intrinsic type float64
         ret.x = packet.decodeDouble()
@@ -70,4 +70,4 @@ class TargetCornerSerde:
 
 
 # Hack ourselves into the base class
-TargetCorner.photonStruct = TargetCornerSerde()
+targeting.TargetCorner.photonStruct = TargetCornerSerde()
