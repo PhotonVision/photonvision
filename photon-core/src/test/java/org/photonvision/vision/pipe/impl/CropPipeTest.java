@@ -89,7 +89,8 @@ public class CropPipeTest {
                 List.of(),
                 new Size(),
                 1,
-                CameraLensModel.LENSMODEL_OPENCV);
+                CameraLensModel.LENSMODEL_OPENCV,
+                new CameraCalibrationCoefficients.OptimizationInputs(List.of()));
     }
 
     @Test

@@ -244,7 +244,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 observations,
                 calobjectSize,
                 calobjectSpacing,
-                lensmodel);
+                lensmodel,
+                new CameraCalibrationCoefficients.OptimizationInputs(List.of()));
     }
 
     public Mat getCameraIntrinsicsMat() {
