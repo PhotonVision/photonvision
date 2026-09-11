@@ -37,8 +37,7 @@ import org.photonvision.common.logging.Logger;
 public class OsImageData {
     private static final Logger logger = new Logger(OsImageData.class, LogGroup.General);
 
-    private static File imageMetadataFile =
-            ConfigManager.getInstance().getImageMetadataPath().toFile();
+    private static File imageMetadataFile = ConfigManager.getImageMetadataPath().toFile();
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 

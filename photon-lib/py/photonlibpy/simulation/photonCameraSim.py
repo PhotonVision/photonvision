@@ -302,21 +302,21 @@ class PhotonCameraSim:
             # spherical targets need a rotated rectangle of their midpoints for visualization
             if isSpherical:
                 center = OpenCVHelp.avgPoint(imagePoints)
-                l: int = 0
+                left_idx: int = 0
                 # reference point (left side midpoint)
                 for i in range(4):
-                    if imagePoints[i, 0, 0] < imagePoints[l, 0, 0].x:
-                        l = i
+                    if imagePoints[i, 0, 0] < imagePoints[left_idx, 0, 0].x:
+                        left_idx = i
 
-                lc = imagePoints[l]
+                lc = imagePoints[left_idx]
                 angles = [
                     0.0,
                 ] * 4
-                t = (l + 1) % 4
-                b = (l + 1) % 4
+                t = (left_idx + 1) % 4
+                b = (left_idx + 1) % 4
                 r = 0
                 for i in range(4):
-                    if i == l:
+                    if i == left_idx:
                         continue
                     ic = imagePoints[i]
                     angles[i] = math.atan2(lc[0, 1] - ic[0, 1], ic[0, 0] - lc[0, 0])
@@ -325,7 +325,7 @@ class PhotonCameraSim:
                     if angles[i] <= angles[b]:
                         b = i
                 for i in range(4):
-                    if i != t and i != l and i != b:
+                    if i != t and i != left_idx and i != b:
                         r = i
                 # create RotatedRect from midpoints
                 rect = cv.RotatedRect(
