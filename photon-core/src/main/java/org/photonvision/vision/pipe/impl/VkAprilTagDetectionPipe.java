@@ -110,7 +110,14 @@ public class VkAprilTagDetectionPipe
         cpuFallbackDetector = null;
         final long handleToClean = handle;
         cleanable = cleaner.register(this, () -> VkAprilTagJNI.destroy(handleToClean));
-        logger.info("Vulkan AprilTag detector created (" + p.family() + ", " + p.width() + "x" + p.height() + ")");
+        logger.info(
+                "Vulkan AprilTag detector created ("
+                        + p.family()
+                        + ", "
+                        + p.width()
+                        + "x"
+                        + p.height()
+                        + ")");
     }
 
     private void fallBackToCpu(VkAprilTagDetectionPipeParams p, String reason) {

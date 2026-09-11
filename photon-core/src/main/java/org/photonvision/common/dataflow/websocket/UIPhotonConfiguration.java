@@ -71,9 +71,7 @@ public class UIPhotonConfiguration {
                                 Platform.getNativePlatform(),
                                 NetworkTablesManager.getInstance().conflictingHostname,
                                 NetworkTablesManager.getInstance().conflictingCameras,
-                                VkAprilTagAvailability.getDevices().stream()
-                                        .map(UIVulkanDeviceInfo::from)
-                                        .toList(),
+                                VkAprilTagAvailability.getDevices().stream().map(UIVulkanDeviceInfo::from).toList(),
                                 VkAprilTagAvailability.getUnavailableReason()),
                         c.getApriltagFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()

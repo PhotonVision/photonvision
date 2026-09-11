@@ -97,8 +97,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
 
   const allow3d = useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled;
   const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
-  const isVkAprilTag =
-    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTagVulkan;
+  const isVkAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTagVulkan;
   const isAnyAprilTag = isAprilTag || isVkAprilTag;
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
   const isObjectDetection =

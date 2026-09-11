@@ -50,8 +50,8 @@ import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
 import org.wpilib.vision.apriltag.AprilTagPoseEstimator.Config;
 
 /**
- * Everything an AprilTag pipeline needs once it already has a {@code List<AprilTagDetection>} for
- * a frame: decision-margin/hamming filtering, single- and multi-tag pose estimation, target-list
+ * Everything an AprilTag pipeline needs once it already has a {@code List<AprilTagDetection>} for a
+ * frame: decision-margin/hamming filtering, single- and multi-tag pose estimation, target-list
  * assembly, and FPS accounting. This is the ~110 lines {@link AprilTagPipeline} (the CPU/
  * libapriltag backend) and the Vulkan backend both need identically - detection is the only place
  * the two differ, so it's the only thing left abstract here.
@@ -79,8 +79,8 @@ public abstract class AbstractAprilTagPipeline<S extends AprilTagPipelineSetting
     }
 
     /**
-     * Runs this pipeline's detector on the frame's already-thresholded image. Implementations
-     * should NOT apply the decisionMargin/hammingDist filtering below themselves - that's done once,
+     * Runs this pipeline's detector on the frame's already-thresholded image. Implementations should
+     * NOT apply the decisionMargin/hammingDist filtering below themselves - that's done once,
      * uniformly, in {@link #process}.
      */
     protected abstract CVPipeResult<List<AprilTagDetection>> runDetection(Frame frame);
@@ -95,9 +95,9 @@ public abstract class AbstractAprilTagPipeline<S extends AprilTagPipelineSetting
      * Hook for subclasses whose single-tag pose-estimator backend is switchable at runtime (e.g.
      * {@link VkAprilTagPipeline}'s CPU/VULKAN {@code poseEstimatorBackend} toggle): called at the
      * start of every {@link #setPipeParamsImpl}, before {@link #singleTagPoseEstimatorPipe} is
-     * configured below, so an override can swap it out for a different {@link
-     * SingleTagPoseEstimator} implementation first. No-op by default - {@link AprilTagPipeline}
-     * (the CPU backend) never needs to swap its pose estimator.
+     * configured below, so an override can swap it out for a different {@link SingleTagPoseEstimator}
+     * implementation first. No-op by default - {@link AprilTagPipeline} (the CPU backend) never needs
+     * to swap its pose estimator.
      */
     protected void configureSingleTagPoseEstimatorBackend() {}
 

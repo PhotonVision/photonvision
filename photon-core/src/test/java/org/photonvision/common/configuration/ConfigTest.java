@@ -197,7 +197,8 @@ public class ConfigTest {
                     "\"doSingleTargetAlways\":true",
                     "\"decimate\":3"
                 }) {
-            assertTrue(json.contains(expectedTopLevelKey), "Missing " + expectedTopLevelKey + " in " + json);
+            assertTrue(
+                    json.contains(expectedTopLevelKey), "Missing " + expectedTopLevelKey + " in " + json);
         }
 
         AprilTagPipelineSettings roundTripped =

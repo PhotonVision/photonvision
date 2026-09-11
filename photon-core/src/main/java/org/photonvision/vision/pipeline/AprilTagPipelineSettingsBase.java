@@ -22,8 +22,8 @@ import org.photonvision.vision.apriltag.AprilTagFamily;
 /**
  * Settings shared by every AprilTag detector backend - CPU ({@link AprilTagPipelineSettings}) and
  * Vulkan ({@code VkAprilTagPipelineSettings}) alike. These are consumed by {@link
- * AbstractAprilTagPipeline}'s shared pose-estimation/multi-target/target-list logic, which does
- * not care which backend produced the detections.
+ * AbstractAprilTagPipeline}'s shared pose-estimation/multi-target/target-list logic, which does not
+ * care which backend produced the detections.
  *
  * <p>Backend-specific tunables (e.g. the CPU detector's {@code decimate}/{@code blur}/{@code
  * refineEdges}, none of which the Vulkan backend can honor - it runs a fixed 2x decimation with no

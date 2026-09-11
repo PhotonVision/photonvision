@@ -38,11 +38,11 @@ import org.wpilib.vision.apriltag.AprilTagPoseEstimator.Config;
 
 /**
  * EXPERIMENTAL. A {@link SingleTagPoseEstimator} backed by {@code vkapriltag}'s native {@code
- * PoseEstimator} - a from-scratch, allocation-free rewrite of libapriltag's {@code
- * apriltag_pose.c} - instead of WPILib's own CPU/JNI implementation. Measured ~58x faster than
- * unmodified libapriltag per tag on Mali-G610/RK3588; that figure is NOT a comparison against
- * WPILib's own estimator (what {@link AprilTagPoseEstimatorPipe} actually uses today), so the
- * real-world benefit here is unverified until benchmarked - see {@code
+ * PoseEstimator} - a from-scratch, allocation-free rewrite of libapriltag's {@code apriltag_pose.c}
+ * - instead of WPILib's own CPU/JNI implementation. Measured ~58x faster than unmodified
+ * libapriltag per tag on Mali-G610/RK3588; that figure is NOT a comparison against WPILib's own
+ * estimator (what {@link AprilTagPoseEstimatorPipe} actually uses today), so the real-world benefit
+ * here is unverified until benchmarked - see {@code
  * VkAprilTagPipelineSettings#poseEstimatorBackend}'s Javadoc.
  *
  * <p>Replicates {@link AprilTagPoseEstimatorPipe#process}'s exact undistortion contract: the
@@ -50,8 +50,8 @@ import org.wpilib.vision.apriltag.AprilTagPoseEstimator.Config;
  * original (not re-derived) homography is passed through unchanged - matching what WPILib's own
  * estimator consumes today.
  *
- * <p>Only replaces single-tag pose estimation. {@code MultiTargetPNPPipe} (multi-tag bundle
- * solve) is unaffected - vkapriltag's PoseEstimator has no multi-tag capability.
+ * <p>Only replaces single-tag pose estimation. {@code MultiTargetPNPPipe} (multi-tag bundle solve)
+ * is unaffected - vkapriltag's PoseEstimator has no multi-tag capability.
  */
 public class VkAprilTagPoseEstimatorPipe
         extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimatorPipeParams>

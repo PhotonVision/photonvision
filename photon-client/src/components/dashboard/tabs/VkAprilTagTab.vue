@@ -78,7 +78,9 @@ const vulkanDeviceItems = computed(() => [
         { value: 4, name: '4x (fastest)' }
       ]"
       :select-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimation: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimation: value }, false)
+      "
     />
     <pv-select
       v-model="currentPipelineSettings.poseEstimatorBackend"
@@ -102,7 +104,9 @@ const vulkanDeviceItems = computed(() => [
       tooltip="Threads for the CPU tail (per-blob quad fitting); 0 uses all available cores"
       :min="0"
       :max="8"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ cpuThreads: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ cpuThreads: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.decisionMargin"

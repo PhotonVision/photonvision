@@ -23,16 +23,16 @@ import org.photonvision.vision.target.TargetModel;
  * BETA. Settings for the Vulkan-accelerated (vkapriltag) AprilTag detector.
  *
  * <p>Deliberately does NOT have blur/refineEdges fields, unlike {@link AprilTagPipelineSettings}:
- * vkapriltag has no pre-blur stage, and edge refinement is explicitly out of scope for that
- * library (see vkapriltag's TagDecoder.h). Unlike those, {@link #decimation} IS present - as of
- * vkapriltag v1.3.0, decimation is a configurable {@code DetectorConfig} field rather than a fixed
- * 2x hardcoded into {@code GpuDetector} - so this is one knob this settings class does expose.
+ * vkapriltag has no pre-blur stage, and edge refinement is explicitly out of scope for that library
+ * (see vkapriltag's TagDecoder.h). Unlike those, {@link #decimation} IS present - as of vkapriltag
+ * v1.3.0, decimation is a configurable {@code DetectorConfig} field rather than a fixed 2x
+ * hardcoded into {@code GpuDetector} - so this is one knob this settings class does expose.
  */
 public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
     /**
-     * -1 selects vkapriltag's own scored auto-select (discrete &gt; integrated &gt; virtual &gt;
-     * CPU, the last of which is never actually chosen - see VkAprilTagAvailability). Otherwise an
-     * index from {@code VkAprilTagAvailability.getDevices()}.
+     * -1 selects vkapriltag's own scored auto-select (discrete &gt; integrated &gt; virtual &gt; CPU,
+     * the last of which is never actually chosen - see VkAprilTagAvailability). Otherwise an index
+     * from {@code VkAprilTagAvailability.getDevices()}.
      */
     public int vulkanDeviceIndex = -1;
 
@@ -46,8 +46,8 @@ public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
      * Integer downsampling factor applied by the Vulkan detector before thresholding/labelling. 1
      * disables decimation (full resolution), 2 is this pipeline's original fixed behavior (kept as
      * the default so existing saved pipelines behave identically after upgrading past vkapriltag
-     * v1.3.0), 4 halves resolution again, etc. Must evenly divide the current camera mode's width
-     * and height, or the pipeline falls back to CPU (see {@code VkAprilTagDetectionPipe}).
+     * v1.3.0), 4 halves resolution again, etc. Must evenly divide the current camera mode's width and
+     * height, or the pipeline falls back to CPU (see {@code VkAprilTagDetectionPipe}).
      */
     public int decimation = 2;
 
