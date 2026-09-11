@@ -41,7 +41,7 @@ public class CVPipelineResult implements Releasable {
      * Targets that exist only to be drawn on the output stream (the regions the ML tag detector
      * proposed), never published as real targets.
      */
-    public List<TrackedTarget> mlTargets = List.of();
+    public List<TrackedTarget> mlROIs = List.of();
 
     public CVPipelineResult(
             long sequenceID,
@@ -107,7 +107,7 @@ public class CVPipelineResult implements Releasable {
         for (TrackedTarget tt : targets) {
             tt.release();
         }
-        for (TrackedTarget tt : mlTargets) {
+        for (TrackedTarget tt : mlROIs) {
             tt.release();
         }
         if (inputAndOutputFrame != null) inputAndOutputFrame.release();

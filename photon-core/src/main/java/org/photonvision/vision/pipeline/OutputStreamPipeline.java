@@ -43,7 +43,7 @@ public class OutputStreamPipeline implements Releasable {
 
     private final Draw2dArucoPipe draw2dArucoPipe = new Draw2dArucoPipe();
     private final Draw3dArucoPipe draw3dArucoPipe = new Draw3dArucoPipe();
-    private final Draw2dTargetsPipe draw2dMLTargetsPipe = new Draw2dTargetsPipe();
+    private final Draw2dTargetsPipe draw2dMLROIsPipe = new Draw2dTargetsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
@@ -118,7 +118,7 @@ public class OutputStreamPipeline implements Releasable {
         drawMLParams.showMaximumBox = false;
         drawMLParams.showContourNumber = false;
         drawMLParams.rotatedBoxColor = Color.ORANGE;
-        draw2dMLTargetsPipe.setParams(drawMLParams);
+        draw2dMLROIsPipe.setParams(drawMLParams);
 
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
@@ -141,7 +141,7 @@ public class OutputStreamPipeline implements Releasable {
             Frame inputAndOutputFrame,
             AdvancedPipelineSettings settings,
             List<TrackedTarget> targetsToDraw,
-            List<TrackedTarget> mlTargetsToDraw) {
+            List<TrackedTarget> mlROIsToDraw) {
         setPipeParams(inputAndOutputFrame.frameStaticProperties, settings);
         var inMat = inputAndOutputFrame.colorImage.getMat();
         var outMat = inputAndOutputFrame.processedImage.getMat();
@@ -174,9 +174,9 @@ public class OutputStreamPipeline implements Releasable {
             }
 
             // Draw the regions the ML tag detector proposed first, so decoded targets draw over them
-            if (!mlTargetsToDraw.isEmpty()) {
-                var drawMLTargetsResult = draw2dMLTargetsPipe.run(Pair.of(outMat, mlTargetsToDraw));
-                sumPipeNanosElapsed += drawMLTargetsResult.nanosElapsed;
+            if (!mlROIsToDraw.isEmpty()) {
+                var drawMLROIsResult = draw2dMLROIsPipe.run(Pair.of(outMat, mlROIsToDraw));
+                sumPipeNanosElapsed += drawMLROIsResult.nanosElapsed;
             }
 
             // Draw 2D Crosshair on output

@@ -71,7 +71,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ObjectDetectionPipe objectDetectionPipe = new ObjectDetectionPipe();
     private final CropPipe cropPipe = new CropPipe();
-    private final Collect2dTargetsPipe collect2dMLTargetsPipe = new Collect2dTargetsPipe();
+    private final Collect2dTargetsPipe collect2dMLROIsPipe = new Collect2dTargetsPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
 
@@ -163,7 +163,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                             selectedModel.orElseGet(NullModel::getInstance)));
 
             // Same pipes the object detection pipeline uses to turn detections into drawn targets
-            collect2dMLTargetsPipe.setParams(
+            collect2dMLROIsPipe.setParams(
                     new Collect2dTargetsPipe.Collect2dTargetsParams(
                             settings.offsetRobotOffsetMode,
                             settings.offsetSinglePoint,
@@ -249,12 +249,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         // Turn the model's proposed regions into targets the same way the object detection pipeline
         // does; the output stream pipeline draws them on the output stream
-        List<TrackedTarget> mlTargets = List.of();
+        List<TrackedTarget> mlROIs = List.of();
         if (!mlDetections.isEmpty()) {
-            var collectMLTargetsResult =
-                    collect2dMLTargetsPipe.run(mlDetections.stream().map(PotentialTarget::new).toList());
-            sumPipeNanosElapsed += collectMLTargetsResult.nanosElapsed;
-            mlTargets = collectMLTargetsResult.output;
+            var collectMLROIsResult =
+                    collect2dMLROIsPipe.run(mlDetections.stream().map(PotentialTarget::new).toList());
+            sumPipeNanosElapsed += collectMLROIsResult.nanosElapsed;
+            mlROIs = collectMLROIsResult.output;
         }
 
         List<AprilTagDetection> usedDetections = new ArrayList<>();
@@ -362,7 +362,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var result =
                 new CVPipelineResult(
                         frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
-        result.mlTargets = mlTargets;
+        result.mlROIs = mlROIs;
         return result;
     }
 
@@ -374,7 +374,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         calculateFPSPipe.release();
         objectDetectionPipe.release();
         cropPipe.release();
-        collect2dMLTargetsPipe.release();
+        collect2dMLROIsPipe.release();
         super.release();
     }
 }

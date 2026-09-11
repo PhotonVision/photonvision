@@ -257,7 +257,7 @@ public class VisionModule implements AutoCloseable {
         private Frame latestFrame;
         private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
         private List<TrackedTarget> targets = new ArrayList<>();
-        private List<TrackedTarget> mlTargets = new ArrayList<>();
+        private List<TrackedTarget> mlROIs = new ArrayList<>();
 
         private boolean shouldRun = false;
 
@@ -269,7 +269,7 @@ public class VisionModule implements AutoCloseable {
                 Frame inputOutputFrame,
                 AdvancedPipelineSettings settings,
                 List<TrackedTarget> targets,
-                List<TrackedTarget> mlTargets) {
+                List<TrackedTarget> mlROIs) {
             synchronized (frameLock) {
                 if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
@@ -277,15 +277,15 @@ public class VisionModule implements AutoCloseable {
                     if (this.targets != null) {
                         this.targets.forEach(TrackedTarget::release);
                     }
-                    if (this.mlTargets != null) {
-                        this.mlTargets.forEach(TrackedTarget::release);
+                    if (this.mlROIs != null) {
+                        this.mlROIs.forEach(TrackedTarget::release);
                     }
                 }
 
                 this.latestFrame = inputOutputFrame;
                 this.settings = settings;
                 this.targets = targets;
-                this.mlTargets = mlTargets;
+                this.mlROIs = mlROIs;
 
                 shouldRun = inputOutputFrame != null;
             }
@@ -297,7 +297,7 @@ public class VisionModule implements AutoCloseable {
                 final Frame m_frame;
                 final AdvancedPipelineSettings settings;
                 final List<TrackedTarget> targets;
-                final List<TrackedTarget> mlTargets;
+                final List<TrackedTarget> mlROIs;
                 final boolean shouldRun;
                 synchronized (frameLock) {
                     m_frame = this.latestFrame;
@@ -305,15 +305,14 @@ public class VisionModule implements AutoCloseable {
 
                     settings = this.settings;
                     targets = this.targets;
-                    mlTargets = this.mlTargets;
+                    mlROIs = this.mlROIs;
                     shouldRun = this.shouldRun;
 
                     this.shouldRun = false;
                 }
                 if (shouldRun) {
                     try {
-                        CVPipelineResult osr =
-                                outputStreamPipeline.process(m_frame, settings, targets, mlTargets);
+                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets, mlROIs);
                         consumeResults(m_frame, targets);
                     } catch (Exception e) {
                         // Never die
@@ -322,8 +321,8 @@ public class VisionModule implements AutoCloseable {
                         if (targets != null) {
                             targets.forEach(TrackedTarget::release);
                         }
-                        if (mlTargets != null) {
-                            mlTargets.forEach(TrackedTarget::release);
+                        if (mlROIs != null) {
+                            mlROIs.forEach(TrackedTarget::release);
                         }
                         try {
                             m_frame.release();
@@ -706,7 +705,7 @@ public class VisionModule implements AutoCloseable {
                 && (pipelineManager.getCurrentPipelineSettings()
                         instanceof AdvancedPipelineSettings settings)) {
             streamRunnable.updateData(
-                    result.inputAndOutputFrame, settings, result.targets, result.mlTargets);
+                    result.inputAndOutputFrame, settings, result.targets, result.mlROIs);
             // The streamRunnable manages releasing in this case
         } else {
             consumeResults(result.inputAndOutputFrame, result.targets);
