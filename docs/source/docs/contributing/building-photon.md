@@ -320,12 +320,15 @@ PhotonLib must first be published to your local maven repository. This will also
 
 ### Running Python
 
-PhotonLibPy must first be built into a wheel.
+PhotonLibPy must first be built into a wheel and installed.
 
 ```
 > cd photon-lib/py
-> buildAndTest.bat
+> uv build
+> uv pip install dist/*.whl
 ```
+
+Run the test suite with `pytest`.
 
 Then, you must enable using the development wheels. robotpy will use pip behind the scenes, and this bat file tells pip about your development artifacts.
 
