@@ -4,17 +4,14 @@ set -euo pipefail
 cd -- "$(dirname -- "$0")"
 
 # Uninstall if it already was installed
-python3 -m pip uninstall -y photonlibpy
+uv pip uninstall photonlibpy || true
 
 # Build wheel
-python3 -m pip install wheel
-python3 setup.py bdist_wheel
+rm -rf dist
+uv build --wheel
 
 # Install whatever wheel was made
-for f in dist/*.whl; do
-    echo "installing $f"
-    python3 -m pip install --no-cache-dir "$f"
-done
+uv pip install --no-cache-dir dist/*.whl
 
 # Run the test suite
 pytest -rP
