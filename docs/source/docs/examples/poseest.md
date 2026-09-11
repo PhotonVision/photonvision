@@ -21,75 +21,103 @@ Please reference the [WPILib documentation](https://docs.wpilib.org/en/stable/do
 We use the current game's AprilTag Locations:
 
 ```{eval-rst}
-.. tab-set-code::
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
-      :language: java
-      :lines: 68-68
-      :linenos:
-      :lineno-start: 68
+.. tab-set::
+    :sync-group: code
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/include/Constants.h
-      :language: c++
-      :lines: 42-43
-      :linenos:
-      :lineno-start: 42
+    .. tab-item:: Java
+       :sync: java
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/poseest/robot.py
-      :language: python
-      :lines: 46-46
-      :linenos:
-      :lineno-start: 46
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+          :language: java
+          :lines: 68-68
+          :linenos:
+          :lineno-start: 68
 
+    .. tab-item:: C++
+       :sync: c++
+
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/include/Constants.h
+          :language: c++
+          :lines: 42-43
+          :linenos:
+          :lineno-start: 42
+
+    .. tab-item:: Python
+       :sync: python
+
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/poseest/robot.py
+          :language: python
+          :lines: 46-46
+          :linenos:
+          :lineno-start: 46
 ```
-
-
 
 To incorporate PhotonVision, we need to create a {code}`PhotonCamera`:
 
-
 ```{eval-rst}
-.. tab-set-code::
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
-      :language: java
-      :lines: 57-57
-      :linenos:
-      :lineno-start: 57
+.. tab-set::
+    :sync-group: code
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/include/Vision.h
-      :language: c++
-      :lines: 145-145
-      :linenos:
-      :lineno-start: 145
+    .. tab-item:: Java
+       :sync: java
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/poseest/robot.py
-      :language: python
-      :lines: 44-44
-      :linenos:
-      :lineno-start: 44
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+          :language: java
+          :lines: 57-57
+          :linenos:
+          :lineno-start: 57
+
+    .. tab-item:: C++
+       :sync: c++
+
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+          :language: c++
+          :lines: 145-145
+          :linenos:
+          :lineno-start: 145
+
+    .. tab-item:: Python
+       :sync: python
+
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/poseest/robot.py
+          :language: python
+          :lines: 44-44
+          :linenos:
+          :lineno-start: 44
 ```
 
 During periodic execution, we read back camera results. If we see AprilTags in the image, we calculate the camera-measured pose of the robot and pass it to the {code}`Drivetrain`.
 
 ```{eval-rst}
-.. tab-set-code::
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
-      :language: java
-      :lines: 64-74
-      :linenos:
-      :lineno-start: 64
+.. tab-set::
+    :sync-group: code
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/cpp/Robot.cpp
-      :language: c++
-      :lines: 38-46
-      :linenos:
-      :lineno-start: 38
+    .. tab-item:: Java
+       :sync: java
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/poseest/robot.py
-      :language: python
-      :lines: 54-56
-      :linenos:
-      :lineno-start: 54
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
+          :language: java
+          :lines: 64-74
+          :linenos:
+          :lineno-start: 64
 
+    .. tab-item:: C++
+       :sync: c++
+
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/cpp/Robot.cpp
+          :language: c++
+          :lines: 38-46
+          :linenos:
+          :lineno-start: 38
+
+    .. tab-item:: Python
+       :sync: python
+
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/poseest/robot.py
+          :language: python
+          :lines: 54-56
+          :linenos:
+          :lineno-start: 54
 ```
 
 ### Simulating the Camera
@@ -97,70 +125,117 @@ During periodic execution, we read back camera results. If we see AprilTags in t
 First, we create a new {code}`VisionSystemSim` to represent our camera and coprocessor running PhotonVision, and moving around our simulated field.
 
 ```{eval-rst}
-.. tab-set-code::
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
-      :language: java
-      :lines: 65-69
-      :linenos:
-      :lineno-start: 65
+.. tab-set::
+    :sync-group: code
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/include/Vision.h
-      :language: c++
-      :lines: 49-52
-      :linenos:
-      :lineno-start: 49
+    .. tab-item:: Java
+       :sync: java
 
-   .. code-block:: python
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+          :language: java
+          :lines: 65-69
+          :linenos:
+          :lineno-start: 65
 
-      # Coming Soon!
+    .. tab-item:: C++
+       :sync: c++
 
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+          :language: c++
+          :lines: 49-52
+          :linenos:
+          :lineno-start: 49
+
+    .. tab-item:: Python
+       :sync: python
+
+       .. code-block:: python
+
+          from photonlibpy.simulation import VisionSystemSim
+
+          visionSim = VisionSystemSim("main")
+          visionSim.addAprilTags(kTagLayout)
 ```
 
 Then, we add configure the simulated vision system to match the camera system being simulated.
 
 ```{eval-rst}
-.. tab-set-code::
+.. tab-set::
+    :sync-group: code
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
-      :language: java
-      :lines: 69-82
-      :linenos:
-      :lineno-start: 69
+    .. tab-item:: Java
+       :sync: java
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/include/Vision.h
-      :language: c++
-      :lines: 53-65
-      :linenos:
-      :lineno-start: 53
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+          :language: java
+          :lines: 69-82
+          :linenos:
+          :lineno-start: 69
 
-   .. code-block:: python
+    .. tab-item:: C++
+       :sync: c++
 
-      # Coming Soon!
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+          :language: c++
+          :lines: 53-65
+          :linenos:
+          :lineno-start: 53
+
+    .. tab-item:: Python
+       :sync: python
+
+       .. code-block:: python
+
+          from photonlibpy.simulation import PhotonCameraSim, SimCameraProperties
+          from wpimath.geometry import Rotation2d
+
+          cameraProp = SimCameraProperties()
+          cameraProp.setCalibrationFromFOV(960, 720, Rotation2d.fromDegrees(90))
+          cameraProp.setCalibError(0.35, 0.10)
+          cameraProp.setFPS(15)
+          cameraProp.setAvgLatency(50)
+          cameraProp.setLatencyStdDev(15)
+          cameraSim = PhotonCameraSim(camera, cameraProp)
+          visionSim.addCamera(cameraSim, kRobotToCam)
+          cameraSim.enableDrawWireframe(True)
 ```
-
 
 ### Updating the Simulated Vision System
 
 During simulation, we periodically update the simulated vision system.
 
 ```{eval-rst}
-.. tab-set-code::
+.. tab-set::
+    :sync-group: code
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
-      :language: java
-      :lines: 114-132
-      :linenos:
-      :lineno-start: 114
+    .. tab-item:: Java
+       :sync: java
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/cpp/Robot.cpp
-      :language: c++
-      :lines: 95-109
-      :linenos:
-      :lineno-start: 95
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
+          :language: java
+          :lines: 114-132
+          :linenos:
+          :lineno-start: 114
 
-   .. code-block:: python
+    .. tab-item:: C++
+       :sync: c++
 
-      # Coming Soon!
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/poseest/src/main/cpp/Robot.cpp
+          :language: c++
+          :lines: 95-109
+          :linenos:
+          :lineno-start: 95
+
+    .. tab-item:: Python
+       :sync: python
+
+       .. code-block:: python
+
+          visionSim.update(self.swerve.poseEst.getEstimatedPosition())
+          debugField = visionSim.getDebugField()
+          debugField.getObject("EstimatedRobot").setPose(
+              self.swerve.poseEst.getEstimatedPosition()
+          )
 ```
 
 The rest is done behind the scenes.
