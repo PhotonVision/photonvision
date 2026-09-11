@@ -29,7 +29,7 @@ from wpilib import RobotController, Timer
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
 from .timesync.timeSyncServer import inst
-from ._version import version as PHOTONLIB_VERSION  # type: ignore[import-untyped]
+from ._version import version as PHOTONLIB_VERSION
 
 
 class VisionLEDMode(Enum):
