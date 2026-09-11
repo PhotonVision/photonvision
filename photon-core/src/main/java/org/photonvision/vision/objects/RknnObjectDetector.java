@@ -48,6 +48,8 @@ public class RknnObjectDetector implements ObjectDetector {
 
     private final Size inputSize;
 
+    private final Mat letterboxed = new Mat();
+
     /** Returns the model in use by this detector. */
     @Override
     public RknnModel getModel() {
@@ -114,18 +116,14 @@ public class RknnObjectDetector implements ObjectDetector {
         }
 
         // Resize the frame to the input size of the model
-        Mat letterboxed = new Mat();
         Letterbox scale =
                 Letterbox.letterbox(in, letterboxed, this.inputSize, ColorHelper.colorToScalar(Color.GRAY));
         if (!letterboxed.size().equals(this.inputSize)) {
-            letterboxed.release();
             throw new RuntimeException("Letterboxed frame is not the right size!");
         }
 
         // Detect objects in the letterboxed frame
         var results = RknnJNI.detect(objPointer, letterboxed.getNativeObjAddr(), nmsThresh, boxThresh);
-
-        letterboxed.release();
 
         if (results == null) {
             return List.of();
@@ -141,5 +139,6 @@ public class RknnObjectDetector implements ObjectDetector {
     @Override
     public void release() {
         cleanable.clean();
+        letterboxed.release();
     }
 }

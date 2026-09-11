@@ -254,6 +254,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     public void release() {
         aprilTagDetectionPipe.release();
         singleTagPoseEstimatorPipe.release();
+        multiTagPNPPipe.release();
+        calculateFPSPipe.release();
         super.release();
     }
 }

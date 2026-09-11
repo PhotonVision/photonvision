@@ -26,9 +26,7 @@ import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
-import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.opencv.ContourShape;
@@ -79,66 +77,50 @@ public class CirclePNPTest {
 
     @Test
     public void testCircle() {
-        var pipeline = new ColoredShapePipeline();
+        try (var pipeline = new ColoredShapePipeline()) {
+            pipeline.getSettings().hsvHue.set(0, 100);
+            pipeline.getSettings().hsvSaturation.set(100, 255);
+            pipeline.getSettings().hsvValue.set(100, 255);
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().maxCannyThresh = 50;
+            pipeline.getSettings().circleAccuracy = 15;
+            pipeline.getSettings().circleDetectThreshold = 5;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+            pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+            pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
+            pipeline.getSettings().targetModel = TargetModel.kCircularPowerCell7in;
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().outputMaximumTargets = 20;
+            pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
+            pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
+            pipeline.getSettings().contourShape = ContourShape.Circle;
+            pipeline.getSettings().circleDetectThreshold = 10;
+            pipeline.getSettings().contourRadius.setFirst(30);
+            pipeline.getSettings().accuracyPercentage = 30.0;
 
-        pipeline.getSettings().hsvHue.set(0, 100);
-        pipeline.getSettings().hsvSaturation.set(100, 255);
-        pipeline.getSettings().hsvValue.set(100, 255);
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().maxCannyThresh = 50;
-        pipeline.getSettings().circleAccuracy = 15;
-        pipeline.getSettings().circleDetectThreshold = 5;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
-        pipeline.getSettings().targetModel = TargetModel.kCircularPowerCell7in;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputMaximumTargets = 20;
-        pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
-        pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
-        pipeline.getSettings().contourShape = ContourShape.Circle;
-        pipeline.getSettings().circleDetectThreshold = 10;
-        pipeline.getSettings().contourRadius.setFirst(30);
-        pipeline.getSettings().accuracyPercentage = 30.0;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getPowercellImagePath(
+                                    TestUtils.PowercellTestImages.kPowercell_test_6, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.get2020LifeCamCoeffs(true))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.get2020LifeCamCoeffs(true));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult pipelineResult =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    TestUtils.printTestResultsWithLocation(pipelineResult);
 
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResultsWithLocation(pipelineResult);
-
-        TestUtils.showImage(
-                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
-    }
-
-    private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {
-        var pipeline = new ReflectivePipeline();
-        pipeline.settings = settings;
-
-        while (true) {
-            CVPipelineResult pipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-            TestUtils.printTestResultsWithLocation(pipelineResult);
-            int preRelease = CVMat.getMatCount();
-            pipelineResult.release();
-            int postRelease = CVMat.getMatCount();
-
-            System.out.printf("Pre: %d, Post: %d\n", preRelease, postRelease);
+                    TestUtils.showImage(
+                            pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
+                }
+            }
         }
     }
 
     // used to run VisualVM for profiling, which won't run on unit tests.
     public static void main(String[] args) {
         LoadJNI.loadLibraries();
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-
         var settings = new ReflectivePipelineSettings();
         settings.hsvHue.set(60, 100);
         settings.hsvSaturation.set(100, 255);
@@ -148,6 +130,11 @@ public class CirclePNPTest {
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 
-        continuouslyRunPipeline(frameProvider.get(), settings);
+        try (var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV)) {
+            TestUtils.continuouslyRunPipeline(frameProvider, settings);
+        }
     }
 }

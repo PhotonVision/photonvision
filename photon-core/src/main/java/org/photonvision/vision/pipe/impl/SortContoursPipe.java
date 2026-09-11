@@ -56,6 +56,9 @@ public class SortContoursPipe
                 params.frameStaticProperties().centerY - tgt.getMinAreaRect().center.y);
     }
 
+    @Override
+    public void release() {}
+
     public static record SortContoursParams(
             ContourSortMode sortMode, int maxTargets, FrameStaticProperties frameStaticProperties) {}
 }

@@ -307,10 +307,10 @@ public class Logger {
     private static class UILogAppender implements LogAppender {
         @Override
         public void log(String message, LogLevel level) {
-            var messageMap = new HashMap<String, Object>();
+            Map<String, Object> messageMap = new HashMap<>();
             messageMap.put("logMessage", message);
             messageMap.put("logLevel", level.code);
-            var superMap = new HashMap<String, Object>();
+            Map<String, Object> superMap = new HashMap<>();
             superMap.put("logMessage", messageMap);
             DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("log", superMap));
         }

@@ -73,6 +73,7 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
             properties = new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, calibration);
             originalFrame = new CVMat(rawImage);
         } else {
+            rawImage.release();
             throw new RuntimeException("Image loading failed!");
         }
     }

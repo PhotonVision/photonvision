@@ -1,6 +1,7 @@
 import { useStateStore } from "@/stores/StateStore";
-import type { Resolution } from "@/types/SettingTypes";
+import { CalibrationPaperTypes, CalibrationTagFamilies, type Resolution } from "@/types/SettingTypes";
 import axios, { type AxiosRequestConfig } from "axios";
+import { length, type Length } from "@adam-rocska/units-and-measurement/length";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
@@ -107,5 +108,58 @@ export const axiosPost = async (
       });
     }
     return false;
+  }
+};
+
+export const arucoTagFamilyNameFor = (tagFamily: CalibrationTagFamilies) => {
+  switch (tagFamily) {
+    case CalibrationTagFamilies.Dict_4X4_1000:
+      return "ArUco 4x4 1000";
+    case CalibrationTagFamilies.Dict_5X5_1000:
+      return "ArUco 5x5 1000";
+    case CalibrationTagFamilies.Dict_6X6_1000:
+      return "ArUco 6x6 1000";
+    case CalibrationTagFamilies.Dict_7X7_1000:
+      return "ArUco 7x7 1000";
+    default:
+      return "ArUco Original";
+  }
+};
+
+export const arucoTagDictionaryFor = async (tagFamily: CalibrationTagFamilies) => {
+  switch (tagFamily) {
+    case CalibrationTagFamilies.Dict_4X4_1000:
+      const { ARUCO_4X4_1000 } = await import("aruco-marker/dictionaries/aruco_4x4_1000");
+      return ARUCO_4X4_1000;
+    case CalibrationTagFamilies.Dict_5X5_1000:
+      const { ARUCO_5X5_1000 } = await import("aruco-marker/dictionaries/aruco_5x5_1000");
+      return ARUCO_5X5_1000;
+    case CalibrationTagFamilies.Dict_6X6_1000:
+      const { ARUCO_6X6_1000 } = await import("aruco-marker/dictionaries/aruco_6x6_1000");
+      return ARUCO_6X6_1000;
+    case CalibrationTagFamilies.Dict_7X7_1000:
+      const { ARUCO_7X7_1000 } = await import("aruco-marker/dictionaries/aruco_7x7_1000");
+      return ARUCO_7X7_1000;
+    default:
+      return undefined;
+  }
+};
+
+export const paperDimensionsFor = (paperType: CalibrationPaperTypes): [Length, Length] => {
+  switch (paperType) {
+    case CalibrationPaperTypes.Letter:
+      return [length.in(8.5), length.in(11)];
+    case CalibrationPaperTypes.Legal:
+      return [length.in(8.5), length.in(14)];
+    case CalibrationPaperTypes.Tabloid:
+      return [length.in(11), length.in(17)];
+    case CalibrationPaperTypes.A4:
+      return [length.mm(210), length.mm(297)];
+    case CalibrationPaperTypes.A3:
+      return [length.mm(297), length.mm(420)];
+    case CalibrationPaperTypes.A2:
+      return [length.mm(420), length.mm(594)];
+    default:
+      return [length.mm(0), length.mm(0)];
   }
 };
