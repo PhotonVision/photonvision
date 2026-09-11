@@ -37,10 +37,7 @@ public class CVPipelineResult implements Releasable {
     public Optional<MultiTargetPNPResult> multiTagResult;
     public final List<String> objectDetectionClassNames;
 
-    /**
-     * Targets that exist only to be drawn on the output stream (the regions the ML tag detector
-     * proposed), never published as real targets.
-     */
+    /** Region's of interest for our pipeline identified by an OD pipe. */
     public List<TrackedTarget> mlROIs = List.of();
 
     public CVPipelineResult(

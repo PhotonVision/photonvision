@@ -47,6 +47,7 @@ import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipePa
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 import org.photonvision.vision.pipe.impl.ObjectDetectionPipe;
 import org.photonvision.vision.pipe.impl.ObjectDetectionPipe.ObjectDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.PadRectPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
@@ -71,6 +72,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ObjectDetectionPipe objectDetectionPipe = new ObjectDetectionPipe();
     private final CropPipe cropPipe = new CropPipe();
+    private final PadRectPipe padRectPipe = new PadRectPipe();
     private final Collect2dTargetsPipe collect2dMLROIsPipe = new Collect2dTargetsPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
@@ -162,6 +164,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                             settings.mlNms,
                             selectedModel.orElseGet(NullModel::getInstance)));
 
+            padRectPipe.setParams(settings.mlPadding);
+
             // Same pipes the object detection pipeline uses to turn detections into drawn targets
             collect2dMLROIsPipe.setParams(
                     new Collect2dTargetsPipe.Collect2dTargetsParams(
@@ -196,17 +200,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             mlDetections = odResults.output;
             var inputMat = frame.processedImage.getMat();
             for (var result : mlDetections) {
-                var bbox = result.bbox().boundingRect();
+                var paddedResult = padRectPipe.run(result.bbox().boundingRect());
+                sumPipeNanosElapsed += paddedResult.nanosElapsed;
 
-                // Pad the region; clamping below keeps it inside the image
-                int padX = (int) Math.ceil(bbox.width * settings.mlPadding);
-                int padY = (int) Math.ceil(bbox.height * settings.mlPadding);
-                bbox.x -= padX;
-                bbox.y -= padY;
-                bbox.width += 2 * padX;
-                bbox.height += 2 * padY;
-
-                cropPipe.setParams(new CropPipe.CropPipeParams(bbox, settings));
+                cropPipe.setParams(new CropPipe.CropPipeParams(paddedResult.output, settings));
                 var cropped = cropPipe.run(frame.processedImage);
                 sumPipeNanosElapsed += cropped.nanosElapsed;
 
