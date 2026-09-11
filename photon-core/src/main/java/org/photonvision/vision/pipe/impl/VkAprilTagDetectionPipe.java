@@ -58,10 +58,10 @@ public class VkAprilTagDetectionPipe
 
     @Override
     public void setParams(VkAprilTagDetectionPipeParams newParams) {
-        // Every field of VkAprilTagDetectionPipeParams (family, width, height, deviceIndex,
-        // cpuThreads) feeds detector construction - vkapriltag supports one
-        // family/resolution/device per detector instance (see DetectorHandle in vkapriltag-jni),
-        // so any change here means destroying and recreating it, exactly as
+        // Every field of VkAprilTagDetectionPipeParams (family, width, height, decimation,
+        // deviceIndex, cpuThreads) feeds detector construction - vkapriltag supports one
+        // family/resolution/decimation/device per detector instance (see DetectorHandle in
+        // vkapriltag-jni), so any change here means destroying and recreating it, exactly as
         // AprilTagDetectionPipe's own !equals() guard does for the CPU detector.
         if (this.params == null || !this.params.equals(newParams)) {
             releaseDetector();
@@ -72,28 +72,35 @@ public class VkAprilTagDetectionPipe
 
     /**
      * Tries to build the Vulkan detector; falls back to a CPU AprilTagDetector, logging why, on any
-     * of: Vulkan unsupported on this platform, a frame size that isn't a multiple of 8 (vkapriltag's
-     * hard requirement), or a native create() failure.
+     * of: Vulkan unsupported on this platform, a frame size that isn't evenly divisible by the
+     * configured decimation factor (vkapriltag's requirement as of v1.3.0 - decimation is now
+     * configurable, replacing the old fixed "multiple of 8" rule), or a native create() failure.
      */
     private void createOrFallBack(VkAprilTagDetectionPipeParams p) {
         if (!VkAprilTagAvailability.isSupported()) {
             fallBackToCpu(p, "Vulkan unavailable: " + VkAprilTagAvailability.getUnavailableReason());
             return;
         }
-        if (p.width() % 8 != 0 || p.height() % 8 != 0) {
-            fallBackToCpu(
-                    p,
-                    "frame size "
-                            + p.width()
-                            + "x"
-                            + p.height()
-                            + " is not a multiple of 8 (vkapriltag requirement)");
+        // VkAprilTagJNI.validateGeometry() is the single source of truth for this check (it also
+        // covers the packed-size ceiling, which is unreachable at any realistic camera resolution
+        // and so isn't worth hand-duplicating here) - this pre-check just avoids paying for a
+        // doomed native create() call (and the Vulkan Context/pipeline construction cost it would
+        // pay before failing) on the common case of a decimation that doesn't fit the current
+        // camera mode.
+        String geometryError = VkAprilTagJNI.validateGeometry(p.width(), p.height(), p.decimation());
+        if (geometryError != null) {
+            fallBackToCpu(p, geometryError);
             return;
         }
 
         long handle =
                 VkAprilTagJNI.create(
-                        p.width(), p.height(), p.family().getNativeName(), p.cpuThreads(), p.deviceIndex());
+                        p.width(),
+                        p.height(),
+                        p.decimation(),
+                        p.family().getNativeName(),
+                        p.cpuThreads(),
+                        p.deviceIndex());
         if (handle == 0) {
             fallBackToCpu(p, "native create() failed: " + VkAprilTagJNI.getLastError());
             return;
@@ -176,5 +183,10 @@ public class VkAprilTagDetectionPipe
     }
 
     public record VkAprilTagDetectionPipeParams(
-            AprilTagFamily family, int width, int height, int deviceIndex, int cpuThreads) {}
+            AprilTagFamily family,
+            int width,
+            int height,
+            int decimation,
+            int deviceIndex,
+            int cpuThreads) {}
 }

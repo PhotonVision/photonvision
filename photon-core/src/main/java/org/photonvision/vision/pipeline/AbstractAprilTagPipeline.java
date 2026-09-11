@@ -36,6 +36,7 @@ import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseE
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
+import org.photonvision.vision.pipe.impl.SingleTagPoseEstimator;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
@@ -64,8 +65,12 @@ public abstract class AbstractAprilTagPipeline<S extends AprilTagPipelineSetting
     private static final Logger logger =
             new Logger(AbstractAprilTagPipeline.class, LogGroup.VisionModule);
 
-    private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
-            new AprilTagPoseEstimatorPipe();
+    // Not final: subclasses whose pose-estimator backend is switchable at runtime (e.g. {@link
+    // VkAprilTagPipeline}'s CPU/VULKAN toggle) swap this out from {@link
+    // #configureSingleTagPoseEstimatorBackend}, which - critically - is called from {@link
+    // #setPipeParamsImpl} (an ordinary instance method invoked well after construction), never
+    // from this class's own constructor, so there's no constructor-time-virtual-call hazard here.
+    protected SingleTagPoseEstimator singleTagPoseEstimatorPipe = new AprilTagPoseEstimatorPipe();
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -86,9 +91,20 @@ public abstract class AbstractAprilTagPipeline<S extends AprilTagPipelineSetting
      */
     protected abstract void setDetectorParams(S settings);
 
+    /**
+     * Hook for subclasses whose single-tag pose-estimator backend is switchable at runtime (e.g.
+     * {@link VkAprilTagPipeline}'s CPU/VULKAN {@code poseEstimatorBackend} toggle): called at the
+     * start of every {@link #setPipeParamsImpl}, before {@link #singleTagPoseEstimatorPipe} is
+     * configured below, so an override can swap it out for a different {@link
+     * SingleTagPoseEstimator} implementation first. No-op by default - {@link AprilTagPipeline}
+     * (the CPU backend) never needs to swap its pose estimator.
+     */
+    protected void configureSingleTagPoseEstimatorBackend() {}
+
     @Override
     protected void setPipeParamsImpl() {
         setDetectorParams(settings);
+        configureSingleTagPoseEstimatorBackend();
 
         // for now, hard code tag width based on enum value
         // From 2024 best guess is 6.5

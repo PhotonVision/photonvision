@@ -20,8 +20,10 @@ package org.photonvision.vision.pipeline;
 import java.util.List;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
+import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.VkAprilTagDetectionPipe;
 import org.photonvision.vision.pipe.impl.VkAprilTagDetectionPipe.VkAprilTagDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.VkAprilTagPoseEstimatorPipe;
 import org.wpilib.vision.apriltag.AprilTagDetection;
 
 /**
@@ -33,9 +35,9 @@ import org.wpilib.vision.apriltag.AprilTagDetection;
  * produce the same {@code List<AprilTagDetection>}.
  *
  * <p>Falls back to CPU detection automatically - see {@link VkAprilTagDetectionPipe} - when Vulkan
- * is unavailable, the frame size isn't a multiple of 8, or native detector creation fails. The
- * pipeline stays {@code AprilTagVulkan}-typed while doing so; {@link #isVulkanActive} reports which
- * one actually ran, for the UI to surface.
+ * is unavailable, the frame size isn't evenly divisible by {@code settings.decimation}, or native
+ * detector creation fails. The pipeline stays {@code AprilTagVulkan}-typed while doing so; {@link
+ * #isVulkanActive} reports which one actually ran, for the UI to surface.
  */
 public class VkAprilTagPipeline extends AbstractAprilTagPipeline<VkAprilTagPipelineSettings> {
     private final VkAprilTagDetectionPipe detectionPipe = new VkAprilTagDetectionPipe();
@@ -57,8 +59,21 @@ public class VkAprilTagPipeline extends AbstractAprilTagPipeline<VkAprilTagPipel
                         settings.tagFamily,
                         frameStaticProperties.imageWidth,
                         frameStaticProperties.imageHeight,
+                        settings.decimation,
                         settings.vulkanDeviceIndex,
                         settings.cpuThreads));
+    }
+
+    @Override
+    protected void configureSingleTagPoseEstimatorBackend() {
+        boolean wantVulkan =
+                settings.poseEstimatorBackend == VkAprilTagPipelineSettings.PoseEstimatorBackend.VULKAN;
+        boolean isVulkan = singleTagPoseEstimatorPipe instanceof VkAprilTagPoseEstimatorPipe;
+        if (wantVulkan == isVulkan) return;
+
+        singleTagPoseEstimatorPipe.release();
+        singleTagPoseEstimatorPipe =
+                wantVulkan ? new VkAprilTagPoseEstimatorPipe() : new AprilTagPoseEstimatorPipe();
     }
 
     @Override

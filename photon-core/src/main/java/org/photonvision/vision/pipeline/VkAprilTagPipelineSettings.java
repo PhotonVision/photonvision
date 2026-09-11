@@ -22,13 +22,11 @@ import org.photonvision.vision.target.TargetModel;
 /**
  * BETA. Settings for the Vulkan-accelerated (vkapriltag) AprilTag detector.
  *
- * <p>Deliberately does NOT have decimate/blur/refineEdges fields, unlike {@link
- * AprilTagPipelineSettings}: the Vulkan pipeline runs a fixed 2x decimation with no pre-blur stage
- * (vkapriltag's GpuDetector hardcodes both), and edge refinement is explicitly out of scope for
- * that library (see vkapriltag's TagDecoder.h). Rather than exposing controls that silently do
- * nothing, this settings class simply doesn't have them - see the integration plan's blocker
- * write-up for why a toggle inside AprilTagPipelineSettings would have had to grey these out
- * instead.
+ * <p>Deliberately does NOT have blur/refineEdges fields, unlike {@link AprilTagPipelineSettings}:
+ * vkapriltag has no pre-blur stage, and edge refinement is explicitly out of scope for that
+ * library (see vkapriltag's TagDecoder.h). Unlike those, {@link #decimation} IS present - as of
+ * vkapriltag v1.3.0, decimation is a configurable {@code DetectorConfig} field rather than a fixed
+ * 2x hardcoded into {@code GpuDetector} - so this is one knob this settings class does expose.
  */
 public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
     /**
@@ -43,6 +41,31 @@ public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
      * std::thread::hardware_concurrency()}.
      */
     public int cpuThreads = 0;
+
+    /**
+     * Integer downsampling factor applied by the Vulkan detector before thresholding/labelling. 1
+     * disables decimation (full resolution), 2 is this pipeline's original fixed behavior (kept as
+     * the default so existing saved pipelines behave identically after upgrading past vkapriltag
+     * v1.3.0), 4 halves resolution again, etc. Must evenly divide the current camera mode's width
+     * and height, or the pipeline falls back to CPU (see {@code VkAprilTagDetectionPipe}).
+     */
+    public int decimation = 2;
+
+    /** Which implementation runs single-tag pose estimation for this pipeline. */
+    public enum PoseEstimatorBackend {
+        CPU,
+        VULKAN
+    }
+
+    /**
+     * CPU (WPILib's own pose estimator) is the well-tested default. VULKAN uses vkapriltag's native
+     * PoseEstimator instead - measured much faster than unmodified libapriltag per tag, but that
+     * comparison is NOT against WPILib's own estimator (what CPU actually runs), so the real-world
+     * benefit for this pipeline is unverified; compare results carefully before relying on it.
+     * Multi-tag pose estimation (MultiTargetPNPPipe) is unaffected either way - vkapriltag's
+     * PoseEstimator has no multi-tag capability.
+     */
+    public PoseEstimatorBackend poseEstimatorBackend = PoseEstimatorBackend.CPU;
 
     public VkAprilTagPipelineSettings() {
         super();
@@ -59,6 +82,8 @@ public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
         int result = super.hashCode();
         result = prime * result + vulkanDeviceIndex;
         result = prime * result + cpuThreads;
+        result = prime * result + decimation;
+        result = prime * result + poseEstimatorBackend.hashCode();
         return result;
     }
 
@@ -70,6 +95,8 @@ public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
         VkAprilTagPipelineSettings other = (VkAprilTagPipelineSettings) obj;
         if (vulkanDeviceIndex != other.vulkanDeviceIndex) return false;
         if (cpuThreads != other.cpuThreads) return false;
+        if (decimation != other.decimation) return false;
+        if (poseEstimatorBackend != other.poseEstimatorBackend) return false;
         return true;
     }
 }

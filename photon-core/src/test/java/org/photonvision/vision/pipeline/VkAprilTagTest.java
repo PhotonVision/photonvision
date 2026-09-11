@@ -42,6 +42,7 @@ import org.photonvision.vision.pipe.impl.VkAprilTagDetectionPipe;
 import org.photonvision.vision.pipe.impl.VkAprilTagDetectionPipe.VkAprilTagDetectionPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
 
 /**
  * "Same as or better than libapriltag" parity test for the Vulkan detector - explicitly requested
@@ -58,10 +59,10 @@ import org.photonvision.vision.target.TrackedTarget;
  *
  * <p>The GPU-comparison tests below {@code assumeTrue(VkAprilTagAvailability.isSupported())} and
  * skip (not fail) when no Vulkan-capable device is present - true of every GitHub-hosted CI
- * runner today. {@link #testVulkanFallsBackToCpuOnUnsupportedFrameSize} does not skip: it drives
- * {@link VkAprilTagDetectionPipe} directly with a frame size vkapriltag can never support
- * (width not a multiple of 8), so it exercises the fallback path identically on every machine,
- * GPU or not.
+ * runner today. {@link #testVulkanFallsBackToCpuOnUnsupportedFrameSize} and {@link
+ * #testVulkanFallsBackToCpuOnNonDivisibleDecimation} do not skip: they drive {@link
+ * VkAprilTagDetectionPipe} directly with a (width, height, decimation) triple vkapriltag can never
+ * support, so they exercise the fallback path identically on every machine, GPU or not.
  */
 public class VkAprilTagTest {
     // vkapriltag's own validate_common.h::CompareCorners; both values well above the ~0.85px
@@ -234,28 +235,18 @@ public class VkAprilTagTest {
     }
 
     /**
-     * NOT a Vulkan-vs-CPU comparison: {@code 36h11_stress_test.png} is 3256x<b>1228</b>, and 1228
-     * is not a multiple of 8 - vkapriltag's own hard requirement (see
-     * {@link #testVulkanFallsBackToCpuOnUnsupportedFrameSize}). Found by running this test suite
-     * against real hardware: the first version of this test asserted {@code isVulkanActive()} here
-     * and failed, not because anything was broken, but because this specific fixture can never run
-     * on the GPU path at all. Repurposed into exactly what it actually exercises - the fallback
-     * behaving correctly on a real many-target image, not a synthetic blank frame - and left a
-     * note here rather than quietly asserting something the fixture can't support. A fixture whose
-     * dimensions actually satisfy vkapriltag's constraint would be needed for real many-tag Vulkan
-     * coverage; {@link #testVulkanMatchesLibapriltag_singleTag36h11} and
-     * {@link #testVulkanMatchesLibapriltag_16h5Family} are what currently exercise the real GPU
-     * path.
+     * NOT a Vulkan-vs-CPU comparison: {@code 36h11_stress_test.png} tiles the same handful of tag
+     * IDs at ~8 different physical positions each (that's what makes it a "stress test" -
+     * detecting the same ID repeatedly rather than a genuinely unique tag per instance), and
+     * ID-keyed corner matching assumes unique IDs (mirroring vkapriltag's own
+     * validate_common.h, whose validation corpus is unique-ID). This test forces the fallback
+     * path with an explicit {@code decimation = 3} (3256x1228 is not evenly divisible by 3), so the
+     * fallback-on-real-many-tag-image behavior stays covered regardless of what the *default*
+     * decimation happens to be - see {@link #testVulkanRunsOnGpuForStressTestImageAtDefaultDecimation}
+     * for the companion test proving this same fixture actually runs on GPU at the default.
      */
     @Test
     public void testVulkanFallsBackToCpuOnStressTestImage() {
-        // Not compared with assertSameDetections(): this fixture tiles the same handful of tag
-        // IDs at ~8 different physical positions each (that's what makes it a "stress test" -
-        // detecting the same ID repeatedly rather than a genuinely unique tag per instance), and
-        // ID-keyed corner matching assumes unique IDs (mirroring vkapriltag's own
-        // validate_common.h, whose validation corpus is unique-ID). Both runs below are the same
-        // WPILib CPU AprilTagDetector code path anyway - there is no Vulkan/CPU distinction to
-        // compare here - so a plain target-count sanity check is what this test actually needs.
         List<TrackedTarget> cpu =
                 runCpu(
                         TestUtils.ApriltagTestImages.k36h11_stress_test,
@@ -268,6 +259,7 @@ public class VkAprilTagTest {
             pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
             pipeline.getSettings().solvePNPEnabled = false;
             pipeline.getSettings().outputMaximumTargets = 300;
+            pipeline.getSettings().decimation = 3; // 1228 % 3 != 0 - deterministically forces fallback
             try (var frameProvider =
                     new FileFrameProvider(
                             TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.k36h11_stress_test, false),
@@ -277,7 +269,7 @@ public class VkAprilTagTest {
                 try (CVPipelineResult result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
                     assertFalse(
                             pipeline.isVulkanActive(),
-                            "1228px height is not a multiple of 8; Vulkan must not activate for this fixture");
+                            "decimation=3 does not evenly divide 1228; Vulkan must not activate for this fixture");
                     assertEquals(
                             cpu.size(),
                             result.targets.size(),
@@ -288,8 +280,42 @@ public class VkAprilTagTest {
     }
 
     /**
-     * Drives {@link VkAprilTagDetectionPipe} directly with a frame width that isn't a multiple of
-     * 8 - vkapriltag's own hard requirement (GpuDetector.cpp), unrelated to whether a GPU is
+     * Companion to {@link #testVulkanFallsBackToCpuOnStressTestImage}: at the default decimation
+     * (2), 3256x1228 IS evenly divisible (unlike the old hard "multiple of 8" rule, which this
+     * fixture failed), so this many-tag fixture now actually runs on the GPU path. New coverage
+     * this repo didn't have before - previously only single/few-tag fixtures
+     * ({@link #testVulkanMatchesLibapriltag_singleTag36h11}, {@link #testVulkanMatchesLibapriltag_16h5Family})
+     * exercised the real GPU path.
+     */
+    @Test
+    public void testVulkanRunsOnGpuForStressTestImageAtDefaultDecimation() {
+        assumeTrue(VkAprilTagAvailability.isSupported(), "No Vulkan-capable device on this machine");
+
+        try (var pipeline = new VkAprilTagPipeline()) {
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            pipeline.getSettings().solvePNPEnabled = false;
+            pipeline.getSettings().outputMaximumTargets = 300;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.k36h11_stress_test, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    assertTrue(
+                            pipeline.isVulkanActive(),
+                            "3256x1228 is evenly divisible by the default decimation of 2; Vulkan should activate");
+                    assertTrue(
+                            result.targets.size() > 100,
+                            "Expected the many-tag fixture to still decode well over 100 tags on GPU");
+                }
+            }
+        }
+    }
+
+    /**
+     * Drives {@link VkAprilTagDetectionPipe} directly with a frame width that isn't evenly
+     * divisible by the default decimation of 2 (641 is odd) - unrelated to whether a GPU is
      * present. Runs on every CI runner unconditionally: no {@code assumeTrue}, since the fallback
      * this exercises has nothing to do with Vulkan actually being available.
      */
@@ -297,8 +323,9 @@ public class VkAprilTagTest {
     public void testVulkanFallsBackToCpuOnUnsupportedFrameSize() {
         try (var pipe = new VkAprilTagDetectionPipe()) {
             pipe.setParams(
-                    new VkAprilTagDetectionPipeParams(AprilTagFamily.kTag36h11, 641, 480, -1, 0));
-            assertFalse(pipe.isVulkanActive(), "641 is not a multiple of 8; Vulkan must not activate");
+                    new VkAprilTagDetectionPipeParams(AprilTagFamily.kTag36h11, 641, 480, 2, -1, 0));
+            assertFalse(
+                    pipe.isVulkanActive(), "641 is odd, fails the divisible-by-2 check; Vulkan must not activate");
 
             // The fallback CPU AprilTagDetector must still be usable - process() should not throw
             // even though the "requested" width doesn't match vkapriltag's constraints, since the
@@ -308,5 +335,182 @@ public class VkAprilTagTest {
                 assertTrue(pipe.run(in).output.isEmpty(), "A blank frame should decode zero tags");
             }
         }
+    }
+
+    /**
+     * Distinct from {@link #testVulkanFallsBackToCpuOnUnsupportedFrameSize}: proves the
+     * *decimation*-driven fallback specifically, using a frame size that would otherwise be
+     * perfectly fine (640x480) but a decimation factor that doesn't evenly divide it.
+     */
+    @Test
+    public void testVulkanFallsBackToCpuOnNonDivisibleDecimation() {
+        try (var pipe = new VkAprilTagDetectionPipe()) {
+            // 640 % 3 != 0 (480 % 3 == 0, so this is specifically the width that trips it).
+            pipe.setParams(
+                    new VkAprilTagDetectionPipeParams(AprilTagFamily.kTag36h11, 640, 480, 3, -1, 0));
+            assertFalse(
+                    pipe.isVulkanActive(),
+                    "decimation=3 does not evenly divide 640; Vulkan must not activate");
+        }
+    }
+
+    /**
+     * Confirms the decimation knob actually works end-to-end at values other than the implicit
+     * default of 2, not just that it's plumbed through without error.
+     */
+    @Test
+    public void testVulkanMatchesLibapriltag_decimation1() {
+        assumeTrue(VkAprilTagAvailability.isSupported(), "No Vulkan-capable device on this machine");
+
+        List<TrackedTarget> cpu =
+                runCpu(
+                        TestUtils.ApriltagTestImages.kTag1_640_480,
+                        AprilTagFamily.kTag36h11,
+                        TestUtils.get2020LifeCamCoeffs(false),
+                        127);
+        List<TrackedTarget> vulkan;
+        try (var pipeline = new VkAprilTagPipeline()) {
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            pipeline.getSettings().solvePNPEnabled = false;
+            pipeline.getSettings().outputMaximumTargets = 127;
+            pipeline.getSettings().decimation = 1; // full resolution, no decimation
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.get2020LifeCamCoeffs(false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    assertTrue(pipeline.isVulkanActive(), "640x480 is evenly divisible by decimation=1");
+                    vulkan = List.copyOf(result.targets);
+                }
+            }
+        }
+
+        // Full resolution should be at least as accurate as the default decimation=2 case, so the
+        // same tolerances used everywhere else in this suite are appropriate here too.
+        assertSameDetections(vulkan, cpu, true);
+    }
+
+    /**
+     * Coarser decimation is expected to reduce corner precision, not a regression - so this only
+     * asserts the correct tag ID set is still found, rather than reusing the strict corner-RMS
+     * comparison the other tests use.
+     */
+    @Test
+    public void testVulkanDetectsCorrectTagsAtDecimation4() {
+        assumeTrue(VkAprilTagAvailability.isSupported(), "No Vulkan-capable device on this machine");
+
+        List<TrackedTarget> cpu =
+                runCpu(
+                        TestUtils.ApriltagTestImages.kTag1_640_480,
+                        AprilTagFamily.kTag36h11,
+                        TestUtils.get2020LifeCamCoeffs(false),
+                        127);
+        try (var pipeline = new VkAprilTagPipeline()) {
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            pipeline.getSettings().solvePNPEnabled = false;
+            pipeline.getSettings().outputMaximumTargets = 127;
+            pipeline.getSettings().decimation = 4;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.get2020LifeCamCoeffs(false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    assertTrue(pipeline.isVulkanActive(), "640x480 is evenly divisible by decimation=4");
+                    List<Integer> vulkanIds =
+                            extract(result.targets).stream().map(DetectionInfo::id).sorted().toList();
+                    List<Integer> cpuIds = extract(cpu).stream().map(DetectionInfo::id).sorted().toList();
+                    assertEquals(cpuIds, vulkanIds, "Vulkan and CPU decoded different tag ID sets at decimation=4");
+                }
+            }
+        }
+    }
+
+    /**
+     * Compares the Vulkan-native pose estimator against WPILib's CPU one on the same fixture and
+     * calibration - against whichever of the CPU solver's best/alt solutions is actually closer,
+     * not "best" only. Measured on real hardware (Orange Pi 5 Plus, Mali-G610): on this fixture the
+     * two independent solvers land on *opposite* branches of AprilTag's planar-pose ambiguity - CPU
+     * reports {@code ambiguity=0.0} (its alt search found no competitive second solution, so alt is
+     * the zero/degenerate sentinel), while Vulkan reports {@code ambiguity=0.55} (a genuinely close
+     * second candidate) and picks the branch 21.8 degrees from CPU's single solution as "best", but
+     * only 7.1 degrees from it as "alt". That's expected behavior for two from-scratch
+     * implementations of the same near-tied ambiguity search, not a bug - any consumer of AprilTag
+     * poses already has to handle exactly this (see {@code doSingleTargetAlways} and the alt-pose
+     * fields this test itself reads). Comparing "best" from each side only, unconditionally, isn't a
+     * meaningful test of solver correctness; comparing against the closer of the two branches is.
+     */
+    @Test
+    public void testVulkanPoseEstimatorRoughlyMatchesCpu() {
+        assumeTrue(VkAprilTagAvailability.isSupported(), "No Vulkan-capable device on this machine");
+
+        Transform3d cpuBestPose;
+        Transform3d cpuAltPose;
+        try (var pipeline = new AprilTagPipeline()) {
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().doMultiTarget = false;
+            pipeline.getSettings().outputMaximumTargets = 127;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.get2020LifeCamCoeffs(false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    assertTrue(result.targets.size() > 0, "Expected at least one CPU-estimated pose");
+                    cpuBestPose = result.targets.get(0).getBestCameraToTarget3d();
+                    cpuAltPose = result.targets.get(0).getAltCameraToTarget3d();
+                }
+            }
+        }
+
+        Transform3d vulkanBestPose;
+        Transform3d vulkanAltPose;
+        try (var pipeline = new VkAprilTagPipeline()) {
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().doMultiTarget = false;
+            pipeline.getSettings().outputMaximumTargets = 127;
+            pipeline.getSettings().poseEstimatorBackend =
+                    VkAprilTagPipelineSettings.PoseEstimatorBackend.VULKAN;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.get2020LifeCamCoeffs(false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    assertTrue(pipeline.isVulkanActive(), "640x480 is evenly divisible by the default decimation");
+                    assertTrue(result.targets.size() > 0, "Expected at least one Vulkan-estimated pose");
+                    vulkanBestPose = result.targets.get(0).getBestCameraToTarget3d();
+                    vulkanAltPose = result.targets.get(0).getAltCameraToTarget3d();
+                }
+            }
+        }
+
+        // Best-effort match across both solvers' candidate branches - see this test's Javadoc.
+        double rotationErrorDegrees =
+                Math.min(
+                        Math.toDegrees(cpuBestPose.getRotation().relativeTo(vulkanBestPose.getRotation()).getAngle()),
+                        Math.toDegrees(cpuBestPose.getRotation().relativeTo(vulkanAltPose.getRotation()).getAngle()));
+        double translationErrorMeters =
+                Math.min(
+                        cpuBestPose.getTranslation().getDistance(vulkanBestPose.getTranslation()),
+                        cpuBestPose.getTranslation().getDistance(vulkanAltPose.getTranslation()));
+
+        assertTrue(
+                translationErrorMeters < 0.05,
+                "CPU/Vulkan pose translation differs by " + translationErrorMeters + "m even against the"
+                        + " closer of Vulkan's two candidate solutions - placeholder tolerance, see this test's"
+                        + " Javadoc");
+        assertTrue(
+                rotationErrorDegrees < 10.0,
+                "CPU/Vulkan pose rotation differs by " + rotationErrorDegrees + " degrees even against the"
+                        + " closer of Vulkan's two candidate solutions - placeholder tolerance, see this test's"
+                        + " Javadoc");
     }
 }

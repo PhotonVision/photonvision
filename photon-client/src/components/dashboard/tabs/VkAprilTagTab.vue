@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { PipelineType, type VkAprilTagPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
+import {
+  PipelineType,
+  type VkAprilTagPipelineSettings,
+  AprilTagFamily,
+  VkAprilTagPoseEstimatorBackend
+} from "@/types/PipelineTypes";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed } from "vue";
@@ -37,8 +42,9 @@ const vulkanDeviceItems = computed(() => [
       variant="tonal"
       type="warning"
       class="mb-3"
-      text="BETA: this backend runs at a fixed 2x decimation with no blur or edge-refinement tuning,
-        and falls back to the CPU detector automatically if Vulkan isn't usable on this device."
+      text="BETA: this backend has no blur or edge-refinement tuning (not supported by the underlying
+        library), and falls back to the CPU detector automatically if Vulkan isn't usable on this
+        device or the chosen decimation doesn't evenly divide the camera's resolution."
     />
     <pv-select
       v-model="currentPipelineSettings.tagFamily"
@@ -58,6 +64,35 @@ const vulkanDeviceItems = computed(() => [
       :select-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ vulkanDeviceIndex: value }, false)
+      "
+    />
+    <pv-select
+      v-model="currentPipelineSettings.decimation"
+      label="Decimation"
+      tooltip="Downsampling factor before detection; must evenly divide the camera's resolution or
+        this pipeline falls back to CPU. 1 = full resolution (slowest, most accurate), 2 = this
+        pipeline's original behavior, 4 = fastest, least precise."
+      :items="[
+        { value: 1, name: '1x (full resolution)' },
+        { value: 2, name: '2x (default)' },
+        { value: 4, name: '4x (fastest)' }
+      ]"
+      :select-cols="interactiveCols"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimation: value }, false)"
+    />
+    <pv-select
+      v-model="currentPipelineSettings.poseEstimatorBackend"
+      label="Pose Estimator"
+      tooltip="CPU (WPILib) is the well-tested default. Vulkan-native pose estimation is new and
+        faster per-tag, but has not yet been benchmarked against WPILib's implementation on real
+        hardware/data - compare results carefully before relying on it."
+      :items="[
+        { value: VkAprilTagPoseEstimatorBackend.CPU, name: 'CPU (WPILib)' },
+        { value: VkAprilTagPoseEstimatorBackend.VULKAN, name: 'Vulkan-native (experimental)' }
+      ]"
+      :select-cols="interactiveCols"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ poseEstimatorBackend: value }, false)
       "
     />
     <pv-slider
