@@ -55,38 +55,28 @@ dependencies {
         }
     }
 
-    // vkapriltag_jni does not yet publish to maven.photonvision.org - see
+    // vkapriltag_jni does not publish to maven.photonvision.org - see
     // vkapriltag-jni's own repo, which builds and tests the native shim via a
     // hand-rolled CMake build rather than the real WPILib GradleJni/
-    // NativeUtils artifact pipeline. Until it does, $vkAprilTagVersion
-    // resolves against mavenLocal() (already in allprojects{} at the repo
-    // root) instead of maven.photonvision.org - installed there by hand from
-    // vkapriltag-jni's build output, in exactly the Maven layout a real
-    // publish would produce: a plain jar with linux/arm64/shared/*.so inside
-    // for the -jni classifier, matching rknn_jni-jni/tflite_jni-jni's own
-    // shape (see e.g. tflite_jni-jni-*-linuxarm64.jar).
+    // NativeUtils artifact pipeline. $vkAprilTagVersion instead resolves
+    // against the anonymous ivy patternLayout repo declared in the root
+    // build.gradle, pointed directly at vkapriltag-jni's GitHub Release
+    // assets for that tag - no POM/publish step needed, just the two jars
+    // its build-and-release.yml already produces on every v* tag push: a
+    // plain jar with linux/<arch>/shared/*.so inside for the -jni
+    // classifier, matching rknn_jni-jni/tflite_jni-jni's own shape (see
+    // e.g. tflite_jni-jni-*-linuxarm64.jar), plus an unclassified -java jar.
     //
-    // One easy-to-miss detail if you're hand-installing this rather than
-    // using a real publish task: the -jni artifact's POM must declare
-    // <packaging>pom</packaging>, not jar - real published *_jni-jni
-    // artifacts have no unclassified default jar, only classifier-attached
-    // ones (linuxarm64, linuxx86-64, ...), and Gradle's plain-Maven (no
-    // Gradle Module Metadata) classifier resolution reports a flatly
-    // unhelpful "Could not find ..." across every configured repository,
-    // mavenLocal() included, if the POM claims packaging=jar with no
-    // matching unclassified jar actually present. The -java artifact (a
-    // normal, unclassified dependency) is unaffected and keeps
-    // packaging=jar.
+    // Bump $vkAprilTagVersion (root build.gradle) to a new vkapriltag-jni
+    // tag whenever one is cut; nothing else here needs to change.
     //
-    // Swap this for a real maven.photonvision.org coordinate the day one
-    // exists; nothing else here
-    // needs to change.
-    //
-    // linuxarm64 only for now: the installed artifact was built against this
+    // linuxarm64 only for now: that artifact was built against this
     // machine's exact WPILib OpenCV native (2027-4.13.0-3) for ABI-correct
     // cv::Mat access - see VkAprilTagJNI.cpp's detect(). A linuxx86-64
     // artifact needs the same care, not just a recompile, so it's not wired
-    // up here yet.
+    // up here yet (even though vkapriltag-jni's CI already builds and
+    // releases one, for its own dev/CI parity - see that repo's workflow
+    // comment).
     if (jniPlatform == "linuxarm64") {
         wpilibNatives("org.photonvision:vkapriltag_jni-jni:$vkAprilTagVersion:$jniPlatform") {
             transitive = false
