@@ -73,7 +73,7 @@ def main():
 
     connect(inst, args.server)
     # retained to keep the subscriber alive
-    topicNameSubscriber = ntcore.MultiSubscriber(
+    _topicNameSubscriber = ntcore.MultiSubscriber(
         inst, ["/"], ntcore.PubSubOptions(topicsOnly=True)
     )
     sleep(1)

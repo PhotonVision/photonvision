@@ -91,6 +91,15 @@ const disabledCameras = computed<string>(() => {
     .join(", ");
 });
 
+// Cameras whose raw stream is shown while static cropping is enabled: composing the uncropped
+// preview for the raw stream costs extra processing per frame.
+const croppedRawStreamCameras = computed<string>(() => {
+  return Object.values(useCameraSettingsStore().cameras)
+    .filter((c) => c.pipelineSettings.staticCropEnabled && c.pipelineSettings.inputShouldShow)
+    .map((c) => c.nickname)
+    .join(", ");
+});
+
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
 </script>
 
@@ -118,6 +127,19 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     >
       <span>
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
+      </span>
+    </v-alert>
+    <v-alert
+      v-if="croppedRawStreamCameras"
+      class="mb-3"
+      color="warning"
+      density="compact"
+      icon="mdi-alert-outline"
+      :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+    >
+      <span>
+        {{ croppedRawStreamCameras }} have static cropping enabled while the raw stream is open! Composing the uncropped
+        preview uses extra processing per frame -- close the raw stream when you're done adjusting the crop.
       </span>
     </v-alert>
     <v-alert
@@ -158,21 +180,20 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         {{ useSettingsStore().general.conflictingCameras }}!
       </span>
     </v-alert>
-    <v-banner
+    <v-alert
       v-if="cameraMismatchWarningShown"
-      v-model="cameraMismatchWarningShown"
-      rounded
-      color="error"
-      dark
       class="mb-3"
+      color="error"
+      density="compact"
       icon="mdi-alert-circle-outline"
+      :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
     >
       <span
         >Camera Mismatch Detected! Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
         Note: Camera matching is done by USB port. Ensure cameras are plugged into the same USB ports as when they were
         activated.
       </span>
-    </v-banner>
+    </v-alert>
     <v-row no-gutters>
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />

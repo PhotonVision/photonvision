@@ -41,7 +41,7 @@ Describe AI involvement here if applicable
 ### Additional Checks (if applicable)
 
 - [ ] **User-facing changes?** User documentation is updated
-- [ ] **Breaking changes?** Migration guide is included in description
+- [ ] **Breaking changes?** Migration guide is included in description and migrations are marked with `// MIGRATION: <dataYear>` where `<dataYear>` is the last season the pre-migration data was used in
 - [ ] **Bug fix?** Regression test is added
 - [ ] **New dependency?** License compatibility is verified and steps have been taken to follow it
 - [ ] **Serde changes?** All messages are regenerated with no unexpected hash changes

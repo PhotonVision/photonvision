@@ -43,7 +43,8 @@ dependencies {
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: quickbufVersion;
 
     implementation "commons-io:commons-io:2.11.0"
-    implementation "commons-cli:commons-cli:1.5.0"
+
+    implementation "info.picocli:picocli:4.7.7"
 
     testImplementation(platform('org.junit:junit-bom:5.11.4'))
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
