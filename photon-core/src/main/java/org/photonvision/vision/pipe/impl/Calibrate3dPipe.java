@@ -67,6 +67,30 @@ public class Calibrate3dPipe
             this.imageProps = imageProps;
             this.imageSavePath = imageSavePath;
         }
+
+        public static CalibrationInput fromCalibration(
+                CameraCalibrationCoefficients calibration, double fov) {
+            var observations =
+                    calibration.getObservations().stream()
+                            .map(
+                                    observation ->
+                                            new FindBoardCornersPipe.FindBoardCornersPipeResult(
+                                                    calibration.resolution,
+                                                    new MatOfPoint3f(
+                                                            observation.locationInObjectSpace.toArray(new Point3[0])),
+                                                    new MatOfPoint2f(observation.locationInImageSpace.toArray(new Point[0])),
+                                                    0.0f,
+                                                    new MatOfInt(observation.cornerIds)))
+                            .toList();
+            return new CalibrationInput(
+                    observations,
+                    new FrameStaticProperties(
+                            (int) calibration.resolution.width,
+                            (int) calibration.resolution.height,
+                            fov,
+                            calibration),
+                    null);
+        }
     }
 
     // For logging
@@ -325,10 +349,12 @@ public class Calibrate3dPipe
             double[] calobject_warp,
             Path imageSavePath) {
         // Clear the calibration image folder of any old images before we save the new ones.
-        try {
-            FileUtils.cleanDirectory(imageSavePath.toFile());
-        } catch (Exception e) {
-            logger.error("Failed to clean calibration image directory", e);
+        if (imageSavePath != null) {
+            try {
+                FileUtils.cleanDirectory(imageSavePath.toFile());
+            } catch (Exception e) {
+                logger.error("Failed to clean calibration image directory", e);
+            }
         }
 
         // For each observation, calc reprojection error
@@ -421,7 +447,7 @@ public class Calibrate3dPipe
             var inputImage = observationData.get(snapshotId).inputImage;
             Path image_path = null;
             String snapshotName = "img" + snapshotId + ".png";
-            if (inputImage != null) {
+            if (inputImage != null && imageSavePath != null) {
                 image_path = Paths.get(imageSavePath.toString(), snapshotName);
                 Imgcodecs.imwrite(image_path.toString(), inputImage);
             }
