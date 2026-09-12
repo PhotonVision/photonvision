@@ -25,6 +25,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.logging.LogGroup;
@@ -33,17 +34,25 @@ import org.photonvision.common.logging.Logger;
 public class MigrationManager {
     private static final Logger logger = new Logger(MigrationManager.class, LogGroup.Config);
 
+    private final LinkedHashMap<Integer, MigrationStep> stepMap = new LinkedHashMap<>();
     private final List<MigrationStep> steps = new ArrayList<>();
     private final int minimumVersion;
 
-    private MigrationManager(MigrationBuilder builder) {
-        this.steps.addAll(builder.steps);
-        this.minimumVersion = builder.minimumVersion;
+    public MigrationManager(int minimumVersion) {
+        this.minimumVersion = minimumVersion;
     }
-    ;
 
     public int getVersion() {
-        return (steps.isEmpty()) ? 0 : steps.getLast().getVersion();
+        return (stepMap.isEmpty()) ? 0 : stepMap.lastEntry().getValue().getVersion();
+    }
+
+    public MigrationManager addStep(int toVersion, MigrationFunction migrate) {
+        stepMap.put(toVersion, new MigrationStep(getVersion(), toVersion, migrate));
+        return this;
+    }
+
+    public MigrationManager addStep(int toVersion, String sql) {
+        return addStep(toVersion, MigrationStep.sqlMigration(sql));
     }
 
     public int run(String url) throws MigrationException {
@@ -58,7 +67,7 @@ public class MigrationManager {
             // check for a conf directory with JSON files
             if (defaultsDir.exists() && defaultsDir.isDirectory()) {
                 var defaultDatabase = new File(defaultsDir, "photon.sqlite");
-                // var defaultJSON = new File(defaults, "photon.json");
+                // var defaultJSON = new File(defaults, "photon.sql");
                 if (defaultDatabase.exists()) {
                     logger.info("Found default database at " + defaultDatabase.getAbsolutePath());
                     try {
@@ -73,10 +82,12 @@ public class MigrationManager {
                 }
             }
         }
+        // check to see if the version is supported
+
         // Run the migration
         int currentVersion = 0;
         try (Connection conn = DriverManager.getConnection(url)) {
-            for (var step : this.steps) {
+            for (var step : this.stepMap.values()) {
                 currentVersion = step.run(conn);
             }
         } catch (SQLException e) {
@@ -85,34 +96,6 @@ public class MigrationManager {
 
         logger.info("Migration completed. Current database version: " + currentVersion);
         return currentVersion;
-    }
-
-    public static class MigrationBuilder {
-        private final List<MigrationStep> steps = new ArrayList<>();
-        private final int minimumVersion;
-
-        public MigrationBuilder(int minimumVersion) {
-            // set up any required parameters, like a default schema for empty databases
-            this.minimumVersion = minimumVersion;
-        }
-
-        public int getNewestVersion() {
-            return (steps.isEmpty()) ? 0 : steps.getLast().getVersion();
-        }
-
-        public MigrationBuilder addStep(int toVersion, MigrationFunction migrate) {
-            steps.add(MigrationStep.migrateUsingFunction(getNewestVersion(), toVersion, migrate));
-            return this;
-        }
-
-        public MigrationBuilder addStep(int toVersion, String sql) {
-            steps.add(MigrationStep.migrateUsingSQL(getNewestVersion(), toVersion, sql));
-            return this;
-        }
-
-        public MigrationManager build() {
-            return new MigrationManager(this);
-        }
     }
 }
 
@@ -135,14 +118,18 @@ class MigrationStep {
         this.logger = new Logger(MigrationStep.class, String.format("%s", toVersion), LogGroup.Config);
     }
 
-    public static MigrationStep migrateUsingSQL(int fromVersion, int toVersion, String sql) {
-        return new MigrationStep(fromVersion, toVersion, sqlMigration(sql));
+    MigrationStep(int fromVersion, int toVersion, String sql) {
+        this(fromVersion, toVersion, sqlMigration(sql));
     }
 
-    public static MigrationStep migrateUsingFunction(
-            int fromVersion, int toVersion, MigrationFunction migrate) {
-        return new MigrationStep(fromVersion, toVersion, migrate);
-    }
+    // public static MigrationStep migrateUsingSQL(int fromVersion, int toVersion, String sql) {
+    //     return new MigrationStep(fromVersion, toVersion, sqlMigration(sql));
+    // }
+
+    // public static MigrationStep migrateUsingFunction(
+    //         int fromVersion, int toVersion, MigrationFunction migrate) {
+    //     return new MigrationStep(fromVersion, toVersion, migrate);
+    // }
 
     public int getVersion() {
         return this.toVersion;
@@ -170,7 +157,7 @@ class MigrationStep {
     }
 
     // Utility methods
-    private static MigrationFunction sqlMigration(String sql) {
+    public static MigrationFunction sqlMigration(String sql) {
         return (Connection conn) -> {
             try (Statement stmt = conn.createStatement()) {
                 for (String command : sql.split(";")) {

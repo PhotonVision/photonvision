@@ -33,11 +33,10 @@ public class DbMigration {
     private static final Logger logger = new Logger(DbMigration.class, LogGroup.Config);
 
     public static final MigrationManager getMigration() {
-        return new MigrationManager.MigrationBuilder(2)
+        return new MigrationManager(2)
             .addStep(2, schema02)
             .addStep(3, update2026CameraConfig)
-            .addStep(4, sql04)
-            .build();
+            .addStep(4, sql04);
     }
 
     private static final String schema02 =
