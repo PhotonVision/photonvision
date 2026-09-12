@@ -27,22 +27,9 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
 
 from .. import targeting
 from ..packet import Packet
-
-
-
-if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult
-
-    from ..targeting import PhotonPipelineMetadata
-
-    from ..targeting import PhotonPipelineResult
-
-    from ..targeting import PhotonTrackedTarget
 
 
 
@@ -52,7 +39,7 @@ class PhotonPipelineResultSerde:
     MESSAGE_FORMAT = "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"
 
     @staticmethod
-    def pack(value: "PhotonPipelineResult") -> "Packet":
+    def pack(value: "targeting.PhotonPipelineResult") -> "Packet":
         ret = Packet()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata
@@ -66,7 +53,7 @@ class PhotonPipelineResultSerde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "PhotonPipelineResult":
+    def unpack(packet: "Packet") -> "targeting.PhotonPipelineResult":
         ret = targeting.PhotonPipelineResult()
 
         # metadata is of non-intrinsic type PhotonPipelineMetadata

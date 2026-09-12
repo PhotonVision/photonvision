@@ -27,16 +27,9 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
 
 from .. import targeting
 from ..packet import Packet
-
-
-
-if TYPE_CHECKING:
-    from ..targeting import TargetCorner
 
 
 
@@ -46,7 +39,7 @@ class TargetCornerSerde:
     MESSAGE_FORMAT = "float64 x;float64 y;"
 
     @staticmethod
-    def pack(value: "TargetCorner") -> "Packet":
+    def pack(value: "targeting.TargetCorner") -> "Packet":
         ret = Packet()
 
         # x is of intrinsic type float64
@@ -57,7 +50,7 @@ class TargetCornerSerde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "TargetCorner":
+    def unpack(packet: "Packet") -> "targeting.TargetCorner":
         ret = targeting.TargetCorner()
 
         # x is of intrinsic type float64

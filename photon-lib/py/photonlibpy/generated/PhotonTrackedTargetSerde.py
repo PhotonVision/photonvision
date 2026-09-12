@@ -27,18 +27,9 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
 
 from .. import targeting
 from ..packet import Packet
-
-
-
-if TYPE_CHECKING:
-    from ..targeting import PhotonTrackedTarget
-
-    from ..targeting import TargetCorner
 
 
 
@@ -48,7 +39,7 @@ class PhotonTrackedTargetSerde:
     MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"
 
     @staticmethod
-    def pack(value: "PhotonTrackedTarget") -> "Packet":
+    def pack(value: "targeting.PhotonTrackedTarget") -> "Packet":
         ret = Packet()
 
         # yaw is of intrinsic type float64
@@ -89,7 +80,7 @@ class PhotonTrackedTargetSerde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "PhotonTrackedTarget":
+    def unpack(packet: "Packet") -> "targeting.PhotonTrackedTarget":
         ret = targeting.PhotonTrackedTarget()
 
         # yaw is of intrinsic type float64

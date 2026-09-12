@@ -27,18 +27,9 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
 
 from .. import targeting
 from ..packet import Packet
-
-
-
-if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult
-
-    from ..targeting import PnpResult
 
 
 
@@ -48,7 +39,7 @@ class MultiTargetPNPResultSerde:
     MESSAGE_FORMAT = "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"
 
     @staticmethod
-    def pack(value: "MultiTargetPNPResult") -> "Packet":
+    def pack(value: "targeting.MultiTargetPNPResult") -> "Packet":
         ret = Packet()
 
         # estimatedPose is of non-intrinsic type PnpResult
@@ -59,7 +50,7 @@ class MultiTargetPNPResultSerde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "MultiTargetPNPResult":
+    def unpack(packet: "Packet") -> "targeting.MultiTargetPNPResult":
         ret = targeting.MultiTargetPNPResult()
 
         # estimatedPose is of non-intrinsic type PnpResult

@@ -27,8 +27,6 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
 {% if test %}
 from photonlibpy import targeting
 from photonlibpy.packet import Packet
@@ -40,32 +38,13 @@ from ..packet import Packet
 {% endif %}
 
 
-if TYPE_CHECKING:
-{%- set ns = namespace(types=[]) -%}
-{%- for field in fields|unique(attribute="type")-%}
-    {%- set _ = ns.types.append(field.type) -%}
-{%- endfor -%}
-{% set _ = ns.types.append(name) -%}
-{%- for type in ns.types|sort%}
-{%- if not type | is_shimmed and not type | is_intrinsic %}
-{%- if type | is_test %}
-    from .{{ type }} import {{ type }}
-{%- elif test %}
-    from photonlibpy.targeting import {{ type }}
-{%- else %}
-    from ..targeting import {{ type }}
-{% endif -%}
-{%- endif %}
-{%- endfor%}
-
-
 class {{ name }}Serde:
     # Message definition md5sum. See photon_packet.adoc for details
     MESSAGE_VERSION = "{{ message_hash }}"
     MESSAGE_FORMAT = "{{ message_fmt }}"
 
     @staticmethod
-    def pack(value: "{{ name }}") -> "Packet":
+    def pack(value: "{{ name | type_ref }}") -> "Packet":
         ret = Packet()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
@@ -108,7 +87,7 @@ class {{ name }}Serde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "{{ name }}":
+    def unpack(packet: "Packet") -> "{{ name | type_ref }}":
         ret = {{ name | type_ref }}()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}

@@ -27,16 +27,9 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
 
 from .. import targeting
 from ..packet import Packet
-
-
-
-if TYPE_CHECKING:
-    from ..targeting import PhotonPipelineMetadata
 
 
 
@@ -46,7 +39,7 @@ class PhotonPipelineMetadataSerde:
     MESSAGE_FORMAT = "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;int64 timeSinceLastPong;"
 
     @staticmethod
-    def pack(value: "PhotonPipelineMetadata") -> "Packet":
+    def pack(value: "targeting.PhotonPipelineMetadata") -> "Packet":
         ret = Packet()
 
         # sequenceID is of intrinsic type int64
@@ -63,7 +56,7 @@ class PhotonPipelineMetadataSerde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "PhotonPipelineMetadata":
+    def unpack(packet: "Packet") -> "targeting.PhotonPipelineMetadata":
         ret = targeting.PhotonPipelineMetadata()
 
         # sequenceID is of intrinsic type int64
