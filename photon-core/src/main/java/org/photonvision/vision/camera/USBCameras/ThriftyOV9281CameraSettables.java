@@ -47,16 +47,4 @@ public class ThriftyOV9281CameraSettables extends GenericUSBCameraSettables {
         logger.info("Setting All Cam Defaults :: ThriftyOV9281");
         softSet("focus_absolute", 0);
     }
-
-    @Override
-    public void setAutoExposureImpl(boolean cameraAutoExposure) {
-        logger.debug("Setting auto exposure :: ThriftyOV9281 :: " + cameraAutoExposure);
-        if (autoExposureProp != null) {
-            autoExposureProp.set(
-                    cameraAutoExposure ? PROP_AUTO_EXPOSURE_ENABLED : PROP_AUTO_EXPOSURE_DISABLED);
-        }
-        if (!cameraAutoExposure) {
-            setExposureRaw(this.lastExposureRaw);
-        }
-    }
 }
