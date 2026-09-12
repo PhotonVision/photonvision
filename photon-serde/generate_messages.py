@@ -439,7 +439,9 @@ def generate_tests(cpp_java_test_root, py_test_root, template_root):
     env.filters["is_shimmed"] = get_shimmed_filter(message_db)
     env.filters["is_test"] = get_test_filter(message_db)
     env.filters["type_ref"] = lambda type_name: (
-        type_name if get_test_filter(message_db)(type_name) else f"targeting.{type_name}"
+        type_name
+        if get_test_filter(message_db)(type_name)
+        else f"targeting.{type_name}"
     )
 
     # add our custom types

@@ -32,9 +32,7 @@ class VisionSystemSim:
         self.bufferLength: seconds = 1.5
 
         self.camSimMap: dict[str, PhotonCameraSim] = {}
-        self.camTrfMap: dict[
-            PhotonCameraSim, TimeInterpolatablePose3dBuffer
-        ] = {}
+        self.camTrfMap: dict[PhotonCameraSim, TimeInterpolatablePose3dBuffer] = {}
         self.robotPoseBuffer: TimeInterpolatablePose3dBuffer = (
             TimeInterpolatablePose3dBuffer(self.bufferLength)
         )
