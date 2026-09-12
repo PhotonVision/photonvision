@@ -20,6 +20,10 @@ This section contains the build instructions from the source code available at [
 
  [pnpm](https://pnpm.io/) is the package manager used to download dependencies for the UI. To install pnpm, follow [the instructions on the official pnpm website](https://pnpm.io/installation).
 
+**uv:**
+
+ [uv](https://docs.astral.sh/uv/) is the package manager used to build and install PhotonLibPy. To install uv, follow [the instructions on the official uv website](https://docs.astral.sh/uv/getting-started/installation/).
+
 **Cross-Compilation Toolchains (Optional):**
 
  If you plan to deploy PhotonVision to a coprocessor like a Raspberry Pi, you will need to install the appropriate cross-compilation toolchain for your platform. For `linuxarm64` devices, this can be accomplished by running `./gradlew installArm64Toolchain` in the root folder of the project.
