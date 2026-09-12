@@ -45,6 +45,5 @@ public class ThriftyOV9281CameraSettables extends GenericUSBCameraSettables {
         softSet("focus_automatic_continuous", 0);
         super.setAllCamDefaults();
         logger.info("Setting All Cam Defaults :: ThriftyOV9281");
-        softSet("focus_absolute", 0);
     }
 }
