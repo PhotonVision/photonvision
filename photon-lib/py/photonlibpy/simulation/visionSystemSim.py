@@ -1,3 +1,4 @@
+import telemetry
 import wpilib
 from robotpy_fields import Field
 from wpilib import Field2d
