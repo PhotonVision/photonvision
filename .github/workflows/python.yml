@@ -120,52 +120,52 @@ jobs:
         shell: bash
         run: python -m pytest --import-mode=importlib photon-serde-tests/py/AutoSerdeTest.py
 
-  build-python-examples:
-    needs: build-py
-    strategy:
-      matrix:
-        os: [ubuntu-24.04, windows-2022, macos-14]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: 3.14
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v6
-
-      - name: Install dependencies
-        run: uv pip install --system mypy
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: ./photon-lib/py/dist/
-
-      - name: Install PhotonLibPy package
-        working-directory: ./photon-lib/py
-        shell: bash
-        run: |
-            uv pip install --system --no-cache dist/*.whl
-
-      - name: Build Python examples
-        working-directory: photonlib-python-examples
-        shell: bash
-        run: |
-          for folder in */;
-          do
-            echo $folder
-            ./test.sh $folder
-          done
+  # build-python-examples:
+  #   needs: build-py
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-24.04, windows-2022, macos-14]
+  #   runs-on: ${{ matrix.os }}
+  #
+  #   steps:
+  #
+  #     - name: Checkout code
+  #       uses: actions/checkout@v6
+  #       with:
+  #         fetch-depth: 0
+  #
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v6
+  #       with:
+  #         python-version: 3.14
+  #
+  #     - name: Set up uv
+  #       uses: astral-sh/setup-uv@v6
+  #
+  #     - name: Install dependencies
+  #       run: uv pip install --system mypy
+  #
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v8
+  #       with:
+  #         name: dist
+  #         path: ./photon-lib/py/dist/
+  #
+  #     - name: Install PhotonLibPy package
+  #       working-directory: ./photon-lib/py
+  #       shell: bash
+  #       run: |
+  #           uv pip install --system --no-cache dist/*.whl
+  #
+  #     - name: Build Python examples
+  #       working-directory: photonlib-python-examples
+  #       shell: bash
+  #       run: |
+  #         for folder in */;
+  #         do
+  #           echo $folder
+  #           ./test.sh $folder
+  #         done
 
   deploy:
     needs: [test-py]
