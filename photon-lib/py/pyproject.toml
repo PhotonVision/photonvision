@@ -13,6 +13,7 @@ dependencies = [
     "robotpy-wpimath==2027.0.0a7",
     "robotpy-apriltag==2027.0.0a7",
     "robotpy-cscore==2027.0.0a7",
+    "robotpy-fields==2027.0.0a7",
     "pyntcore==2027.0.0a7",
     "opencv-python;platform_machine!='roborio'",
 ]
