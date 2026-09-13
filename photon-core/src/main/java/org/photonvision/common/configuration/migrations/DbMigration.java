@@ -33,10 +33,10 @@ public class DbMigration {
     private static final Logger logger = new Logger(DbMigration.class, LogGroup.Config);
 
     public static final MigrationManager getMigration() {
-        return new MigrationManager(2)
+        return new MigrationManager()
             .addStep(2, schema02)
-            .addStep(3, update2026CameraConfig)
-            .addStep(4, sql04);
+            .addStep(2701, update2026CameraConfig)
+            .addStep(2702, sql2702);
     }
 
     private static final String schema02 =
@@ -54,7 +54,7 @@ public class DbMigration {
         );
         """;
 
-    private static final String sql04 =
+    private static final String sql2702 =
         """
         ALTER TABLE cameras DROP COLUMN drivermode_json;
         ALTER TABLE cameras DROP COLUMN pipeline_jsons;

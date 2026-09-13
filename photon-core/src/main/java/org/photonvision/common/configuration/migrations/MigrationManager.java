@@ -22,12 +22,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.PathManager;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -35,11 +39,8 @@ public class MigrationManager {
     private static final Logger logger = new Logger(MigrationManager.class, LogGroup.Config);
 
     private final LinkedHashMap<Integer, MigrationStep> stepMap = new LinkedHashMap<>();
-    private final List<MigrationStep> steps = new ArrayList<>();
-    private final int minimumVersion;
 
-    public MigrationManager(int minimumVersion) {
-        this.minimumVersion = minimumVersion;
+    public MigrationManager() {
     }
 
     public int getVersion() {
@@ -59,42 +60,46 @@ public class MigrationManager {
         // Extract the file path from the JDBC URL (jdbc:sqlite:/path/to/db)
         String filePath = url.replace("jdbc:sqlite:", "");
         File dbFile = new File(filePath);
+        int currentVersion = 0;
 
         var newDb = !dbFile.exists();
         var defaultsDir = PathManager.getInstance().getDefaultsDir().toFile();
 
         if (newDb) {
-            // check for a conf directory with JSON files
+            logger.info("Configuration database not found.");
+            // check for a conf directory
             if (defaultsDir.exists() && defaultsDir.isDirectory()) {
-                var defaultDatabase = new File(defaultsDir, "photon.sqlite");
-                // var defaultJSON = new File(defaults, "photon.sql");
-                if (defaultDatabase.exists()) {
-                    logger.info("Found default database at " + defaultDatabase.getAbsolutePath());
+                File defaultDatabase = null;
+                var sqliteFiles = defaultsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".sqlite"));
+                if (sqliteFiles != null && sqliteFiles.length > 0) {
+                    defaultDatabase = sqliteFiles[0];
+                    logger.debug("Default database found at " + defaultDatabase.getAbsolutePath());
                     try {
                         Files.copy(defaultDatabase.toPath(), dbFile.toPath());
                     } catch (IOException e) {
                         throw new MigrationException("Error copying default database", e);
                     }
-                    // } else if (defaultJSON.exists()) {
-                    //     logger.info("Found default JSON at " + defaultJSON.getAbsolutePath());
                 } else {
-                    logger.info("Database not found. Creating empty one.");
+                    logger.info("Creating empty database");
                 }
             }
         }
-        // check to see if the version is supported
 
-        // Run the migration
-        int currentVersion = 0;
         try (Connection conn = DriverManager.getConnection(url)) {
-            for (var step : this.stepMap.values()) {
-                currentVersion = step.run(conn);
+            currentVersion = SQLUtils.getUserVersion(conn);
+            if (newDb || stepMap.containsKey(currentVersion)) {
+                for (var step : this.stepMap.values()) {
+                    currentVersion = step.run(conn);
+                }
+                logger.info("Migration completed. Current database version: " + currentVersion);            
+            } else {
+                // database version isn't recognized for migration
+                throw new MigrationException("Database verison " + currentVersion + " is not supported for migration");
             }
         } catch (SQLException e) {
             throw new MigrationException("Error connecting to database", e);
         }
 
-        logger.info("Migration completed. Current database version: " + currentVersion);
         return currentVersion;
     }
 }
@@ -122,15 +127,6 @@ class MigrationStep {
         this(fromVersion, toVersion, sqlMigration(sql));
     }
 
-    // public static MigrationStep migrateUsingSQL(int fromVersion, int toVersion, String sql) {
-    //     return new MigrationStep(fromVersion, toVersion, sqlMigration(sql));
-    // }
-
-    // public static MigrationStep migrateUsingFunction(
-    //         int fromVersion, int toVersion, MigrationFunction migrate) {
-    //     return new MigrationStep(fromVersion, toVersion, migrate);
-    // }
-
     public int getVersion() {
         return this.toVersion;
     }
@@ -147,11 +143,11 @@ class MigrationStep {
 
     private int run(Connection conn, int userVersion) throws MigrationException {
         if (userVersion == this.toVersion) {
-            logger.info("Database is at version: " + this.toVersion);
+            logger.debug("Database is at version: " + this.toVersion);
         } else if (userVersion == fromVersion) {
             executeMigrationStep(conn);
         } else {
-            return 0;
+            return userVersion;
         }
         return this.toVersion;
     }
@@ -182,19 +178,44 @@ class MigrationStep {
 
     private void executeMigrationStep(Connection conn) throws MigrationException {
         try {
-            logger.info(String.format("Running migration step %s", this.toVersion));
+            logger.debug(String.format("Running migration step %s", this.toVersion));
             conn.setAutoCommit(false);
             this.migrate.apply(conn);
-            setUserVersion(conn, this.toVersion);
+            this.updateDatabaseVersion(conn, this.toVersion);
             conn.commit();
-            logger.info(String.format("Migration step %s succeeded.", this.toVersion));
+            logger.debug(String.format("Migration step %s succeeded", this.toVersion));
         } catch (Exception e) {
             try {
                 conn.rollback();
             } catch (SQLException e2) {
                 e.addSuppressed(e2);
             }
-            throw new MigrationException("Migration step " + this.toVersion + " failed.", e);
+            throw new MigrationException("Migration step " + this.toVersion + " failed", e);
+        }
+    }
+
+    String versionTableSchema = 
+        """
+        CREATE TABLE IF NOT EXISTS dbversion (
+            version INT,
+            pv_version TEXT,
+            platform TEXT,
+            date TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+        """;
+        
+    String updateVersionSQL = "INSERT INTO dbversion(version, pv_version, platform) VALUES (?, ?, ?);";
+
+    private void updateDatabaseVersion(Connection conn, int version) throws SQLException {
+        this.setUserVersion(conn, version);
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(versionTableSchema);
+        }
+        try (PreparedStatement pstmt = conn.prepareStatement(updateVersionSQL)) {
+            pstmt.setInt(1, version);
+            pstmt.setString(2, PhotonVersion.versionString);
+            pstmt.setString(3, Platform.getPlatformName());
+            pstmt.executeUpdate();
         }
     }
 }
