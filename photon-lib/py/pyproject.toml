@@ -9,11 +9,11 @@ description = "Pure-python implementation of PhotonLib for interfacing with Phot
 requires-python = ">=3.11"
 dependencies = [
     "numpy~=2.3",
-    "wpilib==2027.0.0a6.post1",
-    "robotpy-wpimath==2027.0.0a6.post1",
-    "robotpy-apriltag==2027.0.0a6.post1",
-    "robotpy-cscore==2027.0.0a6.post1",
-    "pyntcore==2027.0.0a6.post1",
+    "wpilib==2027.0.0a7",
+    "robotpy-wpimath==2027.0.0a7",
+    "robotpy-apriltag==2027.0.0a7",
+    "robotpy-cscore==2027.0.0a7",
+    "pyntcore==2027.0.0a7",
     "opencv-python;platform_machine!='roborio'",
 ]
 authors = [{ name = "Photonvision Development Team" }]
