@@ -281,6 +281,7 @@ public class VisionRunner implements AutoCloseable {
             // The frame is already rotated, so the crop applies in the rotated coordinate space.
             var frame = frameSupplier.get();
             boolean keepContext = false;
+
             if (isCroppablePipeline) {
                 // The dimmed full-frame context image exists only for the input stream's viewers --
                 // skip composing it when nothing is actually consuming that stream.
