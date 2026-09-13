@@ -25,9 +25,10 @@ import org.photonvision.vision.apriltag.AprilTagFamily;
  * AbstractAprilTagPipeline}'s shared pose-estimation/multi-target/target-list logic, which does not
  * care which backend produced the detections.
  *
- * <p>Backend-specific tunables (e.g. the CPU detector's {@code decimate}/{@code blur}/{@code
- * refineEdges}, none of which the Vulkan backend can honor - it runs a fixed 2x decimation with no
- * pre-blur stage and no edge refinement) stay on the concrete subclasses, not here.
+ * <p>Backend-specific tunables (e.g. the CPU detector's {@code decimate}/{@code blur}, and each
+ * backend's own {@code refineEdges} - the two aren't interchangeable: the Vulkan backend has no
+ * pre-blur stage at all, and its decimation is a separate, independently-configurable field, not
+ * the CPU detector's {@code decimate}) stay on the concrete subclasses, not here.
  */
 public class AprilTagPipelineSettingsBase extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;

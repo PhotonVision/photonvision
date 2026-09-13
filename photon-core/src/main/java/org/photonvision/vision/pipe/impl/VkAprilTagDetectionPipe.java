@@ -59,10 +59,10 @@ public class VkAprilTagDetectionPipe
     @Override
     public void setParams(VkAprilTagDetectionPipeParams newParams) {
         // Every field of VkAprilTagDetectionPipeParams (family, width, height, decimation,
-        // deviceIndex, cpuThreads) feeds detector construction - vkapriltag supports one
-        // family/resolution/decimation/device per detector instance (see DetectorHandle in
-        // vkapriltag-jni), so any change here means destroying and recreating it, exactly as
-        // AprilTagDetectionPipe's own !equals() guard does for the CPU detector.
+        // deviceIndex, cpuThreads, refineEdges) feeds detector construction - vkapriltag supports
+        // one family/resolution/decimation/device/refineEdges per detector instance (see
+        // DetectorHandle in vkapriltag-jni), so any change here means destroying and recreating
+        // it, exactly as AprilTagDetectionPipe's own !equals() guard does for the CPU detector.
         if (this.params == null || !this.params.equals(newParams)) {
             releaseDetector();
             createOrFallBack(newParams);
@@ -100,7 +100,8 @@ public class VkAprilTagDetectionPipe
                         p.decimation(),
                         p.family().getNativeName(),
                         p.cpuThreads(),
-                        p.deviceIndex());
+                        p.deviceIndex(),
+                        p.refineEdges());
         if (handle == 0) {
             fallBackToCpu(p, "native create() failed: " + VkAprilTagJNI.getLastError());
             return;
@@ -195,5 +196,6 @@ public class VkAprilTagDetectionPipe
             int height,
             int decimation,
             int deviceIndex,
-            int cpuThreads) {}
+            int cpuThreads,
+            boolean refineEdges) {}
 }

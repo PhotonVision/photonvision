@@ -7,6 +7,7 @@ import {
 } from "@/types/PipelineTypes";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
@@ -42,9 +43,9 @@ const vulkanDeviceItems = computed(() => [
       variant="tonal"
       type="warning"
       class="mb-3"
-      text="BETA: this backend has no blur or edge-refinement tuning (not supported by the underlying
-        library), and falls back to the CPU detector automatically if Vulkan isn't usable on this
-        device or the chosen decimation doesn't evenly divide the camera's resolution."
+      text="BETA: this backend has no blur tuning (not supported by the underlying library), and
+        falls back to the CPU detector automatically if Vulkan isn't usable on this device or the
+        chosen decimation doesn't evenly divide the camera's resolution."
     />
     <pv-select
       v-model="currentPipelineSettings.tagFamily"
@@ -80,6 +81,16 @@ const vulkanDeviceItems = computed(() => [
       :select-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimation: value }, false)
+      "
+    />
+    <pv-switch
+      v-model="currentPipelineSettings.refineEdges"
+      :switch-cols="interactiveCols"
+      label="Refine Edges"
+      tooltip="Further refines the AprilTag corner position initial estimate. Improves accuracy at
+        some extra per-tag CPU cost; off by default to match this pipeline's historical behavior."
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
       "
     />
     <pv-select

@@ -22,11 +22,12 @@ import org.photonvision.vision.target.TargetModel;
 /**
  * BETA. Settings for the Vulkan-accelerated (vkapriltag) AprilTag detector.
  *
- * <p>Deliberately does NOT have blur/refineEdges fields, unlike {@link AprilTagPipelineSettings}:
- * vkapriltag has no pre-blur stage, and edge refinement is explicitly out of scope for that library
- * (see vkapriltag's TagDecoder.h). Unlike those, {@link #decimation} IS present - as of vkapriltag
- * v1.3.0, decimation is a configurable {@code DetectorConfig} field rather than a fixed 2x
- * hardcoded into {@code GpuDetector} - so this is one knob this settings class does expose.
+ * <p>Deliberately does NOT have a {@code blur} field, unlike {@link AprilTagPipelineSettings}:
+ * vkapriltag has no pre-blur stage. Unlike blur, both {@link #decimation} and {@link #refineEdges}
+ * ARE present: decimation has been a configurable {@code DetectorConfig} field since vkapriltag
+ * v1.3.0 (rather than a fixed 2x hardcoded into {@code GpuDetector}), and RefineEdges (upstream
+ * apriltag.c's gradient-based edge refinement, run via TagDecoder) has been available since v1.4.0
+ * - see vkapriltag's TagDecoder.h.
  */
 public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
     /**
@@ -50,6 +51,15 @@ public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
      * height, or the pipeline falls back to CPU (see {@code VkAprilTagDetectionPipe}).
      */
     public int decimation = 2;
+
+    /**
+     * Enables upstream apriltag.c's gradient-based edge refinement (vkapriltag v1.4.0+, run via
+     * TagDecoder immediately before quad decode). Off by default - both to preserve existing saved
+     * pipelines' behavior across the upgrade past v1.4.0, and because it was measured to add real
+     * per-quad CPU cost for a substantial corner-accuracy gain (vkapriltag's own validation: corner
+     * RMS mean 0.840px -&gt; 0.024px with it enabled) - a tradeoff left to the user, not a default.
+     */
+    public boolean refineEdges = false;
 
     /** Which implementation runs single-tag pose estimation for this pipeline. */
     public enum PoseEstimatorBackend {
@@ -83,6 +93,7 @@ public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
         result = prime * result + vulkanDeviceIndex;
         result = prime * result + cpuThreads;
         result = prime * result + decimation;
+        result = prime * result + (refineEdges ? 1231 : 1237);
         result = prime * result + poseEstimatorBackend.hashCode();
         return result;
     }
@@ -96,6 +107,7 @@ public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
         if (vulkanDeviceIndex != other.vulkanDeviceIndex) return false;
         if (cpuThreads != other.cpuThreads) return false;
         if (decimation != other.decimation) return false;
+        if (refineEdges != other.refineEdges) return false;
         if (poseEstimatorBackend != other.poseEstimatorBackend) return false;
         return true;
     }

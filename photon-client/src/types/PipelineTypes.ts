@@ -319,10 +319,10 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   doSingleTargetAlways: false
 };
 
-// BETA. Deliberately has no blur/refineEdges - vkapriltag has no pre-blur stage and edge
-// refinement is out of scope for that library, so there's no control here that would silently do
-// nothing. Unlike those, `decimation` IS present as of vkapriltag v1.3.0 - decimation became a
-// configurable DetectorConfig field rather than a fixed 2x hardcoded into GpuDetector.
+// BETA. Deliberately has no `blur` - vkapriltag has no pre-blur stage, so there's no control here
+// that would silently do nothing. Unlike blur, both `decimation` (configurable DetectorConfig
+// field since vkapriltag v1.3.0, replacing a fixed 2x hardcoded into GpuDetector) and
+// `refineEdges` (vkapriltag v1.4.0+) ARE present.
 export enum VkAprilTagPoseEstimatorBackend {
   CPU = 0,
   VULKAN = 1
@@ -341,6 +341,9 @@ export interface VkAprilTagPipelineSettings extends PipelineSettings {
   cpuThreads: number;
   // Must evenly divide the camera's current resolution, or this pipeline falls back to CPU.
   decimation: number;
+  // Gradient-based edge refinement (vkapriltag v1.4.0+). Off by default, matching this pipeline's
+  // historical behavior - see this field's tooltip in VkAprilTagTab.vue.
+  refineEdges: boolean;
   // EXPERIMENTAL. See this field's tooltip in VkAprilTagTab.vue - unverified against CPU/WPILib
   // for real-world accuracy, defaults to CPU.
   poseEstimatorBackend: VkAprilTagPoseEstimatorBackend;
@@ -366,6 +369,7 @@ export const DefaultVkAprilTagPipelineSettings: VkAprilTagPipelineSettings = {
   vulkanDeviceIndex: -1,
   cpuThreads: 0,
   decimation: 2,
+  refineEdges: false,
   poseEstimatorBackend: VkAprilTagPoseEstimatorBackend.CPU
 };
 

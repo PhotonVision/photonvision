@@ -61,7 +61,8 @@ public class VkAprilTagPipeline extends AbstractAprilTagPipeline<VkAprilTagPipel
                         frameStaticProperties.imageHeight,
                         settings.decimation,
                         settings.vulkanDeviceIndex,
-                        settings.cpuThreads));
+                        settings.cpuThreads,
+                        settings.refineEdges));
     }
 
     @Override

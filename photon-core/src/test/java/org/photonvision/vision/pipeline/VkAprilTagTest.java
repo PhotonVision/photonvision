@@ -339,7 +339,7 @@ public class VkAprilTagTest {
     public void testVulkanFallsBackToCpuOnUnsupportedFrameSize() {
         try (var pipe = new VkAprilTagDetectionPipe()) {
             pipe.setParams(
-                    new VkAprilTagDetectionPipeParams(AprilTagFamily.kTag36h11, 641, 480, 2, -1, 0));
+                    new VkAprilTagDetectionPipeParams(AprilTagFamily.kTag36h11, 641, 480, 2, -1, 0, false));
             assertFalse(
                     pipe.isVulkanActive(),
                     "641 is odd, fails the divisible-by-2 check; Vulkan must not activate");
@@ -364,7 +364,7 @@ public class VkAprilTagTest {
         try (var pipe = new VkAprilTagDetectionPipe()) {
             // 640 % 3 != 0 (480 % 3 == 0, so this is specifically the width that trips it).
             pipe.setParams(
-                    new VkAprilTagDetectionPipeParams(AprilTagFamily.kTag36h11, 640, 480, 3, -1, 0));
+                    new VkAprilTagDetectionPipeParams(AprilTagFamily.kTag36h11, 640, 480, 3, -1, 0, false));
             assertFalse(
                     pipe.isVulkanActive(),
                     "decimation=3 does not evenly divide 640; Vulkan must not activate");
@@ -447,6 +447,51 @@ public class VkAprilTagTest {
                 }
             }
         }
+    }
+
+    /**
+     * Confirms the refineEdges knob (vkapriltag v1.4.0+) actually works end-to-end, not just that
+     * it's plumbed through without error - mirrors {@link
+     * #testVulkanMatchesLibapriltag_decimation1}'s structure. Unlike every other comparison test in
+     * this suite, which leaves Vulkan's refineEdges at its off-by-default and so is already comparing
+     * against a CPU reference whose own {@code refineEdges} defaults true (see {@link
+     * org.photonvision.vision.pipeline.AprilTagPipelineSettings}), this is the one apples-to-apples
+     * case: both sides refine, matching vkapriltag's own validation story (corner RMS mean 0.840px
+     * -&gt; 0.024px with refine_edges on both sides) rather than the off/on mismatch every other test
+     * here tolerates.
+     */
+    @Test
+    public void testVulkanMatchesLibapriltagWithRefineEdges() {
+        assumeTrue(VkAprilTagAvailability.isSupported(), "No Vulkan-capable device on this machine");
+
+        List<TrackedTarget> cpu =
+                runCpu(
+                        TestUtils.ApriltagTestImages.kTag1_640_480,
+                        AprilTagFamily.kTag36h11,
+                        TestUtils.get2020LifeCamCoeffs(false),
+                        127);
+        List<TrackedTarget> vulkan;
+        try (var pipeline = new VkAprilTagPipeline()) {
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            pipeline.getSettings().solvePNPEnabled = false;
+            pipeline.getSettings().outputMaximumTargets = 127;
+            pipeline.getSettings().refineEdges = true;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.get2020LifeCamCoeffs(false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult result =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    assertTrue(
+                            pipeline.isVulkanActive(), "refineEdges must not affect whether Vulkan activates");
+                    vulkan = List.copyOf(result.targets);
+                }
+            }
+        }
+
+        assertSameDetections(vulkan, cpu, true);
     }
 
     /**
