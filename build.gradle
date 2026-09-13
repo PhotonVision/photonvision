@@ -65,7 +65,7 @@ ext {
     rknnVersion = "v2027.0.0"
     tfliteVersion = "v2027.0.2-alpha-1"
     wpilibYear = "2027_alpha5"
-    mrcalVersion = "dev-v2027.0.2-6-gb65c352";
+    mrcalVersion = "dev-v2027.0.2-10-gba8e332";
     // See photon-core/build.gradle's dependency block and the ivy repo
     // above: resolved from vkapriltag-jni's GitHub Release assets, not
     // maven.photonvision.org (it doesn't publish one - see its own repo).
