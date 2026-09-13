@@ -91,7 +91,7 @@ public class MigrationManager {
                 for (var step : this.stepMap.values()) {
                     currentVersion = step.run(conn);
                 }
-                logger.info("Migration completed. Current database version: " + currentVersion);            
+                logger.info("Migration completed. Current database version: " + currentVersion);
             } else {
                 // database version isn't recognized for migration
                 throw new MigrationException("Database verison " + currentVersion + " is not supported for migration");
@@ -194,7 +194,7 @@ class MigrationStep {
         }
     }
 
-    String versionTableSchema = 
+    String versionTableSchema =
         """
         CREATE TABLE IF NOT EXISTS dbversion (
             version INT,
@@ -203,7 +203,7 @@ class MigrationStep {
             date TEXT DEFAULT CURRENT_TIMESTAMP
         );
         """;
-        
+
     String updateVersionSQL = "INSERT INTO dbversion(version, pv_version, platform) VALUES (?, ?, ?);";
 
     private void updateDatabaseVersion(Connection conn, int version) throws SQLException {
