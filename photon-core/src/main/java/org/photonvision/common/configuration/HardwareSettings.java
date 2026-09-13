@@ -17,6 +17,9 @@
 
 package org.photonvision.common.configuration;
 
+import io.avaje.jsonb.Json;
+
+@Json
 public class HardwareSettings {
     public int ledBrightnessPercentage = 100;
 
