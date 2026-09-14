@@ -61,11 +61,11 @@ public class MigrationManager {
         int currentVersion = 0;
 
         var newDb = !dbFile.exists();
-        var defaultsDir = PathManager.getInstance().getDefaultsDir().toFile();
 
         if (newDb) {
             logger.info("Settings database not found");
-            // check for a conf directory
+            // check for a conf.d directory in the same directory as the database
+            File defaultsDir = dbFile.getParentFile().toPath().resolve("conf.d").toFile();
             if (defaultsDir.exists() && defaultsDir.isDirectory()) {
                 File defaultDatabase = null;
                 var sqliteFiles = defaultsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".sqlite"));
@@ -93,6 +93,7 @@ public class MigrationManager {
                     currentVersion = step.run(conn);
                 }
                 logger.info("Migration completed. Current database version: " + currentVersion);
+                return currentVersion;
             } else {
                 // database version isn't recognized for migration
                 throw new MigrationException("Database verison " + currentVersion + " is not supported for migration");
@@ -101,9 +102,31 @@ public class MigrationManager {
             throw new MigrationException("Error connecting to database", e);
         }
 
-        return currentVersion;
+        // return currentVersion;
     }
+
+    // private int applyMigrations(String url) {
+    //     int currentVersion = 0;
+    //     try (Connection conn = DriverManager.getConnection(url)) {
+    //         currentVersion = SQLUtils.getUserVersion(conn);
+    //         if (stepMap.containsKey(currentVersion)) {
+    //             for (var step : this.stepMap.values()) {
+    //                 currentVersion = step.run(conn);
+    //             }
+    //             logger.info("Migration completed. Current database version: " + currentVersion);
+    //         } else {
+    //             // database version isn't recognized for migration
+    //             throw new MigrationException("Database verison " + currentVersion + " is not supported for migration");
+    //         }
+    //     } catch (SQLException e) {
+    //         throw new MigrationException("Error connecting to database", e);
+    //     }
+
+    //     return currentVersion;
+    // }
 }
+
+
 
 @FunctionalInterface
 interface MigrationFunction {

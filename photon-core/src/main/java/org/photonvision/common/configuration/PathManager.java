@@ -52,9 +52,9 @@ public class PathManager {
         return getRootDir().resolve("photonvision_config");
     }
 
-    public Path getDefaultsDir() {
-        return getRootDir().resolve("conf.d");
-    }
+    // public Path getDefaultsDir() {
+    //     return getRootDir().resolve("conf.d");
+    // }
 
     public Path getLogsDir() {
         return getConfigDir().resolve("logs");
