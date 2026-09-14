@@ -121,6 +121,14 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
+    public int getDbVersion() {
+        return this.dbVersion;
+    }
+
+    public int getExpectedVersion() {
+        return migrations.getVersion();
+    }
+    
     private void initDatabase() {
         try {
             dbVersion = migrations.run(url);
