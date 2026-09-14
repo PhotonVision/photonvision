@@ -25,9 +25,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.PathManager;
@@ -66,23 +64,26 @@ public class MigrationManager {
         var defaultsDir = PathManager.getInstance().getDefaultsDir().toFile();
 
         if (newDb) {
-            logger.info("Configuration database not found.");
+            logger.info("Settings database not found");
             // check for a conf directory
             if (defaultsDir.exists() && defaultsDir.isDirectory()) {
                 File defaultDatabase = null;
                 var sqliteFiles = defaultsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".sqlite"));
                 if (sqliteFiles != null && sqliteFiles.length > 0) {
                     defaultDatabase = sqliteFiles[0];
-                    logger.debug("Default database found at " + defaultDatabase.getAbsolutePath());
+                    logger.debug("Trying default database found at " + defaultDatabase.getAbsolutePath());
                     try {
                         Files.copy(defaultDatabase.toPath(), dbFile.toPath());
+                        newDb = false;
                     } catch (IOException e) {
-                        throw new MigrationException("Error copying default database", e);
+                        logger.error("Error copying default database", e);
                     }
-                } else {
-                    logger.info("Creating empty database");
                 }
             }
+        }
+
+        if (newDb) {
+            logger.info("Creating new database");
         }
 
         try (Connection conn = DriverManager.getConnection(url)) {

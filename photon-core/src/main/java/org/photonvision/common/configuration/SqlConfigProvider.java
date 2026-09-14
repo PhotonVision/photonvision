@@ -121,33 +121,6 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
-    private static int getIntPragma(Connection conn, String pragma) {
-        int retval = 0;
-        try (Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery("PRAGMA " + pragma + ";");
-            retval = rs.getInt(1);
-        } catch (SQLException e) {
-            logger.error("Error querying " + pragma, e);
-        }
-        return retval;
-    }
-
-    public static int getSchemaVersion(Connection conn) {
-        return getIntPragma(conn, "schema_version");
-    }
-
-    public static int getUserVersion(Connection conn) {
-        return getIntPragma(conn, "user_version");
-    }
-
-    public int getDbVersion() {
-        return this.dbVersion;
-    }
-
-    public int getExpectedVersion() {
-        return migrations.getVersion();
-    }
-
     private void initDatabase() {
         try {
             dbVersion = migrations.run(url);
@@ -178,8 +151,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 conn.close();
             } catch (SQLException e) {
                 // TODO, does the file still save if the SQL connection isn't closed correctly?
-                // If so,
-                // return false here.
+                // If so, return false here.
                 logger.error("SQL Err closing connection while saving to disk: ", e);
             }
         }
