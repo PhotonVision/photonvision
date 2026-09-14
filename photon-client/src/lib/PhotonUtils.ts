@@ -3,8 +3,8 @@ import { CalibrationPaperTypes, CalibrationTagFamilies, type Resolution } from "
 import axios, { type AxiosRequestConfig } from "axios";
 import { length, type Length } from "@adam-rocska/units-and-measurement/length";
 
-export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
-  return a.height === b.height && a.width === b.width;
+export const resolutionsAreEqual = (a: Resolution, b?: Resolution) => {
+  return a.height === b?.height && a.width === b?.width;
 };
 
 /**
