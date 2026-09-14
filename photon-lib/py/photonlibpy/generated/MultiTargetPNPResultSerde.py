@@ -27,18 +27,9 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
 
-
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
-
-
-
-if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult  # noqa
-
-    from ..targeting import PnpResult  # noqa
 
 
 
@@ -48,22 +39,22 @@ class MultiTargetPNPResultSerde:
     MESSAGE_FORMAT = "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"
 
     @staticmethod
-    def pack(value: "MultiTargetPNPResult") -> "Packet":
+    def pack(value: "targeting.MultiTargetPNPResult") -> "Packet":
         ret = Packet()
 
         # estimatedPose is of non-intrinsic type PnpResult
-        ret.encodeBytes(PnpResult.photonStruct.pack(value.estimatedPose).getData())
+        ret.encodeBytes(targeting.PnpResult.photonStruct.pack(value.estimatedPose).getData())
 
         # fiducialIDsUsed is a custom VLA!
         ret.encodeListShimmed(value.fiducialIDsUsed, ret.encode16)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "MultiTargetPNPResult":
-        ret = MultiTargetPNPResult()
+    def unpack(packet: "Packet") -> "targeting.MultiTargetPNPResult":
+        ret = targeting.MultiTargetPNPResult()
 
         # estimatedPose is of non-intrinsic type PnpResult
-        ret.estimatedPose = PnpResult.photonStruct.unpack(packet)
+        ret.estimatedPose = targeting.PnpResult.photonStruct.unpack(packet)
 
         # fiducialIDsUsed is an intrinsic VLA!
         ret.fiducialIDsUsed = packet.decodeListShimmed(packet.decode16)
@@ -72,4 +63,4 @@ class MultiTargetPNPResultSerde:
 
 
 # Hack ourselves into the base class
-MultiTargetPNPResult.photonStruct = MultiTargetPNPResultSerde()
+targeting.MultiTargetPNPResult.photonStruct = MultiTargetPNPResultSerde()
