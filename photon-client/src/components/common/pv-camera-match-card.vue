@@ -50,13 +50,13 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
         </tr>
         <tr>
           <td>Type:</td>
-          <td v-if="saved.type === 'PVUsbCameraInfo'" class="mb-3">USB Camera</td>
-          <td v-else-if="saved.type === 'PVCSICameraInfo'" class="mb-3">CSI Camera</td>
-          <td v-else-if="saved.type === 'PVFileCameraInfo'" class="mb-3">File Camera</td>
+          <td v-if="saved.type === 'PVCameraInfo.PVUsbCameraInfo'" class="mb-3">USB Camera</td>
+          <td v-else-if="saved.type === 'PVCameraInfo.PVCSICameraInfo'" class="mb-3">CSI Camera</td>
+          <td v-else-if="saved.type === 'PVCameraInfo.PVFileCameraInfo'" class="mb-3">File Camera</td>
           <td v-else>Unidentified Camera Type</td>
-          <td v-if="current.type === 'PVUsbCameraInfo'" class="mb-3">USB Camera</td>
-          <td v-else-if="current.type === 'PVCSICameraInfo'" class="mb-3">CSI Camera</td>
-          <td v-else-if="current.type === 'PVFileCameraInfo'" class="mb-3">File Camera</td>
+          <td v-if="current.type === 'PVCameraInfo.PVUsbCameraInfo'" class="mb-3">USB Camera</td>
+          <td v-else-if="current.type === 'PVCameraInfo.PVCSICameraInfo'" class="mb-3">CSI Camera</td>
+          <td v-else-if="current.type === 'PVCameraInfo.PVFileCameraInfo'" class="mb-3">File Camera</td>
           <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr
