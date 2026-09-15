@@ -56,7 +56,7 @@ public class NTDriverStation {
     NtControlWord lastControlWord = new NtControlWord();
 
     public NTDriverStation(NetworkTableInstance inst) {
-        NetworkTable fmsTable = inst.getTable("FMSInfo");
+        NetworkTable fmsTable = inst.getTable("DriverStation");
         this.ntControlWord = fmsTable.getIntegerTopic("FMSControlData").subscribe(0);
         this.eventName = fmsTable.getStringTopic("EventName").subscribe("");
         this.matchType = fmsTable.getIntegerTopic("MatchType").subscribe(0);

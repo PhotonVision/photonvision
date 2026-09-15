@@ -48,7 +48,7 @@ class SimCameraProperties:
         self, width: int, height: int, fovDiag: Rotation2d
     ) -> None:
         if fovDiag.degrees() < 1.0 or fovDiag.degrees() > 179.0:
-            fovDiag = Rotation2d.fromDegrees(max(min(fovDiag.degrees(), 179.0), 1.0))
+            fovDiag = Rotation2d.from_degrees(max(min(fovDiag.degrees(), 179.0), 1.0))
             logger.error("Requested invalid FOV! Clamping between (1, 179) degrees...")
 
         resDiag = math.sqrt(width * width + height * height)
@@ -125,7 +125,7 @@ class SimCameraProperties:
         self.viewplanes = []
 
         for i in p:
-            self.viewplanes.append(np.array([i.X(), i.Y(), i.Z()]))
+            self.viewplanes.append(np.array([i.x, i.y, i.z]))
 
     def setCalibError(self, newAvgErrorPx: float, newErrorStdDevPx: float):
         self.avgErrorPx = newAvgErrorPx
@@ -320,11 +320,11 @@ class SimCameraProperties:
         relB = camRt.applyTranslation(b)
 
         # check if both ends are behind camera
-        if relA.X() <= 0.0 and relB.X() <= 0.0:
+        if relA.x <= 0.0 and relB.x <= 0.0:
             return (None, None)
 
-        av = np.array([relA.X(), relA.Y(), relA.Z()])
-        bv = np.array([relB.X(), relB.Y(), relB.Z()])
+        av = np.array([relA.x, relA.y, relA.z])
+        bv = np.array([relB.x, relB.y, relB.z])
         abv = bv - av
 
         aVisible = True

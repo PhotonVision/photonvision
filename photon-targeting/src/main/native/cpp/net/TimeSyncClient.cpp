@@ -32,7 +32,7 @@
 static void ClientLoggerFunc(unsigned int level, const char* file,
                              unsigned int line, const char* msg) {
   if (level == 20) {
-    fmt::print(stderr, "TimeSyncClient: {}\n", msg);
+    wpi::util::print(stderr, "TimeSyncClient: {}\n", msg);
     return;
   }
 
@@ -46,8 +46,8 @@ static void ClientLoggerFunc(unsigned int level, const char* file,
   } else {
     return;
   }
-  fmt::print(stderr, "TimeSyncClient: {}: {} ({}:{})\n", levelmsg, msg, file,
-             line);
+  wpi::util::print(stderr, "TimeSyncClient: {}: {} ({}:{})\n", levelmsg, msg,
+                   file, line);
 }
 
 void wpi::tsp::TimeSyncClient::UpdateStatistics(uint64_t pong_local_time,
