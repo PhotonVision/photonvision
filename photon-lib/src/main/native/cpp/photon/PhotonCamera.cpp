@@ -34,7 +34,6 @@
 #include <opencv2/core/utility.hpp>
 #include <wpi/hal/UsageReporting.hpp>
 #include <wpi/system/Errors.hpp>
-#include <wpi/system/RobotController.hpp>
 #include <wpi/system/Timer.hpp>
 #include <wpi/system/WPILibVersion.hpp>
 #include <wpi/util/json.hpp>
@@ -147,9 +146,6 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   // Prints warning if not connected
   VerifyVersion();
 
-  // Fill the packet with latest data and populate result.
-  wpi::units::microsecond_t now =
-      wpi::units::microsecond_t(wpi::RobotController::GetMonotonicTime());
   const auto value = rawBytesEntry.Get();
   if (!value.size()) return PhotonPipelineResult{};
 
@@ -159,8 +155,6 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   PhotonPipelineResult result = packet.Unpack<PhotonPipelineResult>();
 
   CheckTimeSyncOrWarn(result);
-
-  result.SetReceiveTimestamp(now);
 
   return result;
 }
@@ -192,11 +186,6 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
     auto result = packet.Unpack<PhotonPipelineResult>();
 
     CheckTimeSyncOrWarn(result);
-
-    // TODO: NT4 timestamps are still not to be trusted. But it's the best we
-    // can do until we can make time sync more reliable.
-    result.SetReceiveTimestamp(wpi::units::microsecond_t(value.time) -
-                               result.GetLatency());
 
     ret.push_back(result);
   }

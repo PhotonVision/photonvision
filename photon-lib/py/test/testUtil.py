@@ -15,17 +15,13 @@ class PipelineTimestamps:
         *,
         captureTimestampMicros: int,
         pipelineLatencyMicros=2_000,
-        receiveLatencyMicros=1_000,
     ):
         if captureTimestampMicros < 0:
             raise InvalidTestDataException("captureTimestampMicros cannot be negative")
         if pipelineLatencyMicros <= 0:
             raise InvalidTestDataException("pipelineLatencyMicros must be positive")
-        if receiveLatencyMicros < 0:
-            raise InvalidTestDataException("receiveLatencyMicros cannot be negative")
         self._captureTimestampMicros = captureTimestampMicros
         self._pipelineLatencyMicros = pipelineLatencyMicros
-        self._receiveLatencyMicros = receiveLatencyMicros
         self._sequenceID = 0
 
     @property
@@ -53,9 +49,6 @@ class PipelineTimestamps:
 
     def publishTimestampMicros(self) -> int:
         return self._captureTimestampMicros + self.pipelineLatencyMicros
-
-    def receiveTimestampMicros(self) -> int:
-        return self.publishTimestampMicros() + self._receiveLatencyMicros
 
     def toPhotonPipelineMetadata(self) -> PhotonPipelineMetadata:
         return PhotonPipelineMetadata(
