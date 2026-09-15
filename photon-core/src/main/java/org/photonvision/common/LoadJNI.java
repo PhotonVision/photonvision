@@ -29,7 +29,8 @@ public class LoadJNI {
         RUBIK_DETECTOR("tflite_jni"),
         RKNN_DETECTOR("rga", "rknnrt", "rknn_jni"),
         MRCAL("mrcal_jni"),
-        LIBCAMERA("photonlibcamera");
+        LIBCAMERA("photonlibcamera"),
+        VKAPRILTAG_DETECTOR("vkapriltag_jni");
 
         public final String[] libraries;
 

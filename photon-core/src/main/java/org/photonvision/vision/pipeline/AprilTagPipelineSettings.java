@@ -17,21 +17,14 @@
 
 package org.photonvision.vision.pipeline;
 
-import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
-public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
-    public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
+public class AprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
     public int decimate = 1;
     public double blur = 0;
     public int threads = 4; // Multiple threads seems to be better performance on most platforms
     public boolean debug = false;
     public boolean refineEdges = true;
-    public int numIterations = 40;
-    public int hammingDist = 0;
-    public int decisionMargin = 35;
-    public boolean doMultiTarget = false;
-    public boolean doSingleTargetAlways = false;
 
     // 3d settings
 
@@ -48,7 +41,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((tagFamily == null) ? 0 : tagFamily.hashCode());
         result = prime * result + decimate;
         long temp;
         temp = Double.doubleToLongBits(blur);
@@ -56,11 +48,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + threads;
         result = prime * result + (debug ? 1231 : 1237);
         result = prime * result + (refineEdges ? 1231 : 1237);
-        result = prime * result + numIterations;
-        result = prime * result + hammingDist;
-        result = prime * result + decisionMargin;
-        result = prime * result + (doMultiTarget ? 1231 : 1237);
-        result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
         return result;
     }
 
@@ -70,17 +57,11 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (!super.equals(obj)) return false;
         if (getClass() != obj.getClass()) return false;
         AprilTagPipelineSettings other = (AprilTagPipelineSettings) obj;
-        if (tagFamily != other.tagFamily) return false;
         if (decimate != other.decimate) return false;
         if (Double.doubleToLongBits(blur) != Double.doubleToLongBits(other.blur)) return false;
         if (threads != other.threads) return false;
         if (debug != other.debug) return false;
         if (refineEdges != other.refineEdges) return false;
-        if (numIterations != other.numIterations) return false;
-        if (hammingDist != other.hammingDist) return false;
-        if (decisionMargin != other.decisionMargin) return false;
-        if (doMultiTarget != other.doMultiTarget) return false;
-        if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
         return true;
     }
 }

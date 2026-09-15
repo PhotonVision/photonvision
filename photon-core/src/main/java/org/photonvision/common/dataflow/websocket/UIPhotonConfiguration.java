@@ -29,6 +29,7 @@ import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
+import org.photonvision.vision.apriltag.VkAprilTagAvailability;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
 
@@ -69,7 +70,9 @@ public class UIPhotonConfiguration {
                                 Platform.getPlatformName(),
                                 Platform.getNativePlatform(),
                                 NetworkTablesManager.getInstance().conflictingHostname,
-                                NetworkTablesManager.getInstance().conflictingCameras),
+                                NetworkTablesManager.getInstance().conflictingCameras,
+                                VkAprilTagAvailability.getDevices().stream().map(UIVulkanDeviceInfo::from).toList(),
+                                VkAprilTagAvailability.getUnavailableReason()),
                         c.getApriltagFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)

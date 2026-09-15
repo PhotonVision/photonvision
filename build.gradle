@@ -21,6 +21,27 @@ allprojects {
         mavenLocal()
         maven { url = "https://maven.photonvision.org/releases" }
         maven { url = "https://maven.photonvision.org/snapshots" }
+        // vkapriltag_jni isn't a maven.photonvision.org project - it has no
+        // Maven repo at all, only GitHub Release assets (see its own
+        // build-and-release.yml). An anonymous ivy patternLayout repo
+        // resolves those release assets directly with no POM/ivy.xml
+        // needed (metadataSources { artifact() }), matching the two
+        // filename shapes that workflow actually produces:
+        // vkapriltag_jni-jni-<version>-<classifier>.jar and
+        // vkapriltag_jni-java-<version>.jar. Scoped via content{} so it's
+        // only ever consulted for these two modules, not every
+        // org.photonvision dependency.
+        ivy {
+            url = "https://github.com/yojobama/vkapriltag-jni/releases/download"
+            patternLayout {
+                artifact("[revision]/[module]-[revision](-[classifier])(.[ext])")
+            }
+            metadataSources { artifact() }
+            content {
+                includeModule("org.photonvision", "vkapriltag_jni-jni")
+                includeModule("org.photonvision", "vkapriltag_jni-java")
+            }
+        }
     }
     wpilibRepositories.use2027Repos()
     wpilibRepositories.addAllReleaseRepositories(it)
@@ -45,6 +66,12 @@ ext {
     tfliteVersion = "v2027.0.2-alpha-1"
     wpilibYear = "2027_alpha5"
     mrcalVersion = "dev-v2027.0.2-10-gba8e332";
+    // See photon-core/build.gradle's dependency block and the ivy repo
+    // above: resolved from vkapriltag-jni's GitHub Release assets, not
+    // maven.photonvision.org (it doesn't publish one - see its own repo).
+    // Matches vkapriltag-jni's own tag, which follows the same
+    // vYYYY.MAJOR.MINOR[-alpha-N] convention as libcameraDriverVersion.
+    vkAprilTagVersion = "v2027.0.0-alpha-2";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")

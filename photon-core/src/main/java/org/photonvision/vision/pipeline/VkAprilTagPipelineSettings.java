@@ -1,0 +1,114 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package org.photonvision.vision.pipeline;
+
+import org.photonvision.vision.target.TargetModel;
+
+/**
+ * BETA. Settings for the Vulkan-accelerated (vkapriltag) AprilTag detector.
+ *
+ * <p>Deliberately does NOT have a {@code blur} field, unlike {@link AprilTagPipelineSettings}:
+ * vkapriltag has no pre-blur stage. Unlike blur, both {@link #decimation} and {@link #refineEdges}
+ * ARE present: decimation has been a configurable {@code DetectorConfig} field since vkapriltag
+ * v1.3.0 (rather than a fixed 2x hardcoded into {@code GpuDetector}), and RefineEdges (upstream
+ * apriltag.c's gradient-based edge refinement, run via TagDecoder) has been available since v1.4.0
+ * - see vkapriltag's TagDecoder.h.
+ */
+public class VkAprilTagPipelineSettings extends AprilTagPipelineSettingsBase {
+    /**
+     * -1 selects vkapriltag's own scored auto-select (discrete &gt; integrated &gt; virtual &gt; CPU,
+     * the last of which is never actually chosen - see VkAprilTagAvailability). Otherwise an index
+     * from {@code VkAprilTagAvailability.getDevices()}.
+     */
+    public int vulkanDeviceIndex = -1;
+
+    /**
+     * Degree of parallelism for the CPU tail (per-blob quad fitting). 0 selects {@code
+     * std::thread::hardware_concurrency()}.
+     */
+    public int cpuThreads = 0;
+
+    /**
+     * Integer downsampling factor applied by the Vulkan detector before thresholding/labelling. 1
+     * disables decimation (full resolution), 2 is this pipeline's original fixed behavior (kept as
+     * the default so existing saved pipelines behave identically after upgrading past vkapriltag
+     * v1.3.0), 4 halves resolution again, etc. Must evenly divide the current camera mode's width and
+     * height, or the pipeline falls back to CPU (see {@code VkAprilTagDetectionPipe}).
+     */
+    public int decimation = 2;
+
+    /**
+     * Enables upstream apriltag.c's gradient-based edge refinement (vkapriltag v1.4.0+, run via
+     * TagDecoder immediately before quad decode). Off by default - both to preserve existing saved
+     * pipelines' behavior across the upgrade past v1.4.0, and because it was measured to add real
+     * per-quad CPU cost for a substantial corner-accuracy gain (vkapriltag's own validation: corner
+     * RMS mean 0.840px -&gt; 0.024px with it enabled) - a tradeoff left to the user, not a default.
+     */
+    public boolean refineEdges = false;
+
+    /** Which implementation runs single-tag pose estimation for this pipeline. */
+    public enum PoseEstimatorBackend {
+        CPU,
+        VULKAN
+    }
+
+    /**
+     * CPU (WPILib's own pose estimator) is the well-tested default. VULKAN uses vkapriltag's native
+     * PoseEstimator instead - measured much faster than unmodified libapriltag per tag, but that
+     * comparison is NOT against WPILib's own estimator (what CPU actually runs), so the real-world
+     * benefit for this pipeline is unverified; compare results carefully before relying on it.
+     * Multi-tag pose estimation (MultiTargetPNPPipe) is unaffected either way - vkapriltag's
+     * PoseEstimator has no multi-tag capability.
+     */
+    public PoseEstimatorBackend poseEstimatorBackend = PoseEstimatorBackend.CPU;
+
+    public VkAprilTagPipelineSettings() {
+        super();
+        pipelineType = PipelineType.AprilTagVulkan;
+        targetModel = TargetModel.kAprilTag6p5in_36h11;
+        cameraExposureRaw = 20;
+        cameraAutoExposure = false;
+        ledMode = false;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + vulkanDeviceIndex;
+        result = prime * result + cpuThreads;
+        result = prime * result + decimation;
+        result = prime * result + (refineEdges ? 1231 : 1237);
+        result = prime * result + poseEstimatorBackend.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        VkAprilTagPipelineSettings other = (VkAprilTagPipelineSettings) obj;
+        if (vulkanDeviceIndex != other.vulkanDeviceIndex) return false;
+        if (cpuThreads != other.cpuThreads) return false;
+        if (decimation != other.decimation) return false;
+        if (refineEdges != other.refineEdges) return false;
+        if (poseEstimatorBackend != other.poseEstimatorBackend) return false;
+        return true;
+    }
+}

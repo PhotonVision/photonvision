@@ -15,6 +15,16 @@ export interface GeneralSettings {
   supportedBackends: string[];
   conflictingHostname: boolean;
   conflictingCameras: string;
+  vulkanDevices: VulkanDeviceInfo[];
+  // Null/undefined when the Vulkan AprilTag detector is usable on this coprocessor.
+  vulkanUnavailableReason?: string;
+}
+
+export interface VulkanDeviceInfo {
+  index: number;
+  name: string;
+  description: string;
+  isCpuDevice: boolean;
 }
 
 export interface ObjectDetectionModelProperties {

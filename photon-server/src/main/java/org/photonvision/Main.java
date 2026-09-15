@@ -44,6 +44,7 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.apriltag.VkAprilTagAvailability;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
@@ -274,6 +275,12 @@ public class Main implements Callable<Integer> {
         if (Platform.isWindows() || Platform.isLinux()) {
             tryLoadJNI(JNITypes.MRCAL);
         }
+
+        // Beta: probe rather than tryLoadJNI, since an absent Vulkan driver (or no
+        // native artifact for this platform at all) is the expected common case,
+        // not a startup failure - VkAprilTagPipeline falls back to the CPU
+        // detector and the UI greys out the option, using getUnavailableReason().
+        VkAprilTagAvailability.probe();
 
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);

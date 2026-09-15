@@ -116,5 +116,9 @@ export enum WebsocketPipelineType {
   ColoredShape = 1,
   AprilTag = 2,
   Aruco = 3,
-  ObjectDetection = 4
+  ObjectDetection = 4,
+  // Must match Java PipelineType.AprilTagVulkan's baseIndex (5) - a different numbering scheme
+  // from PipelineTypes.ts' PipelineType (which mirrors the Java enum's ordinal, 8), for the same
+  // underlying Java type. See PipelineType.java's comment on why it must stay declared last.
+  AprilTagVulkan = 5
 }
