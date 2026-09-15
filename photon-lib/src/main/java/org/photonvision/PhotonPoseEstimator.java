@@ -366,17 +366,15 @@ public class PhotonPoseEstimator {
         if (!shouldEstimate(cameraResult)) {
             return Optional.empty();
         }
+        var headingSampleOpt = headingBuffer.getSample(cameraResult.getTimestampSeconds());
         // Need heading if heading fixed
+        if (!headingFree && headingSampleOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        var headingSample = headingSampleOpt.orElse(Rotation2d.kZero);
         if (!headingFree) {
-            if (headingBuffer.getSample(cameraResult.getTimestampSeconds()).isEmpty()) {
-                return Optional.empty();
-            } else {
-                // If heading fixed, force rotation component
-                seedPose =
-                        new Pose3d(
-                                seedPose.getTranslation(),
-                                new Rotation3d(headingBuffer.getSample(cameraResult.getTimestampSeconds()).get()));
-            }
+            // If heading fixed, force rotation component
+            seedPose = new Pose3d(seedPose.getTranslation(), new Rotation3d(headingSample));
         }
         var pnpResult =
                 VisionEstimation.estimateRobotPoseConstrainedSolvepnp(
@@ -388,7 +386,7 @@ public class PhotonPoseEstimator {
                         fieldTags,
                         tagModel,
                         headingFree,
-                        headingBuffer.getSample(cameraResult.getTimestampSeconds()).get(),
+                        headingSample,
                         headingScaleFactor);
         if (!pnpResult.isPresent()) return Optional.empty();
         var best = Pose3d.kZero.plus(pnpResult.get().best); // field-to-robot
