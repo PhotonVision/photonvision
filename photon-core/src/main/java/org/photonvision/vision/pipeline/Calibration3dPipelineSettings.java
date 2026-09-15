@@ -42,4 +42,15 @@ public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
         this.streamingFrameDivisor = FrameDivisor.HALF;
         this.drawAllSnapshots = true;
     }
+
+    public void importUIData(UICalibrationData data) {
+        this.cameraVideoModeIndex = data.videoModeIndex;
+        this.gridSize = data.squareSizeMeters;
+        this.markerSize = data.markerSizeMeters;
+        this.boardHeight = data.patternHeight;
+        this.boardWidth = data.patternWidth;
+        this.boardType = data.boardType;
+        this.useOldPattern = data.useOldPattern;
+        this.tagFamily = data.tagFamily;
+    }
 }
