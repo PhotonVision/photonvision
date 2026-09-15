@@ -18,31 +18,25 @@
 package org.photonvision.common.configuration;
 
 import io.avaje.json.JsonException;
-import io.avaje.jsonb.JsonType;
 import io.avaje.jsonb.Jsonb;
-import io.avaje.jsonb.Types;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
+import org.photonvision.common.configuration.migrations.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.camera.PVCameraInfo;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.apriltag.AprilTagFields;
-import org.wpilib.vision.camera.UsbCameraInfo;
 
 /**
  * Saves settings in a SQLite database file (called photon.sqlite).
@@ -63,14 +57,22 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
 
-    private static final String dbName = "photon.sqlite";
-    // private final File rootFolder;
+    private static final String dbNameDefault = "photon.sqlite";
+
     private final String dbPath;
     private final String url;
+    private int dbVersion;
+
+    private final List<MigrationStep> migrations =
+            Arrays.asList(
+                    new V1_CreateTables(),
+                    new V2_AddOtherpathsColumn(),
+                    new V3_ConsolidateCameraSettings(),
+                    new V4_CleanUpCameraTable());
 
     private final Object m_mutex = new Object();
 
-    public SqlConfigProvider(Path rootPath) {
+    public SqlConfigProvider(Path rootPath, String dbName) {
         File rootFolder = rootPath.toFile();
         // Make sure root dir exists
         if (!rootFolder.exists()) {
@@ -84,6 +86,10 @@ public class SqlConfigProvider extends ConfigProvider {
         url = "jdbc:sqlite:" + dbPath;
         logger.debug("Using database " + dbPath);
         initDatabase();
+    }
+
+    public SqlConfigProvider(Path rootPath) {
+        this(rootPath, dbNameDefault);
     }
 
     public PhotonConfiguration getConfig() {
@@ -121,10 +127,9 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
-    private int getIntPragma(String pragma) {
+    private static int getIntPragma(Connection conn, String pragma) {
         int retval = 0;
-        try (Connection conn = createConn(true);
-                Statement stmt = conn.createStatement()) {
+        try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("PRAGMA " + pragma + ";");
             retval = rs.getInt(1);
         } catch (SQLException e) {
@@ -133,103 +138,37 @@ public class SqlConfigProvider extends ConfigProvider {
         return retval;
     }
 
-    private int getSchemaVersion() {
-        return getIntPragma("schema_version");
+    public static int getSchemaVersion(Connection conn) {
+        return getIntPragma(conn, "schema_version");
     }
 
-    public int getUserVersion() {
-        return getIntPragma("user_version");
+    public static int getUserVersion(Connection conn) {
+        return getIntPragma(conn, "user_version");
     }
 
-    private void setUserVersion(Connection conn, int value) {
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute("PRAGMA user_version = " + value + ";");
-        } catch (SQLException e) {
-            logger.error("Error setting user_version to ", e);
-        }
+    public int getDbVersion() {
+        return this.dbVersion;
     }
 
-    private void doMigration(int index) throws SQLException {
-        logger.debug("Running migration step " + index);
-        try (Connection conn = createConn();
-                Statement stmt = conn.createStatement()) {
-            for (String sql : DatabaseSchema.migrations[index].split(";")) {
-                stmt.addBatch(sql);
-            }
-            stmt.executeBatch();
-            setUserVersion(conn, index + 1);
-            tryCommit(conn);
-        } catch (SQLException e) {
-            logger.error("Error with migration step " + index, e);
-            throw e;
-        }
+    public int getExpectedVersion() {
+        return migrations.getLast().getVersion();
     }
 
     private void initDatabase() {
-        int userVersion = getUserVersion();
-        int expectedVersion = DatabaseSchema.migrations.length;
-
-        if (userVersion < expectedVersion) {
-            // older database, run migrations
-
-            // first, check to see if this is one of the ones from 2024 beta that need
-            // special handling
-            if (userVersion == 0 && getSchemaVersion() > 0) {
-                String sql =
-                        "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('cameras') WHERE name='otherpaths_json';";
-                try (Connection conn = createConn(true);
-                        Statement stmt = conn.createStatement();
-                        ResultSet rs = stmt.executeQuery(sql); ) {
-                    if (rs.getInt("CNTREC") == 0) {
-                        // need to add otherpaths_json
-                        userVersion = 1;
-                    } else {
-                        // already there, no need to add the column
-                        userVersion = 2;
-                    }
-                    setUserVersion(conn, userVersion);
-                } catch (SQLException e) {
-                    logger.error(
-                            "Could not determine the version of the database. Try deleting "
-                                    + dbName
-                                    + "and restart photonvision.",
-                            e);
-                }
-            }
-
-            logger.debug("Older database version. Migrating ... ");
-            try {
-                for (int index = userVersion; index < expectedVersion; index++) {
-                    doMigration(index);
-                }
-                logger.debug("Database migration complete");
-            } catch (SQLException e) {
-                logger.error("Error with database migration", e);
-            }
-        }
-
-        // Warn if the database still isn't at the correct version
-        userVersion = getUserVersion();
-        if (userVersion > expectedVersion) {
-            // database must be from a newer version, so warn
-            logger.warn(
-                    "This database is from a newer version of PhotonVision. Check that you are running the right version of PhotonVision.");
-        } else if (userVersion < expectedVersion) {
-            // migration didn't work, so warn
-            logger.warn(
-                    "This database migration failed. Expected version: "
-                            + expectedVersion
-                            + ", got version: "
-                            + userVersion);
-        } else {
-            // migration worked
-            logger.info("Using correct database version: " + userVersion);
+        MigrationManager mm = new MigrationManager(migrations);
+        try (var conn = DriverManager.getConnection(url)) {
+            mm.runMigration(conn);
+            this.dbVersion = getUserVersion(conn);
+        } catch (SQLException e) {
+            // Can't connect to the database to run the migration.
+            logger.error("Failed to connect to database at " + url, e);
         }
     }
 
     @Override
     public boolean saveToDisk() {
         logger.debug("Saving to disk");
+        var start_time = System.currentTimeMillis();
         var conn = createConn();
         if (conn == null) return false;
 
@@ -253,7 +192,8 @@ public class SqlConfigProvider extends ConfigProvider {
             }
         }
 
-        logger.info("Settings saved!");
+        var end_time = System.currentTimeMillis();
+        logger.info("Settings saved in " + (end_time - start_time) + " ms!");
         return true;
     }
 
@@ -381,12 +321,8 @@ public class SqlConfigProvider extends ConfigProvider {
             // Replace this camera's row with the new settings
             var sqlString =
                     String.format(
-                            "REPLACE INTO %s (%s, %s, %s, %s) VALUES (?,?,?,?);",
-                            Tables.CAMERAS,
-                            Columns.CAM_UNIQUE_NAME,
-                            Columns.CAM_CONFIG_JSON,
-                            Columns.CAM_DRIVERMODE_JSON,
-                            Columns.CAM_PIPELINE_JSONS);
+                            "REPLACE INTO %s (%s, %s) VALUES (?, ?);",
+                            Tables.CAMERAS, Columns.CAM_UNIQUE_NAME, Columns.CAM_CONFIG_JSON);
 
             for (var c : config.getCameraConfigurations().entrySet()) {
                 PreparedStatement statement = conn.prepareStatement(sqlString);
@@ -394,11 +330,6 @@ public class SqlConfigProvider extends ConfigProvider {
                 var config = c.getValue();
                 statement.setString(1, c.getKey());
                 statement.setString(2, Jsonb.instance().type(CameraConfiguration.class).toJson(config));
-
-                // MIGRATION: 2026
-                // We used to serialize pipelines separately, but don't anymore
-                statement.setString(3, "null");
-                statement.setString(4, "[]");
 
                 statement.executeUpdate();
             }
@@ -585,25 +516,14 @@ public class SqlConfigProvider extends ConfigProvider {
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
 
-        // MIGRATION: 2026
-        // This is designed to always match for efficiency reasons, so that the whole camera config
-        // isn't scanned. The second capture group determines if the camera info is in the old or new
-        // format
-        final var cameraInfoPattern = Pattern.compile("\"(PV[\\w.]*CameraInfo)\"\\s*(:?)");
-
         // Query every single row of the cameras db
         PreparedStatement query = null;
         try {
             query =
                     conn.prepareStatement(
                             String.format(
-                                    "SELECT %s, %s, %s, %s, %s FROM %s",
-                                    Columns.CAM_UNIQUE_NAME,
-                                    Columns.CAM_CONFIG_JSON,
-                                    Columns.CAM_DRIVERMODE_JSON,
-                                    Columns.CAM_OTHERPATHS_JSON,
-                                    Columns.CAM_PIPELINE_JSONS,
-                                    Tables.CAMERAS));
+                                    "SELECT %s, %s FROM %s",
+                                    Columns.CAM_UNIQUE_NAME, Columns.CAM_CONFIG_JSON, Tables.CAMERAS));
 
             var result = query.executeQuery();
 
@@ -611,79 +531,12 @@ public class SqlConfigProvider extends ConfigProvider {
             while (result.next()) {
                 String uniqueName = "";
                 try {
-                    JsonType<List<String>> strListJsonb = Jsonb.instance().type(Types.listOf(String.class));
-
                     uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
 
-                    // A horrifying hack to keep backward compat with otherpaths
-                    // We -really- need to delete this -stupid- otherpaths column. I hate it.
-                    // MIGRATION: 2024
                     var configJson = result.getString(Columns.CAM_CONFIG_JSON);
-
-                    // MIGRATION: 2026
-                    var cameraInfoMatcher = cameraInfoPattern.matcher(configJson);
-                    if (cameraInfoMatcher.find() && cameraInfoMatcher.group(2).equals(":")) {
-                        logger.info("Legacy type-wrapper PVCameraInfo being migrated");
-                        configJson = PVCameraInfo.remapConfigJson(configJson, cameraInfoMatcher.group(1));
-                    }
 
                     CameraConfiguration config =
                             Jsonb.instance().type(CameraConfiguration.class).fromJson(configJson);
-
-                    // MIGRATION: 2024
-                    if (config.matchedCameraInfo == null) {
-                        logger.info("Legacy CameraConfiguration detected - upgrading");
-
-                        // manually create the matchedCameraInfo ourselves. Need to upgrade:
-                        // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
-                        config.matchedCameraInfo =
-                                Jsonb.instance()
-                                        .type(LegacyCameraConfigStruct.class)
-                                        .fromJson(configJson)
-                                        .matchedCameraInfo;
-
-                        // Except that otherPaths used to be its own column. so hack that in here as well
-                        var otherPaths =
-                                Jsonb.instance()
-                                        .type(String[].class)
-                                        .fromJson(result.getString(Columns.CAM_OTHERPATHS_JSON));
-                        if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
-                            usbInfo.otherPaths = otherPaths;
-                        }
-                    }
-
-                    // MIGRATION: 2026
-                    List<String> legacyPipelineSettings =
-                            strListJsonb.fromJson(result.getString(Columns.CAM_PIPELINE_JSONS));
-
-                    for (var pipelineJson : legacyPipelineSettings) {
-                        logger.info("Importing pipeline JSON into camera settings");
-                        if (pipelineJson.startsWith("[")) {
-                            logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
-                            pipelineJson = CVPipelineSettings.remapSettingsJson(pipelineJson);
-                        }
-
-                        try {
-                            config.pipelineSettings.add(
-                                    Jsonb.instance().type(CVPipelineSettings.class).fromJson(pipelineJson));
-                        } catch (IllegalStateException | JsonException e) {
-                            logger.error(
-                                    "Could not deserialize pipeline setting for camera " + config.nickname, e);
-                        }
-                    }
-
-                    // MIGRATION: 2026
-                    if (config.driveModeSettings == null) {
-                        logger.info("Importing driver mode JSON into camera settings");
-                        var driverModeJson = result.getString(Columns.CAM_DRIVERMODE_JSON);
-                        if (driverModeJson.startsWith("[")) {
-                            logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
-                            driverModeJson = CVPipelineSettings.remapSettingsJson(driverModeJson);
-                        }
-
-                        config.driveModeSettings =
-                                Jsonb.instance().type(DriverModePipelineSettings.class).fromJson(driverModeJson);
-                    }
 
                     loadedConfigurations.put(uniqueName, config);
                 } catch (IllegalStateException | JsonException e) {
