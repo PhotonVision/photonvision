@@ -76,25 +76,25 @@ export type ConfigurableNetworkSettings = Omit<
 >;
 
 interface PVCameraInfoBase {
-  type: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+  type: "PVCameraInfo.PVUsbCameraInfo" | "PVCameraInfo.PVCSICameraInfo" | "PVCameraInfo.PVFileCameraInfo";
   path: string;
   name: string;
   uniquePath: string;
 }
 
 export interface PVUsbCameraInfo extends PVCameraInfoBase {
-  type: "PVUsbCameraInfo";
+  type: "PVCameraInfo.PVUsbCameraInfo";
   dev: number;
   otherPaths: string[];
   vendorId: number;
   productId: number;
 }
 export interface PVCSICameraInfo extends PVCameraInfoBase {
-  type: "PVCSICameraInfo";
+  type: "PVCameraInfo.PVCSICameraInfo";
   baseName: string;
 }
 export interface PVFileCameraInfo extends PVCameraInfoBase {
-  type: "PVFileCameraInfo";
+  type: "PVCameraInfo.PVFileCameraInfo";
 }
 
 export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
@@ -422,7 +422,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   minWhiteBalanceTemp: 2000,
   maxWhiteBalanceTemp: 10000,
   matchedCameraInfo: {
-    type: "PVFileCameraInfo",
+    type: "PVCameraInfo.PVFileCameraInfo",
     name: "Foobar",
     path: "/dev/foobar",
     uniquePath: "/dev/foobar2"
