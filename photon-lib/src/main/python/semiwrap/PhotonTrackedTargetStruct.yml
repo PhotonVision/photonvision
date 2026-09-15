@@ -1,0 +1,15 @@
+classes:
+  photon::PhotonTrackedTarget_PhotonStruct:
+    attributes:
+      yaw:
+      pitch:
+      area:
+      skew:
+      fiducialId:
+      objDetectId:
+      objDetectConf:
+      bestCameraToTarget:
+      altCameraToTarget:
+      poseAmbiguity:
+      minAreaRectCorners:
+      detectedCorners:

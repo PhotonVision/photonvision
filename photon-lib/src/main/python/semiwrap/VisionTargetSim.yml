@@ -1,0 +1,18 @@
+classes:
+  photon::VisionTargetSim:
+    methods:
+      VisionTargetSim:
+        overloads:
+          const wpi::math::Pose3d&, const TargetModel&:
+          const wpi::math::Pose3d&, const TargetModel&, int:
+          const wpi::math::Pose3d&, const TargetModel&, int, float:
+      SetPose:
+      SetModel:
+      GetPose:
+      GetModel:
+      GetFiducialId:
+      GetObjDetClassId:
+      GetObjDetConf:
+      GetFieldVertices:
+      operator<:
+      operator==:

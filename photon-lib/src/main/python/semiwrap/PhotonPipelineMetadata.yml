@@ -1,0 +1,7 @@
+classes:
+  photon::PhotonPipelineMetadata:
+    methods:
+      PhotonPipelineMetadata:
+        overloads:
+          Base&&:
+          Args&&...:

@@ -1,0 +1,19 @@
+classes:
+  photon::PhotonPipelineResult:
+    attributes:
+      ntReceiveTimestamp:
+      HAS_WARNED:
+    methods:
+      PhotonPipelineResult:
+        overloads:
+          "":
+          Base&&:
+          Args&&...:
+      GetBestTarget:
+      GetLatency:
+      GetTimestamp:
+      MultiTagResult:
+      SequenceID:
+      SetReceiveTimestamp:
+      HasTargets:
+      GetTargets:

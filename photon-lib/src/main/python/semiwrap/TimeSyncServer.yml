@@ -1,0 +1,6 @@
+classes:
+  wpi::tsp::TimeSyncServer:
+    methods:
+      TimeSyncServer:
+      Start:
+      Stop:

@@ -1,0 +1,9 @@
+functions:
+  do_optimization:
+classes:
+  constrained_solvepnp::CameraCalibration:
+    attributes:
+      fx:
+      fy:
+      cx:
+      cy:

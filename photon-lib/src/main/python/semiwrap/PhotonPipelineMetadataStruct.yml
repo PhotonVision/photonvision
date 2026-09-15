@@ -1,0 +1,7 @@
+classes:
+  photon::PhotonPipelineMetadata_PhotonStruct:
+    attributes:
+      sequenceID:
+      captureTimestampMicros:
+      publishTimestampMicros:
+      timeSinceLastPong:

@@ -1,0 +1,8 @@
+classes:
+  photon::PnpResult_PhotonStruct:
+    attributes:
+      best:
+      alt:
+      bestReprojErr:
+      altReprojErr:
+      ambiguity:

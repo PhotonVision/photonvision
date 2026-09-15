@@ -1,0 +1,92 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["semiwrap", "hatch-meson", "hatchling"]
+
+[project]
+name = "photonlibpy"
+description = "PhotonVision library for python using semiwrap"
+version = "0.0.dev1"
+
+[tool.hatch.build.hooks.semiwrap]
+[tool.hatch.build.hooks.meson]
+
+[tool.semiwrap]
+update_init = ["photonlibpy", "photonlibpy.targeting"]
+
+[tool.semiwrap.extension_modules."photonlibpy.targeting._targeting"]
+name = "photonlibpy.targeting"
+wraps = ["photontargeting-native"]
+
+[tool.semiwrap.extension_modules."photonlibpy.targeting._targeting".headers]
+#.
+"geometry3d.pb" = "geometry3d.pb.h"
+
+# net
+TimeSyncClient = "net/TimeSyncClient.h"
+TimeSyncServer = "net/TimeSyncServer.h"
+TimeSyncStructs = "net/TimeSyncStructs.h"
+
+# photon/constrained_solvepnp/wrap
+casadi_wrapper = "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
+
+# photon/dataflow/structures
+Packet = "photon/dataflow/structures/Packet.h"
+
+# photon/estimation
+CameraTargetRelation = "photon/estimation/CameraTargetRelation.h"
+OpenCVHelp = "photon/estimation/OpenCVHelp.h"
+RotTrlTransform3d = "photon/estimation/RotTrlTransform3d.h"
+TargetModel = "photon/estimation/TargetModel.h"
+VisionEstimation = "photon/estimation/VisionEstimation.h"
+
+# photon/networktables
+NTTopicSet = "photon/networktables/NTTopicSet.h"
+
+# photon/serde
+MultiTargetPNPResultSerde = "photon/serde/MultiTargetPNPResultSerde.h"
+PhotonPipelineMetadataSerde = "photon/serde/PhotonPipelineMetadataSerde.h"
+PhotonPipelineResultSerde = "photon/serde/PhotonPipelineResultSerde.h"
+PhotonTrackedTargetSerde = "photon/serde/PhotonTrackedTargetSerde.h"
+PnpResultSerde = "photon/serde/PnpResultSerde.h"
+TargetCornerSerde = "photon/serde/TargetCornerSerde.h"
+
+# photon/struct
+MultiTargetPNPResultStruct = "photon/struct/MultiTargetPNPResultStruct.h"
+PhotonPipelineMetadataStruct = "photon/struct/PhotonPipelineMetadataStruct.h"
+PhotonPipelineResultStruct = "photon/struct/PhotonPipelineResultStruct.h"
+PhotonTrackedTargetStruct = "photon/struct/PhotonTrackedTargetStruct.h"
+PnpResultStruct = "photon/struct/PnpResultStruct.h"
+TargetCornerStruct = "photon/struct/TargetCornerStruct.h"
+
+# photon/targeting
+MultiTargetPNPResult = "photon/targeting/MultiTargetPNPResult.h"
+PhotonPipelineMetadata = "photon/targeting/PhotonPipelineMetadata.h"
+PhotonPipelineResult = "photon/targeting/PhotonPipelineResult.h"
+PhotonTrackedTarget = "photon/targeting/PhotonTrackedTarget.h"
+PnpResult = "photon/targeting/PnpResult.h"
+TargetCorner = "photon/targeting/TargetCorner.h"
+
+[tool.semiwrap.extension_modules."photonlibpy._photonlibpy"]
+name = "photonlibpy"
+wraps = ["photonlib-native"]
+
+# semiwrap will parse any header files mentioned here and autogenerate pybind11
+# wrappers around the contents of the header
+# - You can use `python -m semiwrap scan-headers` to autogenerate a list of
+#   headers that are available to be wrapped, and paste the list here
+[tool.semiwrap.extension_modules."photonlibpy._photonlibpy".headers]
+# .
+PhotonVersion = "PhotonVersion.h"
+
+# photon
+PhotonCamera = "photon/PhotonCamera.h"
+PhotonPoseEstimator = "photon/PhotonPoseEstimator.h"
+PhotonTargetSortMode = "photon/PhotonTargetSortMode.h"
+PhotonUtils = "photon/PhotonUtils.h"
+
+# photon/simulation
+PhotonCameraSim = "photon/simulation/PhotonCameraSim.h"
+SimCameraProperties = "photon/simulation/SimCameraProperties.h"
+VideoSimUtil = "photon/simulation/VideoSimUtil.h"
+VisionSystemSim = "photon/simulation/VisionSystemSim.h"
+VisionTargetSim = "photon/simulation/VisionTargetSim.h"
