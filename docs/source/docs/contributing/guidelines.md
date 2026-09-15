@@ -47,6 +47,8 @@ Finally, be sure to embody the ethos of Gracious Professionalism in all your act
 
 Coding assistants driven by Large Language Models ("AI") are extremely powerful tools, and have been used on more than one occasion to accelerate development.
 
+Any and all prose should be human written, with no generative AI usage. This includes issues and PR descriptions on GitHub, the intent is that any communication that is read by a human should be written by a human. An exception will be made for translation where no semantic changes are made. Authors who submit AI-generated writing will be asked to rewrite, repeated violations will result in an auto-close.
+
 PhotonVision still maintains a fundamental philosophy that the human submitting the pull request is responsible for the code and its behavior, regardless of the tools used to create it. Regardless of how the code was created, we expect the human submitter to author the pull request description using the provided template and to disclose AI tool use in the description.
 
 These tools can also generate a large volume of code changes, very rapidly. The above guidelines on PR quality still apply - large, undirected, or overly-scoped PR's are likely to be ignored, regardless of tooling used to generate them.
