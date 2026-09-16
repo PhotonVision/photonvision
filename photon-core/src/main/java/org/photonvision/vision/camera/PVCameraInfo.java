@@ -31,6 +31,7 @@ import org.wpilib.vision.camera.UsbCameraInfo;
 @Json.SubType(type = PVCameraInfo.PVUsbCameraInfo.class)
 @Json.SubType(type = PVCameraInfo.PVCSICameraInfo.class)
 @Json.SubType(type = PVCameraInfo.PVFileCameraInfo.class)
+@Json.SubType(type = PVCameraInfo.PVDuplicateCameraInfo.class)
 public sealed interface PVCameraInfo {
     /**
      * @return The path of the camera.
@@ -272,6 +273,66 @@ public sealed interface PVCameraInfo {
         @Override
         public String toString() {
             return "PVFileCameraInfo[type=" + type() + ", filename=" + name + ", path='" + path + "']";
+        }
+    }
+
+    public static final class PVDuplicateCameraInfo implements PVCameraInfo {
+        public final String sourceUniqueName;
+        public final String name;
+
+        public PVDuplicateCameraInfo(String sourceUniqueName, String name) {
+            this.sourceUniqueName = sourceUniqueName;
+            this.name = name;
+        }
+
+        @Override
+        public String path() {
+            return "duplicate://" + sourceUniqueName;
+        }
+
+        @Override
+        public String name() {
+            return name.replaceAll("[^\\x00-\\x7F]", "");
+        }
+
+        @Override
+        public String uniquePath() {
+            return "duplicate://" + sourceUniqueName;
+        }
+
+        @Override
+        public String[] otherPaths() {
+            return new String[0];
+        }
+
+        @Override
+        public CameraType type() {
+            return CameraType.DuplicateCamera;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (!(obj instanceof PVDuplicateCameraInfo info)) return false;
+
+            return sourceUniqueName.equals(info.sourceUniqueName) && name.equals(info.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(sourceUniqueName, name);
+        }
+
+        @Override
+        public String toString() {
+            return "PVDuplicateCameraInfo[type="
+                    + type()
+                    + ", name='"
+                    + name
+                    + "', sourceUniqueName='"
+                    + sourceUniqueName
+                    + "']";
         }
     }
 
