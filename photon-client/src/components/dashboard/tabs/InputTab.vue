@@ -10,6 +10,7 @@ import { FrameEdgeCropBound, type ConfigurablePipelineSettings } from "@/types/P
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";
+import { PVUsbCamera } from "@/types/SettingTypes";
 import { useDisplay } from "vuetify";
 
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
@@ -306,7 +307,7 @@ const interactiveCols = computed(() =>
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.blockForFrames"
       :disabled="
-        useCameraSettingsStore().currentCameraSettings.matchedCameraInfo.type !== 'PVCameraInfo.PVUsbCameraInfo'
+        useCameraSettingsStore().currentCameraSettings.matchedCameraInfo.type !== PVUsbCamera
       "
       label="Low Latency Mode"
       :switch-cols="interactiveCols"
