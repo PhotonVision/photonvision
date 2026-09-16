@@ -21,19 +21,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: 3.14
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Build wheel
         working-directory: ./photon-lib/py
-        run: python setup.py sdist bdist_wheel
+        run: uv build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
@@ -56,10 +49,11 @@ jobs:
         with:
           python-version: 3.14
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest mypy
+        run: uv pip install --system pytest mypy
 
       - name: Download artifacts
         uses: actions/download-artifact@v8
@@ -69,7 +63,7 @@ jobs:
 
       - name: Install package
         shell: bash
-        run: pip install --no-cache-dir dist/*.whl
+        run: uv pip install --system --no-cache dist/*.whl
 
       - name: Run Unit Tests
         shell: bash
@@ -77,6 +71,57 @@ jobs:
 
       - name: Run mypy type checking
         run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
+
+  test-photonserde-py:
+    needs: build-py
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.14
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system pytest mypy
+          uv pip install --system -r photon-serde-tests/requirements.txt
+
+      - name: Generate Python Serde Tests
+        working-directory: photon-serde
+        run: |
+          uv pip install --system -r requirements.txt
+          python generate_messages.py --tests
+
+      - name: Upload Python Serde Tests
+        uses: actions/upload-artifact@v7
+        with:
+          name: photon-serde-tests-py
+          path: photon-serde-tests/py/
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: ./photon-lib/py/dist/
+
+      - name: Install PhotonLibPy package
+        working-directory: ./photon-lib/py
+        shell: bash
+        run: |
+            uv pip install --system --no-cache dist/*.whl
+
+      - name: Run PhotonSerde tests
+        shell: bash
+        run: python -m pytest --import-mode=importlib photon-serde-tests/py/AutoSerdeTest.py
 
   build-python-examples:
     needs: build-py
@@ -97,10 +142,11 @@ jobs:
         with:
           python-version: 3.14
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install mypy
+        run: uv pip install --system mypy
 
       - name: Download artifacts
         uses: actions/download-artifact@v8
@@ -112,7 +158,7 @@ jobs:
         working-directory: ./photon-lib/py
         shell: bash
         run: |
-            pip install --no-cache-dir dist/*.whl
+            uv pip install --system --no-cache dist/*.whl
 
       - name: Build Python examples
         working-directory: photonlib-python-examples

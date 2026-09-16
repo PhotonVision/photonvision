@@ -27,13 +27,10 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
 
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
 
-if TYPE_CHECKING:
-    from ..targeting import PnpResult  # noqa
 
 
 class PnpResultSerde:
@@ -42,11 +39,13 @@ class PnpResultSerde:
     MESSAGE_FORMAT = "Transform3d best;Transform3d alt;float64 bestReprojErr;float64 altReprojErr;float64 ambiguity;"
 
     @staticmethod
-    def pack(value: "PnpResult") -> "Packet":
+    def pack(value: "targeting.PnpResult") -> "Packet":
         ret = Packet()
 
+        # best is of shimmed type Transform3d
         ret.encodeTransform(value.best)
 
+        # alt is of shimmed type Transform3d
         ret.encodeTransform(value.alt)
 
         # bestReprojErr is of intrinsic type float64
@@ -60,8 +59,8 @@ class PnpResultSerde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "PnpResult":
-        ret = PnpResult()
+    def unpack(packet: "Packet") -> "targeting.PnpResult":
+        ret = targeting.PnpResult()
 
         ret.best = packet.decodeTransform()
 
@@ -80,4 +79,4 @@ class PnpResultSerde:
 
 
 # Hack ourselves into the base class
-PnpResult.photonStruct = PnpResultSerde()
+targeting.PnpResult.photonStruct = PnpResultSerde()

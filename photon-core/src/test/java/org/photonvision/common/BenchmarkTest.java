@@ -28,6 +28,7 @@ import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.NumberListUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
@@ -41,6 +42,7 @@ public class BenchmarkTest {
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
+        CVMat.enablePrint(false);
     }
 
     @Test
@@ -55,12 +57,12 @@ public class BenchmarkTest {
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
 
-        var frameProvider =
+        try (var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in, false),
-                        TestUtils.WPI2019Image.FOV);
-
-        benchmarkPipeline(frameProvider, pipeline, 5);
+                        TestUtils.WPI2019Image.FOV)) {
+            benchmarkPipeline(frameProvider, pipeline, 5);
+        }
     }
 
     @Test
@@ -72,12 +74,12 @@ public class BenchmarkTest {
         pipeline.getSettings().hsvValue.set(200, 255);
         pipeline.getSettings().outputShouldDraw = true;
 
-        var frameProvider =
+        try (var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center, false),
-                        TestUtils.WPI2020Image.FOV);
-
-        benchmarkPipeline(frameProvider, pipeline, 5);
+                        TestUtils.WPI2020Image.FOV)) {
+            benchmarkPipeline(frameProvider, pipeline, 5);
+        }
     }
 
     @Test
@@ -89,12 +91,12 @@ public class BenchmarkTest {
         pipeline.getSettings().hsvValue.set(200, 255);
         pipeline.getSettings().outputShouldDraw = true;
 
-        var frameProvider =
+        try (var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p, false),
-                        TestUtils.WPI2020Image.FOV);
-
-        benchmarkPipeline(frameProvider, pipeline, 5);
+                        TestUtils.WPI2020Image.FOV)) {
+            benchmarkPipeline(frameProvider, pipeline, 5);
+        }
     }
 
     @Test
@@ -109,27 +111,29 @@ public class BenchmarkTest {
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
 
-        var frameProvider =
+        try (var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-
-        benchmarkPipeline(frameProvider, pipeline, 5);
+                        TestUtils.WPI2019Image.FOV)) {
+            benchmarkPipeline(frameProvider, pipeline, 5);
+        }
     }
 
-    private static <P extends CVPipeline> void benchmarkPipeline(
+    static <P extends CVPipeline<?, ?>> void benchmarkPipeline(
             FrameProvider frameProvider, P pipeline, int secondsToRun) {
-        CVMat.enablePrint(false);
         // warmup for 5 loops.
         System.out.println("Warming up for 5 loops...");
         for (int i = 0; i < 5; i++) {
-            pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+            pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera).release();
         }
 
         final List<Double> processingTimes = new ArrayList<>();
         final List<Double> latencyTimes = new ArrayList<>();
 
-        var frameProps = frameProvider.get().frameStaticProperties;
+        FrameStaticProperties frameProps;
+        try (var frame = frameProvider.get()) {
+            frameProps = frame.frameStaticProperties;
+        }
 
         // begin benchmark
         System.out.println(

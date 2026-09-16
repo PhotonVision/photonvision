@@ -29,6 +29,7 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation3d;
 
 public class AprilTagTest {
@@ -40,50 +41,56 @@ public class AprilTagTest {
 
     @Test
     public void testApriltagFacingCamera() {
-        var pipeline = new AprilTagPipeline();
+        Transform3d pose;
+        try (var pipeline = new AprilTagPipeline()) {
+            pipeline.getSettings().inputShouldShow = true;
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+            pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+            pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
 
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.get2020LifeCamCoeffs(false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.get2020LifeCamCoeffs(false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult pipelineResult =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    TestUtils.printTestResultsWithLocation(pipelineResult);
 
-        CVPipelineResult pipelineResult;
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResultsWithLocation(pipelineResult);
+                    // Draw on input
+                    var outputPipe = new OutputStreamPipeline();
+                    var ret =
+                            outputPipe.process(
+                                    pipelineResult.inputAndOutputFrame,
+                                    pipeline.getSettings(),
+                                    pipelineResult.targets);
 
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        var ret =
-                outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                    TestUtils.showImage(
+                            ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-        TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+                    // these numbers are not *accurate*, but they are known and expected
+                    var target = pipelineResult.targets.get(0);
 
-        // these numbers are not *accurate*, but they are known and expected
-        var target = pipelineResult.targets.get(0);
+                    // Test corner order
+                    var corners = target.getTargetCorners();
+                    assertEquals(260, corners.get(0).x, 10);
+                    assertEquals(245, corners.get(0).y, 10);
+                    assertEquals(315, corners.get(1).x, 10);
+                    assertEquals(245, corners.get(1).y, 10);
+                    assertEquals(315, corners.get(2).x, 10);
+                    assertEquals(190, corners.get(2).y, 10);
+                    assertEquals(260, corners.get(3).x, 10);
+                    assertEquals(190, corners.get(3).y, 10);
 
-        // Test corner order
-        var corners = target.getTargetCorners();
-        assertEquals(260, corners.get(0).x, 10);
-        assertEquals(245, corners.get(0).y, 10);
-        assertEquals(315, corners.get(1).x, 10);
-        assertEquals(245, corners.get(1).y, 10);
-        assertEquals(315, corners.get(2).x, 10);
-        assertEquals(190, corners.get(2).y, 10);
-        assertEquals(260, corners.get(3).x, 10);
-        assertEquals(190, corners.get(3).y, 10);
-
-        var pose = target.getBestCameraToTarget3d();
+                    pose = target.getBestCameraToTarget3d();
+                }
+            }
+        }
         // Test pose estimate translation
         assertEquals(2, pose.getTranslation().getX(), 0.2);
         assertEquals(0.1, pose.getTranslation().getY(), 0.2);
@@ -103,65 +110,73 @@ public class AprilTagTest {
 
     @Test
     public void testApriltagDistorted() {
-        var pipeline = new AprilTagPipeline();
+        try (var pipeline = new AprilTagPipeline()) {
+            pipeline.getSettings().inputShouldShow = true;
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+            pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
 
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+                try (CVPipelineResult pipelineResult =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    TestUtils.printTestResultsWithLocation(pipelineResult);
 
-        CVPipelineResult pipelineResult;
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResultsWithLocation(pipelineResult);
+                    // Draw on input
+                    var outputPipe = new OutputStreamPipeline();
+                    var ret =
+                            outputPipe.process(
+                                    pipelineResult.inputAndOutputFrame,
+                                    pipeline.getSettings(),
+                                    pipelineResult.targets);
 
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        var ret =
-                outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                    TestUtils.showImage(
+                            ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-        TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
-
-        // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        assertEquals(4.14, pose.getTranslation().getX(), 0.2);
-        assertEquals(2, pose.getTranslation().getY(), 0.2);
-        assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+                    // these numbers are not *accurate*, but they are known and expected
+                    var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+                    assertEquals(4.14, pose.getTranslation().getX(), 0.2);
+                    assertEquals(2, pose.getTranslation().getY(), 0.2);
+                    assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+                }
+            }
+        }
     }
 
     @Test
     public void testManyDetections() {
         // Given a 36h11 pipeline
-        var pipeline = new AprilTagPipeline();
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
-        pipeline.getSettings().outputMaximumTargets = 3; // bogus
+        try (var pipeline = new AprilTagPipeline()) {
+            pipeline.getSettings().inputShouldShow = true;
+            pipeline.getSettings().outputShouldDraw = true;
+            pipeline.getSettings().solvePNPEnabled = true;
+            pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+            pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+            pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+            pipeline.getSettings().outputMaximumTargets = 3; // bogus
 
-        // when we have a picture with 280 targets
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.k36h11_stress_test, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+            // when we have a picture with 280 targets
+            try (var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getApriltagImagePath(
+                                    TestUtils.ApriltagTestImages.k36h11_stress_test, false),
+                            TestUtils.WPI2020Image.FOV,
+                            TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false))) {
+                frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
-        CVPipelineResult pipelineResult;
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-
-        // the pipeline will only give us Byte.MAX_VALUE many
-        assertEquals(Byte.MAX_VALUE, pipelineResult.targets.size());
+                try (CVPipelineResult pipelineResult =
+                        pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera)) {
+                    // the pipeline will only give us Byte.MAX_VALUE many
+                    assertEquals(Byte.MAX_VALUE, pipelineResult.targets.size());
+                }
+            }
+        }
     }
 }

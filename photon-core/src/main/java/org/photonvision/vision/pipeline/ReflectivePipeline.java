@@ -161,4 +161,18 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
     }
+
+    @Override
+    public void release() {
+        findContoursPipe.release();
+        speckleRejectPipe.release();
+        filterContoursPipe.release();
+        groupContoursPipe.release();
+        sortContoursPipe.release();
+        collect2dTargetsPipe.release();
+        cornerDetectionPipe.release();
+        solvePNPPipe.release();
+        calculateFPSPipe.release();
+        super.release();
+    }
 }

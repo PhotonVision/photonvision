@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -51,6 +53,13 @@ public class SQLConfigTest {
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
+        CVMat.enablePrint(false);
+    }
+
+    @AfterAll
+    public static void cleanup() {
+        // Reset the NNM singleton
+        NeuralNetworkModelManager.getInstance(true);
     }
 
     @Test

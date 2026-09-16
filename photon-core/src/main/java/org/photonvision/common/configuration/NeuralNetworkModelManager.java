@@ -38,9 +38,10 @@ import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelPr
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.tflite.TFLiteJNI.TFLiteSource;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
-import org.photonvision.vision.objects.RubikModel;
+import org.photonvision.vision.objects.TFLiteModel;
 
 /**
  * Manages the loading of neural network models.
@@ -360,7 +361,7 @@ public class NeuralNetworkModelManager {
                     models.get(properties.family()).add(new RknnModel(properties));
                 }
                 case RUBIK -> {
-                    models.get(properties.family()).add(new RubikModel(properties));
+                    models.get(properties.family()).add(new TFLiteModel(properties, TFLiteSource.RUBIK));
                 }
             }
             logger.info(

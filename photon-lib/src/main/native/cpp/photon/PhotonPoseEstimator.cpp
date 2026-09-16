@@ -246,10 +246,10 @@ PhotonPoseEstimator::EstimateClosestToReferencePose(
 std::optional<std::array<cv::Point3d, 4>> detail::CalcTagCorners(
     int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags) {
   if (auto tagPose = aprilTags.GetTagPose(tagID); tagPose.has_value()) {
-    return std::array{TagCornerToObjectPoint(-3_in, -3_in, *tagPose),
-                      TagCornerToObjectPoint(+3_in, -3_in, *tagPose),
-                      TagCornerToObjectPoint(+3_in, +3_in, *tagPose),
-                      TagCornerToObjectPoint(-3_in, +3_in, *tagPose)};
+    return std::array{TagCornerToObjectPoint(-3.25_in, -3.25_in, *tagPose),
+                      TagCornerToObjectPoint(+3.25_in, -3.25_in, *tagPose),
+                      TagCornerToObjectPoint(+3.25_in, +3.25_in, *tagPose),
+                      TagCornerToObjectPoint(-3.25_in, +3.25_in, *tagPose)};
   } else {
     return std::nullopt;
   }

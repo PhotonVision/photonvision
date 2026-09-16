@@ -50,4 +50,7 @@ public class CalculateFPSPipe
     }
 
     public static class CalculateFPSPipeParams {}
+
+    @Override
+    public void release() {}
 }

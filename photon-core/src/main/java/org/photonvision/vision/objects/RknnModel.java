@@ -19,7 +19,6 @@ package org.photonvision.vision.objects;
 
 import java.io.File;
 import java.nio.file.Path;
-import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
@@ -79,8 +78,7 @@ public class RknnModel implements Model {
     }
 
     public ObjectDetector load() {
-        return new RknnObjectDetector(
-                this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
+        return new RknnObjectDetector(this);
     }
 
     public String toString() {

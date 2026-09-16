@@ -1,1 +1,1 @@
-from .NTTopicSet import NTTopicSet
+from .NTTopicSet import NTTopicSet as NTTopicSet

@@ -215,8 +215,8 @@ public class NetworkTablesManager {
     }
 
     private void broadcastConnectedStatusImpl() {
-        HashMap<String, Object> map = new HashMap<>();
-        var subMap = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> subMap = new HashMap<>();
 
         subMap.put("connected", ntInstance.isConnected());
         if (ntInstance.isConnected()) {

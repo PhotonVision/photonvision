@@ -19,22 +19,26 @@ package org.photonvision.vision.objects;
 
 import java.io.File;
 import java.nio.file.Path;
-import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
+import org.photonvision.tflite.TFLiteJNI.TFLiteSource;
 
-public class RubikModel implements Model {
+public class TFLiteModel implements Model {
     public final File modelFile;
     public final ModelProperties properties;
+    public final TFLiteSource backend;
 
     /**
-     * Rubik model constructor.
+     * TFLite model constructor.
      *
      * @param properties The properties of the model.
+     * @param backend The backend of the model should run on.
      * @throws IllegalArgumentException
      */
-    public RubikModel(ModelProperties properties) throws IllegalArgumentException {
+    public TFLiteModel(ModelProperties properties, TFLiteSource backend)
+            throws IllegalArgumentException {
+        this.backend = backend;
         modelFile = new File(properties.modelPath().toString());
         if (!modelFile.exists()) {
             throw new IllegalArgumentException("Model file does not exist: " + modelFile);
@@ -77,11 +81,10 @@ public class RubikModel implements Model {
     }
 
     public ObjectDetector load() {
-        return new RubikObjectDetector(
-                this, new Size(this.properties.resolutionWidth(), this.properties.resolutionHeight()));
+        return new TFLiteObjectDetector(this, backend);
     }
 
     public String toString() {
-        return "RubikModel{" + "modelFile=" + modelFile + ", properties=" + properties + '}';
+        return "TFLiteModel{" + "modelFile=" + modelFile + ", properties=" + properties + '}';
     }
 }
