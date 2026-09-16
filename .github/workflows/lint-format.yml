@@ -63,6 +63,9 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
       - run: |
           set +e
           ./gradlew spotlessCheck
