@@ -39,6 +39,7 @@ dependencies {
 
     implementation group: "io.avaje", name: "avaje-jsonb", version: avajeJsonbVersion
     annotationProcessor group: "io.avaje", name: "avaje-jsonb-generator", version: avajeJsonbVersion
+    implementation group: "io.avaje", name: "avaje-json-node", version: avajeJsonbVersion
     implementation group: "io.avaje", name: "avaje-jsonb-jackson", version: avajeJsonbVersion
     implementation group: "io.avaje", name: "avaje-jsonb-javalin-mapper", version: avajeJsonbVersion
 
