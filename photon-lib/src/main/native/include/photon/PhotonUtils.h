@@ -73,16 +73,16 @@ class PhotonUtils {
   /**
    * Estimate the position of the robot in the field.
    *
-   * @param cameraHeightMeters The physical height of the camera off the floor
-   * in meters.
-   * @param targetHeightMeters The physical height of the target off the floor
-   * in meters. This should be the height of whatever is being targeted (i.e. if
+   * @param cameraHeight The physical height of the camera off the floor in
+   * meters.
+   * @param targetHeight The physical height of the target off the floor in
+   * meters. This should be the height of whatever is being targeted (i.e. if
    * the targeting region is set to top, this should be the height of the top of
    * the target).
-   * @param cameraPitchRadians The pitch of the camera from the horizontal plane
-   *                           in radians. Positive values up.
-   * @param targetPitchRadians The pitch of the target in the camera's lens in
-   *                           radians. Positive values up.
+   * @param cameraPitch The pitch of the camera from the horizontal plane in
+   * radians. Positive values up.
+   * @param targetPitch The pitch of the target in the camera's lens in radians.
+   * Positive values up.
    * @param targetYaw          The observed yaw of the target. Note that this
    *                           *must* be CCW-positive, and Photon returns
    *                           CW-positive.
@@ -115,7 +115,7 @@ class PhotonUtils {
   }
 
   /**
-   * Estimates a {@link wpi::math::Transform2d} that maps the camera position to
+   * Estimates a @ref wpi::math::Transform2d that maps the camera position to
    * the target position, using the robot's gyro. Note that the gyro angle
    * provided *must* line up with the field coordinate system -- that is, it
    * should read zero degrees when pointed towards the opposing alliance
