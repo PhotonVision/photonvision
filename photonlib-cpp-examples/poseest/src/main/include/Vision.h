@@ -93,9 +93,30 @@ class Vision {
         }
       }
 
+      // Filter out poses that are likely to be incorrect (off the field, not
+      // flat on the ground, etc). This is optional, but can help prevent bad
+      // vision estimates from hurting your pose estimator.
       if (visionEst) {
-        estConsumer(visionEst->estimatedPose.ToPose2d(), visionEst->timestamp,
-                    GetEstimationStdDevs(visionEst->estimatedPose.ToPose2d()));
+        auto estPose = visionEst->estimatedPose;
+        if (std::abs(estPose.Z().value()) <
+                constants::Vision::kMaxAcceptedRobotZ &&
+            estPose.X().value() >
+                -constants::Vision::kTagLayout.GetFieldLength().value() / 2 &&
+            estPose.X().value() <
+                constants::Vision::kTagLayout.GetFieldLength().value() / 2 &&
+            estPose.Y().value() >
+                -constants::Vision::kTagLayout.GetFieldWidth().value() / 2 &&
+            estPose.Y().value() <
+                constants::Vision::kTagLayout.GetFieldWidth().value() / 2 &&
+            std::abs(estPose.Rotation().X().value()) <
+                constants::Vision::kMaxAcceptedRobotPitch &&
+            std::abs(estPose.Rotation().Y().value()) <
+                constants::Vision::kMaxAcceptedRobotRoll &&
+            result.GetBestTarget().GetPoseAmbiguity() <
+                constants::Vision::kMaxAcceptedPoseAmbiguity) {
+          estConsumer(estPose.ToPose2d(), visionEst->timestamp,
+                      GetEstimationStdDevs(estPose.ToPose2d()));
+        }
       }
     }
   }

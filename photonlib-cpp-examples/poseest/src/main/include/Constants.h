@@ -49,6 +49,12 @@ inline const wpi::apriltag::AprilTagFieldLayout kTagLayout{
 
 inline const Eigen::Matrix<double, 3, 1> kSingleTagStdDevs{4, 4, 8};
 inline const Eigen::Matrix<double, 3, 1> kMultiTagStdDevs{0.5, 0.5, 1};
+
+// Constants for filtering vision estimates.
+inline constexpr double kMaxAcceptedRobotZ = 0.2;
+inline constexpr double kMaxAcceptedRobotPitch = 0.2;
+inline constexpr double kMaxAcceptedRobotRoll = 0.2;
+inline constexpr double kMaxAcceptedPoseAmbiguity = 0.2;
 }  // namespace Vision
 namespace Swerve {
 using namespace units;
