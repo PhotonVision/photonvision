@@ -150,6 +150,9 @@ public class USBCameraSource extends VisionSource {
             settables = new InnoOV9281CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.See3Cam_24CUG)) {
             settables = new See3Cam24CUGSettables(config, camera);
+        } else if (quirks.hasQuirk(CameraQuirk.ThriftyOV9281Controls)) {
+            logger.debug("Using Thrifty OV9281 Settables");
+            settables = new ThriftyOV9281CameraSettables(config, camera);
         } else {
             logger.debug("Using Generic USB Cam Settables");
             settables = new GenericUSBCameraSettables(config, camera);
