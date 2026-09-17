@@ -31,16 +31,20 @@ const resetTempSettingsStruct = () => {
 
 const settingsValid = computed(() => {
   const network = tempSettingsStruct.value;
+  const networkCapabilities = useSettingsStore().network;
 
   const ntServerValid = network.runNTServer || isValidNetworkTablesIP(network.ntServerAddress);
   const staticIpValid =
-    network.networkingDisabled ||
+    networkCapabilities.networkingDisabled ||
     network.connectionType !== NetworkConnectionType.Static ||
     !network.shouldManage ||
-    !network.canManage ||
+    !networkCapabilities.canManage ||
     isValidIPv4(network.staticIp);
   const hostnameValid =
-    network.networkingDisabled || !network.shouldManage || !network.canManage || isValidHostname(network.hostname);
+    networkCapabilities.networkingDisabled ||
+    !network.shouldManage ||
+    !networkCapabilities.canManage ||
+    isValidHostname(network.hostname);
 
   return ntServerValid && staticIpValid && hostnameValid;
 });

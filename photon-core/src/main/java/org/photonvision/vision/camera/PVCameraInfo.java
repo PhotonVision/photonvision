@@ -127,8 +127,8 @@ public sealed interface PVCameraInfo {
             if (!(obj instanceof PVUsbCameraInfo info)) return false;
 
             return name().equals(info.name())
-                    && vendorId == info.vendorId
-                    && productId == info.productId
+                    && super.vendorId == info.vendorId
+                    && super.productId == info.productId
                     && uniquePath().equals(info.uniquePath());
         }
 

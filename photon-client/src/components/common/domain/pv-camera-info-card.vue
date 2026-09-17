@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PVCameraInfo } from "@/types/SettingTypes";
+import { PVUsbCamera, PVCSICamera, PVFileCamera, type PVCameraInfo } from "@/types/SettingTypes";
 
 const { camera } = defineProps<{ camera: PVCameraInfo }>();
 </script>

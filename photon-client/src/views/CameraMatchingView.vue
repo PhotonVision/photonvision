@@ -2,7 +2,13 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings, type PVCameraInfo } from "@/types/SettingTypes";
+import {
+  PlaceholderCameraSettings,
+  PVUsbCamera,
+  PVCSICamera,
+  PVFileCamera,
+  type PVCameraInfo
+} from "@/types/SettingTypes";
 import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
@@ -322,9 +328,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <div v-for="(camera, index) in unmatchedCameras" :key="index" class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
         <pv-card class="rounded-2xl">
           <div class="text-lg font-semibold wrap-break-word">
-            <span v-if="camera.type === 'PVUsbCameraInfo'">USB Camera:</span>
-            <span v-else-if="camera.type === 'PVCSICameraInfo'">CSI Camera:</span>
-            <span v-else-if="camera.type === 'PVFileCameraInfo'">File Camera:</span>
+            <span v-if="camera.type === PVUsbCamera">USB Camera:</span>
+            <span v-else-if="camera.type === PVCSICamera">CSI Camera:</span>
+            <span v-else-if="camera.type === PVFileCamera">File Camera:</span>
             <span v-else>Unknown Camera:</span>
             &nbsp;<span>{{ camera.name }}</span>
           </div>

@@ -471,25 +471,35 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    class="stream-container group relative flex h-full max-h-full w-full max-w-full items-center justify-center"
-    :style="containerStyle"
-  >
-    <pv-loading class="absolute h-1/4 w-1/4 object-contain" />
-    <img
-      :id="id"
-      ref="mjpgStream"
-      class="absolute h-full w-full object-contain"
-      crossorigin="anonymous"
-      :src="streamSrc"
-      :alt="streamDesc"
-      :style="streamStyle"
-      @error="handleStreamError"
-    />
-    <div
-      class="absolute top-0 right-0 flex opacity-0 transition duration-100 group-hover:opacity-100"
-      :style="overlayStyle"
-    >
+  <div ref="streamContainer" class="stream-container" :style="containerStyle">
+    <pv-loading class="stream-loading" />
+    <div ref="streamFrame" class="stream-frame" :style="frameStyle">
+      <img
+        :id="id"
+        ref="mjpgStream"
+        class="stream-video"
+        crossorigin="anonymous"
+        draggable="false"
+        :src="streamSrc"
+        :alt="streamDesc"
+        :style="streamStyle"
+        @error="handleStreamError"
+        @pointerdown="handleRegionPointerDown"
+        @pointermove="handleRegionPointerMove"
+        @pointerup="handleRegionPointerUp"
+        @pointerleave="handleRegionPointerLeave"
+      />
+      <div class="crop-outline" :style="cropOutlineStyle" />
+      <div class="crop-handles" :style="handleBoxStyle">
+        <div
+          v-for="(handle, index) in cropHandlePositions"
+          :key="index"
+          class="crop-handle"
+          :style="{ left: handle.left, top: handle.top }"
+        />
+      </div>
+    </div>
+    <div class="stream-overlay" :style="overlayStyle">
       <pv-tooltipped-icon
         color="primary"
         :icon="IconCameraImage"
@@ -514,3 +524,59 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.stream-container {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.stream-loading {
+  position: absolute;
+  width: 25%;
+  height: 25%;
+  object-fit: contain;
+}
+
+.crop-handles,
+.crop-outline {
+  position: absolute;
+  pointer-events: none;
+}
+
+.crop-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #ffd843;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  border-radius: 1px;
+  transform: translate(-50%, -50%);
+}
+
+.stream-video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.stream-overlay {
+  display: flex;
+  opacity: 0;
+  transition: 0.1s ease;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.stream-container:hover .stream-overlay {
+  opacity: 1;
+}
+</style>

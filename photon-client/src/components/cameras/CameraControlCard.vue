@@ -96,7 +96,12 @@ const expanded = ref([]);
           <pv-data-table
             v-model:expanded="expanded"
             :columns="[
-              { header: 'Snapshot Name', accessorKey: 'snapshotShortName', enableSorting: false, aggregatedCell: emptyGroupedCell },
+              {
+                header: 'Snapshot Name',
+                accessorKey: 'snapshotShortName',
+                enableSorting: false,
+                aggregatedCell: emptyGroupedCell
+              },
               { header: 'Camera Nickname', accessorKey: 'cameraNickname' },
               { header: 'Stream Type', accessorKey: 'streamType', aggregatedCell: emptyGroupedCell },
               { header: 'Time Created', accessorKey: 'timeCreated', aggregatedCell: emptyGroupedCell },

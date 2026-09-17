@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PVCameraInfo } from "@/types/SettingTypes";
+import { PVUsbCamera, PVCSICamera, PVFileCamera, type PVCameraInfo } from "@/types/SettingTypes";
 
 function isEqual<T>(a: T, b: T): boolean {
   if (a === b) {

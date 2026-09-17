@@ -8,8 +8,6 @@ import {
   type VideoFormat
 } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
-import CharucoImage from "@/assets/images/ChArUco_Marker8x8.png";
-
 import { useStateStore } from "@/stores/StateStore";
 
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
@@ -34,8 +32,14 @@ import IconFlagCheckered from "~icons/mdi/flag-checkered";
 import IconFlagOffOutline from "~icons/mdi/flag-off-outline";
 import IconCancel from "~icons/mdi/cancel";
 import IconHelpCircleOutline from "~icons/mdi/help-circle-outline";
+import { length, type Length } from "@adam-rocska/units-and-measurement/length";
 
-const jspdf = import("jspdf");
+const PromptRegular = import("@/assets/fonts/PromptRegular");
+const jspdf = import("jspdf").then(async (jspdf) => {
+  await import("svg2pdf.js");
+  return jspdf;
+});
+const arucoMarker = import("aruco-marker");
 
 const MM_PER_INCH = 25.4;
 
@@ -48,7 +52,7 @@ const minHeightRule = (value: RuleValue) => (typeof value === "number" && value 
 const settingsValid = computed(() => {
   if (!Number.isFinite(squareSize.value) || squareSize.value <= 0) return false;
   if (
-    boardType.value === CalibrationBoardTypes.Charuco &&
+    boardType.value === CalibrationBoardTypes.ChArUco &&
     (!Number.isFinite(markerSize.value) || markerSize.value <= 0)
   )
     return false;
@@ -194,8 +198,25 @@ const tooManyPoints = computed(
 
 const downloadCalibBoard = async () => {
   const { jsPDF } = await jspdf;
-  const { font } = await import("@/assets/fonts/PromptRegular");
-  const doc = new jsPDF({ unit: "in", format: "letter" });
+  const { font } = await PromptRegular;
+
+  const paperDimensions =
+    paperType.value === CalibrationPaperTypes.Adaptive
+      ? adaptivePaperDimensions()
+      : paperDimensionsFor(paperType.value);
+
+  const doc = new jsPDF({
+    unit: "in",
+    ...(paperType.value === CalibrationPaperTypes.Adaptive
+      ? {
+          format: paperDimensions.map((dim) => dim.in.value),
+          orientation: paperDimensions[0].value < paperDimensions[1].value ? "p" : "l"
+        }
+      : {
+          format: CalibrationPaperTypes[paperType.value],
+          orientation: paperOrientation.value
+        })
+  });
 
   doc.addFileToVFS("Prompt-Regular.tff", font);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
@@ -205,28 +226,64 @@ const downloadCalibBoard = async () => {
   const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].in.value;
   const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].in.value;
 
-  const squareSizeIn = length[dimensionUnit.value](squareSize.value).in.value;
-  const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn) / 2;
-  const chessboardStartY = (paperHeight - patternHeight.value * squareSizeIn) / 2;
+  const squareSizeInches = squareSizeIn.value;
+  const markerSizeInches = markerSizeIn.value;
+  const chessboardStartX = (paperWidth - patternWidth.value * squareSizeInches) / 2;
+  const chessboardStartY = (paperHeight - patternHeight.value * squareSizeInches) / 2;
 
   switch (boardType.value) {
-    case CalibrationBoardTypes.Chessboard:
-      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
+    case CalibrationBoardTypes.Chessboard: {
+      for (let squareY = 0; squareY < patternHeight.value; squareY++) {
+        for (let squareX = 0; squareX < patternWidth.value; squareX++) {
+          if (squareY % 2 !== squareX % 2) {
+            doc.rect(
+              chessboardStartX + squareX * squareSizeInches,
+              chessboardStartY + squareY * squareSizeInches,
+              squareSizeInches,
+              squareSizeInches,
+              "F"
+            );
+          }
+        }
+      }
+      doc.text(
+        `${patternWidth.value} x ${patternHeight.value} | ${squareSize.value}${dimensionUnit.value} squares`,
+        paperWidth - 1,
+        1.0,
+        { maxWidth: (paperWidth - 2.0) / 2, align: "right" }
+      );
+      break;
+    }
 
-      const chessboardStartY = (paperHeight - patternHeight.value * squareSizeIn.value) / 2;
-
+    case CalibrationBoardTypes.ChArUco: {
       const { arucoToSVGString } = await arucoMarker;
       // ChArUco boards place ArUco tags in reading order over a chessboard with a black square in the top left
       let markerIndex = 0;
-      const squarePadding = (squareSizeIn - markerSizeIn) / 2;
+      const squarePadding = (squareSizeInches - markerSizeInches) / 2;
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
         for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = chessboardStartX + squareX * squareSizeIn.value;
-          const yPos = chessboardStartY + squareY * squareSizeIn.value;
+          const xPos = chessboardStartX + squareX * squareSizeInches;
+          const yPos = chessboardStartY + squareY * squareSizeInches;
 
-          // Only draw the odd squares to create the chessboard pattern
-          if (squareY % 2 !== squareX % 2) {
-            doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
+          // Draw black squares on the even tiles and ArUco markers on the odd tiles
+          // Parity is even in the top left corner unless using the old pattern, which starts in the bottom left corner
+          if ((squareY + (useOldPattern.value ? patternHeight.value - 1 : 0)) % 2 === squareX % 2) {
+            doc.rect(xPos, yPos, squareSizeInches, squareSizeInches, "F");
+          } else {
+            await doc.svg(
+              new DOMParser()
+                .parseFromString(
+                  arucoToSVGString(markerIndex++, undefined, await arucoTagDictionaryFor(tagFamily.value)),
+                  "image/svg+xml"
+                )
+                .getElementsByTagName("svg")[0],
+              {
+                x: xPos + squarePadding,
+                y: yPos + squarePadding,
+                width: markerSizeInches,
+                height: markerSizeInches
+              }
+            );
           }
         }
       }
@@ -240,6 +297,7 @@ const downloadCalibBoard = async () => {
       );
 
       break;
+    }
   }
 
   // Draw ruler pattern
@@ -445,13 +503,13 @@ const updateCameraBlueGain = (value: number) => {
               tooltip="Calibration board pattern to use"
               :select-cols="8"
               :items="[
-                { value: CalibrationBoardTypes.Charuco, name: 'ChArUco' },
+                { value: CalibrationBoardTypes.ChArUco, name: 'ChArUco' },
                 { value: CalibrationBoardTypes.Chessboard, name: 'Chessboard' }
               ]"
               :disabled="isCalibrating"
             />
             <pv-alert
-              v-if="boardType !== CalibrationBoardTypes.Charuco"
+              v-if="boardType !== CalibrationBoardTypes.ChArUco"
               closable
               variant="tonal"
               color="warning"
@@ -460,7 +518,7 @@ const updateCameraBlueGain = (value: number) => {
               similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
             />
             <pv-select
-              v-if="boardType !== CalibrationBoardTypes.Charuco"
+              v-if="boardType !== CalibrationBoardTypes.ChArUco"
               v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
               label="Decimation"
               tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
@@ -469,17 +527,19 @@ const updateCameraBlueGain = (value: number) => {
               @update:modelValue="updateStreamingFrameDivisor"
             />
             <pv-select
-              v-if="boardType === CalibrationBoardTypes.Charuco"
+              v-if="boardType === CalibrationBoardTypes.ChArUco"
               v-model="tagFamily"
               label="Tag Family"
               tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
-              :items="[
-                { value: CalibrationTagFamilies.Dict_4X4_1000, name: 'Dict_4X4_1000' },
-                { value: CalibrationTagFamilies.Dict_5X5_1000, name: 'Dict_5X5_1000' },
-                { value: CalibrationTagFamilies.Dict_6X6_1000, name: 'Dict_6X6_1000' },
-                { value: CalibrationTagFamilies.Dict_7X7_1000, name: 'Dict_7X7_1000' }
-              ]"
+              :items="
+                [
+                  CalibrationTagFamilies.Dict_4X4_1000,
+                  CalibrationTagFamilies.Dict_5X5_1000,
+                  CalibrationTagFamilies.Dict_6X6_1000,
+                  CalibrationTagFamilies.Dict_7X7_1000
+                ].map((family) => ({ value: family, name: arucoTagFamilyNameFor(family) }))
+              "
               :disabled="isCalibrating"
             />
             <pv-select
@@ -488,8 +548,8 @@ const updateCameraBlueGain = (value: number) => {
               tooltip="Units used for pattern spacing and marker size inputs"
               :select-cols="8"
               :items="[
-                { value: 'in', name: 'Inches' },
-                { value: 'mm', name: 'Millimeters' }
+                { value: 'mm', name: 'Millimeters' },
+                { value: 'in', name: 'Inches' }
               ]"
               :disabled="isCalibrating"
             />
@@ -503,7 +563,7 @@ const updateCameraBlueGain = (value: number) => {
               :step="dimensionStep"
             />
             <pv-number-input
-              v-if="boardType === CalibrationBoardTypes.Charuco"
+              v-if="boardType === CalibrationBoardTypes.ChArUco"
               v-model="markerSize"
               :label="`Marker Size (${dimensionUnit})`"
               :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
@@ -529,12 +589,49 @@ const updateCameraBlueGain = (value: number) => {
               :label-cols="4"
             />
             <pv-switch
-              v-if="boardType === CalibrationBoardTypes.Charuco"
+              v-if="boardType === CalibrationBoardTypes.ChArUco"
               v-model="useOldPattern"
               label="Old OpenCV Pattern"
               :disabled="isCalibrating"
-              tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
+              tooltip="If enabled, Photon will use the old OpenCV pattern for calibration (the top left square is a marker)."
               :label-cols="4"
+            />
+            <pv-select
+              v-model="paperType"
+              label="Paper Type"
+              tooltip="Size of paper used when exporting a calibration board."
+              :items="
+                [
+                  CalibrationPaperTypes.Letter,
+                  CalibrationPaperTypes.Legal,
+                  CalibrationPaperTypes.Tabloid,
+                  CalibrationPaperTypes.A4,
+                  CalibrationPaperTypes.A3,
+                  CalibrationPaperTypes.A2,
+                  CalibrationPaperTypes.Adaptive
+                ].map((paperType) => {
+                  const dimensions =
+                    paperType === CalibrationPaperTypes.Adaptive
+                      ? adaptivePaperDimensions()
+                      : paperDimensionsFor(paperType);
+                  return {
+                    value: paperType,
+                    name: `${CalibrationPaperTypes[paperType]} (${dimensions[0].value} ${dimensions[0].unit} x ${dimensions[1].value} ${dimensions[1].unit})`
+                  };
+                })
+              "
+              :select-cols="8"
+            />
+            <pv-select
+              v-model="paperOrientation"
+              label="Paper Orientation"
+              :disabled="paperType === CalibrationPaperTypes.Adaptive"
+              tooltip="Orientation of paper used when exporting a calibration board."
+              :items="[
+                { value: 'landscape', name: 'Landscape' },
+                { value: 'portrait', name: 'Portrait' }
+              ]"
+              :select-cols="8"
             />
           </div>
         </div>
@@ -602,6 +699,13 @@ const updateCameraBlueGain = (value: number) => {
               Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
               {{ minCount }}
             </pv-chip>
+            <pv-switch
+              v-model="bypassVal"
+              label="Bypass minimum"
+              tooltip="Bypass the recommended snapshot minimum for development or temporary testing. At least 10 images are still required."
+              :label-cols="6"
+              :switch-cols="6"
+            />
           </div>
           <pv-switch
             v-model="drawAllSnapshots"

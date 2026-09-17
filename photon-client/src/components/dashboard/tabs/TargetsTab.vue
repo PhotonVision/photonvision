@@ -49,150 +49,162 @@ const resetCurrentBuffer = () => {
         class="target-table-wrapper"
         :style="{
           '--target-row-height': `${targetRowHeight}px`,
-          '--target-row-count': currentPipelineSettings.outputMaximumTargets,
+          '--target-row-count': currentPipelineSettings.outputMaximumTargets
         }"
       >
-      <pv-table class="tabular-nums">
-        <template #default>
-          <thead>
-            <tr>
-              <th
-                v-if="
-                  currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                  currentPipelineSettings.pipelineType === PipelineType.Aruco
-                "
-                class="text-pv-on-surface"
-              >
-                Fiducial ID
-              </th>
-              <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
-                <th class="text-pv-on-surface">Class</th>
-                <th class="text-pv-on-surface">Confidence</th>
-              </template>
-              <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
-                <th class="text-pv-on-surface">Pitch &theta;&deg;</th>
-                <th class="text-pv-on-surface">Yaw &theta;&deg;</th>
-                <th class="text-pv-on-surface">Skew &theta;&deg;</th>
-                <th class="text-pv-on-surface">Area %</th>
-              </template>
-              <template v-else>
-                <th class="text-pv-on-surface">X meters</th>
-                <th class="text-pv-on-surface">Y meters</th>
-                <th class="text-pv-on-surface">Z Angle &theta;&deg;</th>
-              </template>
-              <template
-                v-if="
-                  (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-                  useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
-                "
-              >
-                <th class="text-pv-on-surface">Ambiguity Ratio</th>
-              </template>
-            </tr>
-          </thead>
-          <tbody class="target-results-body">
-            <tr
-              v-for="(target, index) in displayedTargets"
-              :key="index"
-              class="text-pv-on-surface"
-            >
-              <td
-                v-if="
-                  currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                  currentPipelineSettings.pipelineType === PipelineType.Aruco
-                "
-                class="text-center"
-              >
-                <div class="cell-inner">{{ target.fiducialId }}</div>
-              </td>
-              <td
-                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-pv-on-surface text-center"
-              >
-                <div class="cell-inner">{{ useStateStore().currentPipelineResults?.classNames[target.classId] }}</div>
-              </td>
-              <td
-                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-pv-on-surface text-center"
-              >
-                <div class="cell-inner">{{ target.confidence.toFixed(2) }}</div>
-              </td>
-              <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
-                <td class="text-center"><div class="cell-inner">{{ target.pitch.toFixed(2) }}&deg;</div></td>
-                <td class="text-center"><div class="cell-inner">{{ target.yaw.toFixed(2) }}&deg;</div></td>
-                <td class="text-center"><div class="cell-inner">{{ target.skew.toFixed(2) }}&deg;</div></td>
-                <td class="text-center"><div class="cell-inner">{{ target.area.toFixed(2) }}%</div></td>
-              </template>
-              <template v-else>
-                <td class="text-center"><div class="cell-inner">{{ target.pose?.x.toFixed(3) }}&nbsp;m</div></td>
-                <td class="text-center"><div class="cell-inner">{{ target.pose?.y.toFixed(3) }}&nbsp;m</div></td>
-                <td class="text-center"><div class="cell-inner">{{ toDeg(target.pose?.angle_z || 0).toFixed(2) }}&deg;</div></td>
-              </template>
-              <template
-                v-if="
-                  (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-                  useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
-                "
-              >
-                <td class="text-center">
-                  <div class="cell-inner">{{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}</div>
+        <pv-table class="tabular-nums">
+          <template #default>
+            <thead>
+              <tr>
+                <th
+                  v-if="
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                    currentPipelineSettings.pipelineType === PipelineType.Aruco
+                  "
+                  class="text-pv-on-surface"
+                >
+                  Fiducial ID
+                </th>
+                <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
+                  <th class="text-pv-on-surface">Class</th>
+                  <th class="text-pv-on-surface">Confidence</th>
+                </template>
+                <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
+                  <th class="text-pv-on-surface">Pitch &theta;&deg;</th>
+                  <th class="text-pv-on-surface">Yaw &theta;&deg;</th>
+                  <th class="text-pv-on-surface">Skew &theta;&deg;</th>
+                  <th class="text-pv-on-surface">Area %</th>
+                </template>
+                <template v-else>
+                  <th class="text-pv-on-surface">X meters</th>
+                  <th class="text-pv-on-surface">Y meters</th>
+                  <th class="text-pv-on-surface">Z Angle &theta;&deg;</th>
+                </template>
+                <template
+                  v-if="
+                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+                  "
+                >
+                  <th class="text-pv-on-surface">Ambiguity Ratio</th>
+                </template>
+              </tr>
+            </thead>
+            <tbody class="target-results-body">
+              <tr v-for="(target, index) in displayedTargets" :key="index" class="text-pv-on-surface">
+                <td
+                  v-if="
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                    currentPipelineSettings.pipelineType === PipelineType.Aruco
+                  "
+                  class="text-center"
+                >
+                  <div class="cell-inner">{{ target.fiducialId }}</div>
                 </td>
-              </template>
-            </tr>
-            <tr
-              v-for="index in placeholderTargetRowCount"
-              :key="`placeholder-${index}`"
-              class="placeholder-row text-pv-on-surface"
-            >
-              <td
-                v-if="
-                  currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                  currentPipelineSettings.pipelineType === PipelineType.Aruco
-                "
-                class="text-center"
+                <td
+                  v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                  class="text-pv-on-surface text-center"
+                >
+                  <div class="cell-inner">{{ useStateStore().currentPipelineResults?.classNames[target.classId] }}</div>
+                </td>
+                <td
+                  v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                  class="text-pv-on-surface text-center"
+                >
+                  <div class="cell-inner">{{ target.confidence.toFixed(2) }}</div>
+                </td>
+                <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
+                  <td class="text-center">
+                    <div class="cell-inner">{{ target.pitch.toFixed(2) }}&deg;</div>
+                  </td>
+                  <td class="text-center">
+                    <div class="cell-inner">{{ target.yaw.toFixed(2) }}&deg;</div>
+                  </td>
+                  <td class="text-center">
+                    <div class="cell-inner">{{ target.skew.toFixed(2) }}&deg;</div>
+                  </td>
+                  <td class="text-center">
+                    <div class="cell-inner">{{ target.area.toFixed(2) }}%</div>
+                  </td>
+                </template>
+                <template v-else>
+                  <td class="text-center">
+                    <div class="cell-inner">{{ target.pose?.x.toFixed(3) }}&nbsp;m</div>
+                  </td>
+                  <td class="text-center">
+                    <div class="cell-inner">{{ target.pose?.y.toFixed(3) }}&nbsp;m</div>
+                  </td>
+                  <td class="text-center">
+                    <div class="cell-inner">{{ toDeg(target.pose?.angle_z || 0).toFixed(2) }}&deg;</div>
+                  </td>
+                </template>
+                <template
+                  v-if="
+                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+                  "
+                >
+                  <td class="text-center">
+                    <div class="cell-inner">
+                      {{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}
+                    </div>
+                  </td>
+                </template>
+              </tr>
+              <tr
+                v-for="index in placeholderTargetRowCount"
+                :key="`placeholder-${index}`"
+                class="placeholder-row text-pv-on-surface"
               >
-                <div class="cell-inner"></div>
-              </td>
-              <td
-                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-pv-on-surface text-center"
-              >
-                <div class="cell-inner"></div>
-              </td>
-              <td
-                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-pv-on-surface text-center"
-              >
-                <div class="cell-inner"></div>
-              </td>
-              <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
-                <td class="text-center"><div class="cell-inner"></div></td>
-                <td class="text-center"><div class="cell-inner"></div></td>
-                <td class="text-center"><div class="cell-inner"></div></td>
-                <td class="text-center"><div class="cell-inner"></div></td>
-              </template>
-              <template v-else>
-                <td class="text-center"><div class="cell-inner"></div></td>
-                <td class="text-center"><div class="cell-inner"></div></td>
-                <td class="text-center"><div class="cell-inner"></div></td>
-              </template>
-              <template
-                v-if="
-                  (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
-                  useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
-                "
-              >
-                <td class="text-center">
+                <td
+                  v-if="
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                    currentPipelineSettings.pipelineType === PipelineType.Aruco
+                  "
+                  class="text-center"
+                >
                   <div class="cell-inner"></div>
                 </td>
-              </template>
-            </tr>
-          </tbody>
-        </template>
-      </pv-table>
+                <td
+                  v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                  class="text-pv-on-surface text-center"
+                >
+                  <div class="cell-inner"></div>
+                </td>
+                <td
+                  v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                  class="text-pv-on-surface text-center"
+                >
+                  <div class="cell-inner"></div>
+                </td>
+                <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
+                  <td class="text-center"><div class="cell-inner"></div></td>
+                  <td class="text-center"><div class="cell-inner"></div></td>
+                  <td class="text-center"><div class="cell-inner"></div></td>
+                  <td class="text-center"><div class="cell-inner"></div></td>
+                </template>
+                <template v-else>
+                  <td class="text-center"><div class="cell-inner"></div></td>
+                  <td class="text-center"><div class="cell-inner"></div></td>
+                  <td class="text-center"><div class="cell-inner"></div></td>
+                </template>
+                <template
+                  v-if="
+                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
+                  "
+                >
+                  <td class="text-center">
+                    <div class="cell-inner"></div>
+                  </td>
+                </template>
+              </tr>
+            </tbody>
+          </template>
+        </pv-table>
       </div>
     </div>
     <div
@@ -265,7 +277,9 @@ const resetCurrentBuffer = () => {
                   </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
-                  <div class="cell-inner">{{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}</div>
+                  <div class="cell-inner">
+                    {{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -295,27 +309,27 @@ const resetCurrentBuffer = () => {
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x) || []).toFixed(
-                        5
-                      )
+                      calculateStdDev(
+                        useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x) || []
+                      ).toFixed(5)
                     }}&nbsp;m
                   </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y) || []).toFixed(
-                        5
-                      )
+                      calculateStdDev(
+                        useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y) || []
+                      ).toFixed(5)
                     }}&nbsp;m
                   </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z) || []).toFixed(
-                        5
-                      )
+                      calculateStdDev(
+                        useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z) || []
+                      ).toFixed(5)
                     }}&nbsp;m
                   </div>
                 </td>

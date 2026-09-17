@@ -2,7 +2,7 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import type { FieldTag, Quaternion } from "@/types/PhotonTrackingTypes";
 import { toDeg } from "@/lib/MathUtils";
-
+import { computed } from "vue";
 const { Euler, Quaternion: ThreeQuat } = await import("three");
 
 const currentFieldLayout = computed(() => useSettingsStore().currentFieldLayout);
@@ -22,12 +22,8 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   <pv-card>
     <div class="flex items-center justify-between gap-2 pb-4">
       <div class="flex-1 text-lg font-semibold">AprilTag Field Layout</div>
-      <p class="text-sm font-light text-gray-200">
-        Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters
-      </p>
-      <p class="text-sm font-light text-gray-200">
-        Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters
-      </p>
+      <p class="text-sm font-light text-gray-200">Field width: {{ fieldWidth.toFixed(2) }} meters</p>
+      <p class="text-sm font-light text-gray-200">Field length: {{ fieldLength.toFixed(2) }} meters</p>
     </div>
     <div>
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
