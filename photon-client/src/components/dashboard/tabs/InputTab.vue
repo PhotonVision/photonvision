@@ -306,9 +306,7 @@ const interactiveCols = computed(() =>
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.blockForFrames"
-      :disabled="
-        useCameraSettingsStore().currentCameraSettings.matchedCameraInfo.type !== PVUsbCamera
-      "
+      :disabled="useCameraSettingsStore().currentCameraSettings.matchedCameraInfo.type !== PVUsbCamera"
       label="Low Latency Mode"
       :switch-cols="interactiveCols"
       tooltip="When enabled, USB cameras wait for the next camera frame for lowest latency. When disabled, uses the most recent available frame for higher FPS."
