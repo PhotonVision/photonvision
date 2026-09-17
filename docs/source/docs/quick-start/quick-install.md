@@ -26,7 +26,9 @@ Unless otherwise noted in release notes or if updating from the prior years vers
 
 ## Raspberry Pi and Orange Pi Installation
 
-Use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to flash the image onto the coprocessors microSD card. Select the downloaded `.img.xz` file, select your microSD card, and flash.
+### microSD Installation
+
+Use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to flash the image onto the coprocessor's microSD card. Select the downloaded `.img.xz` file, select your microSD card, and flash.
 
 :::{warning}
 Avoid using Raspberry Pi Imager version 2.0.2 or later. Those versions fail to write the image to an SD card. Versions 2.0.0 and earlier write images successfully. [GitHub issue 1489](https://github.com/raspberrypi/rpi-imager/issues/1489) was created for this problem.
@@ -38,7 +40,7 @@ Balena Etcher has been recommended in the past, but should no longer be used due
 
 ### USB Installation
 
-### Bootloader Update/Configuration
+#### Bootloader Update/Configuration
 ::::{tab-set}
 :::{tab-item} Raspberry Pi 3
 This requires programming the OTP to allow USB boot. Although this is permanent and irreversible, you can still boot from microSD cards after programming the OTP. This is a one-time process, and you do not need to repeat it for future USB booting.
@@ -103,7 +105,7 @@ This setting is only required to program the OTP and does not need to remain ena
 8. Power off the Raspberry Pi and remove the microSD card.
 :::
 
-:::{tab-item} Orange Pi 5 Series (5, 5+)
+:::{tab-item} Rockchip-based boards (Orange Pi 5/5+, etc.)
 
 Tested on the Orange Pi 5 and 5+. Other Rockchip boards may require different files, buttons, USB ports, or bootloaders; follow your board's official documentation.
 
@@ -111,13 +113,13 @@ Some Rockchip boards have an older SPI bootloader without USB boot support. Upda
 
 The SPI bootloader update is separate from PhotonVision installation and normally only needs to be done once, unless a newer bootloader is released.
 
-:::{note}
+```{note}
 This RKDevTool procedure requires Windows.
 
 This guide uses a corrected English translation for RKDevTool. Installing it is highly recommended because the button names and messages below match the corrected translation rather than the original, poorly translated English interface.
 
 The translation only changes RKDevTool's interface text. It does not change the flashing tool itself or anything on the Orange Pi.
-:::
+```
 
 #### Board-specific files
 
@@ -154,11 +156,11 @@ Double-click on DriverInstall.exe, allow it to run as administrator, and click o
 
 9. Enter MaskROM mode using the method specified for your board. For the Orange Pi 5 and 5+, hold the MaskROM button while connecting the board's power USB-C port to the same computer.
 
-:::{warning}
+```{warning}
 For boards that use two USB-C connections for power and data, connect both cables to the same computer. Do not connect the power cable to a separate power supply.
 
 For boards with different power requirements, follow the manufacturer's documentation for the correct flashing procedure.
-:::
+```
 
 10. Confirm that RKDevTool detects the board in MaskROM mode. It will say **"Found One MaskROM Device"** in the bottom left corner of the window. If it says **"No devices found"** or anything else, check your USB connection and drivers.
 
