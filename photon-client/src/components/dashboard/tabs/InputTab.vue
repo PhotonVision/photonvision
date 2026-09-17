@@ -24,13 +24,15 @@ const cameraRotations = computed(() =>
 
 const streamDivisors = [1, 2, 4, 6];
 const getFilteredStreamDivisors = (): number[] => {
-  const currentResolutionWidth = useCameraSettingsStore().currentVideoFormat.resolution.width;
-  return streamDivisors.filter(
-    (x) =>
-      useCameraSettingsStore().isDriverMode ||
-      !useSettingsStore().gpuAccelerationEnabled ||
-      currentResolutionWidth / x < 400
-  );
+  const currentResolutionWidth = useCameraSettingsStore().currentVideoFormat?.resolution.width;
+  return currentResolutionWidth
+    ? streamDivisors.filter(
+        (x) =>
+          useCameraSettingsStore().isDriverMode ||
+          !useSettingsStore().gpuAccelerationEnabled ||
+          currentResolutionWidth / x < 400
+      )
+    : [];
 };
 const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStreamDivisors().length;
 
@@ -52,11 +54,13 @@ const handleResolutionChange = (value: number) => {
 
 const streamResolutions = computed(() => {
   const streamDivisors = getFilteredStreamDivisors();
-  const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
-  return streamDivisors.map((x, i) => ({
-    name: `${Math.floor(currentResolution.width / x)}x${Math.floor(currentResolution.height / x)}`,
-    value: i
-  }));
+  const currentResolution = useCameraSettingsStore().currentVideoFormat?.resolution;
+  return currentResolution
+    ? streamDivisors.map((x, i) => ({
+        name: `${Math.floor(currentResolution.width / x)}x${Math.floor(currentResolution.height / x)}`,
+        value: i
+      }))
+    : [];
 });
 const currentStreamResolutionIndex = computed<number>({
   get: () => {
@@ -81,11 +85,11 @@ const showStaticCrop = computed(
 // The crop is applied after rotation, so its bounds are the rotated frame dimensions. 90° rotations
 // (rotation modes 1 and 3) swap the width and height.
 const croppableResolution = computed<{ width: number; height: number }>(() => {
-  const resolution = useCameraSettingsStore().currentVideoFormat.resolution;
+  const resolution = useCameraSettingsStore().currentVideoFormat?.resolution;
   const rotation = useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode;
   return rotation === 1 || rotation === 3
-    ? { width: resolution.height, height: resolution.width }
-    : { width: resolution.width, height: resolution.height };
+    ? { width: resolution?.height ?? 0, height: resolution?.width ?? 0 }
+    : { width: resolution?.width ?? 0, height: resolution?.height ?? 0 };
 });
 
 const cropBounds = (range: WebsocketNumberPair | [number, number] | undefined): [number, number] =>
@@ -123,8 +127,8 @@ const rotatedDims = (width: number, height: number, rotation: number) =>
 watch(
   [
     () => useStateStore().currentCameraUniqueName,
-    () => useCameraSettingsStore().currentVideoFormat.resolution.width,
-    () => useCameraSettingsStore().currentVideoFormat.resolution.height,
+    () => useCameraSettingsStore().currentVideoFormat?.resolution.width,
+    () => useCameraSettingsStore().currentVideoFormat?.resolution.height,
     () => useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode
   ],
   (newValues, oldValues) => {
@@ -135,7 +139,7 @@ watch(
     const oldHeight = oldValues?.[2] ?? height;
     const oldRotation = oldValues?.[3] ?? rotation;
     // No camera or no video mode yet -- there's nothing meaningful to adjust against.
-    if (width <= 0 || height <= 0) return;
+    if (!oldWidth || !oldHeight || !width || !height || width <= 0 || height <= 0) return;
     // A camera switch changes everything at once, and the stored bounds already belong to the newly
     // selected camera -- nothing to adjust.
     if (camera !== oldCamera) return;
