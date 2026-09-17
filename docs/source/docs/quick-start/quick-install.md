@@ -36,6 +36,149 @@ Avoid using Raspberry Pi Imager version 2.0.2 or later. Those versions fail to w
 Balena Etcher has been recommended in the past, but should no longer be used due to instability and lack of ongoing support from developers.
 :::
 
+### USB Installation
+
+### Bootloader Update/Configuration
+::::{tab-set}
+:::{tab-item} Raspberry Pi 3
+This requires programming the OTP to allow USB boot. Although this is permanent and irreversible, you can still boot from microSD cards after programming the OTP. This is a one-time process, and you do not need to repeat it for future USB booting.
+
+1. Use Raspberry Pi Imager to install Raspberry Pi OS onto a microSD card.
+
+2. Insert the card into the Raspberry Pi 3, connect power and , boot it normally.
+
+3. Open the terminal, and update the Raspberry Pi OS installation:
+
+```shell
+sudo apt update
+sudo apt full-upgrade
+```
+
+4. Enable USB boot mode by programming the OTP:
+
+```shell
+echo program_usb_boot_mode=1 | sudo tee -a /boot/firmware/config.txt
+sudo reboot
+```
+
+5. Verify that the OTP bit has been programmed:
+
+```shell
+vcgencmd otp_dump | grep 17:
+```
+
+The output should contain:
+
+```text
+17:3020000a
+```
+
+6. (optional) Remove the USB boot configuration from config.txt:
+
+Once the OTP has been successfully programmed, you can remove the following line from /boot/firmware/config.txt if you want:
+
+```text
+program_usb_boot_mode=1
+```
+This setting is only required to program the OTP and does not need to remain enabled.
+
+7. Shut down the Raspberry Pi 3 and remove the microSD card from the microSD slot.
+:::
+
+:::{tab-item} Raspberry Pi 4/5
+1. Download Raspberry Pi Imager
+
+2. Select your Raspberry Pi model
+
+3. Scroll down to "Misc utility images" and select "Bootloader (Pi [model] Family)"
+
+4. Select "USB boot" or "NVMe/USB boot" (depending on your model)
+
+5. Select your microSD card and flash the bootloader image
+
+6. Insert the microSD card into your Raspberry Pi and power it on. The bootloader will be updated and configured to boot from USB before microSD.
+
+7. Wait for the green LED to blink rapidly, indicating that the update was successful. If an HDMI display is connected, the screen will also turn green. A red screen indicates that the update was unsuccessful.
+
+8. Power off the Raspberry Pi and remove the microSD card.
+:::
+
+:::{tab-item} Orange Pi 5 Series (5, 5+)
+
+Tested on the Orange Pi 5 and 5+. Other Rockchip boards may require different files, buttons, USB ports, or bootloaders; follow your board's official documentation.
+
+Some Rockchip boards have an older SPI bootloader without USB boot support. Update it with the latest board-specific files before installing PhotonVision to USB.
+
+The SPI bootloader update is separate from PhotonVision installation and normally only needs to be done once, unless a newer bootloader is released.
+
+:::{note}
+This RKDevTool procedure requires Windows.
+
+This guide uses a corrected English translation for RKDevTool. Installing it is highly recommended because the button names and messages below match the corrected translation rather than the original, poorly translated English interface.
+
+The translation only changes RKDevTool's interface text. It does not change the flashing tool itself or anything on the Orange Pi.
+:::
+
+#### Board-specific files
+
+| Board | SPI flash configuration | Temporary loader | SPI bootloader |
+| ----- | ----------------------- | ---------------- | -------------- |
+| Orange Pi 5 / 5+ | `rk3588_linux_spiflash.cfg` | `MiniLoaderAll.bin` | `rkspi_loader.img` |
+
+1. Download RKDevTool, the Rockchip USB drivers, and the corrected `English.ini`.
+
+2. Extract RKDevTool and make backup copies of its original `config.ini` and `Language\English.ini`.
+
+3. Edit `config.ini` so RKDevTool uses the English language file, then replace the original `English.ini` with the corrected version.
+
+To edit 'config.ini', find the section below, and change the line `Selected=1` to `Selected=2` so it reads as follows:
+
+```ini
+[Language]
+Kinds=2
+Selected=2
+LangPath=Language\
+```
+
+4. Install the Rockchip USB drivers, then open RKDevTool.
+
+Double-click on DriverInstall.exe, allow it to run as administrator, and click on Install Drivers. Wait for the process to finish before proceeding. Once it finishes, you can close the application.
+
+5. Download the board-specific SPI flash configuration, temporary loader, and SPI bootloader image listed above.
+
+6. Import the board-specific SPI flash configuration into RKDevTool by right-clicking anywhere in the table area and selecting "Import Configuration".
+
+7. Select the board-specific temporary loader as the loader and SPI bootloader image as the U-Boot image. For each file, click the corresponding box under the "..." in the table and select the correct file.
+
+8. Connect the board's programming USB port to the computer.
+
+9. Enter MaskROM mode using the method specified for your board. For the Orange Pi 5 and 5+, hold the MaskROM button while connecting the board's power USB-C port to the same computer.
+
+:::{warning}
+For boards that use two USB-C connections for power and data, connect both cables to the same computer. Do not connect the power cable to a separate power supply.
+
+For boards with different power requirements, follow the manufacturer's documentation for the correct flashing procedure.
+:::
+
+10. Confirm that RKDevTool detects the board in MaskROM mode. It will say **"Found One MaskROM Device"** in the bottom left corner of the window. If it says **"No devices found"** or anything else, check your USB connection and drivers.
+
+11. Enable **Force Write by Addr.**, then click **Run**.
+
+12. Wait for RKDevTool to report that the operation completed successfully in the log section on the right.
+
+RKDevTool is only being used here to update the U-Boot-based bootloader stored in SPI flash. PhotonVision itself is stored on the separately prepared boot device.
+:::
+
+:::{tab-item} Orange Pi 6 Series (6, 6+)
+TODO: test if this works on the Orange Pi 6 and 6+ boards. If it does, add instructions here. If it doesn't, add a note that these boards are not supported yet.
+:::
+::::
+
+#### Flashing the USB drive
+1. Download the PhotonVision image for your supported device.
+2. Use Raspberry Pi Imager to write the image to a USB drive.
+3. Connect the USB drive to a USB 3.0 port on the board.
+
 ## Limelight Installation
 
 In order to flash your Limelight you should follow the instructions on the Limelight documentation for the relevant version. Make sure to replace the Limelight OS image with the relevant PhotonVision image.
