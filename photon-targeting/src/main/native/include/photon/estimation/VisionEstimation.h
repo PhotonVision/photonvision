@@ -20,8 +20,8 @@
 #include <vector>
 
 #include <Eigen/Core>
-#include <wpi/apriltag/AprilTag.hpp>
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/FieldTag.hpp>
 
 #include "TargetModel.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
@@ -30,24 +30,22 @@
 namespace photon {
 namespace VisionEstimation {
 
-std::vector<wpi::apriltag::AprilTag> GetVisibleLayoutTags(
+std::vector<wpi::fields::FieldTag> GetVisibleLayoutTags(
     const std::vector<PhotonTrackedTarget>& visTags,
-    const wpi::apriltag::AprilTagFieldLayout& layout);
+    const wpi::fields::Field& layout);
 
 std::optional<photon::PnpResult> EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<PhotonTrackedTarget>& visTags,
-    const wpi::apriltag::AprilTagFieldLayout& layout,
-    const TargetModel& tagModel);
+    const wpi::fields::Field& layout, const TargetModel& tagModel);
 
 std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<photon::PhotonTrackedTarget>& visTags,
     const wpi::math::Transform3d& robot2Camera,
-    const wpi::math::Pose3d& robotPoseSeed,
-    const wpi::apriltag::AprilTagFieldLayout& layout,
+    const wpi::math::Pose3d& robotPoseSeed, const wpi::fields::Field& layout,
     const photon::TargetModel& tagModel, bool headingFree,
     wpi::math::Rotation2d gyroTheta, double gyroErrorScaleFac);
 

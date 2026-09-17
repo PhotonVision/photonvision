@@ -73,7 +73,7 @@ public class UIPhotonConfiguration {
                                 NetworkTablesManager.getInstance().conflictingCameras,
                                 VkAprilTagAvailability.getDevices().stream().map(UIVulkanDeviceInfo::from).toList(),
                                 VkAprilTagAvailability.getUnavailableReason()),
-                        c.getApriltagFieldLayout()),
+                        c.getFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
                         .toList());

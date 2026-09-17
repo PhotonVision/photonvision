@@ -131,9 +131,9 @@ public abstract class AbstractAprilTagPipeline<S extends AprilTagPipelineSetting
                                 settings.numIterations));
 
                 // TODO global state ew
-                var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+                var field = ConfigManager.getInstance().getConfig().getFieldLayout();
                 multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl, tagModel));
+                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, field, tagModel));
             }
         }
     }
@@ -188,7 +188,7 @@ public abstract class AbstractAprilTagPipeline<S extends AprilTagPipelineSetting
             // Clear target list that was used for multitag so we can add target transforms
             targetList.clear();
             // TODO global state again ew
-            var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+            var field = ConfigManager.getInstance().getConfig().getFieldLayout();
 
             for (AprilTagDetection detection : usedDetections) {
                 AprilTagPoseEstimate tagPoseEstimate = null;
@@ -204,7 +204,7 @@ public abstract class AbstractAprilTagPipeline<S extends AprilTagPipelineSetting
                 // If single-tag estimation was not done, this is a multi-target tag from the layout
                 if (tagPoseEstimate == null && multiTagResult.isPresent()) {
                     // compute this tag's camera-to-tag transform using the multitag result
-                    var tagPose = atfl.getTagPose(detection.getId());
+                    var tagPose = field.getTagPose(detection.getId());
                     if (tagPose.isPresent()) {
                         var camToTag =
                                 new Transform3d(

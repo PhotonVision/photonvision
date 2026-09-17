@@ -25,7 +25,7 @@ import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource.FPSRatedVideoMode;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.processes.VisionSourceSettables;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.vision.camera.VideoMode;
 
