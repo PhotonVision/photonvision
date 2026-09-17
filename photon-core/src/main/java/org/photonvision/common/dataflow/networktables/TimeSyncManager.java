@@ -47,11 +47,11 @@ public class TimeSyncManager {
         // Need this subtable to be unique per coprocessor. TODO: consider using MAC address or
         // something similar for metrics?
         var timeTable = kRootTable.getSubTable(".timesync").getSubTable(CameraServerJNI.getHostname());
-        m_offsetPub = timeTable.getIntegerTopic("offset_us").publish();
-        m_rtt2Pub = timeTable.getIntegerTopic("rtt2_us").publish();
+        m_offsetPub = timeTable.getIntegerTopic("offset_ns").publish();
+        m_rtt2Pub = timeTable.getIntegerTopic("rtt2_ns").publish();
         m_pingsPub = timeTable.getIntegerTopic("ping_tx_count").publish();
         m_pongsPub = timeTable.getIntegerTopic("pong_rx_count").publish();
-        m_lastPongTimePub = timeTable.getIntegerTopic("pong_rx_time_us").publish();
+        m_lastPongTimePub = timeTable.getIntegerTopic("pong_rx_time_ns").publish();
 
         // default to being a client
         logger.debug("Starting TimeSyncClient on localhost (for now)");
@@ -131,6 +131,7 @@ public class TimeSyncManager {
         }
     }
 
+    /** Time since the last pong was received, in nanoseconds. */
     public synchronized long getTimeSinceLastPong() {
         if (m_client != null) {
             return m_client.getPingMetadata().timeSinceLastPong();

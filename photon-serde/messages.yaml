@@ -3,9 +3,9 @@
   fields:
   - name: sequenceID
     type: int64
-  - name: captureTimestampMicros
+  - name: captureTimestampNanos
     type: int64
-  - name: publishTimestampMicros
+  - name: publishTimestampNanos
     type: int64
   - name: timeSinceLastPong
     type: int64

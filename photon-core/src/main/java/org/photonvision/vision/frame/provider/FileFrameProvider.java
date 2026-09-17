@@ -22,12 +22,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
+import org.wpilib.networktables.NetworkTablesJNI;
 
 /**
  * A {@link FrameProvider} that will read and provide an image from a {@link java.nio.file.Path
@@ -115,7 +115,7 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
         }
 
         lastGetMillis = System.currentTimeMillis();
-        return new CapturedFrame(out, properties, MathUtils.wpiNanoTime());
+        return new CapturedFrame(out, properties, NetworkTablesJNI.now());
     }
 
     @Override

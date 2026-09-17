@@ -6,11 +6,11 @@ For more information on how to methods to get AprilTag data, look {ref}`here <do
 
 PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose. For each camera, a separate instance of the `PhotonPoseEstimator` class should be created.
 
-## Creating an `AprilTagFieldLayout`
+## Creating a `Field`
 
-`AprilTagFieldLayout` is used to represent a layout of AprilTags within a space (field, shop at home, classroom, etc.). WPILib provides a JSON that describes the layout of AprilTags on the field which you can then use in the AprilTagFieldLayout constructor. You can also specify a custom layout.
+A WPILib `Field` is used to represent a field containing a set of AprilTags (field, shop at home, classroom, etc.). WPILib provides a JSON that describes the layout of AprilTags on the field which you can then use in the `Field` constructor. You can also specify a custom layout.
 
-The API documentation can be found in here: [Java](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/apriltag/AprilTagFieldLayout.html), [C++](https://github.wpilib.org/allwpilib/docs/release/cpp/classfrc_1_1_april_tag_field_layout.html), and [Python](https://robotpy.readthedocs.io/projects/apriltag/en/stable/robotpy_apriltag/AprilTagFieldLayout.html#robotpy_apriltag.AprilTagFieldLayout).
+The API documentation can be found in here: [Java](https://github.wpilib.org/allwpilib/docs/release/java/org/wpilib/fields/Field.html), [C++](https://github.wpilib.org/allwpilib/docs/release/cpp/classwpi_1_1fields_1_1_field.html), and [Python](https://robotpy.readthedocs.io/projects/fields/en/stable/robotpy_fields/Field.html#robotpy_fields.Field).
 
 ```{eval-rst}
 .. tab-set-code::
@@ -48,7 +48,7 @@ Another necessary argument for creating a `PhotonPoseEstimator` is the `Transfor
 
 ## Creating a `PhotonPoseEstimator`
 
-The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above) and `Transform3d`.
+The PhotonPoseEstimator has a constructor that takes a `Field` (see above) and `Transform3d`.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -88,7 +88,7 @@ When taking in a result from a `PhotonCamera`, PhotonPoseEstimator offers nine p
 
 - Coprocessor MultiTag (`estimateCoprocMultiTagPose`)
   - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
-  - Must configure the AprilTagFieldLayout properly in the UI, please see {ref}`here <docs/apriltag-pipelines/multitag:multitag localization>` for more information.
+  - Must configure the field properly in the UI, please see {ref}`here <docs/apriltag-pipelines/multitag:multitag localization>` for more information.
 - Lowest Ambiguity (`estimateLowestAmbiguityPose`)
   - Choose the Pose with the lowest ambiguity.
 - Closest to Camera Height (`estimateClosestToCameraHeightPose`)

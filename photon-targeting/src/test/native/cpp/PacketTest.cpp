@@ -20,10 +20,10 @@
 #include <chrono>
 #include <vector>
 
+#include <catch2/catch_test_macros.hpp>
 #include <wpi/units/angle.hpp>
 #include <wpi/util/print.hpp>
 
-#include "gtest/gtest.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
@@ -31,7 +31,7 @@
 
 using namespace photon;
 
-TEST(PacketTest, PnpResult) {
+TEST_CASE("PacketTest PnpResult", "[packet]") {
   PnpResult result{};
 
   result.best = {1_m, 2_m, 3_m, wpi::math::Rotation3d{6_deg, 7_deg, 12_deg}};
@@ -46,7 +46,7 @@ TEST(PacketTest, PnpResult) {
 
   PnpResult b = p.Unpack<PnpResult>();
 
-  EXPECT_EQ(result, b);
+  CHECK(result == b);
 }
 
 // TEST(PacketTest, MultiTargetPNPResult) {
@@ -86,14 +86,14 @@ TEST(PacketTest, PnpResult) {
 //   EXPECT_EQ(target, b);
 // }
 
-TEST(PacketTest, PhotonPipelineResult) {
+TEST_CASE("PacketTest PhotonPipelineResult", "[packet]") {
   PhotonPipelineResult result(PhotonPipelineMetadata(0, 0, 1, 2),
                               std::vector<PhotonTrackedTarget>{}, std::nullopt);
 
   Packet p;
   p.Pack<decltype(result)>(result);
   auto b = p.Unpack<decltype(result)>();
-  EXPECT_EQ(result, b);
+  CHECK(result == b);
 
   std::vector<PhotonTrackedTarget> targets{
       PhotonTrackedTarget{
@@ -141,7 +141,7 @@ TEST(PacketTest, PhotonPipelineResult) {
   auto t2 = std::chrono::steady_clock::now();
   auto b2 = p2.Unpack<decltype(result2)>();
   auto t3 = std::chrono::steady_clock::now();
-  EXPECT_EQ(result2, b2);
+  CHECK(result2 == b2);
 
   wpi::util::println(
       "Pack {} unpack {} packet length {}",
