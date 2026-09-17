@@ -71,7 +71,7 @@ ext {
     // maven.photonvision.org (it doesn't publish one - see its own repo).
     // Matches vkapriltag-jni's own tag, which follows the same
     // vYYYY.MAJOR.MINOR[-alpha-N] convention as libcameraDriverVersion.
-    vkAprilTagVersion = "v2027.0.0-alpha-2";
+    vkAprilTagVersion = "v2027.0.0-alpha-3";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
