@@ -63,7 +63,7 @@ class Packet:
                 self.readPos += 1
                 return retVal
             except IndexError:
-                wpilib.reportError(Packet._NO_MORE_BYTES_MESSAGE, True)
+                wpilib.report_error(Packet._NO_MORE_BYTES_MESSAGE, True)
                 self.outOfBytes = True
 
         return 0x00
@@ -278,11 +278,11 @@ class Packet:
         self.encodeDouble(transform.translation().z)
 
         # Encode Rotation3d as Quaternion (w, x, y, z)
-        quaternion = transform.rotation().getQuaternion()
-        self.encodeDouble(quaternion.W())
-        self.encodeDouble(quaternion.X())
-        self.encodeDouble(quaternion.Y())
-        self.encodeDouble(quaternion.Z())
+        quaternion = transform.rotation().get_quaternion()
+        self.encodeDouble(quaternion.w)
+        self.encodeDouble(quaternion.x)
+        self.encodeDouble(quaternion.y)
+        self.encodeDouble(quaternion.z)
 
     def encodeList(self, values: list[T], serde: Serde[T]):
         """

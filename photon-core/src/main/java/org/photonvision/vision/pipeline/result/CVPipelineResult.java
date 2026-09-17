@@ -25,6 +25,7 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.networktables.NetworkTablesJNI;
 
 public class CVPipelineResult implements Releasable {
     public final long sequenceID;
@@ -110,7 +111,7 @@ public class CVPipelineResult implements Releasable {
      */
     @Deprecated
     public double getLatencyMillis() {
-        var now = MathUtils.wpiNanoTime();
+        var now = NetworkTablesJNI.now();
         return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
     }
 

@@ -27,7 +27,7 @@ import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 public class DrawCalibrationPipe
         extends MutatingPipe<

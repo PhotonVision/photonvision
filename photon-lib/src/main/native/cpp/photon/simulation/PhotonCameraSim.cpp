@@ -29,8 +29,8 @@
 #include <utility>
 #include <vector>
 
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
-#include <wpi/apriltag/AprilTagFields.hpp>
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/fields.hpp>
 
 #include "photon/estimation/CameraTargetRelation.h"
 #include "photon/estimation/RotTrlTransform3d.h"
@@ -39,13 +39,13 @@
 
 namespace photon {
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
-    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG(),
-                      wpi::apriltag::AprilTagFieldLayout::LoadField(
-                          wpi::apriltag::AprilTagField::kDefaultField)) {}
+    : PhotonCameraSim(
+          camera, photon::SimCameraProperties::PERFECT_90DEG(),
+          wpi::fields::GetField(wpi::fields::FieldId::DEFAULT_FIELD)) {}
 
-PhotonCameraSim::PhotonCameraSim(
-    PhotonCamera* camera, const SimCameraProperties& props,
-    const wpi::apriltag::AprilTagFieldLayout& tagLayout)
+PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
+                                 const SimCameraProperties& props,
+                                 const wpi::fields::Field& tagLayout)
     : prop{props}, cam{camera}, tagLayout{tagLayout} {
   SetMinTargetAreaPixels(kDefaultMinAreaPx);
   videoSimRaw =
@@ -97,7 +97,7 @@ std::optional<uint64_t> PhotonCameraSim::ConsumeNextEntryTime() {
     timestamp = nextNTEntryTime;
     hasTimestamp = true;
     int64_t frameTime = prop.EstSecUntilNextFrame()
-                            .convert<wpi::units::microseconds>()
+                            .convert<wpi::units::nanoseconds>()
                             .to<int64_t>();
     nextNTEntryTime += frameTime;
 
@@ -291,7 +291,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
     videoSimRaw.PutFrame(videoSimFrameRaw);
   } else {
     videoSimRaw.SetConnectionStrategy(
-        wpi::cs::VideoSource::ConnectionStrategy::kConnectionForceClose);
+        wpi::cs::VideoSource::ConnectionStrategy::CONNECTION_FORCE_CLOSE);
   }
 
   if (videoSimProcEnabled) {
@@ -336,19 +336,19 @@ PhotonPipelineResult PhotonCameraSim::Process(
     videoSimProcessed.PutFrame(videoSimFrameProcessed);
   } else {
     videoSimProcessed.SetConnectionStrategy(
-        wpi::cs::VideoSource::ConnectionStrategy::kConnectionForceClose);
+        wpi::cs::VideoSource::ConnectionStrategy::CONNECTION_FORCE_CLOSE);
   }
 
   std::optional<MultiTargetPNPResult> multiTagResults = std::nullopt;
 
-  std::vector<wpi::apriltag::AprilTag> visibleLayoutTags =
+  std::vector<wpi::fields::FieldTag> visibleLayoutTags =
       VisionEstimation::GetVisibleLayoutTags(detectableTgts, tagLayout);
   if (visibleLayoutTags.size() > 1) {
     std::vector<int16_t> usedIds{};
     usedIds.resize(visibleLayoutTags.size());
     std::transform(visibleLayoutTags.begin(), visibleLayoutTags.end(),
                    usedIds.begin(),
-                   [](const wpi::apriltag::AprilTag& tag) { return tag.ID; });
+                   [](const wpi::fields::FieldTag& tag) { return tag.ID; });
     std::sort(usedIds.begin(), usedIds.end());
     auto pnpResult = VisionEstimation::EstimateCamPosePNP(
         prop.GetIntrinsics(), prop.GetDistCoeffs(), detectableTgts, tagLayout,
@@ -360,8 +360,8 @@ PhotonPipelineResult PhotonCameraSim::Process(
 
   return PhotonPipelineResult{
       PhotonPipelineMetadata{heartbeatCounter, 0,
-                             wpi::units::microsecond_t{latency}.to<int64_t>(),
-                             1000000},
+                             wpi::units::nanosecond_t{latency}.to<int64_t>(),
+                             1000000000},
       detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {

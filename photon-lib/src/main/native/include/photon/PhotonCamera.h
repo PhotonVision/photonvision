@@ -28,7 +28,6 @@
 #include <string>
 #include <vector>
 
-#include <wpi/driverstation/Alert.hpp>
 #include <wpi/nt/BooleanTopic.hpp>
 #include <wpi/nt/DoubleArrayTopic.hpp>
 #include <wpi/nt/DoubleTopic.hpp>
@@ -39,6 +38,7 @@
 #include <wpi/nt/RawTopic.hpp>
 #include <wpi/nt/StringTopic.hpp>
 #include <wpi/units/time.hpp>
+#include <wpi/util/Alert.hpp>
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
@@ -266,8 +266,8 @@ class PhotonCamera {
   std::string path;
   std::string cameraName;
 
-  wpi::Alert disconnectAlert;
-  wpi::Alert timesyncAlert;
+  wpi::util::Alert disconnectAlert;
+  wpi::util::Alert timesyncAlert;
 
  private:
   wpi::units::second_t lastVersionCheckTime = 0_s;
