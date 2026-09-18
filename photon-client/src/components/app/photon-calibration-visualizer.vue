@@ -128,7 +128,7 @@ const fetchCalibrationData = async () => {
   error.value = null;
 
   try {
-    const response = await axios.get("/settings/camera/getCalibration", {
+    const response = await axios.get("settings/camera/getCalibration", {
       params: {
         cameraUniqueName: props.cameraUniqueName,
         width: props.resolution.width,

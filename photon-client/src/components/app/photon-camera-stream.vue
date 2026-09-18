@@ -50,8 +50,10 @@ const rotatedResolution = computed<{ width: number; height: number } | null>(() 
   if (props.cameraSettings.validVideoFormats.length === 0) {
     return null;
   }
-  const resolution =
-    props.cameraSettings.validVideoFormats[props.cameraSettings.pipelineSettings.cameraVideoModeIndex].resolution;
+  const videoFormat =
+    props.cameraSettings.validVideoFormats[props.cameraSettings.pipelineSettings.cameraVideoModeIndex];
+  if (!videoFormat) return null;
+  const resolution = videoFormat.resolution;
   const rotation = props.cameraSettings.pipelineSettings.inputImageRotationMode;
   return rotation === 1 || rotation === 3
     ? { width: resolution.height, height: resolution.width }

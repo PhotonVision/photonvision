@@ -10,7 +10,7 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
 
-const targetRowHeight = 24;
+const targetRowHeight = 32;
 
 const displayedTargets = computed(() => {
   const targets = useStateStore().currentPipelineResults?.targets ?? [];
@@ -377,7 +377,7 @@ th {
 
 .target-table-wrapper {
   width: 100%;
-  max-height: calc(var(--target-row-height) * var(--target-row-count));
+  max-height: calc(52px + var(--target-row-height) * var(--target-row-count));
   overflow-y: auto;
 }
 

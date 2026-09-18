@@ -19,7 +19,10 @@ const props = withDefaults(
 
 const normalizeSize = (value?: number | string) => {
   if (value === undefined) return undefined;
-  return typeof value === "number" ? `${value}px` : value;
+  if (typeof value === "number") return `${value}px`;
+
+  const trimmed = value.trim();
+  return /^\d+(?:\.\d+)?$/.test(trimmed) ? `${trimmed}px` : value;
 };
 
 const contentStyle = computed(() => ({

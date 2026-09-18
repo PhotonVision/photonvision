@@ -450,6 +450,12 @@ public class VisionModule implements AutoCloseable {
         return ret;
     }
 
+    public void cancelCalibration() {
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
+        saveAndBroadcastAll();
+    }
+
     boolean setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         logger.info("Pipeline name: " + pipelineManager.getPipelineNickname(index));

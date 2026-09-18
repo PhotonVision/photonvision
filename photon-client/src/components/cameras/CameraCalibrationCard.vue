@@ -133,20 +133,23 @@ const calibrationDivisors = computed(() =>
 
 const uniqueVideoResolutionIndex = ref(getUniqueVideoResolutionStrings()?.[0]?.value);
 
+const initializedVideoResolutionCamera = ref<string | undefined>(undefined);
+
 // Use a watchEffect so the value is populated/reacts when the stores become available or update.
 // This avoids trying to index into an array that may be empty during page reload.
 watchEffect(() => {
-  const names = useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
-    getResolutionString(f.resolution)
-  );
+  const cameraSettings = useCameraSettingsStore().currentCameraSettings;
+  const validVideoFormats = cameraSettings.validVideoFormats;
+  if (validVideoFormats.length === 0 || initializedVideoResolutionCamera.value === cameraSettings.uniqueName) {
+    return;
+  }
+  initializedVideoResolutionCamera.value = cameraSettings.uniqueName;
+
+  const names = validVideoFormats.map((f) => getResolutionString(f.resolution));
   const currentFormatIndex = useCameraSettingsStore().currentVideoFormat?.index ?? 0;
-  // Checks if the current resolution is present in the list of valid formats, if not defaults to the last index (which is usually the highest resolution)
-  const currentIndex =
-    getUniqueVideoResolutionStrings()
-      .map((x) => x.name)
-      .find((n) => n === names[currentFormatIndex]) !== undefined
-      ? currentFormatIndex
-      : names.length - 1;
+  const uniqueFormats = getUniqueVideoResolutionStrings();
+  const matchingUniqueFormat = uniqueFormats.find((x) => x.name === names[currentFormatIndex]);
+  const currentIndex = matchingUniqueFormat ? matchingUniqueFormat.value : (uniqueFormats[0]?.value ?? 0);
   useStateStore().calibrationData.videoFormatIndex = currentIndex;
   uniqueVideoResolutionIndex.value = currentIndex;
 });
@@ -186,8 +189,8 @@ const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01)
 
 const adaptivePaperDimensions = (): [Length, Length] => {
   return [
-    length[dimensionUnit.value](squareSize.value * patternWidth.value + 1),
-    length[dimensionUnit.value](squareSize.value * patternHeight.value + 3)
+    length[dimensionUnit.value](squareSize.value * patternWidth.value + convertInchesToDisplay(1)),
+    length[dimensionUnit.value](squareSize.value * patternHeight.value + convertInchesToDisplay(3))
   ];
 };
 
@@ -223,8 +226,8 @@ const downloadCalibBoard = async () => {
   doc.setFont("Prompt-Regular");
   doc.setFontSize(12);
 
-  const paperWidth = paperDimensions[paperOrientation.value === "portrait" ? 0 : 1].in.value;
-  const paperHeight = paperDimensions[paperOrientation.value === "portrait" ? 1 : 0].in.value;
+  const paperWidth = doc.internal.pageSize.getWidth();
+  const paperHeight = doc.internal.pageSize.getHeight();
 
   const squareSizeInches = squareSizeIn.value;
   const markerSizeInches = markerSizeIn.value;
@@ -350,22 +353,29 @@ const startCalibration = () => {
 };
 const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
+const calibCancelRequested = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
 const calibEndpointFail = ref(false);
 const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
-  if (!hasEnoughImages.value) {
-    calibCanceled.value = true;
-  }
+  const canceling = !hasEnoughImages.value;
+  calibCanceled.value = false;
+  calibCancelRequested.value = canceling;
 
   showCalibEndDialog.value = true;
-  // Check if calibration finished cleanly or was canceled
-  useCameraSettingsStore()
-    .endPnPCalibration()
+  const request = canceling
+    ? useCameraSettingsStore().cancelPnPCalibration()
+    : useCameraSettingsStore().endPnPCalibration();
+
+  request
     .then(() => {
-      calibSuccess.value = true;
+      if (canceling) {
+        calibCanceled.value = true;
+      } else {
+        calibSuccess.value = true;
+      }
     })
     .catch((e) => {
       if (e.response) {
@@ -400,7 +410,11 @@ const updateVideoFormatIndex = (value: number) => {
 };
 
 const updateStreamingFrameDivisor = (value: number | string) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: Number(value) }, false);
+  const divisor = Number(value);
+  const ordinal = [1, 2, 4, 6].indexOf(divisor);
+  if (ordinal >= 0) {
+    useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: ordinal }, false);
+  }
 };
 
 const updateDrawAllSnapshots = (value: boolean | undefined) => {
@@ -518,8 +532,7 @@ const updateCameraBlueGain = (value: number) => {
               similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
             />
             <pv-select
-              v-if="boardType !== CalibrationBoardTypes.ChArUco"
-              v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
+              :model-value="[1, 2, 4, 6][useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor]"
               label="Decimation"
               tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
               :items="calibrationDivisors"
@@ -784,6 +797,10 @@ const updateCameraBlueGain = (value: number) => {
               {{ !isCalibrating ? "is attempting" : "has attempted" }} to cleanly cancel the calibration process.
             </div>
           </template>
+          <template v-else-if="calibCancelRequested && calibSuccess === undefined">
+            <pv-progress :show-percentage="false" color="primary" />
+            <div>Camera calibration is being canceled...</div>
+          </template>
           <!-- No result reported yet -->
           <template v-else-if="calibSuccess === undefined">
             <pv-progress :show-percentage="false" color="primary" />
@@ -808,6 +825,10 @@ const updateCameraBlueGain = (value: number) => {
               successful.
             </div>
           </template>
+          <template v-else-if="calibCancelRequested">
+            <pv-icon color="red" size="70" :icon="IconClose" />
+            <div>Camera calibration could not be canceled. Please try again.</div>
+          </template>
           <template v-else>
             <pv-icon color="red" size="70" :icon="IconClose" />
             <div>
@@ -817,7 +838,13 @@ const updateCameraBlueGain = (value: number) => {
           </template>
         </div>
         <div class="flex items-center justify-end pt-0">
-          <pv-button v-if="!isCalibrating" variant="text" @click="showCalibEndDialog = false">OK</pv-button>
+          <pv-button
+            v-if="calibSuccess !== undefined || calibCanceled || calibEndpointFail"
+            variant="text"
+            @click="showCalibEndDialog = false"
+          >
+            OK
+          </pv-button>
         </div>
       </pv-card>
     </pv-dialog>

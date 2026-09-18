@@ -17,12 +17,12 @@ import IconInformation from "~icons/mdi/information";
 import { metricsHistorySnapshot } from "@/stores/settings/GeneralSettingsStore";
 
 const restartProgram = async () => {
-  if (await axiosPost("/utils/restartProgram", "restart PhotonVision")) {
+  if (await axiosPost("utils/restartProgram", "restart PhotonVision")) {
     await forceReloadPage();
   }
 };
 const restartDevice = async () => {
-  if (await axiosPost("/utils/restartDevice", "restart the device")) {
+  if (await axiosPost("utils/restartDevice", "restart the device")) {
     await forceReloadPage();
   }
 };
@@ -38,10 +38,12 @@ const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:lin
 const majorVersionRegex = new RegExp("(?:dev-)?(\\d+)\\.\\d+\\.\\d+");
 
 const offlineUpdateDialog = ref({ show: false, confirmString: "" });
+const pendingOfflineUpdate = ref<File | null>(null);
 
 const handleOfflineUpdateRequest = async () => {
   const files = offlineUpdate.value?.files;
   if (!files?.length) return;
+  pendingOfflineUpdate.value = files[0];
 
   const match = files[0].name.match(offlineUpdateRegex);
   if (!match) {
@@ -100,7 +102,7 @@ const handleOfflineUpdate = async (file: File) => {
     timeout: -1
   });
   if (
-    await axiosPost("/utils/offlineUpdate", "upload new software", formData, {
+  await axiosPost("utils/offlineUpdate", "upload new software", formData, {
       headers: { "Content-Type": "multipart/form-data" },
       onUploadProgress: ({ progress }: { progress?: number }) => {
         const uploadPercentage = (progress || 0) * 100.0;
@@ -170,7 +172,7 @@ const handleSettingsImport = async () => {
       settingsEndpoint = "";
       break;
   }
-  await axiosPost(`/settings${settingsEndpoint}`, "import settings", formData, {
+  await axiosPost(`settings${settingsEndpoint}`, "import settings", formData, {
     headers: { "Content-Type": "multipart/form-data" }
   });
   showImportDialog.value = false;
@@ -180,7 +182,7 @@ const handleSettingsImport = async () => {
 
 const showFactoryReset = ref(false);
 const nukePhotonConfigDirectory = async () => {
-  if (await axiosPost("/utils/nukeConfigDirectory", "delete the config directory")) {
+  if (await axiosPost("utils/nukeConfigDirectory", "delete the config directory")) {
     await forceReloadPage();
   }
 };
@@ -231,6 +233,11 @@ const platformMetrics = computed<MetricItem[]>(() => {
       })()
     }
   ];
+
+  stats.push({
+    header: "Disk Usage",
+    value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct}%`
+  });
 
   if (metrics.npuUsage && metrics.npuUsage.length > 0) {
     stats.push({
@@ -528,8 +535,9 @@ watch(metricsHistorySnapshot, () => {
               block
               @click="
                 offlineUpdateDialog.show = false;
-                if (offlineUpdate?.files?.length) {
-                  handleOfflineUpdate(offlineUpdate.files[0]);
+                if (pendingOfflineUpdate) {
+                  handleOfflineUpdate(pendingOfflineUpdate);
+                  pendingOfflineUpdate = null;
                 }
               "
             >

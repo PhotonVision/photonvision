@@ -68,7 +68,7 @@ const interactiveCols = computed(() =>
       :min="1"
       :max="127"
       :step="1"
-      :switch-cols="interactiveCols"
+      :slider-cols="interactiveCols"
       @update:modelValue="
         (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputMaximumTargets: value }, false)
       "

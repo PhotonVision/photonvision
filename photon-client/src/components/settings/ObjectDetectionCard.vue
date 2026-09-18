@@ -48,7 +48,7 @@ const handleImport = async () => {
   });
 
   if (
-    await axiosPost("/objectdetection/import", "import an object detection model", formData, {
+    await axiosPost("objectdetection/import", "import an object detection model", formData, {
       headers: { "Content-Type": "multipart/form-data" },
       onUploadProgress: ({ progress }: { progress?: number }) => {
         const uploadPercentage = (progress || 0) * 100.0;
@@ -79,7 +79,7 @@ const handleImport = async () => {
 };
 
 const deleteModel = async (model: ObjectDetectionModelProperties) => {
-  await axiosPost("/objectdetection/delete", "delete an object detection model", {
+    await axiosPost("objectdetection/delete", "delete an object detection model", {
     modelPath: model.modelPath
   });
 };
@@ -91,7 +91,7 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
     timeout: -1
   });
 
-  await axiosPost("/objectdetection/rename", "rename an object detection model", {
+    await axiosPost("objectdetection/rename", "rename an object detection model", {
     modelPath: model.modelPath,
     newName: newName
   });
@@ -122,7 +122,7 @@ const openExportIndividualModelPrompt = () => {
 
 const showNukeDialog = ref(false);
 const nukeModels = async () => {
-  await axiosPost("/objectdetection/nuke", "clear and reset object detection models");
+    await axiosPost("objectdetection/nuke", "clear and reset object detection models");
 };
 
 const showBulkImportDialog = ref(false);
@@ -134,7 +134,7 @@ const handleBulkImport = async () => {
   formData.append("data", importFile.value);
 
   if (
-    await axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
+    await axiosPost("objectdetection/bulkimport", "import object detection models", formData, {
       headers: { "Content-Type": "multipart/form-data" },
       onUploadProgress: ({ progress }: { progress?: number }) => {
         const uploadPercentage = (progress || 0) * 100.0;
@@ -411,7 +411,10 @@ const handleBulkImport = async () => {
                 <a
                   ref="exportIndividualModel"
                   style="color: black; text-decoration: none; display: none"
-                  :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath}`"
+                  :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath.replace(
+                    'file:',
+                    ''
+                  )}`"
                   :download="`${showInfo.model.nickname}_${showInfo.model.family}_${showInfo.model.version}_${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}_${showInfo.model.labels.join('_')}.${showInfo.model.family.toLowerCase()}`"
                   target="_blank"
                 />

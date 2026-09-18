@@ -118,7 +118,7 @@ watchEffect(() => {
 
 const showDeleteCamera = ref(false);
 const deleteThisCamera = async () => {
-  await axiosPost("/utils/nukeOneCamera", "delete this camera", {
+  await axiosPost("utils/nukeOneCamera", "delete this camera", {
     cameraUniqueName: useStateStore().currentCameraUniqueName
   });
 };

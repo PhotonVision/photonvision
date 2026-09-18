@@ -25,14 +25,8 @@ defineEmits<{
 <template>
   <div>
     <pv-tooltip :text="tooltip" :location="right ? 'right' : 'left'" :disabled="!tooltip">
-      <pv-button size="icon">
-        <pv-icon
-          :class="hover ? 'hover:text-white' : ''"
-          :icon="icon"
-          :color="color"
-          :disabled="disabled"
-          @click="$emit('click')"
-        />
+      <pv-button size="icon" :disabled="disabled" :aria-label="tooltip" @click="$emit('click')">
+        <pv-icon :class="hover ? 'hover:text-white' : ''" :icon="icon" :color="color" />
       </pv-button>
     </pv-tooltip>
   </div>

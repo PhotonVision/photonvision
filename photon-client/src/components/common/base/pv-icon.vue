@@ -35,10 +35,14 @@ const emit = defineEmits<{
 const theme = useTheme();
 const IconComponent = computed(() => props.icon ?? null);
 
+const legacyColorMap: Record<string, string> = {
+  "red-darken-2": "#C62828"
+};
+
 const resolvedColor = computed(() => {
   if (!props.color) return undefined;
   const themeColors = theme.colors.value as Record<string, string>;
-  return themeColors[props.color] ?? props.color;
+  return themeColors[props.color] ?? legacyColorMap[props.color] ?? props.color;
 });
 
 const colorClass = computed(() => {

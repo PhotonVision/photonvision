@@ -41,7 +41,7 @@ const handleKeydown = ({ key }: KeyboardEvent) => {
   switch (key) {
     case "Enter":
       // Explicitly check that all rule props return true
-      if (!props.rules?.every((rule) => rule(value.value) === true)) return;
+      if (props.rules && !props.rules.every((rule) => rule(value.value) === true)) return;
 
       emit("onEnter", value.value);
       break;

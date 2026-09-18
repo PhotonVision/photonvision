@@ -18,7 +18,7 @@ const props = defineProps<{
 const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
 const removeCalibration = async (vf: VideoFormat) => {
-  await axiosPost("/calibration/remove", "delete a camera calibration", {
+  await axiosPost("calibration/remove", "delete a camera calibration", {
     cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
     width: vf.resolution.width,
     height: vf.resolution.height
@@ -111,7 +111,9 @@ const totalOutlierPoints = computed<number>(
 const totalObservationPoints = computed<number>(() => {
   const coefficients = currentCalibrationCoeffs.value;
   return coefficients
-    ? coefficients.calobjectSize.width * coefficients.calobjectSize.height * coefficients.numSnapshots
+    ? Math.max(0, coefficients.calobjectSize.width - 1) *
+        Math.max(0, coefficients.calobjectSize.height - 1) *
+        coefficients.numSnapshots
     : 0;
 });
 
@@ -120,7 +122,7 @@ const totalInlierPoints = computed<number>(() => totalObservationPoints.value - 
 const inlierRatioPercent = computed<string>(() => {
   const total = totalObservationPoints.value;
   if (total === 0) return "0.00";
-  return ((totalInlierPoints.value / total) * 100).toPrecision(2);
+  return ((totalInlierPoints.value / total) * 100).toFixed(2);
 });
 
 const getObservationDetails = (): ObservationDetails[] | undefined => {
@@ -134,11 +136,15 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
   }));
 };
 
-const exportCalibrationURL = computed<string>(() =>
-  useCameraSettingsStore().getCalJSONUrl(inject("backendHost") as string, props.videoFormat.resolution)
+const exportCalibrationURL = computed<string | undefined>(() =>
+  props.videoFormat
+    ? useCameraSettingsStore().getCalJSONUrl(inject("backendHost") as string, props.videoFormat.resolution)
+    : undefined
 );
 const calibrationImageURL = (index: number) =>
-  useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
+  props.videoFormat
+    ? useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index)
+    : "";
 
 const tab = ref(0);
 const viewingImg = ref(0);

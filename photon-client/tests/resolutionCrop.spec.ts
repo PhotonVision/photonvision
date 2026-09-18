@@ -2,12 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import { test } from "./fixtures.ts";
 
 const row = (page: Page, label: string): Locator =>
-  page
-    .locator("div.d-flex")
-    .filter({ hasText: label })
-    .filter({ has: page.locator("input[type=number]") })
-    .last()
-    .locator("input[type=number]");
+  page.getByRole("spinbutton", { name: new RegExp(`^(Minimum|Maximum) ${label}$`) });
 
 // These tests need a camera with several capture modes, which the file-based test cameras don't
 // have -- they run against a real webcam when one is attached and skip cleanly otherwise (CI).
@@ -17,7 +12,7 @@ test("resolution change scaling and reset", async ({ page }) => {
   // Activate the real webcam (multi-mode) via the camera matching page if it isn't active yet.
   await page.goto("http://localhost:5800/#/cameraConfigs");
   await page.waitForTimeout(2000);
-  const webcamCard = page.locator(".v-card").filter({ hasText: /webcam/i });
+  const webcamCard = page.locator("div.rounded-2xl").filter({ hasText: /webcam/i });
   if (
     await webcamCard
       .first()
@@ -35,13 +30,7 @@ test("resolution change scaling and reset", async ({ page }) => {
   await page.getByRole("tab", { name: "Input", exact: true }).first().click();
 
   // The file cameras are single-mode; the real webcam (when present) has several capture modes.
-  const camSelect = page
-    .locator("div.d-flex")
-    .filter({ has: page.getByText("Camera", { exact: true }) })
-    .filter({ has: page.locator(".v-select") })
-    .last()
-    .locator(".v-select")
-    .first();
+  const camSelect = page.getByRole("combobox", { name: "Camera", exact: true }).last();
   await camSelect.click();
   const camOpts = page.getByRole("option");
   await camOpts.first().waitFor();
@@ -58,13 +47,7 @@ test("resolution change scaling and reset", async ({ page }) => {
   test.skip(webcam < 0, "no real webcam available for multi-resolution testing");
 
   // The label "Resolution" exactly -- "Stream Resolution" is a different select.
-  const resSelect = page
-    .locator("div.d-flex")
-    .filter({ has: page.getByText("Resolution", { exact: true }) })
-    .filter({ has: page.locator(".v-select") })
-    .last()
-    .locator(".v-select")
-    .first();
+  const resSelect = page.getByRole("combobox", { name: "Resolution", exact: true });
   await resSelect.click();
   const opts = page.getByRole("option");
   await opts.first().waitFor();
@@ -82,12 +65,7 @@ test("resolution change scaling and reset", async ({ page }) => {
   const start = names.find((n) => /1920x1080/.test(n)) ?? names[0];
   await pick(new RegExp(start.split(" ")[0]));
   const [sw, sh] = start.split(" ")[0].split("x").map(Number);
-  const cropSwitch = page
-    .locator("div.d-flex")
-    .filter({ hasText: "Static Crop" })
-    .filter({ has: page.getByRole("checkbox") })
-    .last()
-    .getByRole("checkbox");
+  const cropSwitch = page.getByRole("switch", { name: "Static Crop" }).last();
   if (!(await cropSwitch.isChecked())) await cropSwitch.check();
   const x = row(page, "Crop X Range");
   const y = row(page, "Crop Y Range");

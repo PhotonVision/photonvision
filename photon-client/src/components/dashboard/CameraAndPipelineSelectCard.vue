@@ -226,6 +226,10 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
     value: cameraUniqueName
   }))
 );
+const selectCamera = (cameraUniqueName: string) => {
+  useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
+  pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+};
 </script>
 
 <template>
@@ -234,11 +238,11 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
       <div class="w-5/6 p-0">
         <pv-select
           v-if="!isCameraNameEdit"
-          v-model="useStateStore().currentCameraUniqueName"
+          :model-value="useStateStore().currentCameraUniqueName"
           label="Camera"
           :items="wrappedCameras"
           class="pt-0 pb-1"
-          @update:modelValue="pipelineType = useCameraSettingsStore().currentWebsocketPipelineType"
+          @update:modelValue="selectCamera"
         />
         <pv-input
           v-else

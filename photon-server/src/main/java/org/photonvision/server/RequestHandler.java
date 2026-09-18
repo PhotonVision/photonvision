@@ -531,6 +531,26 @@ public class RequestHandler {
         }
     }
 
+    public static void onCalibrationCancelRequest(Context ctx) {
+        try {
+            CommonCameraUniqueName request =
+                    Jsonb.instance().type(CommonCameraUniqueName.class).fromJson(ctx.body());
+
+            VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName).cancelCalibration();
+            ctx.status(200);
+            ctx.result("Camera calibration canceled");
+        } catch (IllegalStateException | JsonException e) {
+            ctx.status(400);
+            ctx.result(
+                    "The 'cameraUniqueName' field was not found in the request. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.");
+            logger.error("Unable to cancel calibration because the camera unique name was missing", e);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("There was an error while canceling calibration");
+            logger.error("There was an error while canceling calibration", e);
+        }
+    }
+
     @Json
     record DataCalibrationImportRequest(
             String cameraUniqueName, CameraCalibrationCoefficients calibration) {}

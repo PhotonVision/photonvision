@@ -27,7 +27,7 @@ const value = defineModel<T>({ required: true });
 
 const displayValue = computed(() => {
   const selectedItem = items.value.find((item) => item.value === value.value);
-  return selectedItem ? selectedItem.name : "";
+  return selectedItem?.name;
 });
 
 const props = withDefaults(
@@ -82,7 +82,7 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
         >
           <!-- This allows us to work around Reka #2160-->
           <select-value :data-slot="value !== null ? 'value' : 'placeholder'" class="truncate">
-            <slot :model-value="modelValue">
+            <slot :model-value="value">
               {{ displayValue ?? placeholder ?? "&nbsp;" }}
             </slot>
           </select-value>

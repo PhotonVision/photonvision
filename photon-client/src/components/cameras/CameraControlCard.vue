@@ -22,7 +22,7 @@ const emptyGroupedCell = () => "";
 const imgData = ref<Snapshot[]>([]);
 const fetchSnapshots = () => {
   axios
-    .get("/utils/getImageSnapshots")
+    .get("utils/getImageSnapshots")
     .then((response) => {
       imgData.value = response.data.snapshots.map(
         (snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string }, index: number) => {

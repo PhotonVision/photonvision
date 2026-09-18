@@ -87,18 +87,16 @@ const streamToggleModel = computed<string[]>({
       </div>
     </div>
     <div class="flex flex-wrap items-center justify-center gap-3 px-5 pb-5 min-[512px]:max-[960px]:flex-nowrap">
-      <div class="flex w-full justify-center min-[512px]:max-[960px]:w-1/2">
+      <div v-if="value.includes(0)" class="flex w-full flex-1 justify-center min-[512px]:max-[960px]:w-1/2">
         <photon-camera-stream
-          v-if="value.includes(0)"
           id="input-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Raw"
           style="max-width: 100%"
         />
       </div>
-      <div class="flex w-full justify-center min-[512px]:max-[960px]:w-1/2">
+      <div v-if="value.includes(1)" class="flex w-full flex-1 justify-center min-[512px]:max-[960px]:w-1/2">
         <photon-camera-stream
-          v-if="value.includes(1)"
           id="output-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Processed"

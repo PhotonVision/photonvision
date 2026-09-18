@@ -41,8 +41,8 @@ const cameraResolutions = (): { name: string; value: number }[] =>
 const handleResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
 
-  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: getNumberOfSkippedDivisors() }, false);
-  useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor = 0;
+  const skipped = getNumberOfSkippedDivisors();
+  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: skipped }, false);
 
   if (!useCameraSettingsStore().isCurrentVideoFormatCalibrated && !useCameraSettingsStore().isDriverMode) {
     useCameraSettingsStore().changeCurrentPipelineSetting({ solvePNPEnabled: false }, true);
@@ -63,7 +63,7 @@ const currentStreamResolutionIndex = computed<number>({
   get: () => {
     const stored = useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor;
     const skipped = getNumberOfSkippedDivisors();
-    return stored - skipped;
+    return Math.max(0, stored - skipped);
   },
   set: (index) => {
     useCameraSettingsStore().changeCurrentPipelineSetting({
@@ -103,12 +103,24 @@ const clampCropRange = (range: WebsocketNumberPair | [number, number] | undefine
 const staticCropX = computed<[number, number]>({
   get: () =>
     clampCropRange(useCameraSettingsStore().currentPipelineSettings.staticCropX, croppableResolution.value.width),
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.staticCropX = v)
+  set: (v) => {
+    const original = cropBounds(useCameraSettingsStore().currentPipelineSettings.staticCropX);
+    useCameraSettingsStore().currentPipelineSettings.staticCropX = [
+      v[0],
+      v[1] >= croppableResolution.value.width && original[1] >= FrameEdgeCropBound ? FrameEdgeCropBound : v[1]
+    ];
+  }
 });
 const staticCropY = computed<[number, number]>({
   get: () =>
     clampCropRange(useCameraSettingsStore().currentPipelineSettings.staticCropY, croppableResolution.value.height),
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.staticCropY = v)
+  set: (v) => {
+    const original = cropBounds(useCameraSettingsStore().currentPipelineSettings.staticCropY);
+    useCameraSettingsStore().currentPipelineSettings.staticCropY = [
+      v[0],
+      v[1] >= croppableResolution.value.height && original[1] >= FrameEdgeCropBound ? FrameEdgeCropBound : v[1]
+    ];
+  }
 });
 
 const rotatedDims = (width: number, height: number, rotation: number) =>

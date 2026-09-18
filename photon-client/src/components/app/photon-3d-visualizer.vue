@@ -4,7 +4,7 @@ import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
 import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
 import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
-import { onMounted, useTemplateRef, watch, watchEffect } from "vue";
+import { computed, onBeforeUnmount, onMounted, useTemplateRef, watch, watchEffect } from "vue";
 import { useTheme } from "@/composables/useTheme";
 const {
   ArrowHelper,
@@ -25,11 +25,11 @@ const { TrackballControls } = await import("three/examples/jsm/controls/Trackbal
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { createPerspectiveCamera } from "@/lib/ThreeUtils";
-const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
-  useCameraSettingsStore().currentCameraSettings.validVideoFormats[
-    useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex
-  ].resolution
-);
+const currentVideoFormat = computed(() => useCameraSettingsStore().currentVideoFormat);
+const calibrationCoeffs = computed(() => {
+  const format = currentVideoFormat.value;
+  return format ? useCameraSettingsStore().getCalibrationCoeffs(format.resolution) : undefined;
+});
 
 const props = defineProps<{
   targets: PhotonTarget[];
@@ -52,6 +52,7 @@ const drawTargets = async (targets: PhotonTarget[]) => {
   if (theme.isDark.value) scene.background = new Color(0x151515);
   else scene.background = new Color(0x232c37);
 
+  previousTargets.forEach(disposeObject);
   scene.remove(...previousTargets);
   previousTargets = [];
 
@@ -86,11 +87,11 @@ const drawTargets = async (targets: PhotonTarget[]) => {
     previousTargets.push(arrow);
   });
 
-  if (calibrationCoeffs) {
+  if (calibrationCoeffs.value) {
     // And show camera frustum
     const calibCamera = await createPerspectiveCamera(
-      calibrationCoeffs.resolution,
-      calibrationCoeffs.cameraIntrinsics,
+      calibrationCoeffs.value.resolution,
+      calibrationCoeffs.value.cameraIntrinsics,
       10
     );
     const helper = new CameraHelper(calibCamera);
@@ -105,6 +106,18 @@ const drawTargets = async (targets: PhotonTarget[]) => {
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
   }
+};
+
+const disposeObject = (object: Object3D) => {
+  object.traverse((child) => {
+    const disposable = child as Object3D & {
+      geometry?: { dispose: () => void };
+      material?: { dispose: () => void } | Array<{ dispose: () => void }>;
+    };
+    disposable.geometry?.dispose();
+    if (Array.isArray(disposable.material)) disposable.material.forEach((material) => material.dispose());
+    else disposable.material?.dispose();
+  });
 };
 const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
@@ -233,6 +246,13 @@ watch(
     scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
   }
 );
+
+onBeforeUnmount(() => window.removeEventListener("resize", onResize));
+onBeforeUnmount(() => {
+  previousTargets.forEach(disposeObject);
+  controls?.dispose();
+  renderer?.dispose();
+});
 </script>
 
 <template>
