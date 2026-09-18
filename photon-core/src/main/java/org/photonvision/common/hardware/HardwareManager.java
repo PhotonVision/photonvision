@@ -271,4 +271,8 @@ public class HardwareManager {
         }
         statusLED.ifPresent(statusLED -> statusLED.setStatus(status));
     }
+
+    public boolean hasStatusLed() {
+        return statusLED.isPresent();
+    }
 }
