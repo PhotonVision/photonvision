@@ -79,7 +79,7 @@ const handleImport = async () => {
 };
 
 const deleteModel = async (model: ObjectDetectionModelProperties) => {
-    await axiosPost("objectdetection/delete", "delete an object detection model", {
+  await axiosPost("objectdetection/delete", "delete an object detection model", {
     modelPath: model.modelPath
   });
 };
@@ -91,7 +91,7 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
     timeout: -1
   });
 
-    await axiosPost("objectdetection/rename", "rename an object detection model", {
+  await axiosPost("objectdetection/rename", "rename an object detection model", {
     modelPath: model.modelPath,
     newName: newName
   });
@@ -122,7 +122,7 @@ const openExportIndividualModelPrompt = () => {
 
 const showNukeDialog = ref(false);
 const nukeModels = async () => {
-    await axiosPost("objectdetection/nuke", "clear and reset object detection models");
+  await axiosPost("objectdetection/nuke", "clear and reset object detection models");
 };
 
 const showBulkImportDialog = ref(false);

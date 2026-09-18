@@ -102,7 +102,7 @@ const handleOfflineUpdate = async (file: File) => {
     timeout: -1
   });
   if (
-  await axiosPost("utils/offlineUpdate", "upload new software", formData, {
+    await axiosPost("utils/offlineUpdate", "upload new software", formData, {
       headers: { "Content-Type": "multipart/form-data" },
       onUploadProgress: ({ progress }: { progress?: number }) => {
         const uploadPercentage = (progress || 0) * 100.0;

@@ -128,7 +128,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 
 <template>
   <div class="p-3">
-    <div class="-mx-3 flex flex-wrap rounded-2xl bg-pv-surface/30 p-3">
+    <div class="bg-pv-surface/30 -mx-3 flex flex-wrap rounded-2xl p-3">
       <!-- Active modules -->
       <div
         v-for="(module, index) in activeVisionModules"

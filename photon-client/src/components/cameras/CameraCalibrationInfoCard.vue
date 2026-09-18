@@ -143,7 +143,11 @@ const exportCalibrationURL = computed<string | undefined>(() =>
 );
 const calibrationImageURL = (index: number) =>
   props.videoFormat
-    ? useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index)
+    ? useCameraSettingsStore().getCalImageUrl(
+        inject<string>("backendHost") as string,
+        props.videoFormat.resolution,
+        index
+      )
     : "";
 
 const tab = ref(0);
