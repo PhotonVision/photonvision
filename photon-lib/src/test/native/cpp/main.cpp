@@ -22,14 +22,34 @@
  * SOFTWARE.
  */
 
+#include <string_view>
+
+#include <catch2/catch_session.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <wpi/hal/HAL.h>
 
-#include "gtest/gtest.h"
+namespace {
+
+bool IsCatchListCommand(int argc, char** argv) {
+  for (int i = 1; i < argc; ++i) {
+    std::string_view arg{argv[i]};
+    if (arg == "--list-tests" || arg == "--list-tags" ||
+        arg == "--list-reporters" || arg == "--list-listeners") {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 int main(int argc, char** argv) {
-  HAL_Initialize(500, 0);
-  ::testing::InitGoogleTest(&argc, argv);
-  int ret = RUN_ALL_TESTS();
-  HAL_Shutdown();
+  if (!IsCatchListCommand(argc, argv)) {
+    HAL_Initialize();
+  }
+  int ret = Catch::Session().run(argc, argv);
+  if (!IsCatchListCommand(argc, argv)) {
+    HAL_Shutdown();
+  }
   return ret;
 }

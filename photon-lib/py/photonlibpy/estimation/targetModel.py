@@ -121,11 +121,11 @@ class TargetModel:
             self.vertices = []
             self.isPlanar = False
         else:
-            cornersPlaner = True
+            cornersPlanar = True
             for corner in verts:
-                if abs(corner.X() < 1e-4):
-                    cornersPlaner = False
-            self.isPlanar = cornersPlaner
+                if corner.x != 0:
+                    cornersPlanar = False
+            self.isPlanar = cornersPlanar
 
         self.vertices = verts
 
@@ -160,8 +160,8 @@ class TargetModel:
         relCam = cameraTrl - tgtTrl
         orientToCam = Rotation3d(
             0.0,
-            Rotation2d(math.hypot(relCam.X(), relCam.Y()), relCam.Z()).radians(),
-            Rotation2d(relCam.X(), relCam.Y()).radians(),
+            Rotation2d(math.hypot(relCam.x, relCam.y), relCam.z).radians(),
+            Rotation2d(relCam.x, relCam.y).radians(),
         )
         return Pose3d(tgtTrl, orientToCam)
 

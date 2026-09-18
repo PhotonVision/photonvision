@@ -99,7 +99,10 @@ const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
   }));
 const calibrationDivisors = computed(() =>
   [1, 2, 4].filter((v) => {
-    const currentRes = useCameraSettingsStore().currentVideoFormat.resolution;
+    const currentRes = useCameraSettingsStore().currentVideoFormat?.resolution;
+    if (!currentRes) {
+      return 0;
+    }
     return (currentRes.width / v >= 300 && currentRes.height / v >= 220) || v === 1;
   })
 );
@@ -112,7 +115,7 @@ watchEffect(() => {
   const names = useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
     getResolutionString(f.resolution)
   );
-  const currentFormatIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
+  const currentFormatIndex = useCameraSettingsStore().currentVideoFormat?.index ?? 0;
   // Checks if the current resolution is present in the list of valid formats, if not defaults to the last index (which is usually the highest resolution)
   const currentIndex =
     getUniqueVideoResolutionStrings()

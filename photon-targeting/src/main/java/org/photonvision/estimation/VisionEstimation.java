@@ -28,6 +28,8 @@ import org.photonvision.jni.ConstrainedSolvepnpJni;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Transform2d;
@@ -37,28 +39,26 @@ import org.wpilib.math.linalg.MatBuilder;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.numbers.*;
 import org.wpilib.math.util.Nat;
-import org.wpilib.vision.apriltag.AprilTag;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.camera.OpenCvLoader;
 
 public class VisionEstimation {
     private VisionEstimation() {}
 
     /**
-     * Get the list of visible {@link AprilTag}s which are in the tag layout using the visible tag
+     * Get the list of visible {@link FieldTag}s which are in the field layout using the visible tag
      * IDs.
      *
      * @param visTags The list of targets to search for visible tags.
-     * @param tagLayout The tag layout to search
+     * @param tagLayout The field layout to search
      */
-    public static List<AprilTag> getVisibleLayoutTags(
-            List<PhotonTrackedTarget> visTags, AprilTagFieldLayout tagLayout) {
+    public static List<FieldTag> getVisibleLayoutTags(
+            List<PhotonTrackedTarget> visTags, Field tagLayout) {
         return visTags.stream()
                 .map(
                         t -> {
                             int id = t.getFiducialId();
                             var maybePose = tagLayout.getTagPose(id);
-                            return maybePose.map(pose3d -> new AprilTag(id, pose3d)).orElse(null);
+                            return maybePose.map(pose3d -> new FieldTag(id, pose3d)).orElse(null);
                         })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -87,7 +87,7 @@ public class VisionEstimation {
             Matrix<N3, N3> cameraMatrix,
             Matrix<N8, N1> distCoeffs,
             List<PhotonTrackedTarget> visTags,
-            AprilTagFieldLayout tagLayout,
+            Field tagLayout,
             TargetModel tagModel) {
         if (tagLayout == null
                 || visTags == null
@@ -97,15 +97,15 @@ public class VisionEstimation {
         }
 
         var corners = new ArrayList<TargetCorner>();
-        var knownTags = new ArrayList<AprilTag>();
-        // ensure these are AprilTags in our layout
+        var knownTags = new ArrayList<FieldTag>();
+        // ensure these are FieldTags in our layout
         for (var tgt : visTags) {
             int id = tgt.getFiducialId();
             tagLayout
                     .getTagPose(id)
                     .ifPresent(
                             pose -> {
-                                knownTags.add(new AprilTag(id, pose));
+                                knownTags.add(new FieldTag(id, pose));
                                 corners.addAll(tgt.getDetectedCorners());
                             });
         }
@@ -121,10 +121,10 @@ public class VisionEstimation {
             var camToTag =
                     OpenCVHelp.solvePNP_SQUARE(cameraMatrix, distCoeffs, tagModel.vertices, points);
             if (!camToTag.isPresent()) return Optional.empty();
-            var bestPose = knownTags.get(0).pose.transformBy(camToTag.get().best.inverse());
+            var bestPose = knownTags.get(0).getPose().transformBy(camToTag.get().best.inverse());
             var altPose = new Pose3d();
             if (camToTag.get().ambiguity != 0)
-                altPose = knownTags.get(0).pose.transformBy(camToTag.get().alt.inverse());
+                altPose = knownTags.get(0).getPose().transformBy(camToTag.get().alt.inverse());
 
             var o = new Pose3d();
             return Optional.of(
@@ -138,7 +138,7 @@ public class VisionEstimation {
         // multi-tag pnp
         else {
             var objectTrls = new ArrayList<Translation3d>();
-            for (var tag : knownTags) objectTrls.addAll(tagModel.getFieldVertices(tag.pose));
+            for (var tag : knownTags) objectTrls.addAll(tagModel.getFieldVertices(tag.getPose()));
             var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, points);
             if (camToOrigin.isEmpty()) return Optional.empty();
             return Optional.of(
@@ -181,7 +181,7 @@ public class VisionEstimation {
             List<PhotonTrackedTarget> visTags,
             Transform3d robot2camera,
             Pose3d robotPoseSeed,
-            AprilTagFieldLayout tagLayout,
+            Field tagLayout,
             TargetModel tagModel,
             boolean headingFree,
             Rotation2d gyroθ,
@@ -194,15 +194,15 @@ public class VisionEstimation {
         }
 
         var corners = new ArrayList<TargetCorner>();
-        var knownTags = new ArrayList<AprilTag>();
-        // ensure these are AprilTags in our layout
+        var knownTags = new ArrayList<FieldTag>();
+        // ensure these are FieldTags in our layout
         for (var tgt : visTags) {
             int id = tgt.getFiducialId();
             tagLayout
                     .getTagPose(id)
                     .ifPresent(
                             pose -> {
-                                knownTags.add(new AprilTag(id, pose));
+                                knownTags.add(new FieldTag(id, pose));
                                 corners.addAll(tgt.getDetectedCorners());
                             });
         }
@@ -230,7 +230,7 @@ public class VisionEstimation {
 
         // Affine corner locations
         var objectTrls = new ArrayList<Translation3d>();
-        for (var tag : knownTags) objectTrls.addAll(tagModel.getFieldVertices(tag.pose));
+        for (var tag : knownTags) objectTrls.addAll(tagModel.getFieldVertices(tag.getPose()));
         var field2points = new SimpleMatrix(4, points.length);
         for (int i = 0; i < objectTrls.size(); i++) {
             field2points.set(0, i, objectTrls.get(i).getX());

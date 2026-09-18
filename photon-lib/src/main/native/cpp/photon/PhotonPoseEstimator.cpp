@@ -34,7 +34,6 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
-#include <wpi/hal/UsageReporting.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
@@ -42,6 +41,7 @@
 #include <wpi/units/angle.hpp>
 #include <wpi/units/math.hpp>
 #include <wpi/units/time.hpp>
+#include <wpi/util/UsageReporting.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/estimation/TargetModel.h"
@@ -56,21 +56,21 @@ namespace photon {
 namespace detail {
 cv::Point3d ToPoint3d(const wpi::math::Translation3d& translation);
 std::optional<std::array<cv::Point3d, 4>> CalcTagCorners(
-    int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags);
+    int tagID, const wpi::fields::Field& aprilTags);
 wpi::math::Pose3d ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec);
 cv::Point3d TagCornerToObjectPoint(wpi::units::meter_t cornerX,
                                    wpi::units::meter_t cornerY,
                                    wpi::math::Pose3d tagPose);
 }  // namespace detail
 
-PhotonPoseEstimator::PhotonPoseEstimator(
-    wpi::apriltag::AprilTagFieldLayout tags,
-    wpi::math::Transform3d robotToCamera)
+PhotonPoseEstimator::PhotonPoseEstimator(wpi::fields::Field tags,
+                                         wpi::math::Transform3d robotToCamera)
     : aprilTags(tags),
       m_robotToCamera(robotToCamera),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
-  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
+  wpi::util::ReportUsage("PhotonVision/PhotonPoseEstimator",
+                         std::to_string(InstanceCount));
   InstanceCount++;
 }
 
@@ -244,7 +244,7 @@ PhotonPoseEstimator::EstimateClosestToReferencePose(
 }
 
 std::optional<std::array<cv::Point3d, 4>> detail::CalcTagCorners(
-    int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags) {
+    int tagID, const wpi::fields::Field& aprilTags) {
   if (auto tagPose = aprilTags.GetTagPose(tagID); tagPose.has_value()) {
     return std::array{TagCornerToObjectPoint(-3.25_in, -3.25_in, *tagPose),
                       TagCornerToObjectPoint(+3.25_in, -3.25_in, *tagPose),
