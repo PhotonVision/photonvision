@@ -250,6 +250,7 @@ class PacketTest {
         assertEquals(ret3, unpackedRet3);
     }
 
+    @Test
     public void VLASerde() {
         var ret1 =
                 List.of(
@@ -409,6 +410,7 @@ class PacketTest {
         assertEquals(ret2, unpackedRet2);
     }
 
+    @Test
     public void optionalSerde() {
         var ret1 =
                 Optional.of(
@@ -463,7 +465,7 @@ class PacketTest {
         var p1 = new Packet(10);
         p1.encodeOptional(ret1);
         var unpackedRet1 = p1.decodeOptional(PhotonPipelineResult.photonStruct);
-        assertEquals(p1, unpackedRet1);
+        assertEquals(ret1, unpackedRet1);
 
         Optional<PhotonPipelineResult> ret2 = Optional.empty();
         var p2 = new Packet(10);

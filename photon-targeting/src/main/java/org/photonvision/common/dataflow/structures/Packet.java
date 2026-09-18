@@ -289,8 +289,8 @@ public class Packet {
     }
 
     /**
-     * Encode an optional serializable struct. Lists are stored as [uint8 length, [length many] data
-     * structs]
+     * Encode an optional serializable struct. Optionals are stored as [bool present, [if present] data
+     * struct]
      *
      * @param <T> the class this optional will be packing
      * @param data
@@ -299,12 +299,12 @@ public class Packet {
         // Hack
         BiConsumer<Packet, T> encoder;
         if (data.isPresent()) {
+            encoder = data.get().getSerde()::pack;
+        } else {
             encoder =
                     (packet, value) -> {
                         ;
                     };
-        } else {
-            encoder = data.get().getSerde()::pack;
         }
 
         encodeOptionalImpl(data, encoder);
