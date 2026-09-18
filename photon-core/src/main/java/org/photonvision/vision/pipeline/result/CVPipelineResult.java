@@ -37,6 +37,9 @@ public class CVPipelineResult implements Releasable {
     public Optional<MultiTargetPNPResult> multiTagResult;
     public final List<String> objectDetectionClassNames;
 
+    /** Region's of interest for our pipeline identified by an OD pipe. */
+    public List<TrackedTarget> mlROIs = List.of();
+
     public CVPipelineResult(
             long sequenceID,
             double processingNanos,
@@ -99,6 +102,9 @@ public class CVPipelineResult implements Releasable {
 
     public void release() {
         for (TrackedTarget tt : targets) {
+            tt.release();
+        }
+        for (TrackedTarget tt : mlROIs) {
             tt.release();
         }
         if (inputAndOutputFrame != null) inputAndOutputFrame.release();

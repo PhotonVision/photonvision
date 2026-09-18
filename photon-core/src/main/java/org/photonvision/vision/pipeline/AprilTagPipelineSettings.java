@@ -17,7 +17,11 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.util.Objects;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.target.TargetModel;
 
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
@@ -33,7 +37,12 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
 
-    // 3d settings
+    public boolean mltagEnabled = false;
+    public double mlConfidence = 0.5;
+    public double mlNms = 0.45;
+    public double mlPadding = 0.15;
+
+    public NeuralNetworkModelsSettings.ModelProperties tagModel = null;
 
     public AprilTagPipelineSettings() {
         super();
@@ -42,6 +51,11 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         cameraExposureRaw = 20;
         cameraAutoExposure = false;
         ledMode = false;
+        tagModel =
+                NeuralNetworkModelManager.getInstance()
+                        .getDefaultTagModel()
+                        .map(Model::getProperties)
+                        .orElse(null);
     }
 
     @Override
@@ -61,6 +75,11 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + decisionMargin;
         result = prime * result + (doMultiTarget ? 1231 : 1237);
         result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
+        result = prime * result + (mltagEnabled ? 1231 : 1237);
+        result = prime * result + (int) Math.round(mlConfidence);
+        result = prime * result + (int) Math.round(mlNms);
+        result = prime * result + (int) Math.round(mlPadding);
+        result = prime * result + Objects.hashCode(tagModel);
         return result;
     }
 
@@ -81,6 +100,11 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (decisionMargin != other.decisionMargin) return false;
         if (doMultiTarget != other.doMultiTarget) return false;
         if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
+        if (mltagEnabled != other.mltagEnabled) return false;
+        if (mlConfidence != other.mlConfidence) return false;
+        if (mlNms != other.mlNms) return false;
+        if (mlPadding != other.mlPadding) return false;
+        if (!Objects.equals(tagModel, other.tagModel)) return false;
         return true;
     }
 }
