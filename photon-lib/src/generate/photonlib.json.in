@@ -22,6 +22,19 @@
         "linuxx86-64",
         "osxuniversal"
       ]
+    },
+    {
+      "groupId": "org.wpilib.fields",
+      "artifactId": "fields-cpp",
+      "version": "wpilib",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
     }
   ],
   "cppDependencies": [
