@@ -249,10 +249,7 @@ public class SQLConfigTest {
         provider.load();
 
         var field = testField("LegacyKeyFallback");
-        writeGlobalKey(
-                folder,
-                "apriltagFieldLayout",
-                Jsonb.instance().type(Field.class).toJson(field));
+        writeGlobalKey(folder, "apriltagFieldLayout", Jsonb.instance().type(Field.class).toJson(field));
 
         var reloaded = new SqlConfigProvider(folder);
         reloaded.load();
