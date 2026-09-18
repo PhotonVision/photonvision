@@ -278,15 +278,17 @@ wpi::math::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 
   R = R.t();                  // rotation of inverse
   cv::Mat tvecI = -R * tvec;  // translation of inverse
+  cv::Mat rvecI;
+  cv::Rodrigues(R, rvecI);  // axis-angle of the inverse rotation
 
   Eigen::Matrix<double, 3, 1> tv;
   tv[0] = +tvecI.at<double>(2, 0);
   tv[1] = -tvecI.at<double>(0, 0);
   tv[2] = -tvecI.at<double>(1, 0);
   Eigen::Matrix<double, 3, 1> rv;
-  rv[0] = +rvec.at<double>(2, 0);
-  rv[1] = -rvec.at<double>(0, 0);
-  rv[2] = +rvec.at<double>(1, 0);
+  rv[0] = +rvecI.at<double>(2, 0);
+  rv[1] = -rvecI.at<double>(0, 0);
+  rv[2] = -rvecI.at<double>(1, 0);
 
   return Pose3d(Translation3d(meter_t{tv[0]}, meter_t{tv[1]}, meter_t{tv[2]}),
                 Rotation3d(rv));
