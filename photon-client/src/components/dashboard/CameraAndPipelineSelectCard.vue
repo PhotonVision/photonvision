@@ -114,6 +114,11 @@ const validNewPipelineTypes = computed(() => {
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
     { name: "ArUco", value: WebsocketPipelineType.Aruco }
   ];
+  // Only offer the Vulkan pipeline when it's actually usable - a user picking it on a
+  // machine with no Vulkan driver would only ever see it fall back to CPU detection anyway.
+  if (!useSettingsStore().general.vulkanUnavailableReason) {
+    pipelineTypes.push({ name: "AprilTag (Vulkan, beta)", value: WebsocketPipelineType.AprilTagVulkan });
+  }
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
   }
@@ -152,6 +157,11 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
     { name: "ArUco", value: WebsocketPipelineType.Aruco }
   ];
+  // Only offer the Vulkan pipeline when it's actually usable - a user picking it on a
+  // machine with no Vulkan driver would only ever see it fall back to CPU detection anyway.
+  if (!useSettingsStore().general.vulkanUnavailableReason) {
+    pipelineTypes.push({ name: "AprilTag (Vulkan, beta)", value: WebsocketPipelineType.AprilTagVulkan });
+  }
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
   }
@@ -209,6 +219,9 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
     case PipelineType.AprilTag:
       pipelineType.value = WebsocketPipelineType.AprilTag;
+      break;
+    case PipelineType.AprilTagVulkan:
+      pipelineType.value = WebsocketPipelineType.AprilTagVulkan;
       break;
     case PipelineType.Aruco:
       pipelineType.value = WebsocketPipelineType.Aruco;

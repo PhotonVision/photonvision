@@ -26,7 +26,12 @@ public enum PipelineType {
     ColoredShape(1, ColoredShapePipeline.class),
     AprilTag(2, AprilTagPipeline.class),
     Aruco(3, ArucoPipeline.class),
-    ObjectDetection(4, ObjectDetectionPipeline.class);
+    ObjectDetection(4, ObjectDetectionPipeline.class),
+    // Must stay declared last, with the next-highest baseIndex: DataSocketHandler maps a wire
+    // baseIndex to an enum constant as PipelineType.values()[baseIndex + 3], which only holds
+    // while every constant here is declared in baseIndex order starting at -3. Inserting a new
+    // constant anywhere else silently reassigns the type of every pipeline persisted after it.
+    AprilTagVulkan(5, VkAprilTagPipeline.class);
 
     public final int baseIndex;
     public final Class clazz;

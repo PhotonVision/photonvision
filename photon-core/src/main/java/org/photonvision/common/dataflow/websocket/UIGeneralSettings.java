@@ -34,7 +34,9 @@ public class UIGeneralSettings {
             String hardwarePlatform,
             String wpilibArch,
             boolean conflictingHostname,
-            String conflictingCameras) {
+            String conflictingCameras,
+            List<UIVulkanDeviceInfo> vulkanDevices,
+            String vulkanUnavailableReason) {
         this.version = version;
         this.imageVersion = imageVersion;
         this.gpuAcceleration = gpuAcceleration;
@@ -46,6 +48,8 @@ public class UIGeneralSettings {
         this.wpilibArch = wpilibArch;
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras;
+        this.vulkanDevices = vulkanDevices;
+        this.vulkanUnavailableReason = vulkanUnavailableReason;
     }
 
     public String version;
@@ -59,4 +63,10 @@ public class UIGeneralSettings {
     public String wpilibArch;
     public boolean conflictingHostname;
     public String conflictingCameras;
+
+    /** Empty when {@link #vulkanUnavailableReason} is non-null. */
+    public List<UIVulkanDeviceInfo> vulkanDevices;
+
+    /** Null when the Vulkan AprilTag detector is usable on this coprocessor. */
+    public String vulkanUnavailableReason;
 }

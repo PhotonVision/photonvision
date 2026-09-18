@@ -78,7 +78,9 @@ export const useSettingsStore = defineStore("settings", {
       availableModels: [],
       supportedBackends: [],
       conflictingHostname: false,
-      conflictingCameras: ""
+      conflictingCameras: "",
+      vulkanDevices: [],
+      vulkanUnavailableReason: undefined
     },
     network: {
       ntServerAddress: "",
@@ -167,7 +169,9 @@ export const useSettingsStore = defineStore("settings", {
         availableModels: data.general.availableModels || undefined,
         supportedBackends: data.general.supportedBackends || [],
         conflictingHostname: data.general.conflictingHostname || false,
-        conflictingCameras: data.general.conflictingCameras || ""
+        conflictingCameras: data.general.conflictingCameras || "",
+        vulkanDevices: data.general.vulkanDevices || [],
+        vulkanUnavailableReason: data.general.vulkanUnavailableReason || undefined
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;

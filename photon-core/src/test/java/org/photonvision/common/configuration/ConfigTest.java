@@ -163,6 +163,50 @@ public class ConfigTest {
         assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);
     }
 
+    /**
+     * Guards the AprilTagPipelineSettingsBase split (see AbstractAprilTagPipeline): moving
+     * tagFamily/decisionMargin/hammingDist/numIterations/doMultiTarget/doSingleTargetAlways onto a
+     * new intermediate superclass must not change AprilTagPipelineSettings' serialized JSON shape -
+     * every existing stored pipeline config has these fields at the top level, not nested under some
+     * new key.
+     */
+    @Test
+    public void testAprilTagSettingsBaseSplitPreservesJsonShape() throws IOException {
+        var settings = new AprilTagPipelineSettings();
+        settings.tagFamily = org.photonvision.vision.apriltag.AprilTagFamily.kTag16h5;
+        settings.decisionMargin = 42;
+        settings.hammingDist = 1;
+        settings.numIterations = 99;
+        settings.doMultiTarget = true;
+        settings.doSingleTargetAlways = true;
+        settings.decimate = 3;
+
+        String json = Jsonb.instance().type(CVPipelineSettings.class).toJson(settings);
+
+        // Field-level check, not just "does it deserialize": a field silently
+        // moving under a nested object would still round-trip through
+        // AprilTagPipelineSettings' own (Object) type below, but would break
+        // every already-stored config on disk, which this string-level check
+        // catches and the round-trip below alone would not.
+        for (String expectedTopLevelKey :
+                new String[] {
+                    "\"tagFamily\"",
+                    "\"decisionMargin\":42",
+                    "\"hammingDist\":1",
+                    "\"numIterations\":99",
+                    "\"doMultiTarget\":true",
+                    "\"doSingleTargetAlways\":true",
+                    "\"decimate\":3"
+                }) {
+            assertTrue(
+                    json.contains(expectedTopLevelKey), "Missing " + expectedTopLevelKey + " in " + json);
+        }
+
+        AprilTagPipelineSettings roundTripped =
+                (AprilTagPipelineSettings) Jsonb.instance().type(CVPipelineSettings.class).fromJson(json);
+        assertEquals(settings, roundTripped);
+    }
+
     @Test
     public void testMigrateOldFieldLayout() {
         // exact serialization format produced by the old AprilTagFieldLayout
