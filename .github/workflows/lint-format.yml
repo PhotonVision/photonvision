@@ -112,6 +112,7 @@ jobs:
       - name: Run Typechecking
         run: |
           set +e
+          pnpm run build
           pnpm run type-check
           exit_code=$?
           if test "$exit_code" -ne "0"; then

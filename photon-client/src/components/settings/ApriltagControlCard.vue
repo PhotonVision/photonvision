@@ -19,24 +19,25 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
 </script>
 
 <template>
-  <v-card color="surface" class="rounded-12">
-    <v-card-title>AprilTag Field Layout</v-card-title>
-    <v-card-text class="pt-0">
-      <p>Field width: {{ fieldWidth.toFixed(2) }} meters</p>
-      <p>Field length: {{ fieldLength.toFixed(2) }} meters</p>
-
+  <pv-card>
+    <div class="flex items-center justify-between gap-2 pb-4">
+      <div class="flex-1 text-lg font-semibold">AprilTag Field Layout</div>
+      <p class="text-sm font-light text-gray-200">Field width: {{ fieldWidth.toFixed(2) }} meters</p>
+      <p class="text-sm font-light text-gray-200">Field length: {{ fieldLength.toFixed(2) }} meters</p>
+    </div>
+    <div>
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <v-table fixed-header height="100%" density="compact">
+      <pv-table fixed-header height="100%">
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
-              <th class="text-center">ID</th>
-              <th class="text-center">X meters</th>
-              <th class="text-center">Y meters</th>
-              <th class="text-center">Z meters</th>
-              <th class="text-center">θ<sub>x</sub>&deg;</th>
-              <th class="text-center">θ<sub>y</sub>&deg;</th>
-              <th class="text-center">θ<sub>z</sub>&deg;</th>
+              <th class="">ID</th>
+              <th class="">X meters</th>
+              <th class="">Y meters</th>
+              <th class="">Z meters</th>
+              <th class="">θ<sub>x</sub>&deg;</th>
+              <th class="">θ<sub>y</sub>&deg;</th>
+              <th class="">θ<sub>z</sub>&deg;</th>
             </tr>
           </thead>
           <tbody>
@@ -49,13 +50,13 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
             </tr>
           </tbody>
         </template>
-      </v-table>
-    </v-card-text>
-  </v-card>
+      </pv-table>
+    </div>
+  </pv-card>
 </template>
 
-<style scoped lang="scss">
-.v-table {
+<style scoped>
+.pv-table {
   width: 100%;
   height: 100%;
   text-align: center;
@@ -63,11 +64,11 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   th,
   td {
     font-size: 1rem !important;
-    color: white !important;
+    text-align: center;
   }
 
   td {
-    font-family: monospace !important;
+    font-variant-numeric: tabular-nums;
   }
 
   ::-webkit-scrollbar {
@@ -82,7 +83,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--v-theme-accent));
+    background-color: var(--color-pv-accent);
     border-radius: 10px;
   }
 }

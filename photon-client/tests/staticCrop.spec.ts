@@ -30,23 +30,9 @@ test.describe("Static Crop", () => {
     }
   });
 
-  // Vuetify's v-switch exposes the ARIA "checkbox" role, not "switch". The .last() picks the
-  // innermost matching row -- ancestor flex containers can also match the text filter once the
-  // dashboard lays out multiple stream cards.
-  const cropSwitch = (page: Page): Locator =>
-    page
-      .locator("div.d-flex")
-      .filter({ hasText: "Static Crop" })
-      .filter({ has: page.getByRole("checkbox") })
-      .last()
-      .getByRole("checkbox");
+  const cropSwitch = (page: Page): Locator => page.getByRole("switch", { name: "Static Crop" }).last();
   const cropRangeInputs = (page: Page, label: string): Locator =>
-    page
-      .locator("div.d-flex")
-      .filter({ hasText: label })
-      .filter({ has: page.locator("input[type=number]") })
-      .last()
-      .locator("input[type=number]");
+    page.getByRole("spinbutton", { name: new RegExp(`^(Minimum|Maximum) ${label}$`) });
 
   // The Processed stream card shows only the cropped pixels; the Raw card (when shown) carries the
   // full frame with the outside dimmed by the backend, and owns all crop overlays and interaction.
@@ -92,7 +78,7 @@ test.describe("Static Crop", () => {
   };
 
   const setOrientation = async (page: Page, name: string) => {
-    await page.locator("div.d-flex").filter({ hasText: "Orientation" }).locator(".v-select").click();
+    await page.getByRole("combobox", { name: "Orientation" }).click();
     await page.getByRole("option", { name, exact: true }).click();
   };
 
@@ -103,11 +89,10 @@ test.describe("Static Crop", () => {
 
     await expect(cropSwitch(page)).not.toBeChecked();
 
-    // The range slider itself is disabled while the crop is off (Vuetify marks this with a class on
-    // the input wrapper).
-    await expect(
-      page.locator("div.d-flex").filter({ hasText: "Crop X Range" }).locator(".v-input--disabled")
-    ).toHaveCount(1);
+    const xInputs = cropRangeInputs(page, "Crop X Range");
+    await expect(xInputs).toHaveCount(2);
+    await expect(xInputs.nth(0)).toBeDisabled();
+    await expect(xInputs.nth(1)).toBeDisabled();
   });
 
   test("enabling static crop activates the range sliders", async ({ page }) => {
@@ -116,12 +101,10 @@ test.describe("Static Crop", () => {
     await expect(toggle).toBeChecked();
 
     // With the crop enabled, the range sliders are no longer disabled.
-    await expect(
-      page.locator("div.d-flex").filter({ hasText: "Crop X Range" }).locator(".v-input--disabled")
-    ).toHaveCount(0);
-    await expect(
-      page.locator("div.d-flex").filter({ hasText: "Crop Y Range" }).locator(".v-input--disabled")
-    ).toHaveCount(0);
+    await expect(cropRangeInputs(page, "Crop X Range").nth(0)).toBeEnabled();
+    await expect(cropRangeInputs(page, "Crop X Range").nth(1)).toBeEnabled();
+    await expect(cropRangeInputs(page, "Crop Y Range").nth(0)).toBeEnabled();
+    await expect(cropRangeInputs(page, "Crop Y Range").nth(1)).toBeEnabled();
   });
 
   test("crop range values can be set and are clamped to the frame", async ({ page }) => {

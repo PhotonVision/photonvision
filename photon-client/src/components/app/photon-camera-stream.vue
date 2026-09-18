@@ -3,9 +3,11 @@ import { computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef } fro
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import type { StyleValue } from "vue";
-import PvIcon from "@/components/common/pv-icon.vue";
+import IconCameraImage from "~icons/mdi/camera-image";
+import IconFullscreen from "~icons/mdi/fullscreen";
+import IconOpenInNew from "~icons/mdi/open-in-new";
+
 import type { UiCameraConfiguration } from "@/types/SettingTypes";
-import PvLoading from "@/components/common/pv-loading.vue";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed";
@@ -48,8 +50,10 @@ const rotatedResolution = computed<{ width: number; height: number } | null>(() 
   if (props.cameraSettings.validVideoFormats.length === 0) {
     return null;
   }
-  const resolution =
-    props.cameraSettings.validVideoFormats[props.cameraSettings.pipelineSettings.cameraVideoModeIndex].resolution;
+  const videoFormat =
+    props.cameraSettings.validVideoFormats[props.cameraSettings.pipelineSettings.cameraVideoModeIndex];
+  if (!videoFormat) return null;
+  const resolution = videoFormat.resolution;
   const rotation = props.cameraSettings.pipelineSettings.inputImageRotationMode;
   return rotation === 1 || rotation === 3
     ? { width: resolution.height, height: resolution.width }
@@ -498,25 +502,25 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div class="stream-overlay" :style="overlayStyle">
-      <pv-icon
+      <pv-tooltipped-icon
         color="primary"
-        icon-name="mdi-camera-image"
+        :icon="IconCameraImage"
         tooltip="Capture and save a frame of this stream"
-        class="ma-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handleCaptureClick"
       />
-      <pv-icon
+      <pv-tooltipped-icon
         color="primary"
-        icon-name="mdi-fullscreen"
+        :icon="IconFullscreen"
         tooltip="Open this stream in fullscreen"
-        class="ma-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handleFullscreenRequest"
       />
-      <pv-icon
+      <pv-tooltipped-icon
         color="primary"
-        icon-name="mdi-open-in-new"
+        :icon="IconOpenInNew"
         tooltip="Open this stream in a new window"
-        class="ma-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handlePopoutClick"
       />
     </div>
