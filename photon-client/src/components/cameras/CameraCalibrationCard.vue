@@ -121,6 +121,10 @@ const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
     name: `${getResolutionString(f.resolution)}`,
     value: f.index || 0 // Index won't ever be undefined
   }));
+const calibrationResolutionItems = computed(() => {
+  const items = getUniqueVideoResolutionStrings();
+  return items.length > 0 ? items : [{ name: "No calibratable resolutions", value: 0, disabled: true }];
+});
 const calibrationDivisors = computed(() =>
   [1, 2, 4].filter((v) => {
     const currentRes = useCameraSettingsStore().currentVideoFormat?.resolution;
@@ -131,7 +135,7 @@ const calibrationDivisors = computed(() =>
   })
 );
 
-const uniqueVideoResolutionIndex = ref(getUniqueVideoResolutionStrings()?.[0]?.value);
+const uniqueVideoResolutionIndex = ref<number>(getUniqueVideoResolutionStrings()?.[0]?.value ?? 0);
 
 const initializedVideoResolutionCamera = ref<string | undefined>(undefined);
 
@@ -140,18 +144,29 @@ const initializedVideoResolutionCamera = ref<string | undefined>(undefined);
 watchEffect(() => {
   const cameraSettings = useCameraSettingsStore().currentCameraSettings;
   const validVideoFormats = cameraSettings.validVideoFormats;
-  if (validVideoFormats.length === 0 || initializedVideoResolutionCamera.value === cameraSettings.uniqueName) {
+  if (validVideoFormats.length === 0) {
     return;
   }
-  initializedVideoResolutionCamera.value = cameraSettings.uniqueName;
 
+  const uniqueFormats = getUniqueVideoResolutionStrings();
+  if (uniqueFormats.length === 0) {
+    uniqueVideoResolutionIndex.value = 0;
+    initializedVideoResolutionCamera.value = cameraSettings.uniqueName;
+    return;
+  }
+
+  const cameraChanged = initializedVideoResolutionCamera.value !== cameraSettings.uniqueName;
   const names = validVideoFormats.map((f) => getResolutionString(f.resolution));
   const currentFormatIndex = useCameraSettingsStore().currentVideoFormat?.index ?? 0;
-  const uniqueFormats = getUniqueVideoResolutionStrings();
   const matchingUniqueFormat = uniqueFormats.find((x) => x.name === names[currentFormatIndex]);
   const currentIndex = matchingUniqueFormat ? matchingUniqueFormat.value : (uniqueFormats[0]?.value ?? 0);
-  useStateStore().calibrationData.videoFormatIndex = currentIndex;
-  uniqueVideoResolutionIndex.value = currentIndex;
+  const selectedValueIsValid = uniqueFormats.some((format) => format.value === uniqueVideoResolutionIndex.value);
+
+  if (cameraChanged || !selectedValueIsValid) {
+    initializedVideoResolutionCamera.value = cameraSettings.uniqueName;
+    useStateStore().calibrationData.videoFormatIndex = currentIndex;
+    uniqueVideoResolutionIndex.value = currentIndex;
+  }
 });
 const dimensionUnit = ref<"in" | "mm">("in");
 const squareSizeIn = ref(1);
@@ -508,7 +523,7 @@ const updateCameraBlueGain = (value: number) => {
               :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
-              :items="getUniqueVideoResolutionStrings()"
+              :items="calibrationResolutionItems"
               @update:model-value="updateVideoFormatIndex"
             />
             <pv-select
@@ -666,7 +681,7 @@ const updateCameraBlueGain = (value: number) => {
               variant="primary"
               :icon="isCalibrating ? IconCamera : IconFlagOutline"
               block
-              :disabled="!settingsValid || tooManyPoints"
+              :disabled="!settingsValid || tooManyPoints || calibrationResolutionItems.length === 0"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
               <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>

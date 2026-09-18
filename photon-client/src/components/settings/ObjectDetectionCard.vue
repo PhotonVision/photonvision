@@ -308,6 +308,7 @@ const handleBulkImport = async () => {
             fixed-header
             height="100%"
             dark
+            striped="odd"
             class="h-full w-full text-left [&_table]:table-fixed [&_td]:!text-left [&_td]:!text-base [&_th]:!text-left [&_th]:!text-base"
           >
             <colgroup>

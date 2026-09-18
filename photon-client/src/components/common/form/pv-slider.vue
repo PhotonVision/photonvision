@@ -25,6 +25,18 @@ const inputId = computed(() => props.id || uniqueId);
 const emit = defineEmits<{ (e: "update:modelValue", value: number): void }>();
 const { labelWidth } = useColFlexBasis(() => props.sliderCols);
 
+const decimalPlaces = (step: number) => {
+  const text = String(step);
+  const exponent = text.toLowerCase().match(/e-(\d+)$/);
+  if (exponent) return Number(exponent[1]);
+  return text.includes(".") ? text.length - text.indexOf(".") - 1 : 0;
+};
+
+const displayValue = computed(() => {
+  const value = props.modelValue;
+  return Number.isFinite(value) ? value.toFixed(decimalPlaces(props.step)) : String(value);
+});
+
 // Debounce function
 function debounce(func: (...args: number[]) => void, wait: number) {
   let timeout: ReturnType<typeof setTimeout>;
@@ -43,11 +55,6 @@ const debouncedEmit = debounce((v: number) => {
     emit("update:modelValue", v);
   }
 }, 20);
-
-const localValue = computed({
-  get: () => props.modelValue,
-  set: (v) => debouncedEmit(parseFloat(v as unknown as string))
-});
 
 const sliderModel = computed<number[]>({
   get: () => [props.modelValue],
@@ -114,7 +121,7 @@ const updateFromInput = (rawValue: string) => {
       />
       <input
         :id="inputId"
-        :value="localValue"
+        :value="displayValue"
         :max="max"
         :min="min"
         :disabled="disabled"

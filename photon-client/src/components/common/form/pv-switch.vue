@@ -21,7 +21,7 @@ const { labelWidth, contentWidth: switchWidth } = useColFlexBasis(() => props.sw
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 py-1.5 sm:flex-row sm:items-center sm:gap-3">
+  <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" :target-id="switchId" />
     </div>

@@ -18,6 +18,7 @@ const displayedTargets = computed(() => {
 });
 
 const placeholderTargetRowCount = computed(() => {
+  if (displayedTargets.value.length === 0) return 0;
   return Math.max(0, currentPipelineSettings.value.outputMaximumTargets - displayedTargets.value.length);
 });
 
@@ -49,7 +50,8 @@ const resetCurrentBuffer = () => {
         class="target-table-wrapper"
         :style="{
           '--target-row-height': `${targetRowHeight}px`,
-          '--target-row-count': currentPipelineSettings.outputMaximumTargets
+          '--target-row-count': currentPipelineSettings.outputMaximumTargets,
+          overflowY: displayedTargets.length > 0 ? 'auto' : 'visible'
         }"
       >
         <pv-table class="tabular-nums">

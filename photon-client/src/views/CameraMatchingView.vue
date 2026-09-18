@@ -59,6 +59,12 @@ const deleteThisCamera = async (cameraUniqueName: string) => {
   if (deletingCamera.value) return;
   deletingCamera.value = cameraUniqueName;
   await axiosPost("utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName });
+  const cameraStore = useCameraSettingsStore();
+  delete cameraStore.cameras[cameraUniqueName];
+  if (useStateStore().currentCameraUniqueName === cameraUniqueName) {
+    useStateStore().currentCameraUniqueName =
+      Object.keys(cameraStore.cameras)[0] ?? PlaceholderCameraSettings.uniqueName;
+  }
   deletingCamera.value = null;
 };
 
@@ -122,7 +128,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 
 <template>
   <div class="p-3">
-    <div class="-mx-3 flex flex-wrap">
+    <div class="-mx-3 flex flex-wrap rounded-2xl bg-pv-surface/30 p-3">
       <!-- Active modules -->
       <div
         v-for="(module, index) in activeVisionModules"

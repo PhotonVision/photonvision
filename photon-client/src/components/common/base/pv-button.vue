@@ -39,7 +39,7 @@ const variantClass = computed(() => {
     case "primary":
       return "shadow-sm bg-pv-button-active text-slate-950 hover:brightness-105";
     case "danger":
-      return "shadow-sm border border-pv-error/45 bg-pv-error/25 text-pv-on-surface hover:bg-pv-error/20";
+      return "shadow-sm border border-pv-error/60 bg-pv-error/45 text-pv-on-surface hover:bg-pv-error/55";
     case "ghost":
       return "border border-white/12 bg-transparent text-pv-on-surface hover:bg-white/6 ";
     case "text":

@@ -4,7 +4,7 @@ import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
-import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
+import { PlaceholderCameraSettings, type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
 import { axiosPost } from "@/lib/PhotonUtils";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import type { SelectItem } from "@/components/common/form/pv-select.vue";
@@ -118,9 +118,14 @@ watchEffect(() => {
 
 const showDeleteCamera = ref(false);
 const deleteThisCamera = async () => {
+  const cameraUniqueName = useStateStore().currentCameraUniqueName;
   await axiosPost("utils/nukeOneCamera", "delete this camera", {
-    cameraUniqueName: useStateStore().currentCameraUniqueName
+    cameraUniqueName
   });
+
+  const cameraStore = useCameraSettingsStore();
+  delete cameraStore.cameras[cameraUniqueName];
+  useStateStore().currentCameraUniqueName = Object.keys(cameraStore.cameras)[0] ?? PlaceholderCameraSettings.uniqueName;
 };
 const wrappedCameras = computed<SelectItem<string>[]>(() =>
   Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
