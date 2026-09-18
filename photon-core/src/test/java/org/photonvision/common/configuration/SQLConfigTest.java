@@ -19,11 +19,19 @@ package org.photonvision.common.configuration;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import io.avaje.json.JsonDataException;
+import io.avaje.jsonb.Jsonb;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -45,6 +53,8 @@ import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
 public class SQLConfigTest {
@@ -193,6 +203,88 @@ public class SQLConfigTest {
         }
 
         ConfigManager.INSTANCE = null;
+    }
+
+    private static Field testField(String name) {
+        // Note: a null tag list round-trips as an empty list through JSON, so use List.of()
+        return new Field(name, "2026", "UnitTestGame", null, 12.0, 6.0, "FRC", List.of());
+    }
+
+    private static void writeGlobalKey(Path dir, String key, String contents) throws SQLException {
+        var url = "jdbc:sqlite:" + dir.resolve("photon.sqlite").toAbsolutePath();
+        try (Connection conn = DriverManager.getConnection(url);
+                PreparedStatement ps =
+                        conn.prepareStatement(
+                                String.format(
+                                        "REPLACE INTO %s (%s, %s) VALUES (?,?)",
+                                        DatabaseSchema.Tables.GLOBAL,
+                                        DatabaseSchema.Columns.GLB_FILENAME,
+                                        DatabaseSchema.Columns.GLB_CONTENTS))) {
+            ps.setString(1, key);
+            ps.setString(2, contents);
+            ps.executeUpdate();
+        }
+    }
+
+    @Test
+    public void testFieldLayoutNewKeyRoundTrip() throws IOException {
+        var folder = tmpDir.resolve("field-new-key");
+        var provider = new SqlConfigProvider(folder);
+        provider.load();
+
+        var field = testField("NewKeyRoundTrip");
+        var upload = folder.resolve("field-upload.json");
+        Files.writeString(upload, Jsonb.instance().type(Field.class).toJson(field));
+        assertTrue(provider.saveUploadedFieldLayout(upload));
+
+        var reloaded = new SqlConfigProvider(folder);
+        reloaded.load();
+        assertEquals(field, reloaded.getConfig().getFieldLayout());
+    }
+
+    @Test
+    public void testFieldLayoutLegacyKeyFallback() throws SQLException {
+        var folder = tmpDir.resolve("field-legacy-key");
+        var provider = new SqlConfigProvider(folder);
+        provider.load();
+
+        var field = testField("LegacyKeyFallback");
+        writeGlobalKey(
+                folder,
+                "apriltagFieldLayout",
+                Jsonb.instance().type(Field.class).toJson(field));
+
+        var reloaded = new SqlConfigProvider(folder);
+        reloaded.load();
+        assertEquals(field, reloaded.getConfig().getFieldLayout());
+    }
+
+    @Test
+    public void testFieldLayoutNewKeyPreferred() throws SQLException {
+        var folder = tmpDir.resolve("field-both-keys");
+        var provider = new SqlConfigProvider(folder);
+        provider.load();
+
+        var newKeyField = testField("NewKeyWins");
+        var legacyField = testField("LegacyKeyLoses");
+        writeGlobalKey(
+                folder,
+                SqlConfigProvider.GlobalKeys.FIELD_CONFIG_FILE,
+                Jsonb.instance().type(Field.class).toJson(newKeyField));
+        writeGlobalKey(
+                folder, "apriltagFieldLayout", Jsonb.instance().type(Field.class).toJson(legacyField));
+
+        var reloaded = new SqlConfigProvider(folder);
+        reloaded.load();
+        assertEquals(newKeyField, reloaded.getConfig().getFieldLayout());
+    }
+
+    @Test
+    public void testFieldLayoutDefaultsWhenAbsent() throws UncheckedIOException {
+        var provider = new SqlConfigProvider(tmpDir.resolve("field-absent"));
+        provider.load();
+
+        assertEquals(Field.loadField(Fields.DEFAULT_FIELD), provider.getConfig().getFieldLayout());
     }
 
     @Test
