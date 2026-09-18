@@ -48,9 +48,10 @@ public class ArucoPipelineTest {
         try (var pipeline = new ArucoPipeline();
                 var frameProvider =
                         new FileFrameProvider(
-                                TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
-                                TestUtils.WPI2020Image.FOV,
-                                TestUtils.get2020LifeCamCoeffs(false)); ) {
+                                TestUtils.getTestImagesPath(false)
+                                        .resolve(TestUtils.WPI2024Images.kSpeakerCenter_143in.path),
+                                TestUtils.WPI2024Images.FOV,
+                                TestUtils.get2023LifeCamCoeffs(true)); ) {
             pipeline.getSettings().inputShouldShow = true;
             pipeline.getSettings().outputShouldDraw = true;
             pipeline.getSettings().solvePNPEnabled = true;
@@ -75,7 +76,7 @@ public class ArucoPipelineTest {
                         ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
                 // these numbers are not *accurate*, but they are known and expected
-                try (var target = pipelineResult.targets.get(0)) {
+                try (var target = pipelineResult.targets.get(1)) { // tag 4
                     corners = target.getTargetCorners();
                     pose = target.getBestCameraToTarget3d();
                 }
@@ -83,19 +84,19 @@ public class ArucoPipelineTest {
         }
 
         // Test corner order
-        assertEquals(260, corners.get(0).x, 10);
-        assertEquals(245, corners.get(0).y, 10);
-        assertEquals(315, corners.get(1).x, 10);
-        assertEquals(245, corners.get(1).y, 10);
-        assertEquals(315, corners.get(2).x, 10);
-        assertEquals(190, corners.get(2).y, 10);
-        assertEquals(260, corners.get(3).x, 10);
-        assertEquals(190, corners.get(3).y, 10);
+        assertEquals(650, corners.get(3).x, 10);
+        assertEquals(540, corners.get(3).y, 10);
+        assertEquals(690, corners.get(2).x, 10);
+        assertEquals(540, corners.get(2).y, 10);
+        assertEquals(690, corners.get(1).x, 10);
+        assertEquals(500, corners.get(1).y, 10);
+        assertEquals(650, corners.get(0).x, 10);
+        assertEquals(500, corners.get(0).y, 10);
 
         // Test pose estimate translation
-        assertEquals(2, pose.getTranslation().getX(), 0.2);
-        assertEquals(0.1, pose.getTranslation().getY(), 0.2);
-        assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+        assertEquals(4.8, pose.getTranslation().getX(), 0.2);
+        assertEquals(-0.2, pose.getTranslation().getY(), 0.2);
+        assertEquals(-0.7, pose.getTranslation().getZ(), 0.2);
 
         // Test pose estimate rotation
         // We expect the object axes to be in NWU, with the x-axis coming out of the tag
