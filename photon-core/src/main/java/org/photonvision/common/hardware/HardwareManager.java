@@ -17,7 +17,9 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.api.DeviceAlreadyOpenedException;
 import com.diozero.api.DeviceMode;
+import com.diozero.api.NoSuchDeviceException;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
 import com.diozero.sbc.DeviceFactoryHelper;
@@ -46,7 +48,7 @@ public class HardwareManager {
     private static HardwareManager instance;
 
     private final ShellExec shellExec = new ShellExec(true, false);
-    private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
+    private static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
@@ -93,21 +95,33 @@ public class HardwareManager {
                     }
                 };
 
-        statusLED = hardwareConfig.statusLEDConfig.map(it -> it.create(lazyDeviceFactory.get()));
+        Optional<StatusLED> tempStatusLED = Optional.empty();
+        try {
+            tempStatusLED = hardwareConfig.statusLEDConfig.map(it -> it.create(lazyDeviceFactory.get()));
+        } catch (DeviceAlreadyOpenedException | NoSuchDeviceException e) {
+            logger.error("Status LED initialization failed, skipping", e);
+        }
+        statusLED = tempStatusLED;
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
-        visionLED =
-                hardwareConfig.ledPins.isEmpty()
-                        ? Optional.empty()
-                        : Optional.of(
-                                new VisionLED(
-                                        lazyDeviceFactory.get(),
-                                        hardwareConfig.ledPins,
-                                        hardwareConfig.ledsCanDim,
-                                        hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
-                                        hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                        hardwareConfig.ledPWMFrequency,
-                                        ledModeState::set));
+        Optional<VisionLED> tempVisionLED = Optional.empty();
+        try {
+            tempVisionLED =
+                    hardwareConfig.ledPins.isEmpty()
+                            ? Optional.empty()
+                            : Optional.of(
+                                    new VisionLED(
+                                            lazyDeviceFactory.get(),
+                                            hardwareConfig.ledPins,
+                                            hardwareConfig.ledsCanDim,
+                                            hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
+                                            hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                            hardwareConfig.ledPWMFrequency,
+                                            ledModeState::set));
+        } catch (DeviceAlreadyOpenedException | NoSuchDeviceException e) {
+            logger.error("Vision LED initialization failed, skipping", e);
+        }
+        visionLED = tempVisionLED;
 
         ledModeListener =
                 visionLED.map(
