@@ -289,8 +289,8 @@ public class Packet {
     }
 
     /**
-     * Encode an optional serializable struct. Optionals are stored as [bool present, [if present] data
-     * struct]
+     * Encode an optional serializable struct. Optionals are stored as [bool present, [if present]
+     * data struct]
      *
      * @param <T> the class this optional will be packing
      * @param data

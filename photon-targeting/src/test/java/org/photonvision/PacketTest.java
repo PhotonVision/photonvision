@@ -410,6 +410,35 @@ class PacketTest {
         assertEquals(ret2, unpackedRet2);
     }
 
+    @Test 
+    public void testOptional() {
+        // Given a real corner
+        var corner = Optional.of(new TargetCorner(12.3, 45.67));
+        
+        // When we encode into p1
+        var p1 = new Packet(17);
+        p1.encodeOptional(corner);
+
+        // Then the order is [optional flag, x, y]
+        assertEquals(1, p1.decodeByte());
+        assertEquals(12.3, p1.decodeDouble());
+        assertEquals(45.67, p1.decodeDouble());
+        // And the length is 17
+        assertEquals(17, p1.getWrittenDataCopy().length);
+
+        // And given a null optional
+        corner = Optional.empty();
+
+        // When we encode into p1
+        var p2 = new Packet(17);
+        p2.encodeOptional(corner);
+
+        // Then the order is [optional flag]
+        assertEquals(0, p2.decodeByte());
+        // And only one byte is written
+        assertEquals(1, p2.getWrittenDataCopy().length);
+    }   
+
     @Test
     public void optionalSerde() {
         var ret1 =
