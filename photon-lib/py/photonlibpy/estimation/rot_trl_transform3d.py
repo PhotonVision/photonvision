@@ -6,9 +6,7 @@ from wpimath import Pose3d, Rotation3d, Transform3d, Translation3d
 class RotTrlTransform3d:
     """Represents a transformation that first rotates a pose around the origin, and then translates it."""
 
-    def __init__(
-        self, rot: Rotation3d = Rotation3d(), trl: Translation3d = Translation3d()
-    ):
+    def __init__(self, rot: Rotation3d | None = None, trl: Translation3d | None = None):
         """A rotation-translation transformation.
 
         Applying this RotTrlTransform3d to poses will preserve their current origin-to-pose
@@ -17,8 +15,8 @@ class RotTrlTransform3d:
         :param rot: The rotation component
         :param trl: The translation component
         """
-        self.rot = rot
-        self.trl = trl
+        self.rot = rot if rot is not None else Rotation3d()
+        self.trl = trl if trl is not None else Translation3d()
 
     def inverse(self) -> Self:
         """The inverse of this transformation. Applying the inverse will "undo" this transformation."""

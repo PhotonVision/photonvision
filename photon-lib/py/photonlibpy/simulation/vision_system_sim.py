@@ -8,8 +8,8 @@ from wpimath import Pose2d, Pose3d, TimeInterpolatablePose3dBuffer, Transform3d
 from wpimath.units import seconds
 
 from ..estimation import TargetModel
-from .photonCameraSim import PhotonCameraSim
-from .visionTargetSim import VisionTargetSim
+from .photon_camera_sim import PhotonCameraSim
+from .vision_target_sim import VisionTargetSim
 
 
 class VisionSystemSim:
@@ -167,18 +167,16 @@ class VisionSystemSim:
                 return False
 
         if cameraSim is None:
-            for camera in self.camTrfMap.keys():
+            for camera in self.camTrfMap:
                 resetSingleCamera(self, camera)
         else:
             resetSingleCamera(self, cameraSim)
 
     def getVisionTargets(self, targetType: str | None = None) -> list[VisionTargetSim]:
         if targetType is None:
-            all: list[VisionTargetSim] = []
-            for targets in self.targetSets.values():
-                for target in targets:
-                    all.append(target)
-            return all
+            return [
+                target for targets in self.targetSets.values() for target in targets
+            ]
         else:
             return self.targetSets[targetType]
 
@@ -233,7 +231,7 @@ class VisionSystemSim:
     ) -> list[VisionTargetSim]:
         removedList: list[VisionTargetSim] = []
         for target in targets:
-            for _, currentTargets in self.targetSets.items():
+            for currentTargets in self.targetSets.values():
                 if target in currentTargets:
                     removedList.append(target)
                     currentTargets.remove(target)
@@ -284,10 +282,9 @@ class VisionSystemSim:
         self.robotPoseBuffer.add_sample(now, robotPose)
         self.dbgField.set_robot_pose(robotPose.to_pose2d())
 
-        allTargets: list[VisionTargetSim] = []
-        for targets in self.targetSets.values():
-            for target in targets:
-                allTargets.append(target)
+        allTargets: list[VisionTargetSim] = [
+            target for targets in self.targetSets.values() for target in targets
+        ]
 
         visTgtPoses2d: list[Pose2d] = []
         cameraPoses2d: list[Pose2d] = []

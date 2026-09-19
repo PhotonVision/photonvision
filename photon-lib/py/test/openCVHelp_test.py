@@ -3,8 +3,8 @@ import math
 import ntcore as nt
 import pytest
 from photonlibpy.estimation import RotTrlTransform3d, TargetModel
-from photonlibpy.estimation.openCVHelp import OpenCVHelp
-from photonlibpy.photonCamera import setVersionCheckEnabled
+from photonlibpy.estimation.open_cv_help import OpenCVHelp
+from photonlibpy.photon_camera import setVersionCheckEnabled
 from photonlibpy.simulation import SimCameraProperties, VisionTargetSim
 from wpimath import Pose3d, Rotation3d, Translation3d
 

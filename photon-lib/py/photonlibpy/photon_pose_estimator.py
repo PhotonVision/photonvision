@@ -31,8 +31,8 @@ from wpimath import (
     Translation3d,
 )
 
-from .estimatedRobotPose import EstimatedRobotPose
-from .targeting.photonPipelineResult import PhotonPipelineResult
+from .estimated_robot_pose import EstimatedRobotPose
+from .targeting.photon_pipeline_result import PhotonPipelineResult
 
 
 class PhotonPoseEstimator:
