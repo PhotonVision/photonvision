@@ -25,8 +25,11 @@ from photonlibpy.targeting import (
     PhotonTrackedTarget,
     TargetCorner,
 )
-from photonlibpy.targeting.multiTargetPNPResult import MultiTargetPNPResult, PnpResult
-from photonlibpy.targeting.photonPipelineResult import PhotonPipelineResult
+from photonlibpy.targeting.multi_target_pnp_result import (
+    MultiTargetPNPResult,
+    PnpResult,
+)
+from photonlibpy.targeting.photon_pipeline_result import PhotonPipelineResult
 from robotpy_fields import Field, FieldTag
 from wpimath import Pose3d, Rotation3d, Transform3d, Translation3d
 

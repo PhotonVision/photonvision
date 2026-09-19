@@ -10,9 +10,9 @@ from wpimath.units import meters, seconds
 from wpiutil import PixelFormat
 
 from ..estimation import OpenCVHelp, RotTrlTransform3d, TargetModel, VisionEstimation
-from ..estimation.cameraTargetRelation import CameraTargetRelation
-from ..networktables.NTTopicSet import NTTopicSet
-from ..photonCamera import PhotonCamera
+from ..estimation.camera_target_relation import CameraTargetRelation
+from ..networktables.nt_topic_set import NTTopicSet
+from ..photon_camera import PhotonCamera
 from ..targeting import (
     MultiTargetPNPResult,
     PhotonPipelineMetadata,
@@ -21,8 +21,8 @@ from ..targeting import (
     PnpResult,
     TargetCorner,
 )
-from .simCameraProperties import SimCameraProperties
-from .visionTargetSim import VisionTargetSim
+from .sim_camera_properties import SimCameraProperties
+from .vision_target_sim import VisionTargetSim
 
 
 class PhotonCameraSim:
@@ -35,8 +35,8 @@ class PhotonCameraSim:
     def __init__(
         self,
         camera: PhotonCamera,
-        props: SimCameraProperties = SimCameraProperties.PERFECT_90DEG(),
-        tagLayout: Field = get_field(FieldId.DEFAULT_FIELD),
+        props: SimCameraProperties | None = None,
+        tagLayout: Field | None = None,
         minTargetAreaPercent: float | None = None,
         maxSightRange: meters | None = None,
     ):
@@ -65,10 +65,12 @@ class PhotonCameraSim:
         self.videoSimProcEnabled: bool = False
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = wpilib.Timer.get_monotonic_timestamp()
-        self.tagLayout = tagLayout
+        self.tagLayout = (
+            tagLayout if tagLayout is not None else get_field(FieldId.DEFAULT_FIELD)
+        )
 
         self.cam = camera
-        self.prop = props
+        self.prop = props if props is not None else SimCameraProperties.PERFECT_90DEG()
         self.setMinTargetAreaPixels(PhotonCameraSim.kDefaultMinAreaPx)
 
         # TODO Check fps is right
@@ -227,7 +229,7 @@ class PhotonCameraSim:
         Note: This may increase loop times.
         """
         self.videoSimRawEnabled = enabled
-        raise Exception("Raw stream not implemented")
+        raise NotImplementedError("Raw stream not implemented")
 
     def enableDrawWireframe(self, enabled: bool) -> None:
         """Sets whether a wireframe of the field is drawn to the raw video stream.
@@ -235,7 +237,7 @@ class PhotonCameraSim:
         Note: This will dramatically increase loop times.
         """
         self.videoSimWireframeEnabled = enabled
-        raise Exception("Wireframe not implemented")
+        raise NotImplementedError("Wireframe not implemented")
 
     def setWireframeResolution(self, resolution: float) -> None:
         """Sets the resolution of the drawn wireframe if enabled. Drawn line segments will be subdivided
@@ -249,7 +251,7 @@ class PhotonCameraSim:
     def enableProcessedStream(self, enabled: bool) -> None:
         """Sets whether the processed video stream simulation is enabled."""
         self.videoSimProcEnabled = enabled
-        raise Exception("Processed stream not implemented")
+        raise NotImplementedError("Processed stream not implemented")
 
     def process(
         self, latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]

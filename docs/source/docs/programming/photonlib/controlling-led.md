@@ -17,7 +17,7 @@ You can control the vision LEDs of supported hardware via PhotonLib using `setLE
    .. code-block:: python
 
       # Blink the LEDs.
-      from photonlibpy.photonCamera import VisionLEDMode
+      from photonlibpy.photon_camera import VisionLEDMode
 
       camera.setLEDMode(VisionLEDMode.kBlink)
 ```

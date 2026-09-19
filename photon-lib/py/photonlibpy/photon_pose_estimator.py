@@ -15,7 +15,7 @@
 ## along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###############################################################################
 
-from typing import Optional
+
 import wpilib
 import wpimath.units
 import wpiutil
@@ -31,8 +31,8 @@ from wpimath import (
     Translation3d,
 )
 
-from .estimatedRobotPose import EstimatedRobotPose
-from .targeting.photonPipelineResult import PhotonPipelineResult
+from .estimated_robot_pose import EstimatedRobotPose
+from .targeting.photon_pipeline_result import PhotonPipelineResult
 
 
 class PhotonPoseEstimator:
@@ -130,7 +130,7 @@ class PhotonPoseEstimator:
 
     def estimatePnpDistanceTrigSolvePose(
         self, result: PhotonPipelineResult
-    ) -> Optional[EstimatedRobotPose]:
+    ) -> EstimatedRobotPose | None:
         """
 
         Return the estimated position of the robot by using distance data from best visible tag to
@@ -191,7 +191,7 @@ class PhotonPoseEstimator:
 
     def estimateCoprocMultiTagPose(
         self, result: PhotonPipelineResult
-    ) -> Optional[EstimatedRobotPose]:
+    ) -> EstimatedRobotPose | None:
         """
         Return the estimated position of the robot by using all visible tags to compute a single
         pose estimate on coprocessor. This option needs to be enabled on the PhotonVision web UI as
@@ -219,7 +219,7 @@ class PhotonPoseEstimator:
 
     def estimateLowestAmbiguityPose(
         self, result: PhotonPipelineResult
-    ) -> Optional[EstimatedRobotPose]:
+    ) -> EstimatedRobotPose | None:
         """
         Return the estimated position of the robot with the lowest position ambiguity from a pipeline results.
 
