@@ -5,9 +5,9 @@ from .TargetCorner import TargetCorner
 
 __all__ = (
     "MultiTargetPNPResult",
-    "PnpResult",
     "PhotonPipelineMetadata",
     "PhotonPipelineResult",
     "PhotonTrackedTarget",
+    "PnpResult",
     "TargetCorner",
 )

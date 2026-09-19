@@ -311,7 +311,7 @@ class VisionSystemSim:
             lateRobotPose = self.getRobotPose(timestampCapture)
             robotToCamera = self.getRobotToCamera(camSim, timestampCapture)
             if lateRobotPose is None or robotToCamera is None:
-                return None
+                return
             lateCameraPose = lateRobotPose + robotToCamera
             cameraPoses2d.append(lateCameraPose.to_pose2d())
 
