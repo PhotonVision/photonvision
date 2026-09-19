@@ -34,8 +34,8 @@
 #include <wpi/fields/FieldTag.hpp>
 #include <wpi/util/deprecated.hpp>
 
-#include "photon/PhotonUtils.h"
 #include "photon/PhotonPoseEstimator.h"
+#include "photon/PhotonUtils.h"
 #include "photon/estimation/VisionEstimation.h"
 
 // Ignore GetLatestResult warnings
@@ -689,12 +689,10 @@ TEST_CASE_METHOD(VisionSystemSimTest, "TestRioMultiTagRotatedCamera",
   REQUIRE_THAT(pose.Z().to<double>(), Catch::Matchers::WithinAbs(0, 0.01));
   // The robot itself is upright; all camera pitch/roll is in robotToCamera and
   // must cancel out of the robot pose.
-  REQUIRE_THAT(
-      pose.Rotation().X().to<double>(),
-      Catch::Matchers::WithinAbs(0, 0.01));
-  REQUIRE_THAT(
-      pose.Rotation().Y().to<double>(),
-      Catch::Matchers::WithinAbs(0, 0.01));
+  REQUIRE_THAT(pose.Rotation().X().to<double>(),
+               Catch::Matchers::WithinAbs(0, 0.01));
+  REQUIRE_THAT(pose.Rotation().Y().to<double>(),
+               Catch::Matchers::WithinAbs(0, 0.01));
   REQUIRE_THAT(
       pose.Rotation().Z().to<double>(),
       Catch::Matchers::WithinAbs(
