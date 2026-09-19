@@ -3,7 +3,7 @@ from typing import overload
 
 from wpimath import Pose3d, Translation3d
 
-from ..estimation.targetModel import TargetModel
+from ..estimation.target_model import TargetModel
 
 
 class VisionTargetSim:

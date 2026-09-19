@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from .multiTargetPNPResult import MultiTargetPNPResult
-from .photonTrackedTarget import PhotonTrackedTarget
+from .multi_target_pnp_result import MultiTargetPNPResult
+from .photon_tracked_target import PhotonTrackedTarget
 
 if TYPE_CHECKING:
     from ..generated.PhotonPipelineMetadataSerde import PhotonPipelineMetadataSerde

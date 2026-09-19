@@ -25,7 +25,7 @@ from wpimath import Quaternion, Rotation3d, Transform3d, Translation3d
 T = TypeVar("T")
 
 
-class Serde(Generic[T], Protocol):
+class Serde(Protocol, Generic[T]):
     def pack(self, value: T) -> "Packet": ...
     def unpack(self, packet: "Packet") -> T: ...
 

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, ClassVar
 from wpimath import Transform3d
 
 from ..packet import Packet
-from .TargetCorner import TargetCorner
+from .target_corner import TargetCorner
 
 if TYPE_CHECKING:
     from ..generated.PhotonTrackedTargetSerde import PhotonTrackedTargetSerde
