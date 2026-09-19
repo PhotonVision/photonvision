@@ -136,7 +136,7 @@ enum ImportType {
   HardwareConfig,
   HardwareSettings,
   NetworkConfig,
-  ApriltagFieldLayout
+  FieldLayout
 }
 
 const showImportDialog = ref(false);
@@ -158,8 +158,8 @@ const handleSettingsImport = async () => {
     case ImportType.NetworkConfig:
       settingsEndpoint = "/networkConfig";
       break;
-    case ImportType.ApriltagFieldLayout:
-      settingsEndpoint = "/aprilTagFieldLayout";
+    case ImportType.FieldLayout:
+      settingsEndpoint = "/fieldLayout";
       break;
     default:
     case ImportType.AllSettings:
@@ -521,7 +521,7 @@ watch(metricsHistorySnapshot, () => {
               { value: ImportType.HardwareConfig, name: 'Hardware Config' },
               { value: ImportType.HardwareSettings, name: 'Hardware Settings' },
               { value: ImportType.NetworkConfig, name: 'Network Config' },
-              { value: ImportType.ApriltagFieldLayout, name: 'AprilTag Field Layout' }
+              { value: ImportType.FieldLayout, name: 'Field Layout' }
             ]"
             :select-cols="10"
             style="width: 100%"

@@ -1,5 +1,6 @@
+import telemetry
 import wpilib
-from robotpy_apriltag import AprilTagFieldLayout
+from robotpy_fields import Field
 from wpilib import Field2d
 
 # TODO(auscompgeek): update import path when RobotPy re-exports are fixed
@@ -39,7 +40,6 @@ class VisionSystemSim:
         self.targetSets: dict[str, list[VisionTargetSim]] = {}
 
         self.tableName: str = "VisionSystemSim-" + visionSystemName
-        wpilib.SmartDashboard.putData(self.tableName + "/Sim Field", self.dbgField)
 
     def getCameraSim(self, name: str) -> PhotonCameraSim | None:
         """Get one of the simulated cameras."""
@@ -63,8 +63,8 @@ class VisionSystemSim:
             self.camTrfMap[cameraSim] = TimeInterpolatablePose3dBuffer(
                 self.bufferLength
             )
-            self.camTrfMap[cameraSim].addSample(
-                wpilib.Timer.getMonotonicTimestamp(), Pose3d() + robotToCamera
+            self.camTrfMap[cameraSim].add_sample(
+                wpilib.Timer.get_monotonic_timestamp(), Pose3d() + robotToCamera
             )
 
     def clearCameras(self) -> None:
@@ -98,7 +98,7 @@ class VisionSystemSim:
         :returns: The transform of this camera, or an empty optional if it is invalid
         """
         if time is None:
-            time = wpilib.Timer.getMonotonicTimestamp()
+            time = wpilib.Timer.get_monotonic_timestamp()
         if cameraSim in self.camTrfMap:
             trfBuffer = self.camTrfMap[cameraSim]
             sample = trfBuffer.sample(time)
@@ -122,7 +122,7 @@ class VisionSystemSim:
         :returns: The pose of this camera, or an empty optional if it is invalid
         """
         if time is None:
-            time = wpilib.Timer.getMonotonicTimestamp()
+            time = wpilib.Timer.get_monotonic_timestamp()
         robotToCamera = self.getRobotToCamera(cameraSim, time)
         if robotToCamera is None:
             return None
@@ -145,8 +145,8 @@ class VisionSystemSim:
         :returns: If the cameraSim was valid and transform was adjusted
         """
         if cameraSim in self.camTrfMap:
-            self.camTrfMap[cameraSim].addSample(
-                wpilib.Timer.getMonotonicTimestamp(), Pose3d() + robotToCamera
+            self.camTrfMap[cameraSim].add_sample(
+                wpilib.Timer.get_monotonic_timestamp(), Pose3d() + robotToCamera
             )
             return True
         else:
@@ -154,7 +154,7 @@ class VisionSystemSim:
 
     def resetCameraTransforms(self, cameraSim: PhotonCameraSim | None = None) -> None:
         """Reset the transform history for this camera to just the current transform."""
-        now = wpilib.Timer.getMonotonicTimestamp()
+        now = wpilib.Timer.get_monotonic_timestamp()
 
         def resetSingleCamera(self, cameraSim: PhotonCameraSim) -> bool:
             if cameraSim in self.camTrfMap:
@@ -198,7 +198,7 @@ class VisionSystemSim:
         else:
             self.targetSets[targetType] += targets
 
-    def addAprilTags(self, layout: AprilTagFieldLayout) -> None:
+    def addAprilTags(self, layout: Field) -> None:
         """Adds targets on the field which your vision system is designed to detect. The {@link
         PhotonCamera}s simulated from this system will report the location of the camera relative to
         the subset of these targets which are visible from the given camera position.
@@ -210,12 +210,12 @@ class VisionSystemSim:
         :param tagLayout: The field tag layout to get Apriltag poses and IDs from
         """
         targets: list[VisionTargetSim] = []
-        for tag in layout.getTags():
-            tag_pose = layout.getTagPose(tag.ID)
+        for tag in layout.get_tags():
+            tag_pose = layout.get_tag_pose(tag.id)
             # TODO this was done to make the python gods happy. Confirm that this is desired or if types dont matter
             assert tag_pose is not None
             targets.append(
-                VisionTargetSim(tag_pose, TargetModel.AprilTag36h11(), tag.ID)
+                VisionTargetSim(tag_pose, TargetModel.AprilTag36h11(), tag.id)
             )
         self.addVisionTargets(targets, "apriltag")
 
@@ -245,7 +245,7 @@ class VisionSystemSim:
         :param timestamp: Timestamp of the desired robot pose
         """
         if timestamp is None:
-            timestamp = wpilib.Timer.getMonotonicTimestamp()
+            timestamp = wpilib.Timer.get_monotonic_timestamp()
         return self.robotPoseBuffer.sample(timestamp)
 
     def resetRobotPose(self, robotPose: Pose2d | Pose3d) -> None:
@@ -255,7 +255,9 @@ class VisionSystemSim:
         assert type(robotPose) is Pose3d
 
         self.robotPoseBuffer.clear()
-        self.robotPoseBuffer.addSample(wpilib.Timer.getMonotonicTimestamp(), robotPose)
+        self.robotPoseBuffer.add_sample(
+            wpilib.Timer.get_monotonic_timestamp(), robotPose
+        )
 
     def getDebugField(self) -> Field2d:
         return self.dbgField
@@ -274,13 +276,13 @@ class VisionSystemSim:
         for targetType, targets in self.targetSets.items():
             posesToAdd: list[Pose2d] = []
             for target in targets:
-                posesToAdd.append(target.getPose().toPose2d())
-            self.dbgField.getObject(targetType).setPoses(posesToAdd)
+                posesToAdd.append(target.getPose().to_pose2d())
+            self.dbgField.get_object(targetType).set_poses(posesToAdd)
 
         # save "real" robot poses over time
-        now = wpilib.Timer.getMonotonicTimestamp()
-        self.robotPoseBuffer.addSample(now, robotPose)
-        self.dbgField.setRobotPose(robotPose.toPose2d())
+        now = wpilib.Timer.get_monotonic_timestamp()
+        self.robotPoseBuffer.add_sample(now, robotPose)
+        self.dbgField.set_robot_pose(robotPose.to_pose2d())
 
         allTargets: list[VisionTargetSim] = []
         for targets in self.targetSets.values():
@@ -303,7 +305,7 @@ class VisionSystemSim:
             timestampNt = optTimestamp
             latency = camSim.prop.estLatency()
             # the image capture timestamp in seconds of this result
-            timestampCapture = timestampNt - latency
+            timestampCapture = timestampNt - latency  # latency is already in seconds
 
             # use camera pose from the image capture timestamp
             lateRobotPose = self.getRobotPose(timestampCapture)
@@ -311,23 +313,26 @@ class VisionSystemSim:
             if lateRobotPose is None or robotToCamera is None:
                 return None
             lateCameraPose = lateRobotPose + robotToCamera
-            cameraPoses2d.append(lateCameraPose.toPose2d())
+            cameraPoses2d.append(lateCameraPose.to_pose2d())
 
             # process a PhotonPipelineResult with visible targets
             camResult = camSim.process(latency, lateCameraPose, allTargets)
             # publish this info to NT at estimated timestamp of receive
-            # needs a timestamp in microseconds
-            camSim.submitProcessedFrame(camResult, timestampNt * 1.0e6)
+            # needs a timestamp in nanoseconds
+            camSim.submitProcessedFrame(camResult, timestampNt * 1.0e9)
             # display debug results
             for tgt in camResult.getTargets():
                 trf = tgt.getBestCameraToTarget()
                 if trf == Transform3d():
                     continue
 
-                visTgtPoses2d.append(lateCameraPose.transformBy(trf).toPose2d())
+                visTgtPoses2d.append(lateCameraPose.transform_by(trf).to_pose2d())
 
         if processed:
-            self.dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d)
+            self.dbgField.get_object("visibleTargetPoses").set_poses(visTgtPoses2d)
 
         if len(cameraPoses2d) != 0:
-            self.dbgField.getObject("cameras").setPoses(cameraPoses2d)
+            self.dbgField.get_object("cameras").set_poses(cameraPoses2d)
+
+        # publish the field state to telemetry
+        telemetry.log(self.tableName + "/Sim Field", self.dbgField)

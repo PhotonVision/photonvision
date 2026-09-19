@@ -15,13 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
 #include <wpi/hal/HAL.h>
 #include <wpi/util/print.hpp>
 
-TEST(TimeSyncProtocolTest, Smoketest) {
+TEST_CASE("TimeSyncProtocolTest Smoketest", "[timesync]") {
   using namespace wpi::tsp;
   using namespace std::chrono_literals;
 
@@ -40,7 +40,7 @@ TEST(TimeSyncProtocolTest, Smoketest) {
   server.Stop();
 }
 
-TEST(TimeSyncClientTest, CalculateZero) {
+TEST_CASE("TimeSyncClientTest CalculateZero", "[timesync]") {
   using namespace wpi::tsp;
   using namespace std::chrono_literals;
 
@@ -61,13 +61,13 @@ TEST(TimeSyncClientTest, CalculateZero) {
   client.UpdateStatistics(pong_client_time, ping, pong);
 
   // THEN the statistics will reflect no delay
-  EXPECT_EQ(0, client.GetMetadata().offset);
-  EXPECT_EQ(0, client.GetMetadata().rtt2);
-  EXPECT_EQ(1u, client.GetMetadata().pongsReceived);
-  EXPECT_EQ(pong_client_time, client.GetMetadata().lastPongTime);
+  CHECK(0 == client.GetMetadata().offset);
+  CHECK(0 == client.GetMetadata().rtt2);
+  CHECK(1u == client.GetMetadata().pongsReceived);
+  CHECK(pong_client_time == client.GetMetadata().lastPongTime);
 }
 
-TEST(TimeSyncClientTest, CalculateZeroOffset) {
+TEST_CASE("TimeSyncClientTest CalculateZeroOffset", "[timesync]") {
   using namespace wpi::tsp;
   using namespace std::chrono_literals;
 
@@ -89,13 +89,13 @@ TEST(TimeSyncClientTest, CalculateZeroOffset) {
 
   // THEN the statistics will reflect no offset, and the expected rtt2
   // (client-to-client) latency
-  EXPECT_EQ(0, client.GetMetadata().offset);
-  EXPECT_EQ(20, client.GetMetadata().rtt2);
-  EXPECT_EQ(1u, client.GetMetadata().pongsReceived);
-  EXPECT_EQ(pong_client_time, client.GetMetadata().lastPongTime);
+  CHECK(0 == client.GetMetadata().offset);
+  CHECK(20 == client.GetMetadata().rtt2);
+  CHECK(1u == client.GetMetadata().pongsReceived);
+  CHECK(pong_client_time == client.GetMetadata().lastPongTime);
 }
 
-TEST(TimeSyncClientTest, CalculateZeroRtt) {
+TEST_CASE("TimeSyncClientTest CalculateZeroRtt", "[timesync]") {
   using namespace wpi::tsp;
   using namespace std::chrono_literals;
 
@@ -116,13 +116,13 @@ TEST(TimeSyncClientTest, CalculateZeroRtt) {
   client.UpdateStatistics(pong_client_time, ping, pong);
 
   // THEN the statistics will reflect the expected 23ms offset
-  EXPECT_EQ(23, client.GetMetadata().offset);
-  EXPECT_EQ(0, client.GetMetadata().rtt2);
-  EXPECT_EQ(1u, client.GetMetadata().pongsReceived);
-  EXPECT_EQ(pong_client_time, client.GetMetadata().lastPongTime);
+  CHECK(23 == client.GetMetadata().offset);
+  CHECK(0 == client.GetMetadata().rtt2);
+  CHECK(1u == client.GetMetadata().pongsReceived);
+  CHECK(pong_client_time == client.GetMetadata().lastPongTime);
 }
 
-TEST(TimeSyncClientTest, CalculateBoth) {
+TEST_CASE("TimeSyncClientTest CalculateBoth", "[timesync]") {
   using namespace wpi::tsp;
   using namespace std::chrono_literals;
 
@@ -146,8 +146,8 @@ TEST(TimeSyncClientTest, CalculateBoth) {
   client.UpdateStatistics(pong_client_time, ping, pong);
 
   // THEN the statistics will reflect the expected latency and RTT
-  EXPECT_EQ(offset, client.GetMetadata().offset);
-  EXPECT_EQ(network_latency * 2, client.GetMetadata().rtt2);
-  EXPECT_EQ(1u, client.GetMetadata().pongsReceived);
-  EXPECT_EQ(pong_client_time, client.GetMetadata().lastPongTime);
+  CHECK(offset == client.GetMetadata().offset);
+  CHECK(network_latency * 2 == client.GetMetadata().rtt2);
+  CHECK(1u == client.GetMetadata().pongsReceived);
+  CHECK(pong_client_time == client.GetMetadata().lastPongTime);
 }

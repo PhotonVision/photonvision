@@ -39,9 +39,8 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.ArucoPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.wpilib.driverstation.Alert;
-import org.wpilib.driverstation.Alert.Level;
-import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.util.Alert;
+import org.wpilib.util.Alert.Level;
 
 /**
  * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer; it must be closed
@@ -102,6 +101,7 @@ public class VisionRunner implements AutoCloseable {
         croppedRawStreamAlert =
                 new Alert(
                         "PhotonAlerts",
+                        frameSupplier.getName(),
                         "Raw stream open with static cropping enabled on "
                                 + frameSupplier.getName()
                                 + " -- extra processing is used to compose the uncropped preview",
@@ -234,7 +234,6 @@ public class VisionRunner implements AutoCloseable {
         if (shown == croppedRawStreamAlertShown) return;
         croppedRawStreamAlertShown = shown;
         croppedRawStreamAlert.set(shown);
-        SmartDashboard.updateValues();
     }
 
     private void update() {

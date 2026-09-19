@@ -28,7 +28,6 @@ import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.util.Units;
-import org.wpilib.networktables.NetworkTablesJNI;
 import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
 
 public class MathUtils {
@@ -95,10 +94,6 @@ public class MathUtils {
 
     public static int map(int value, int inMin, int inMax, int outMin, int outMax) {
         return (int) Math.floor(map((double) value, inMin, inMax, outMin, outMax) + 0.5);
-    }
-
-    public static long wpiNanoTime() {
-        return microsToNanos(NetworkTablesJNI.now());
     }
 
     /**

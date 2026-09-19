@@ -21,10 +21,10 @@
 #include <utility>
 
 #include <wpi/units/time.hpp>
+#include <wpi/util/print.hpp>
 
 #include "MultiTargetPNPResult.h"
 #include "PhotonTrackedTarget.h"
-#include "fmt/base.h"
 #include "photon/struct/PhotonPipelineResultStruct.h"
 
 namespace photon {
@@ -70,7 +70,7 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
    */
   PhotonTrackedTarget GetBestTarget() const {
     if (!HasTargets() && !HAS_WARNED) {
-      fmt::println(
+      wpi::util::println(
           "WARNING: This PhotonPipelineResult object has no targets associated "
           "with it! "
           "Please check HasTargets() before calling this method. For more "
@@ -86,8 +86,8 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
    * @return The latency in the pipeline.
    */
   wpi::units::millisecond_t GetLatency() const {
-    return wpi::units::microsecond_t{static_cast<double>(
-        metadata.publishTimestampMicros - metadata.captureTimestampMicros)};
+    return wpi::units::nanosecond_t{static_cast<double>(
+        metadata.publishTimestampNanos - metadata.captureTimestampNanos)};
   }
 
   /**
@@ -146,7 +146,7 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
 
   // Since we don't trust NT time sync, keep track of when we got this packet
   // into robot code
-  wpi::units::microsecond_t ntReceiveTimestamp = -1_s;
+  wpi::units::nanosecond_t ntReceiveTimestamp = -1_ns;
 
   inline static bool HAS_WARNED = false;
 };

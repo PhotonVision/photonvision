@@ -30,7 +30,7 @@ import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 public class Draw2dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
