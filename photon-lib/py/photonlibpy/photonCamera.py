@@ -18,17 +18,17 @@
 from enum import Enum
 
 import ntcore
+import wpilib
 import wpiutil
+from wpilib import RobotController, Timer
 
 # magical import to make serde stuff work
 import photonlibpy.generated  # noqa
-import wpilib
-from wpilib import RobotController, Timer
 
+from ._version import version as PHOTONLIB_VERSION
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
 from .timesync.timeSyncServer import inst
-from ._version import version as PHOTONLIB_VERSION
 
 
 class VisionLEDMode(Enum):
