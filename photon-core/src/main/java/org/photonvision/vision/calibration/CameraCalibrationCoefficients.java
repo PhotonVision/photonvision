@@ -360,7 +360,7 @@ public class CameraCalibrationCoefficients implements Releasable {
             // xylevels is row-major per chessboard
             for (int boardCornerIdx = 0; boardCornerIdx < corners.size(); boardCornerIdx++) {
                 var corner = corners.get(boardCornerIdx);
-                double level = board.cornersUsed[boardCornerIdx] ? 1.0 : -1.0;
+                double level = board.cornersUsed[boardCornerIdx] ? 0.0 : -1.0;
 
                 xylevels[xylevelsIdx * 3 + 0] = corner.x;
                 xylevels[xylevelsIdx * 3 + 1] = corner.y;
