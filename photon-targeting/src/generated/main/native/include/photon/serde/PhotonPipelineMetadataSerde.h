@@ -41,11 +41,11 @@ namespace photon {
 template <>
 struct WPILIB_DLLEXPORT SerdeType<PhotonPipelineMetadata> {
   static constexpr std::string_view GetSchemaHash() {
-    return "ac0a45f686457856fb30af77699ea356";
+    return "5231116d7f87ff560e6aa5263d0eee02";
   }
 
   static constexpr std::string_view GetSchema() {
-    return "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;int64 timeSinceLastPong;";
+    return "int64 sequenceID;int64 captureTimestampNanos;int64 publishTimestampNanos;int64 timeSinceLastPong;";
   }
 
   static photon::PhotonPipelineMetadata Unpack(photon::Packet& packet);

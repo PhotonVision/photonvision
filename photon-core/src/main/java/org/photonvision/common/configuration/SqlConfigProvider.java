@@ -34,8 +34,12 @@ import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.configuration.migrations.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
+import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.DriverModePipelineSettings;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
+import org.wpilib.vision.camera.UsbCameraInfo;
 
 /**
  * Saves settings in a SQLite database file (called photon.sqlite).
@@ -52,7 +56,7 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String NETWORK_CONFIG = "networkConfig";
         static final String HARDWARE_CONFIG = "hardwareConfig";
         static final String HARDWARE_SETTINGS = "hardwareSettings";
-        static final String ATFL_CONFIG_FILE = "apriltagFieldLayout";
+        static final String FIELD_CONFIG_FILE = "fieldLayout";
         static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
 
@@ -195,17 +199,49 @@ public class SqlConfigProvider extends ConfigProvider {
         return null;
     }
 
-    private AprilTagFieldLayout atflDefault() {
-        AprilTagFieldLayout atfl;
+    private Field fieldDefault() {
+        Field field;
         try {
-            atfl = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-            logger.info("Loaded " + AprilTagFields.kDefaultField.toString() + " field");
+            field = Field.loadField(Fields.DEFAULT_FIELD);
+            logger.info("Loaded " + Fields.DEFAULT_FIELD.toString() + " field");
         } catch (UncheckedIOException e) {
             logger.error("Error loading WPILib field", e);
             logger.info("Creating an empty field");
-            atfl = new AprilTagFieldLayout(List.of(), 1, 1);
+            field = new Field("", "", "", null, 0, 0, "", null);
         }
-        return atfl;
+        return field;
+    }
+
+    /**
+     * MIGRATION: 2026
+     *
+     * <p>Loads the stored AprilTag field layout, migrating any legacy {@code AprilTagFieldLayout}
+     * JSON to the newer {@link Field} format before deserializing. If a migration happened the
+     * upgraded JSON is written back to the database so the stored data self-upgrades.
+     */
+    private Field loadField(Connection conn) {
+        // This stays as the old config string, as that's how we'll try and find it in the database
+        String configString = getOneConfigFile(conn, "apriltagFieldLayout");
+        if (configString.isBlank()) {
+            logger.debug("No " + Field.class.getSimpleName() + " in database");
+            return fieldDefault();
+        }
+
+        try {
+            String migrated = FieldLayoutMigration.migrateFieldLayoutJson(configString);
+            if (!migrated.equals(configString)) {
+                logger.info("Migrated legacy AprilTagFieldLayout to Field format, persisting to database");
+                if (!saveOneFile(GlobalKeys.FIELD_CONFIG_FILE, migrated)) {
+                    logger.error("Could not persist migrated field layout to database!");
+                }
+            }
+            return Jsonb.instance().type(Field.class).fromJson(migrated);
+        } catch (RuntimeException e) {
+            logger.error("Could not deserialize " + Field.class.getSimpleName() + " from database!", e);
+        }
+
+        // either the config entry was corrupt or Jsonb threw an exception
+        return fieldDefault();
     }
 
     @Override
@@ -230,9 +266,7 @@ public class SqlConfigProvider extends ConfigProvider {
                             GlobalKeys.NEURAL_NETWORK_PROPERTIES,
                             NeuralNetworkModelsSettings.class,
                             NeuralNetworkModelsSettings::new);
-            var atfl =
-                    loadConfigOrDefault(
-                            conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, this::atflDefault);
+            var field = loadField(conn);
             var cams = loadCameraConfigs(conn);
 
             try {
@@ -243,7 +277,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
             this.config =
                     new PhotonConfiguration(
-                            hardwareConfig, hardwareSettings, networkConfig, atfl, nnProps, cams);
+                            hardwareConfig, hardwareSettings, networkConfig, field, nnProps, cams);
         }
     }
 
@@ -415,7 +449,23 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
+    /**
+     * MIGRATION: 2026
+     *
+     * <p>When we migrate the field layout, we get the result as a string. Everything else has a path
+     * though, so we need this overload to maintain the prior behavior. To remove this migration,
+     * we'll want to delete this overload then make the other function accept a path again.
+     */
     private boolean saveOneFile(String fname, Path path) {
+        try {
+            return saveOneFile(fname, Files.readString(path));
+        } catch (IOException e) {
+            logger.error("Error while reading file to save to global: ", e);
+            return false;
+        }
+    }
+
+    private boolean saveOneFile(String fname, String contents) {
         Connection conn = null;
         PreparedStatement statement1 = null;
 
@@ -432,12 +482,12 @@ public class SqlConfigProvider extends ConfigProvider {
                             Tables.GLOBAL, Columns.GLB_FILENAME, Columns.GLB_CONTENTS);
 
             statement1 = conn.prepareStatement(sqlString);
-            addFile(statement1, fname, Files.readString(path));
+            addFile(statement1, fname, contents);
             statement1.executeUpdate();
 
             conn.commit();
             return true;
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             logger.error("Error while saving file to global: ", e);
             try {
                 conn.rollback();
@@ -474,9 +524,9 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     @Override
-    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
+    public boolean saveUploadedFieldLayout(Path uploadPath) {
         skipSavingAPRTG = true;
-        return saveOneFile(GlobalKeys.ATFL_CONFIG_FILE, uploadPath);
+        return saveOneFile(GlobalKeys.FIELD_CONFIG_FILE, uploadPath);
     }
 
     @Override

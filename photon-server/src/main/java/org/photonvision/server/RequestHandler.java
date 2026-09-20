@@ -284,7 +284,7 @@ public class RequestHandler {
         }
     }
 
-    public static void onAprilTagFieldLayoutRequest(Context ctx) {
+    public static void onFieldLayoutRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
         if (file == null) {
@@ -315,15 +315,15 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigManager.getInstance().saveUploadedAprilTagFieldLayout(tempFilePath.get().toPath())) {
+        if (ConfigManager.getInstance().saveUploadedFieldLayout(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
-            logger.info("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
+            ctx.result("Successfully saved the uploaded FieldLayout, rebooting...");
+            logger.info("Successfully saved the uploaded FieldLayout, rebooting...");
             restartProgram();
         } else {
             ctx.status(500);
-            ctx.result("There was an error while saving the uploaded AprilTagFieldLayout");
-            logger.error("There was an error while saving the uploaded AprilTagFieldLayout");
+            ctx.result("There was an error while saving the uploaded FieldLayout");
+            logger.error("There was an error while saving the uploaded FieldLayout");
         }
     }
 

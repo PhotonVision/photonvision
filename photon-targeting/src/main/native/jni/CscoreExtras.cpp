@@ -67,7 +67,7 @@ static void ReportError(JNIEnv* env, CS_Status status) {
       msg = "telemetry not enabled";
       break;
     default: {
-      msgBuf = fmt::format("unknown error code={}", status);
+      msgBuf = std::format("unknown error code={}", status);
       msg = msgBuf;
       break;
     }

@@ -25,15 +25,15 @@
 namespace photon {
 namespace VisionEstimation {
 
-std::vector<wpi::apriltag::AprilTag> GetVisibleLayoutTags(
+std::vector<wpi::fields::FieldTag> GetVisibleLayoutTags(
     const std::vector<PhotonTrackedTarget>& visTags,
-    const wpi::apriltag::AprilTagFieldLayout& layout) {
-  std::vector<wpi::apriltag::AprilTag> retVal{};
+    const wpi::fields::Field& layout) {
+  std::vector<wpi::fields::FieldTag> retVal{};
   for (const auto& tag : visTags) {
     int id = tag.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      retVal.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
+      retVal.emplace_back(wpi::fields::FieldTag{id, maybePose.value()});
     }
   }
   return retVal;
@@ -43,27 +43,26 @@ std::optional<PnpResult> EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<PhotonTrackedTarget>& visTags,
-    const wpi::apriltag::AprilTagFieldLayout& layout,
-    const TargetModel& tagModel) {
+    const wpi::fields::Field& layout, const TargetModel& tagModel) {
   if (visTags.size() == 0) {
-    return PnpResult();
+    return {};
   }
 
   std::vector<photon::TargetCorner> corners{};
-  std::vector<wpi::apriltag::AprilTag> knownTags{};
+  std::vector<wpi::fields::FieldTag> knownTags{};
 
   for (const auto& tgt : visTags) {
     int id = tgt.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      knownTags.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
+      knownTags.emplace_back(wpi::fields::FieldTag{id, maybePose.value()});
       auto currentCorners = tgt.GetDetectedCorners();
       corners.insert(corners.end(), currentCorners.begin(),
                      currentCorners.end());
     }
   }
   if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
-    return PnpResult{};
+    return {};
   }
 
   std::vector<cv::Point2f> points = OpenCVHelp::CornersToPoints(corners);
@@ -72,7 +71,7 @@ std::optional<PnpResult> EstimateCamPosePNP(
     auto camToTag = OpenCVHelp::SolvePNP_Square(cameraMatrix, distCoeffs,
                                                 tagModel.GetVertices(), points);
     if (!camToTag) {
-      return PnpResult{};
+      return {};
     }
     wpi::math::Pose3d bestPose =
         knownTags[0].pose.TransformBy(camToTag->best.Inverse());
@@ -111,29 +110,28 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<photon::PhotonTrackedTarget>& visTags,
     const wpi::math::Transform3d& robot2Camera,
-    const wpi::math::Pose3d& robotPoseSeed,
-    const wpi::apriltag::AprilTagFieldLayout& layout,
+    const wpi::math::Pose3d& robotPoseSeed, const wpi::fields::Field& layout,
     const photon::TargetModel& tagModel, bool headingFree,
     wpi::math::Rotation2d gyroTheta, double gyroErrorScaleFac) {
   if (visTags.size() == 0) {
-    return photon::PnpResult();
+    return {};
   }
 
   std::vector<photon::TargetCorner> corners{};
-  std::vector<wpi::apriltag::AprilTag> knownTags{};
+  std::vector<wpi::fields::FieldTag> knownTags{};
 
   for (const auto& tgt : visTags) {
     int id = tgt.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      knownTags.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
+      knownTags.emplace_back(wpi::fields::FieldTag{id, maybePose.value()});
       auto currentCorners = tgt.GetDetectedCorners();
       corners.insert(corners.end(), currentCorners.begin(),
                      currentCorners.end());
     }
   }
   if (knownTags.size() == 0 || corners.size() == 0 || corners.size() % 4 != 0) {
-    return photon::PnpResult{};
+    return {};
   }
 
   std::vector<cv::Point2f> points =
@@ -191,8 +189,8 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
       guess2.X().value(), guess2.Y().value(),
       guess2.Rotation().Radians().value()};
 
-  wpi::util::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus>
-      result = constrained_solvepnp::do_optimization(
+  std::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus> result =
+      constrained_solvepnp::do_optimization(
           headingFree, knownTags.size(), cameraCal, robotToCamera, guessMat,
           field2points, pointObservations, gyroTheta.Radians().value(),
           gyroErrorScaleFac);

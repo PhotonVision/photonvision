@@ -250,7 +250,7 @@ public class Main implements Callable<Integer> {
         }
         logger.info("WPILib and photon-targeting JNI libraries loaded.");
 
-        if (!HAL.initialize(500, 0)) {
+        if (!HAL.initialize()) {
             logger.error("Failed to initialize the HAL! Giving up :(");
             return 1;
         }

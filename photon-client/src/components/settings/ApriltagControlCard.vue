@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import type { Quaternion } from "@/types/PhotonTrackingTypes";
+import type { FieldTag, Quaternion } from "@/types/PhotonTrackingTypes";
 import { toDeg } from "@/lib/MathUtils";
+import { computed } from "vue";
 const { Euler, Quaternion: ThreeQuat } = await import("three");
+
+const currentFieldLayout = computed(() => useSettingsStore().currentFieldLayout);
+const fieldWidth = computed(() => currentFieldLayout.value["field-dimensions"].width);
+const fieldLength = computed(() => currentFieldLayout.value["field-dimensions"].length);
+const fieldTags = computed<FieldTag[]>(() => currentFieldLayout.value["field-tags"] ?? []);
 
 const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: number } => {
   const quat = new ThreeQuat(rot_quat.X, rot_quat.Y, rot_quat.Z, rot_quat.W);
@@ -16,8 +22,8 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   <v-card color="surface" class="rounded-12">
     <v-card-title>AprilTag Field Layout</v-card-title>
     <v-card-text class="pt-0">
-      <p>Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
-      <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
+      <p>Field width: {{ fieldWidth.toFixed(2) }} meters</p>
+      <p>Field length: {{ fieldLength.toFixed(2) }} meters</p>
 
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
       <v-table fixed-header height="100%" density="compact">
@@ -34,7 +40,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(tag, index) in useSettingsStore().currentFieldLayout.tags" :key="index">
+            <tr v-for="(tag, index) in fieldTags" :key="index">
               <td>{{ tag.ID }}</td>
               <td v-for="(val, idx) in Object.values(tag.pose.translation)" :key="idx">{{ val.toFixed(2) }}&nbsp;m</td>
               <td v-for="(val, idx) in Object.values(quaternionToEuler(tag.pose.rotation.quaternion))" :key="idx + 4">

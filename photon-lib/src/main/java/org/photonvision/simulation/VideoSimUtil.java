@@ -45,7 +45,7 @@ import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.util.Units;
 import org.wpilib.util.RawFrame;
-import org.wpilib.vision.apriltag.AprilTag;
+import org.wpilib.vision.apriltag.AprilTagImageGenerator;
 import org.wpilib.vision.camera.CvSource;
 import org.wpilib.vision.camera.OpenCvLoader;
 
@@ -115,7 +115,7 @@ public class VideoSimUtil {
      * @param id The fiducial id of the desired tag
      */
     private static Mat get36h11TagImage(int id) {
-        RawFrame frame = AprilTag.generate36h11AprilTagImage(id);
+        RawFrame frame = AprilTagImageGenerator.generate36h11AprilTagImage(id);
         return new Mat(
                 frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
     }

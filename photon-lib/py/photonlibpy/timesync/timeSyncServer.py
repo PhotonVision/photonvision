@@ -53,7 +53,7 @@ class TimeSyncServer:
     PORT = 5810
 
     def __init__(self, time_provider: Optional[Callable[[], int]] = None):
-        self.time_provider = time_provider or Timer.getMonotonicTimestamp
+        self.time_provider = time_provider or Timer.get_monotonic_timestamp
         self._process: Optional[threading.Thread] = None
         self.logger = logging.getLogger("PhotonVision-TimeSyncServer")
 
@@ -72,7 +72,7 @@ class TimeSyncServer:
                     self.logger.error("Invalid Version/ID")
                     continue  # Ignore invalid pings
 
-                server_time = int(self.time_provider() * 1e6)  # Convert to microseconds
+                server_time = int(self.time_provider() * 1e9)  # Convert to nanoseconds
                 pong = TspPong(ping, server_time)
                 udp_socket.sendto(pong.pack(), addr)
 
