@@ -3,7 +3,7 @@
 - For the following supported coprocessors
   - {ref}`Raspberry Pi 3,4,5 <docs/quick-start/quick-install:Raspberry Pi and Orange Pi Installation>`
   - {ref}`Orange Pi 5, 5B, 5 Pro <docs/quick-start/quick-install:Raspberry Pi and Orange Pi Installation>`
-  - {ref}`Limelight 2, 2+, 3, 3G, 4 <docs/quick-start/quick-install:LimeLight Installation>`
+  - {ref}`Limelight 2, 2+, 3, 3G, 4 <docs/quick-start/quick-install:Limelight Installation>`
   - {ref}`Rubik Pi 3 <docs/quick-start/quick-install:Rubik Pi 3 Installation>`
 
 For installing on non-supported devices {ref}`see here. <docs/advanced-installation/sw_install/index:Software Installation>`
@@ -40,9 +40,13 @@ Balena Etcher has been recommended in the past, but should no longer be used due
 
 ### USB Drive Installation
 
+```{note}
+Best practice is to use a name brand USB 3.0 drive for better performance and stability, or an SSD in a suitable enclosure. Generic and/or low-quality drives are more prone to data corruption, failure, and performance issues.
+```
+
 #### Bootloader Update/Configuration
 ::::{tab-set}
-:::{tab-item} Raspberry Pi 3
+:::{tab-item} Raspberry Pi 3 series
 ```{note}
 The Raspberry Pi 3B+ already has USB mass-storage boot enabled by default, so this procedure is not needed.
 
@@ -50,30 +54,37 @@ For Raspberry Pi 3B and other supported pre-3B+ models that do not already have 
 
 Programming the OTP is permanent, but it does not prevent the Pi from booting from microSD cards. On the Raspberry Pi 3A+, enabling USB host boot permanently disables USB device boot mode.
 ```
+```{note}
+If you are using a Compute Module with eMMC you will need to download [rpiboot](https://github.com/raspberrypi/usbboot) for your operating system, and run it before the first step.
 
-1. Download Raspberry Pi Imager
+Before using rpiboot, ensure that the Compute Module is in bootloader mode. Refer to your baseboard's documentation for instructions.
+```
+
+1. Download [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
 
 2. Select Raspberry Pi 3
 
-3. Select Raspberry Pi OS (64-bit), then your storage device, and flash the image.
+3. Select Raspberry Pi OS (64-bit), then your storage device, and flash the image onto a microSD card.
 
-4. Insert the card into the Raspberry Pi 3, connect power and HDMI, boot it normally, and follow the onscreen instructions.
+4. (microSD-only) Insert the microSD card into the Raspberry Pi 3
 
-5. Open the terminal, and update the Raspberry Pi OS installation:
+5. Connect power and HDMI to a display, boot it normally, and follow the onscreen instructions.
+
+6. Open the terminal, and update the Raspberry Pi OS installation:
 
 ```shell
 sudo apt update
 sudo apt full-upgrade
 ```
 
-6. Enable USB boot mode by programming the OTP:
+7. Enable USB boot mode by programming the OTP:
 
 ```shell
 echo program_usb_boot_mode=1 | sudo tee -a /boot/firmware/config.txt
 sudo reboot
 ```
 
-7. Verify that the OTP bit has been programmed:
+8. Verify that the OTP bit has been programmed:
 
 ```shell
 vcgencmd otp_dump | grep 17:
@@ -85,7 +96,7 @@ The output should contain:
 17:3020000a
 ```
 
-8. (optional) Remove the USB boot configuration from config.txt:
+9. (optional) Remove the USB boot configuration from config.txt:
 
 Once the OTP has been successfully programmed, you can remove the following line from /boot/firmware/config.txt if you want:
 
@@ -94,11 +105,17 @@ program_usb_boot_mode=1
 ```
 This setting is only required to program the OTP and does not need to remain enabled.
 
-9. Shut down the Raspberry Pi 3 and remove the microSD card from the microSD slot.
+10. Shut down the Raspberry Pi 3 and remove the microSD card from the microSD slot.
 :::
 
-:::{tab-item} Raspberry Pi 4/5
-1. Download Raspberry Pi Imager
+:::{tab-item} Raspberry Pi 4/5 series
+```{note}
+If you are using a Compute Module with eMMC you will need to download [rpiboot](https://github.com/raspberrypi/usbboot) for your operating system, and run it before the first step.
+
+Before using rpiboot, ensure that the Compute Module is in bootloader mode. Refer to your baseboard's documentation for instructions.
+```
+
+1. Download [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
 
 2. Select your Raspberry Pi model
 
@@ -106,20 +123,24 @@ This setting is only required to program the OTP and does not need to remain ena
 
 4. Select "USB boot" or "NVMe/USB boot" (depending on your model)
 
-5. Select your microSD card and flash the bootloader image
+5. Select your microSD card (or device) and flash the bootloader image
 
-6. Insert the microSD card into your Raspberry Pi and power it on. The bootloader will be updated and configured to boot from USB before microSD.
+6. (microSD-only) Insert the microSD card into your Raspberry Pi
 
-7. Wait for the green LED to blink rapidly, indicating that the update was successful. If an HDMI display is connected, the screen will also turn green. A red screen indicates that the update was unsuccessful.
+7. Power the device on. The bootloader will be updated and configured to boot from USB before microSD.
 
-8. Power off the Raspberry Pi and remove the microSD card.
+8. Wait for the green LED to blink rapidly, indicating that the update was successful. If an HDMI display is connected, the screen will also turn green. A red screen indicates that the update was unsuccessful.
+
+9. Power off the Raspberry Pi and remove the microSD card.
 :::
 
 :::{tab-item} Rockchip-based boards (Orange Pi 5/5+, etc.)
 
-Tested on the Orange Pi 5 and 5+. Other Rockchip boards may require different files, buttons, USB ports, or bootloaders; follow your board's official documentation.
+Tested on the Orange Pi 5 and 5+.
 
-Some Rockchip boards have an older SPI bootloader without USB boot support. Update it with the latest board-specific files before installing PhotonVision to USB.
+Other Rockchip boards may require different files, buttons, USB ports, bootloaders, or flashing procedures. Follow your board's official documentation and use the files provided for your specific board.
+
+Some Rockchip boards ship with an older SPI bootloader that does not support USB boot and must be updated before booting PhotonVision from USB.
 
 The SPI bootloader update is separate from PhotonVision installation and normally only needs to be done once, unless a newer bootloader is released.
 
@@ -128,9 +149,7 @@ This RKDevTool procedure requires Windows. For now, other operating systems are 
 
 This guide uses a corrected English translation for RKDevTool. Installing it is highly recommended because the button names and messages below match the corrected translation rather than the original, poorly translated English interface.
 
-The translation only changes RKDevTool's interface text, and doesn't change the application itself or anything on your board.
-
-Translation Download: [`English.ini`](additional-files/English.ini)
+The translation only changes RKDevTool's interface text and does not change the application itself or anything on your board.
 
 If the download is blocked, your web browser may need you to manually approve that file.
 ```
@@ -139,6 +158,8 @@ If the download is blocked, your web browser may need you to manually approve th
 RKDevTool: [Download](https://drive.google.com/file/d/1ypZnxyPEQE4TwLucElpccjmGMqwtoNB0/view?usp=drive_link)
 
 Drivers: [Download](https://drive.google.com/file/d/1kTWzTh1TYBTVsv6mPDXKfLIqrImz-7gl/view?usp=drive_link)
+
+Unofficial RKDevTool Translation: [`English.ini`](additional-files/English.ini)
 
 #### Board-specific files
 Click the file names to download the correct files for your board. If your board is not listed, consult your board's official documentation for the correct files.
@@ -170,9 +191,9 @@ Double-click on `DriverInstall.exe`, allow it to run as administrator, and click
 
 5. Download the board-specific SPI flash configuration, temporary loader, and SPI bootloader image listed above.
 
-6. Import the board-specific SPI flash configuration into RKDevTool by right-clicking anywhere in the table area and selecting "Import Configuration".
+6. Import the SPI flash configuration into RKDevTool by right-clicking anywhere in the table area and selecting "Import Configuration".
 ![The RKDevTool main window showing the right-click menu in the table area](images/rkdevtool/rkdevtool_import_config.png)
-7. Select the board-specific temporary loader as the loader and SPI bootloader image as the U-Boot image. For each file, click the corresponding box under the "..." in the table and select the correct file.
+7. Select the temporary loader as the loader and SPI bootloader image as the U-Boot image. For each file, click the corresponding box under the "..." in the table and select the correct file.
 ![The RKDevTool main window with red arrow pointing at the file selection buttons](images/rkdevtool/rkdevtool_select_files.png)
 8. Connect the board's programming USB port to the computer.
 
@@ -205,6 +226,7 @@ If the board is still not detected, try using a different USB port or cable. Som
 
 RKDevTool is only being used here to update the U-Boot-based bootloader stored in SPI flash. PhotonVision itself is stored on the separately prepared boot device.
 :::
+::::
 
 #### Flashing the USB drive
 1. Download the PhotonVision image for your supported device and Raspberry Pi Imager.
