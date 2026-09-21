@@ -83,33 +83,7 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     public abstract void requestBlockForFrames(boolean blockForFrames);
 
     public final void setCropParams(AdvancedPipelineSettings settings) {
-        // A pixel bound is never negative. Dropping the sign rather than trusting it keeps a garbage
-        // bound (a value that overflowed on its way in, say) from being read as a sliver of a crop
-        // one pixel from the origin.
-        int xLow =
-                Math.max(0, Math.min(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
-        int xHigh =
-                Math.max(0, Math.max(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
-        int yLow =
-                Math.max(0, Math.min(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
-        int yHigh =
-                Math.max(0, Math.max(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
-
-        int width = xHigh - xLow;
-        int height = yHigh - yLow;
-
-        Rect cropRegion;
-        if (width <= 0 || height <= 0) {
-            cropRegion = null;
-        } else {
-            cropRegion = new Rect(xLow, yLow, width, height);
-        }
-
-        if (!settings.staticCropEnabled) {
-            cropRegion = null;
-        }
-
-        cropPipe.setParams(new CropPipe.CropPipeParams(cropRegion, settings));
+        cropPipe.setParams(new CropPipe.CropPipeParams(settings));
     }
 
     /**
