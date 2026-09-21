@@ -448,14 +448,6 @@ public class CropPipeTest {
         return settings;
     }
 
-    /** The aligned rectangle the pipe derived for the given params, read via effectiveCrop. */
-    private static Rect derivedRect(CropPipe.CropPipeParams params) {
-        var pipe = new CropPipe();
-        pipe.setParams(params);
-        // An image large enough that clamping never interferes with the derivation under test.
-        return pipe.effectiveCrop(4096, 4096);
-    }
-
     @Test
     public void apriltagCropOriginIsAlignedToTheTileGrid() {
         // apriltag thresholds the decimated image in 4x4 tiles, so an origin off a multiple of
@@ -465,14 +457,14 @@ public class CropPipeTest {
         var requested = new Rect(201, 151, 300, 250);
 
         settings.decimate = 1;
-        var rect = derivedRect(new CropPipe.CropPipeParams(requested, settings));
+        var rect = new CropPipe.CropPipeParams(requested, settings).rect();
         assertEquals(200, rect.x, "x should drop to a multiple of 4");
         assertEquals(148, rect.y, "y should drop to a multiple of 4");
         assertEquals(501, rect.x + rect.width, "The requested region should still be covered");
         assertEquals(401, rect.y + rect.height, "The requested region should still be covered");
 
         settings.decimate = 4;
-        rect = derivedRect(new CropPipe.CropPipeParams(requested, settings));
+        rect = new CropPipe.CropPipeParams(requested, settings).rect();
         assertEquals(192, rect.x, "x should drop to a multiple of 16 at decimate 4");
         assertEquals(144, rect.y, "y should drop to a multiple of 16 at decimate 4");
         assertEquals(501, rect.x + rect.width, "The requested region should still be covered");
@@ -487,7 +479,7 @@ public class CropPipeTest {
         settings.decimate = 1;
 
         // Low bound touching the left edge
-        var rect = derivedRect(new CropPipe.CropPipeParams(new Rect(0, 92, 837, 349), settings));
+        var rect = new CropPipe.CropPipeParams(new Rect(0, 92, 837, 349), settings).rect();
         assertEquals(0, rect.x, "x origin should remain at the frame edge");
         assertEquals(
                 837, rect.x + rect.width, "The requested region's right edge should still be covered");
