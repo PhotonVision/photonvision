@@ -41,7 +41,7 @@ Balena Etcher has been recommended in the past, but should no longer be used due
 ### USB Drive Installation
 
 ```{note}
-Best practice is to use a name brand 8 GB or larger USB 3.0 drive from an authorized retailer (ideally not marketplace-type websites) for better performance and stability, or an SSD in a suitable enclosure.
+Best practice is to use a name brand 8 GB or larger USB 3.0 drive from an authorized retailer (ideally not marketplace-type websites) for better performance and stability, or a reputable modern SSD in a suitable enclosure.
 
 Generic and/or low-quality drives are more prone to data corruption, failure, and performance issues.
 ```
