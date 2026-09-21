@@ -231,6 +231,8 @@ public class AprilTagTest {
                 var rotatedTranslation =
                         rotatedResult.multiTagResult.get().estimatedPose.best.getTranslation();
 
+                System.out.println("Baseline camera to target pose: " + baselineResult.targets.get(0).getBestCameraToTarget3d());
+                System.out.println("Rotated camera to target pose: " + rotatedResult.targets.get(0).getBestCameraToTarget3d());
                 System.out.println(
                         "Baseline translation: "
                                 + baselineTranslation
