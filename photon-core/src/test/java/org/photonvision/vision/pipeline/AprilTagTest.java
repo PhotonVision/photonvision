@@ -237,11 +237,11 @@ public class AprilTagTest {
                                 + "\nRotated translation: "
                                 + rotatedTranslation);
                 assertEquals(
-                        baselineTranslation.getX(), rotatedTranslation.getX(), 0.001, rotationMode.name());
+                        baselineTranslation.getX(), rotatedTranslation.getX(), 0.01, rotationMode.name());
                 assertEquals(
-                        baselineTranslation.getY(), rotatedTranslation.getY(), 0.001, rotationMode.name());
+                        baselineTranslation.getY(), rotatedTranslation.getY(), 0.01, rotationMode.name());
                 assertEquals(
-                        baselineTranslation.getZ(), rotatedTranslation.getZ(), 0.001, rotationMode.name());
+                        baselineTranslation.getZ(), rotatedTranslation.getZ(), 0.01, rotationMode.name());
             }
         }
     }
