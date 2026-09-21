@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
+import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.math.geometry.Transform3d;
@@ -176,6 +178,58 @@ public class AprilTagTest {
                     // the pipeline will only give us Byte.MAX_VALUE many
                     assertEquals(Byte.MAX_VALUE, pipelineResult.targets.size());
                 }
+            }
+        }
+    }
+
+    @Test
+    public void testMultiTargetTranslationIsInvariantToInputRotation() {
+        try (var baselinePipeline = new AprilTagPipeline();
+                var rotatedPipeline = new AprilTagPipeline();
+                var baselineProvider =
+                        new FileFrameProvider(
+                                TestUtils.getApriltagImagePath(
+                                        TestUtils.ApriltagTestImages.k36h11_stress_test, false),
+                                TestUtils.WPI2020Image.FOV,
+                                TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
+                var rotatedProvider =
+                        new FileFrameProvider(
+                                TestUtils.getApriltagImagePath(
+                                        TestUtils.ApriltagTestImages.k36h11_stress_test, false),
+                                TestUtils.WPI2020Image.FOV,
+                                TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false))) {
+            baselinePipeline.getSettings().solvePNPEnabled = true;
+            baselinePipeline.getSettings().doMultiTarget = true;
+            baselinePipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
+            baselinePipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+
+            rotatedPipeline.getSettings().solvePNPEnabled = true;
+            rotatedPipeline.getSettings().doMultiTarget = true;
+            rotatedPipeline.getSettings().inputImageRotationMode = ImageRotationMode.DEG_90_CCW;
+            rotatedPipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
+            rotatedPipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+
+            baselineProvider.requestFrameThresholdType(baselinePipeline.getThresholdType());
+            rotatedProvider.requestFrameRotation(ImageRotationMode.DEG_90_CCW);
+            rotatedProvider.requestFrameThresholdType(rotatedPipeline.getThresholdType());
+
+            try (var baselineResult =
+                        baselinePipeline.run(baselineProvider.get(), QuirkyCamera.DefaultCamera);
+                    var rotatedResult =
+                        rotatedPipeline.run(rotatedProvider.get(), QuirkyCamera.DefaultCamera)) {
+                assertTrue(baselineResult.multiTagResult.isPresent());
+                assertTrue(rotatedResult.multiTagResult.isPresent());
+
+                var baselineTranslation =
+                        baselineResult.multiTagResult.get().estimatedPose.best.getTranslation();
+                var rotatedTranslation =
+                        rotatedResult.multiTagResult.get().estimatedPose.best.getTranslation();
+
+                System.out.println("Baseline translation: " + baselineTranslation);
+                System.out.println("Rotated translation: " + rotatedTranslation);
+                assertEquals(baselineTranslation.getX(), rotatedTranslation.getX(), 0.001);
+                assertEquals(baselineTranslation.getY(), rotatedTranslation.getY(), 0.001);
+                assertEquals(baselineTranslation.getZ(), rotatedTranslation.getZ(), 0.001);
             }
         }
     }
