@@ -80,10 +80,10 @@ def test_GetVisibleLine(scp) -> None:
 
 
 def test_EstPixelNoise(scp) -> None:
-    with pytest.raises(Exception):
-        scp.test_EstPixelNoise(np.array([0, 0]))
-    with pytest.raises(Exception):
-        scp.test_EstPixelNoise(np.array([[0], [0]]))
+    with pytest.raises(IndexError):
+        scp.estPixelNoise(np.array([0, 0]))
+    with pytest.raises(IndexError):
+        scp.estPixelNoise(np.array([[0], [0]]))
 
     pts = np.array([[[0, 0]], [[0, 0]]])
 

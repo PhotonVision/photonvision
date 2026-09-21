@@ -2,7 +2,7 @@ import math
 
 import pytest
 from photonlibpy.estimation import TargetModel, VisionEstimation
-from photonlibpy.photonCamera import PhotonCamera
+from photonlibpy.photon_camera import PhotonCamera
 from photonlibpy.simulation import PhotonCameraSim, VisionSystemSim, VisionTargetSim
 from robotpy_fields import Field, FieldTag
 from wpimath import (

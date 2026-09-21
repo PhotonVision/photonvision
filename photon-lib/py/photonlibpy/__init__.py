@@ -22,10 +22,10 @@
 # SOFTWARE.
 #
 
-from .estimatedRobotPose import EstimatedRobotPose
+from .estimated_robot_pose import EstimatedRobotPose
 from .packet import Packet
-from .photonCamera import PhotonCamera
-from .photonPoseEstimator import PhotonPoseEstimator
+from .photon_camera import PhotonCamera
+from .photon_pose_estimator import PhotonPoseEstimator
 
 __all__ = (
     "EstimatedRobotPose",

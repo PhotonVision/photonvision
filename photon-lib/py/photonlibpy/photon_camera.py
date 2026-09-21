@@ -18,17 +18,17 @@
 from enum import Enum
 
 import ntcore
+import wpilib
 import wpiutil
+from wpilib import RobotController, Timer
 
 # magical import to make serde stuff work
 import photonlibpy.generated  # noqa
-import wpilib
-from wpilib import RobotController, Timer
 
-from .packet import Packet
-from .targeting.photonPipelineResult import PhotonPipelineResult
-from .timesync.timeSyncServer import inst
 from ._version import version as PHOTONLIB_VERSION
+from .packet import Packet
+from .targeting.photon_pipeline_result import PhotonPipelineResult
+from .timesync.time_sync_server import inst
 
 
 class VisionLEDMode(Enum):
@@ -173,7 +173,6 @@ class PhotonCamera:
         now = RobotController.get_monotonic_time()
         packetWithTimestamp = self._rawBytesEntry.get_atomic()
         byteList = packetWithTimestamp.value
-        packetWithTimestamp.time
 
         if len(byteList) < 1:
             return PhotonPipelineResult()
@@ -397,4 +396,4 @@ class PhotonCamera:
 
                 errText = f"Photonlibpy version {PHOTONLIB_VERSION} (With message UUID {localUUID}) does not match coprocessor version {versionString} (with message UUID {remoteUUID}). Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
                 wpilib.report_error(errText, True)
-                raise Exception(errText)
+                raise RuntimeError(errText)
