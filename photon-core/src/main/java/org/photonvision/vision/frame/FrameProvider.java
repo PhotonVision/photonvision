@@ -109,7 +109,13 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         if (keepContext && !frame.colorImage.getMat().empty()) {
             Mat dimmed = new Mat();
             frame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
-            frame.colorImage.getMat().submat(effectiveCrop).copyTo(dimmed.submat(effectiveCrop));
+            // submat hands back a new native header holding a refcount on the pixel buffer; both
+            // must be released or dimmed's buffer leaks for as long as the context image lives.
+            Mat srcRoi = frame.colorImage.getMat().submat(effectiveCrop);
+            Mat dstRoi = dimmed.submat(effectiveCrop);
+            srcRoi.copyTo(dstRoi);
+            srcRoi.release();
+            dstRoi.release();
             contextImage = new CVMat(dimmed);
         }
 
