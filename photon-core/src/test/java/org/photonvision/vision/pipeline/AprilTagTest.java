@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.cartesian.CartesianTest;
+import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
@@ -182,22 +184,26 @@ public class AprilTagTest {
         }
     }
 
-    @Test
-    public void testMultiTargetTranslationIsInvariantToInputRotation() {
-        try (var baselinePipeline = new AprilTagPipeline();
+    @CartesianTest
+    public void testMultiTargetTranslationIsInvariantToInputRotation(
+            @Enum ImageRotationMode rotationMode) {
+
+        var imagePath =
+                TestUtils.getResourcesFolderPath(true)
+                        .resolve("testimages")
+                        .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path);
+
+        try (var cal =
+                        TestUtils.calibrationFromIntrinsics(
+                                (int) TestUtils.WPI2026Images.resolution.width,
+                                (int) TestUtils.WPI2026Images.resolution.height,
+                                TestUtils.WPI2026Images.FOV.getDegrees());
+                var baselinePipeline = new AprilTagPipeline();
                 var rotatedPipeline = new AprilTagPipeline();
                 var baselineProvider =
-                        new FileFrameProvider(
-                                TestUtils.getApriltagImagePath(
-                                        TestUtils.ApriltagTestImages.k36h11_stress_test, false),
-                                TestUtils.WPI2020Image.FOV,
-                                TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
+                        new FileFrameProvider(imagePath, TestUtils.WPI2026Images.FOV.getDegrees(), cal);
                 var rotatedProvider =
-                        new FileFrameProvider(
-                                TestUtils.getApriltagImagePath(
-                                        TestUtils.ApriltagTestImages.k36h11_stress_test, false),
-                                TestUtils.WPI2020Image.FOV,
-                                TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false))) {
+                        new FileFrameProvider(imagePath, TestUtils.WPI2026Images.FOV.getDegrees(), cal)) {
             baselinePipeline.getSettings().solvePNPEnabled = true;
             baselinePipeline.getSettings().doMultiTarget = true;
             baselinePipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
@@ -205,18 +211,18 @@ public class AprilTagTest {
 
             rotatedPipeline.getSettings().solvePNPEnabled = true;
             rotatedPipeline.getSettings().doMultiTarget = true;
-            rotatedPipeline.getSettings().inputImageRotationMode = ImageRotationMode.DEG_90_CCW;
+            rotatedPipeline.getSettings().inputImageRotationMode = rotationMode;
             rotatedPipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
             rotatedPipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
 
             baselineProvider.requestFrameThresholdType(baselinePipeline.getThresholdType());
-            rotatedProvider.requestFrameRotation(ImageRotationMode.DEG_90_CCW);
+            rotatedProvider.requestFrameRotation(rotationMode);
             rotatedProvider.requestFrameThresholdType(rotatedPipeline.getThresholdType());
 
             try (var baselineResult =
-                        baselinePipeline.run(baselineProvider.get(), QuirkyCamera.DefaultCamera);
+                            baselinePipeline.run(baselineProvider.get(), QuirkyCamera.DefaultCamera);
                     var rotatedResult =
-                        rotatedPipeline.run(rotatedProvider.get(), QuirkyCamera.DefaultCamera)) {
+                            rotatedPipeline.run(rotatedProvider.get(), QuirkyCamera.DefaultCamera)) {
                 assertTrue(baselineResult.multiTagResult.isPresent());
                 assertTrue(rotatedResult.multiTagResult.isPresent());
 
@@ -225,11 +231,17 @@ public class AprilTagTest {
                 var rotatedTranslation =
                         rotatedResult.multiTagResult.get().estimatedPose.best.getTranslation();
 
-                System.out.println("Baseline translation: " + baselineTranslation);
-                System.out.println("Rotated translation: " + rotatedTranslation);
-                assertEquals(baselineTranslation.getX(), rotatedTranslation.getX(), 0.001);
-                assertEquals(baselineTranslation.getY(), rotatedTranslation.getY(), 0.001);
-                assertEquals(baselineTranslation.getZ(), rotatedTranslation.getZ(), 0.001);
+                System.out.println(
+                        "Baseline translation: "
+                                + baselineTranslation
+                                + "\nRotated translation: "
+                                + rotatedTranslation);
+                assertEquals(
+                        baselineTranslation.getX(), rotatedTranslation.getX(), 0.001, rotationMode.name());
+                assertEquals(
+                        baselineTranslation.getY(), rotatedTranslation.getY(), 0.001, rotationMode.name());
+                assertEquals(
+                        baselineTranslation.getZ(), rotatedTranslation.getZ(), 0.001, rotationMode.name());
             }
         }
     }
