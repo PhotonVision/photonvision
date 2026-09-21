@@ -121,11 +121,11 @@ class TargetModel:
             self.vertices = []
             self.isPlanar = False
         else:
-            cornersPlaner = True
+            cornersPlanar = True
             for corner in verts:
-                if abs(corner.x < 1e-4):
-                    cornersPlaner = False
-            self.isPlanar = cornersPlaner
+                if corner.x != 0:
+                    cornersPlanar = False
+            self.isPlanar = cornersPlanar
 
         self.vertices = verts
 

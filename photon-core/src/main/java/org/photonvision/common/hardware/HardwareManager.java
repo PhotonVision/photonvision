@@ -44,7 +44,7 @@ import org.photonvision.common.util.ShellExec;
 import org.wpilib.networktables.IntegerPublisher;
 import org.wpilib.networktables.IntegerSubscriber;
 
-public class HardwareManager {
+public class HardwareManager implements AutoCloseable {
     private static HardwareManager instance;
 
     private final ShellExec shellExec = new ShellExec(true, false);
@@ -121,6 +121,7 @@ public class HardwareManager {
             logger.error("Vision LED initialization failed, skipping", e);
         }
         visionLED = tempVisionLED;
+
         ledModeListener =
                 visionLED.map(
                         visionLED ->
@@ -149,15 +150,15 @@ public class HardwareManager {
     }
 
     public static void initialize(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
-        if (instance == null) {
-            if (hardwareConfig == null || hardwareSettings == null) {
-                throw new IllegalArgumentException(
-                        "HardwareConfig and HardwareSettings must not be null when initializing HardwareManager.");
-            }
-            instance = new HardwareManager(hardwareConfig, hardwareSettings);
-        } else {
-            instance.logger.warn("HardwareManager already initialized!");
+        if (instance != null) {
+            logger.warn("HardwareManager already initialized, replacing!");
+            instance.close();
         }
+        if (hardwareConfig == null || hardwareSettings == null) {
+            throw new IllegalArgumentException(
+                    "HardwareConfig and HardwareSettings must not be null when initializing HardwareManager.");
+        }
+        instance = new HardwareManager(hardwareConfig, hardwareSettings);
     }
 
     public static NativeDeviceFactoryInterface configureCustomGPIO(HardwareConfig hardwareConfig) {
@@ -268,5 +269,16 @@ public class HardwareManager {
             }
         }
         statusLED.ifPresent(statusLED -> statusLED.setStatus(status));
+    }
+
+    public boolean hasStatusLed() {
+        return statusLED.isPresent();
+    }
+
+    public void close() {
+        ledModeRequest.close();
+        ledModeState.close();
+        visionLED.ifPresent(VisionLED::close);
+        statusLED.ifPresent(StatusLED::close);
     }
 }
