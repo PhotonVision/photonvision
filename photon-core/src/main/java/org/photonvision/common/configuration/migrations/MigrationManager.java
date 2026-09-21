@@ -71,7 +71,7 @@ public class MigrationManager {
                 var sqliteFiles = defaultsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".sqlite"));
                 if (sqliteFiles != null && sqliteFiles.length > 0) {
                     defaultDatabase = sqliteFiles[0];
-                    logger.debug("Trying default database found at " + defaultDatabase.getAbsolutePath());
+                    logger.debug("Using default database found at " + defaultDatabase.getAbsolutePath());
                     try {
                         Files.copy(defaultDatabase.toPath(), dbFile.toPath());
                         newDb = false;

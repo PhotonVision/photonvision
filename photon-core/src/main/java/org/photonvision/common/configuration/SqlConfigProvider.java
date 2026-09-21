@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
@@ -34,12 +33,8 @@ import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.configuration.migrations.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.camera.PVCameraInfo;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.wpilib.fields.Field;
 import org.wpilib.fields.Fields;
-import org.wpilib.vision.camera.UsbCameraInfo;
 
 /**
  * Saves settings in a SQLite database file (called photon.sqlite).
