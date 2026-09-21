@@ -25,10 +25,11 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 
 /**
- * Crops an image to a requested rectangle. The rectangle is re-derived on every {@link #setParams}
- * call (a rect built from settings may come from an object mutated in place elsewhere, so nothing
- * may be cached against the params), and clamped into each input image as it is processed. The
- * output is a view into the input, or null when the crop is a no-op.
+ * Crops an image to a requested rectangle. The params carry the rectangle with its origin already
+ * aligned to the AprilTag detector's tile grid -- alignment runs when the params are constructed,
+ * reading the settings at that moment, so a params object must be rebuilt (and re-handed to {@link
+ * #setParams}) when settings mutate in place. Each input image clamps the rectangle into its own
+ * bounds as it is processed. The output is a view into the input, or null when the crop is a no-op.
  */
 public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     /**
@@ -40,15 +41,18 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     /** Smallest crop handed downstream, in pixels per axis, prevents downstream crashes. */
     private static final int MIN_CROP_DIMENSION = 16;
 
-    /** The rectangle derived from the current params, before clamping to an image. */
-    private Rect cropRect = null;
-
     /**
-     * @param rect The region to crop to, in frame coordinates; null means no crop.
-     * @param settings The pipeline settings the crop serves. AprilTag pipelines get the crop origin
-     *     aligned to the detector's tile grid.
+     * @param rect The region to crop to, in frame coordinates, with its origin aligned to the
+     *     AprilTag detector's tile grid; null means no crop. The stored value is the aligned region
+     *     the pipe crops to, not necessarily the rect passed in.
+     * @param settings The pipeline settings the crop serves; read at construction, so a params object
+     *     does not follow later in-place mutation of the settings.
      */
     public static record CropPipeParams(Rect rect, AdvancedPipelineSettings settings) {
+        public CropPipeParams {
+            rect = alignToTagTiles(rect, settings);
+        }
+
         public CropPipeParams(AdvancedPipelineSettings settings) {
             // A pixel bound is never negative. Dropping the sign rather than trusting it keeps a garbage
             // bound (a value that overflowed on its way in, say) from being read as a sliver of a crop
@@ -80,23 +84,17 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
         }
     }
 
-    @Override
-    public void setParams(CropPipeParams newParams) {
-        this.cropRect = alignToTagTiles(newParams.rect(), newParams.settings());
-        super.setParams(newParams);
-    }
-
     /**
      * The crop rectangle that applies to an image of the given size: the configured region clamped
      * into the image.
      *
      * @param imageCols The image's width, in pixels.
      * @param imageRows The image's height, in pixels.
-     * @return The clamped rectangle, or null when there is no crop, the region is degenerate, or it
-     *     covers the whole image (all of which make cropping a no-op).
+     * @return The clamped rectangle, or null when no params have been set, there is no crop, the
+     *     region is degenerate, or it covers the whole image (all of which make cropping a no-op).
      */
     public Rect effectiveCrop(int imageCols, int imageRows) {
-        return clampCropToImage(cropRect, imageCols, imageRows);
+        return params == null ? null : clampCropToImage(params.rect(), imageCols, imageRows);
     }
 
     @Override
