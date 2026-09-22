@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.NewDataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.PhotonDataChangeWpiProto;
 import org.photonvision.common.logging.LogGroup;
@@ -68,17 +69,10 @@ public class DataSocketHandler {
         return DataSocketHandler.ThreadSafeSingleton.INSTANCE;
     }
 
-    private NetworkTableInstance ntInstance = NetworkTableInstance.create();
-
-    // TODO do we need to worry abou queue depth on local topics? I want reliable delivery
-    private final ProtobufPublisher<PhotonDataChangeEvent> vm_change_events =
-            ntInstance
-                    .getProtobufTopic("photonvision/VisionModuleEvents", PhotonDataChangeWpiProto.INSTANCE)
-                    .publish();
+    // Considered NT, but seems overkill. NewDataChangeService is <60 LOC
+    public static final NewDataChangeService VM_CHANGE_EVENTS = new NewDataChangeService();
 
     private DataSocketHandler() {
-        ntInstance.startLocal();
-
         dcService.addSubscribers(
                 uiOutboundSubscriber,
                 new UIInboundSubscriber()); // Subscribe outgoing messages to the data change service
@@ -125,7 +119,7 @@ public class DataSocketHandler {
 
             // Seperate if-else by topic. Maybe this can be cleaner -- match?
             if (protoMessage.hasVmChange()) {
-                vm_change_events.set(event);
+                VM_CHANGE_EVENTS.publish(event);
             }
             // TODO else if ...
         } catch (IllegalStateException | JsonException | InvalidProtocolBufferException e) {
