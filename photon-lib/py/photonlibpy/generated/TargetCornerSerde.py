@@ -27,16 +27,9 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
 
-
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
-
-
-
-if TYPE_CHECKING:
-    from ..targeting import TargetCorner  # noqa
 
 
 
@@ -46,7 +39,7 @@ class TargetCornerSerde:
     MESSAGE_FORMAT = "float64 x;float64 y;"
 
     @staticmethod
-    def pack(value: "TargetCorner") -> "Packet":
+    def pack(value: "targeting.TargetCorner") -> "Packet":
         ret = Packet()
 
         # x is of intrinsic type float64
@@ -57,8 +50,8 @@ class TargetCornerSerde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "TargetCorner":
-        ret = TargetCorner()
+    def unpack(packet: "Packet") -> "targeting.TargetCorner":
+        ret = targeting.TargetCorner()
 
         # x is of intrinsic type float64
         ret.x = packet.decodeDouble()
@@ -70,4 +63,4 @@ class TargetCornerSerde:
 
 
 # Hack ourselves into the base class
-TargetCorner.photonStruct = TargetCornerSerde()
+targeting.TargetCorner.photonStruct = TargetCornerSerde()

@@ -34,15 +34,19 @@ export interface Transform3d {
   angle_z: number;
 }
 
-export interface AprilTagFieldLayout {
-  field: {
-    length: number;
-    width: number;
-  };
-  tags: {
-    ID: number;
-    pose: Pose3d;
-  }[];
+export interface FieldDimensions {
+  length: number;
+  width: number;
+}
+
+export interface FieldTag {
+  ID: number;
+  pose: Pose3d;
+}
+
+export interface Field {
+  "field-dimensions": FieldDimensions;
+  "field-tags": FieldTag[] | null;
 }
 
 export interface PhotonTarget {

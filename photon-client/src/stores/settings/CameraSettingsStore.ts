@@ -44,12 +44,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     currentWebsocketPipelineType(): WebsocketPipelineType {
       return this.currentPipelineType - 3;
     },
-    currentVideoFormat(): VideoFormat {
+    currentVideoFormat(): VideoFormat | undefined {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
     },
     isCurrentVideoFormatCalibrated(): boolean {
       return this.currentCameraSettings.completeCalibrations.some((v) =>
-        resolutionsAreEqual(v.resolution, this.currentVideoFormat.resolution)
+        resolutionsAreEqual(v.resolution, this.currentVideoFormat?.resolution)
       );
     },
     cameraNames(): string[] {

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
-from .multiTargetPNPResult import MultiTargetPNPResult
-from .photonTrackedTarget import PhotonTrackedTarget
+from .multi_target_pnp_result import MultiTargetPNPResult
+from .photon_tracked_target import PhotonTrackedTarget
 
 if TYPE_CHECKING:
     from ..generated.PhotonPipelineMetadataSerde import PhotonPipelineMetadataSerde
@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 
 @dataclass
 class PhotonPipelineMetadata:
-    # Image capture and NT publish timestamp, in microseconds and in the coprocessor timebase. As
+    # Image capture and NT publish timestamp, in nanoseconds and in the coprocessor timebase. As
     # reported by WPIUtilJNI::now.
-    captureTimestampMicros: int = -1
-    publishTimestampMicros: int = -1
+    captureTimestampNanos: int = -1
+    publishTimestampNanos: int = -1
 
     # Mirror of the heartbeat entry -- monotonically increasing
     sequenceID: int = -1
@@ -27,18 +27,18 @@ class PhotonPipelineMetadata:
 @dataclass
 class PhotonPipelineResult:
     # Since we don't trust NT time sync, keep track of when we got this packet into robot code
-    ntReceiveTimestampMicros: int = -1
+    ntReceiveTimestampNanos: int = -1
 
     targets: list[PhotonTrackedTarget] = field(default_factory=list)
     # Python users beware! We don't currently run a Time Sync Server, so these timestamps are in
     # an arbitrary timebase. This is not true in C++ or Java.
     metadata: PhotonPipelineMetadata = field(default_factory=PhotonPipelineMetadata)
-    multitagResult: Optional[MultiTargetPNPResult] = None
+    multitagResult: MultiTargetPNPResult | None = None
 
     def getLatencyMillis(self) -> float:
         return (
-            self.metadata.publishTimestampMicros - self.metadata.captureTimestampMicros
-        ) / 1e3
+            self.metadata.publishTimestampNanos - self.metadata.captureTimestampNanos
+        ) / 1e6
 
     def getTimestampSeconds(self) -> float:
         """
@@ -46,11 +46,11 @@ class PhotonPipelineResult:
         calculated as (NT Receive time (robot base) - (publish timestamp, coproc timebase - capture
         timestamp, coproc timebase))
         """
-        # TODO - we don't trust NT4 to correctly latency-compensate ntReceiveTimestampMicros
+        # TODO - we don't trust NT4 to correctly latency-compensate ntReceiveTimestampNanos
         latency = (
-            self.metadata.publishTimestampMicros - self.metadata.captureTimestampMicros
+            self.metadata.publishTimestampNanos - self.metadata.captureTimestampNanos
         )
-        return (self.ntReceiveTimestampMicros - latency) / 1e6
+        return (self.ntReceiveTimestampNanos - latency) / 1e9
 
     def getTargets(self) -> list[PhotonTrackedTarget]:
         return self.targets
@@ -58,7 +58,7 @@ class PhotonPipelineResult:
     def hasTargets(self) -> bool:
         return len(self.targets) > 0
 
-    def getBestTarget(self) -> Optional[PhotonTrackedTarget]:
+    def getBestTarget(self) -> PhotonTrackedTarget | None:
         """
         Returns the best target in this pipeline result. If there are no targets, this method will
         return null. The best target is determined by the target sort mode in the PhotonVision UI.

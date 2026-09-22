@@ -27,53 +27,46 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
 
-
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
-
-
-
-if TYPE_CHECKING:
-    from ..targeting import PhotonPipelineMetadata  # noqa
 
 
 
 class PhotonPipelineMetadataSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "ac0a45f686457856fb30af77699ea356"
-    MESSAGE_FORMAT = "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;int64 timeSinceLastPong;"
+    MESSAGE_VERSION = "5231116d7f87ff560e6aa5263d0eee02"
+    MESSAGE_FORMAT = "int64 sequenceID;int64 captureTimestampNanos;int64 publishTimestampNanos;int64 timeSinceLastPong;"
 
     @staticmethod
-    def pack(value: "PhotonPipelineMetadata") -> "Packet":
+    def pack(value: "targeting.PhotonPipelineMetadata") -> "Packet":
         ret = Packet()
 
         # sequenceID is of intrinsic type int64
         ret.encodeLong(value.sequenceID)
 
-        # captureTimestampMicros is of intrinsic type int64
-        ret.encodeLong(value.captureTimestampMicros)
+        # captureTimestampNanos is of intrinsic type int64
+        ret.encodeLong(value.captureTimestampNanos)
 
-        # publishTimestampMicros is of intrinsic type int64
-        ret.encodeLong(value.publishTimestampMicros)
+        # publishTimestampNanos is of intrinsic type int64
+        ret.encodeLong(value.publishTimestampNanos)
 
         # timeSinceLastPong is of intrinsic type int64
         ret.encodeLong(value.timeSinceLastPong)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "PhotonPipelineMetadata":
-        ret = PhotonPipelineMetadata()
+    def unpack(packet: "Packet") -> "targeting.PhotonPipelineMetadata":
+        ret = targeting.PhotonPipelineMetadata()
 
         # sequenceID is of intrinsic type int64
         ret.sequenceID = packet.decodeLong()
 
-        # captureTimestampMicros is of intrinsic type int64
-        ret.captureTimestampMicros = packet.decodeLong()
+        # captureTimestampNanos is of intrinsic type int64
+        ret.captureTimestampNanos = packet.decodeLong()
 
-        # publishTimestampMicros is of intrinsic type int64
-        ret.publishTimestampMicros = packet.decodeLong()
+        # publishTimestampNanos is of intrinsic type int64
+        ret.publishTimestampNanos = packet.decodeLong()
 
         # timeSinceLastPong is of intrinsic type int64
         ret.timeSinceLastPong = packet.decodeLong()
@@ -82,4 +75,4 @@ class PhotonPipelineMetadataSerde:
 
 
 # Hack ourselves into the base class
-PhotonPipelineMetadata.photonStruct = PhotonPipelineMetadataSerde()
+targeting.PhotonPipelineMetadata.photonStruct = PhotonPipelineMetadataSerde()

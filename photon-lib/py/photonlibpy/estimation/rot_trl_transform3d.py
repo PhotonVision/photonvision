@@ -6,9 +6,7 @@ from wpimath import Pose3d, Rotation3d, Transform3d, Translation3d
 class RotTrlTransform3d:
     """Represents a transformation that first rotates a pose around the origin, and then translates it."""
 
-    def __init__(
-        self, rot: Rotation3d = Rotation3d(), trl: Translation3d = Translation3d()
-    ):
+    def __init__(self, rot: Rotation3d | None = None, trl: Translation3d | None = None):
         """A rotation-translation transformation.
 
         Applying this RotTrlTransform3d to poses will preserve their current origin-to-pose
@@ -17,13 +15,13 @@ class RotTrlTransform3d:
         :param rot: The rotation component
         :param trl: The translation component
         """
-        self.rot = rot
-        self.trl = trl
+        self.rot = rot if rot is not None else Rotation3d()
+        self.trl = trl if trl is not None else Translation3d()
 
     def inverse(self) -> Self:
         """The inverse of this transformation. Applying the inverse will "undo" this transformation."""
         invRot = self.rot.inverse()
-        invTrl = -(self.trl.rotateBy(invRot))
+        invTrl = -(self.trl.rotate_by(invRot))
         return type(self)(invRot, invTrl)
 
     def getTransform(self) -> Transform3d:
@@ -39,10 +37,10 @@ class RotTrlTransform3d:
         return self.rot
 
     def applyTranslation(self, trlToApply: Translation3d) -> Translation3d:
-        return trlToApply.rotateBy(self.rot) + self.trl
+        return trlToApply.rotate_by(self.rot) + self.trl
 
     def applyRotation(self, rotToApply: Rotation3d) -> Rotation3d:
-        return rotToApply.rotateBy(self.rot)
+        return rotToApply.rotate_by(self.rot)
 
     def applyPose(self, poseToApply: Pose3d) -> Pose3d:
         return Pose3d(
@@ -68,9 +66,9 @@ class RotTrlTransform3d:
     @classmethod
     def makeBetweenPoses(cls, initial: Pose3d, last: Pose3d) -> Self:
         return cls(
-            last.rotation().relativeTo(initial.rotation()),
+            last.rotation().relative_to(initial.rotation()),
             last.translation()
-            - initial.translation().rotateBy(
-                last.rotation().relativeTo(initial.rotation())
+            - initial.translation().rotate_by(
+                last.rotation().relative_to(initial.rotation())
             ),
         )

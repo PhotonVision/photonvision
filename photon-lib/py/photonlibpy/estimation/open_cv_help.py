@@ -7,7 +7,7 @@ import numpy as np
 from wpimath import Rotation3d, Transform3d, Translation3d
 
 from ..targeting import PnpResult, TargetCorner
-from .rotTrlTransform3d import RotTrlTransform3d
+from .rot_trl_transform3d import RotTrlTransform3d
 
 NWU_TO_EDN = Rotation3d(np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]]))
 EDN_TO_NWU = Rotation3d(np.array([[0, 0, 1], [-1, 0, 0], [0, -1, 0]]))
@@ -22,11 +22,11 @@ class OpenCVHelp:
 
     @staticmethod
     def translationNWUtoEDN(trl: Translation3d) -> Translation3d:
-        return trl.rotateBy(NWU_TO_EDN)
+        return trl.rotate_by(NWU_TO_EDN)
 
     @staticmethod
     def rotationNWUtoEDN(rot: Rotation3d) -> Rotation3d:
-        return NWU_TO_EDN.inverse().rotateBy(rot.rotateBy(NWU_TO_EDN))
+        return NWU_TO_EDN.inverse().rotate_by(rot.rotate_by(NWU_TO_EDN))
 
     @staticmethod
     def translationToTVec(translations: list[Translation3d]) -> np.ndarray:
@@ -39,7 +39,7 @@ class OpenCVHelp:
         retVal: list[list] = []
         for translation in translations:
             trl = OpenCVHelp.translationNWUtoEDN(translation)
-            retVal.append([trl.X(), trl.Y(), trl.Z()])
+            retVal.append([trl.x, trl.y, trl.z])
         return np.array(
             retVal,
             dtype=np.float32,
@@ -56,7 +56,7 @@ class OpenCVHelp:
 
         retVal: list[np.ndarray] = []
         rot = OpenCVHelp.rotationNWUtoEDN(rotation)
-        rotVec = rot.getQuaternion().toRotationVector()
+        rotVec = rot.get_quaternion().to_rotation_vector()
         retVal.append(rotVec)
         return np.array(
             retVal,
@@ -139,7 +139,7 @@ class OpenCVHelp:
         in EDN, this would be {0, -1, 0} in NWU.
         """
 
-        return trl.rotateBy(EDN_TO_NWU)
+        return trl.rotate_by(EDN_TO_NWU)
 
     @staticmethod
     def rotationEDNToNWU(rot: Rotation3d) -> Rotation3d:
@@ -147,7 +147,7 @@ class OpenCVHelp:
         in NWU, this would be {0, 0, 1} in EDN.
         """
 
-        return EDN_TO_NWU.inverse().rotateBy(rot.rotateBy(EDN_TO_NWU))
+        return EDN_TO_NWU.inverse().rotate_by(rot.rotate_by(EDN_TO_NWU))
 
     @staticmethod
     def tVecToTranslation(tvecInput: np.ndarray) -> Translation3d:
@@ -214,7 +214,7 @@ class OpenCVHelp:
 
         for tries in range(2):
             # calc rvecs/tvecs and associated reprojection error from image points
-            retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
+            _, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
                 objectMat,
                 imagePoints,
                 cameraMatrix,
@@ -296,7 +296,7 @@ class OpenCVHelp:
 
         objectMat = np.array(OpenCVHelp.translationToTVec(modelTrls))
 
-        retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
+        _, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
             objectMat, imagePoints, cameraMatrix, distCoeffs, flags=cv.SOLVEPNP_SQPNP
         )
 

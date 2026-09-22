@@ -16,20 +16,19 @@
 ###############################################################################
 
 from enum import Enum
-from typing import List
 
-import hal
 import ntcore
+import wpilib
+import wpiutil
+from wpilib import RobotController, Timer
 
 # magical import to make serde stuff work
 import photonlibpy.generated  # noqa
-import wpilib
-from wpilib import RobotController, Timer
 
+from ._version import version as PHOTONLIB_VERSION
 from .packet import Packet
-from .targeting.photonPipelineResult import PhotonPipelineResult
-from .timesync.timeSyncServer import inst
-from .version import PHOTONLIB_VERSION  # type: ignore[import-untyped]
+from .targeting.photon_pipeline_result import PhotonPipelineResult
+from .timesync.time_sync_server import inst
 
 
 class VisionLEDMode(Enum):
@@ -56,81 +55,80 @@ class PhotonCamera:
 
         :param cameraName: The nickname of the camera (found in the PhotonVision UI).
         """
-        instance = ntcore.NetworkTableInstance.getDefault()
+        instance = ntcore.NetworkTableInstance.get_default()
         self._name = cameraName
         self._tableName = "photonvision"
-        photonvision_root_table = instance.getTable(self._tableName)
-        self._cameraTable = photonvision_root_table.getSubTable(cameraName)
-        self._path = self._cameraTable.getPath()
-        self._rawBytesEntry = self._cameraTable.getRawTopic("rawBytes").subscribe(
+        photonvision_root_table = instance.get_table(self._tableName)
+        self._cameraTable = photonvision_root_table.get_sub_table(cameraName)
+        self._path = self._cameraTable.get_path()
+        self._rawBytesEntry = self._cameraTable.get_raw_topic("rawBytes").subscribe(
             f"photonstruct:PhotonPipelineResult:{PhotonPipelineResult.photonStruct.MESSAGE_VERSION}",
             bytes([]),
-            ntcore.PubSubOptions(periodic=0.01, sendAll=True),
+            ntcore.PubSubOptions(periodic=0.01, send_all=True),
         )
 
-        self._driverModePublisher = self._cameraTable.getBooleanTopic(
+        self._driverModePublisher = self._cameraTable.get_boolean_topic(
             "driverModeRequest"
         ).publish()
-        self._driverModeSubscriber = self._cameraTable.getBooleanTopic(
+        self._driverModeSubscriber = self._cameraTable.get_boolean_topic(
             "driverMode"
         ).subscribe(False)
-        self._fpsLimitPublisher = self._cameraTable.getIntegerTopic(
+        self._fpsLimitPublisher = self._cameraTable.get_integer_topic(
             "fpsLimitRequest"
         ).publish()
-        self._fpsLimitSubscriber = self._cameraTable.getIntegerTopic(
+        self._fpsLimitSubscriber = self._cameraTable.get_integer_topic(
             "fpsLimit"
         ).subscribe(-1)
-        self._enabledPublisher = self._cameraTable.getBooleanTopic(
+        self._enabledPublisher = self._cameraTable.get_boolean_topic(
             "enabledRequest"
         ).publish()
-        self._enabledSubscriber = self._cameraTable.getBooleanTopic(
+        self._enabledSubscriber = self._cameraTable.get_boolean_topic(
             "enabled"
         ).subscribe(True)
-        self._inputSaveImgEntry = self._cameraTable.getIntegerTopic(
+        self._inputSaveImgEntry = self._cameraTable.get_integer_topic(
             "inputSaveImgCmd"
-        ).getEntry(0)
-        self._outputSaveImgEntry = self._cameraTable.getIntegerTopic(
+        ).get_entry(0)
+        self._outputSaveImgEntry = self._cameraTable.get_integer_topic(
             "outputSaveImgCmd"
-        ).getEntry(0)
-        self._pipelineIndexRequest = self._cameraTable.getIntegerTopic(
+        ).get_entry(0)
+        self._pipelineIndexRequest = self._cameraTable.get_integer_topic(
             "pipelineIndexRequest"
         ).publish()
-        self._pipelineIndexState = self._cameraTable.getIntegerTopic(
+        self._pipelineIndexState = self._cameraTable.get_integer_topic(
             "pipelineIndexState"
         ).subscribe(0)
-        self._heartbeatEntry = self._cameraTable.getIntegerTopic("heartbeat").subscribe(
-            -1
-        )
+        self._heartbeatEntry = self._cameraTable.get_integer_topic(
+            "heartbeat"
+        ).subscribe(-1)
 
-        self._ledModeRequest = photonvision_root_table.getIntegerTopic(
+        self._ledModeRequest = photonvision_root_table.get_integer_topic(
             "ledModeRequest"
         ).publish()
-        self._ledModeState = photonvision_root_table.getIntegerTopic(
+        self._ledModeState = photonvision_root_table.get_integer_topic(
             "ledModeState"
         ).subscribe(-1)
-        self.versionEntry = photonvision_root_table.getStringTopic("version").subscribe(
-            ""
-        )
+        self.versionEntry = photonvision_root_table.get_string_topic(
+            "version"
+        ).subscribe("")
 
         # Existing is enough to make this multisubscriber do its thing
         self.topicNameSubscriber = ntcore.MultiSubscriber(
-            instance, ["/photonvision/"], ntcore.PubSubOptions(topicsOnly=True)
+            instance, ["/photonvision/"], ntcore.PubSubOptions(topics_only=True)
         )
 
         self._prevHeartbeat = 0
-        self._prevHeartbeatChangeTime = Timer.getMonotonicTimestamp()
+        self._prevHeartbeatChangeTime = Timer.get_monotonic_timestamp()
 
         # Start the time sync server
         inst.start()
 
         # Usage reporting
-        hal.reportUsage(
-            "PhotonVision/PhotonCamera",  # Not 100% sure if this is correct
-            str(PhotonCamera.instance_count),
+        wpiutil.report_usage(
+            "PhotonVision/PhotonCamera", str(PhotonCamera.instance_count)
         )
         PhotonCamera.instance_count += 1
 
-    def getAllUnreadResults(self) -> List[PhotonPipelineResult]:
+    def getAllUnreadResults(self) -> list[PhotonPipelineResult]:
         """
         The list of pipeline results sent by PhotonVision since the last call to getAllUnreadResults().
         Calling this function clears the internal FIFO queue, and multiple calls to
@@ -141,7 +139,7 @@ class PhotonCamera:
 
         self._versionCheck()
 
-        changes = self._rawBytesEntry.readQueue()
+        changes = self._rawBytesEntry.read_queue()
 
         ret = []
 
@@ -155,8 +153,8 @@ class PhotonCamera:
                 newResult = PhotonPipelineResult()
                 pkt = Packet(byteList)
                 newResult = PhotonPipelineResult.photonStruct.unpack(pkt)
-                # NT4 allows us to correct the timestamp based on when the message was sent
-                newResult.ntReceiveTimestampMicros = timestamp
+                # NT4 queue timestamps are in nanoseconds; ntReceiveTimestampNanos expects nanoseconds
+                newResult.ntReceiveTimestampNanos = timestamp
                 ret.append(newResult)
 
         return ret
@@ -172,18 +170,17 @@ class PhotonCamera:
 
         self._versionCheck()
 
-        now = RobotController.getMonotonicTime()
-        packetWithTimestamp = self._rawBytesEntry.getAtomic()
+        now = RobotController.get_monotonic_time()
+        packetWithTimestamp = self._rawBytesEntry.get_atomic()
         byteList = packetWithTimestamp.value
-        packetWithTimestamp.time
 
         if len(byteList) < 1:
             return PhotonPipelineResult()
         else:
             pkt = Packet(byteList)
             retVal = PhotonPipelineResult.photonStruct.unpack(pkt)
-            # We don't trust NT4 time, hack around
-            retVal.ntReceiveTimestampMicros = now
+            # We don't trust NT4 time, hack around. get_monotonic_time returns nanoseconds
+            retVal.ntReceiveTimestampNanos = now
             return retVal
 
     def getDriverMode(self) -> bool:
@@ -300,7 +297,7 @@ class PhotonCamera:
         """
 
         curHeartbeat = self._heartbeatEntry.get()
-        now = Timer.getMonotonicTimestamp()
+        now = Timer.get_monotonic_timestamp()
 
         if curHeartbeat != self._prevHeartbeat:
             self._prevHeartbeat = curHeartbeat
@@ -314,53 +311,57 @@ class PhotonCamera:
         if not _VERSION_CHECK_ENABLED:
             return
 
-        if (Timer.getMonotonicTimestamp() - _lastVersionTimeCheck) < 5.0:
+        if (Timer.get_monotonic_timestamp() - _lastVersionTimeCheck) < 5.0:
             return
 
-        _lastVersionTimeCheck = Timer.getMonotonicTimestamp()
+        _lastVersionTimeCheck = Timer.get_monotonic_timestamp()
 
         # Heartbeat entry is assumed to always be present. If it's not present, we
         # assume that a camera with that name was never connected in the first place.
         if not self._heartbeatEntry.exists():
             cameraNames = (
-                self._cameraTable.getInstance().getTable(self._tableName).getSubTables()
+                self._cameraTable.get_instance()
+                .get_table(self._tableName)
+                .get_sub_tables()
             )
             # Look for only cameras with rawBytes entry that exists
             cameraNames = list(
                 filter(
                     lambda it: (
-                        self._cameraTable.getSubTable(it).getEntry("rawBytes").exists()
+                        self._cameraTable.get_sub_table(it)
+                        .get_entry("rawBytes")
+                        .exists()
                     ),
                     cameraNames,
                 )
             )
 
             if len(cameraNames) == 0:
-                wpilib.reportError(
+                wpilib.report_error(
                     "Could not find any PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",
                     False,
                 )
             else:
-                wpilib.reportError(
+                wpilib.report_error(
                     f"PhotonVision coprocessor at path {self._path} not found in Network Tables. Double check that your camera names match! Only the following camera names were found: {''.join(cameraNames)}",
                     True,
                 )
 
         # Check for connection status. Warn if disconnected.
         elif not self.isConnected():
-            wpilib.reportWarning(
+            wpilib.report_warning(
                 f"PhotonVision coprocessor at path {self._path} is not sending new data.",
                 True,
             )
 
-        versionString = self.versionEntry.get(defaultValue="")
+        versionString = self.versionEntry.get(default_value="")
 
         # Check mdef UUID
         localUUID = PhotonPipelineResult.photonStruct.MESSAGE_VERSION
-        remoteUUID = self._rawBytesEntry.getTopic().getProperty("message_uuid")
+        remoteUUID = self._rawBytesEntry.get_topic().get_property("message_uuid")
 
         if remoteUUID is None:
-            wpilib.reportWarning(
+            wpilib.report_warning(
                 f"PhotonVision coprocessor at path {self._path} has not reported a message interface UUID - is your coprocessor's camera started?",
                 True,
             )
@@ -391,8 +392,8 @@ class PhotonCamera:
                 \n\n
                 """
 
-                wpilib.reportWarning(bfw)
+                wpilib.report_warning(bfw)
 
                 errText = f"Photonlibpy version {PHOTONLIB_VERSION} (With message UUID {localUUID}) does not match coprocessor version {versionString} (with message UUID {remoteUUID}). Please install photonlibpy version {versionString}, or update your coprocessor to {PHOTONLIB_VERSION}."
-                wpilib.reportError(errText, True)
-                raise Exception(errText)
+                wpilib.report_error(errText, True)
+                raise RuntimeError(errText)

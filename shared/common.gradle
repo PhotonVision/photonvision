@@ -30,7 +30,10 @@ dependencies {
     implementation "org.wpilib.ntcore:ntcore-java:$wpilibVersion"
     implementation "org.wpilib.hal:hal-java:$wpilibVersion"
     implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
+    implementation "org.wpilib.telemetry:telemetry-java:$wpilibVersion"
+    implementation "org.wpilib.tunables:tunables-java:$wpilibVersion"
     implementation "org.wpilib.apriltag:apriltag-java:$wpilibVersion"
+    implementation "org.wpilib.fields:fields-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
     implementation wpilibTools.deps.wpilibOpenCvJava(openCVversion)
 

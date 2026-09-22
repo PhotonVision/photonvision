@@ -19,13 +19,13 @@ from time import sleep
 
 import ntcore
 from photonlibpy import PhotonCamera
-from photonlibpy.photonCamera import setVersionCheckEnabled
+from photonlibpy.photon_camera import setVersionCheckEnabled
 
 
 def test_roundTrip():
-    ntcore.NetworkTableInstance.getDefault().stopServer()
-    ntcore.NetworkTableInstance.getDefault().setServer("localhost")
-    ntcore.NetworkTableInstance.getDefault().startClient("meme")
+    ntcore.NetworkTableInstance.get_default().stop_server()
+    ntcore.NetworkTableInstance.get_default().set_server("localhost")
+    ntcore.NetworkTableInstance.get_default().start_client("meme")
 
     camera = PhotonCamera("WPI2024")
 
@@ -35,7 +35,7 @@ def test_roundTrip():
         sleep(0.1)
         result = camera.getLatestResult()
         print(result)
-        print(camera._rawBytesEntry.getTopic().getProperties())
+        print(camera._rawBytesEntry.get_topic().get_properties())
 
 
 if __name__ == "__main__":

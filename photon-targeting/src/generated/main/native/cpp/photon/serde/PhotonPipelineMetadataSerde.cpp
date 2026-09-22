@@ -33,16 +33,16 @@ using StructType = SerdeType<PhotonPipelineMetadata>;
 
 void StructType::Pack(Packet& packet, const PhotonPipelineMetadata& value) {
   packet.Pack<int64_t>(value.sequenceID);
-  packet.Pack<int64_t>(value.captureTimestampMicros);
-  packet.Pack<int64_t>(value.publishTimestampMicros);
+  packet.Pack<int64_t>(value.captureTimestampNanos);
+  packet.Pack<int64_t>(value.publishTimestampNanos);
   packet.Pack<int64_t>(value.timeSinceLastPong);
 }
 
 PhotonPipelineMetadata StructType::Unpack(Packet& packet) {
   return PhotonPipelineMetadata{ PhotonPipelineMetadata_PhotonStruct{
     .sequenceID = packet.Unpack<int64_t>(),
-    .captureTimestampMicros = packet.Unpack<int64_t>(),
-    .publishTimestampMicros = packet.Unpack<int64_t>(),
+    .captureTimestampNanos = packet.Unpack<int64_t>(),
+    .publishTimestampNanos = packet.Unpack<int64_t>(),
     .timeSinceLastPong = packet.Unpack<int64_t>(),
   }};
 }

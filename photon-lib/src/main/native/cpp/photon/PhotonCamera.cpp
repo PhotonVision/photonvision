@@ -24,6 +24,7 @@
 
 #include "photon/PhotonCamera.h"
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -32,11 +33,11 @@
 #include <net/TimeSyncServer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
-#include <wpi/hal/UsageReporting.hpp>
 #include <wpi/system/Errors.hpp>
 #include <wpi/system/RobotController.hpp>
 #include <wpi/system/Timer.hpp>
 #include <wpi/system/WPILibVersion.hpp>
+#include <wpi/util/UsageReporting.hpp>
 #include <wpi/util/json.hpp>
 #include <wpi/util/string.hpp>
 
@@ -120,12 +121,16 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       path(rootTable->GetPath()),
       cameraName(cameraName),
       disconnectAlert(PHOTON_ALERT_GROUP,
+                      "disconnected-" + std::to_string(InstanceCount),
                       std::string{"PhotonCamera '"} + std::string{cameraName} +
                           "' is disconnected.",
-                      wpi::Alert::Level::MEDIUM),
-      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::MEDIUM) {
+                      wpi::util::Alert::Level::MEDIUM),
+      timesyncAlert(PHOTON_ALERT_GROUP,
+                    "timesync-" + std::to_string(InstanceCount), "",
+                    wpi::util::Alert::Level::MEDIUM) {
   InstanceCount++;
-  HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
+  wpi::util::ReportUsage("PhotonVision/PhotonCamera",
+                         std::to_string(InstanceCount));
 
   // The Robot class is actually created here:
   // https://github.com/wpilibsuite/allwpilib/blob/811b1309683e930a1ce69fae818f943ff161b7a5/wpilibc/src/main/native/include/wpi/opmode/RobotBase.hpp#L33
@@ -148,8 +153,8 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   VerifyVersion();
 
   // Fill the packet with latest data and populate result.
-  wpi::units::microsecond_t now =
-      wpi::units::microsecond_t(wpi::RobotController::GetMonotonicTime());
+  wpi::units::nanosecond_t now =
+      wpi::units::nanosecond_t(wpi::RobotController::GetMonotonicTime());
   const auto value = rawBytesEntry.Get();
   if (!value.size()) return PhotonPipelineResult{};
 
@@ -195,7 +200,7 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
 
     // TODO: NT4 timestamps are still not to be trusted. But it's the best we
     // can do until we can make time sync more reliable.
-    result.SetReceiveTimestamp(wpi::units::microsecond_t(value.time) -
+    result.SetReceiveTimestamp(wpi::units::nanosecond_t(value.time) -
                                result.GetLatency());
 
     ret.push_back(result);
@@ -209,11 +214,11 @@ void PhotonCamera::UpdateDisconnectAlert() {
 }
 
 void PhotonCamera::CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result) {
-  if (result.metadata.timeSinceLastPong > 5L * 1000000L) {
+  if (result.metadata.timeSinceLastPong > INT64_C(5) * 1000000000L) {
     std::string warningText =
         "PhotonVision coprocessor at path " + path +
         " is not connected to the TimeSyncServer? It's been " +
-        std::to_string(result.metadata.timeSinceLastPong / 1e6) +
+        std::to_string(result.metadata.timeSinceLastPong / 1e9) +
         "s since the coprocessor last heard a pong.";
 
     timesyncAlert.SetText(warningText);
@@ -392,7 +397,7 @@ void PhotonCamera::VerifyVersion() {
           ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
           "\n\n";
       WPILIB_ReportWarning(bfw);
-      std::string error_str = fmt::format(
+      std::string error_str = std::format(
           "Photonlib version {} (message definition version {}) does not match "
           "coprocessor version {} (message definition version {})!",
           PhotonVersion::versionString, local_uuid, versionString, remote_uuid);

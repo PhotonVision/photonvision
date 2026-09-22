@@ -49,4 +49,18 @@ public class QuirkyCameraTest {
         QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 8888);
         assertEquals(quirkless.quirks, noQuirks);
     }
+
+    @Test
+    public void thriftyOv9281Test() {
+        HashMap<CameraQuirk, Boolean> thriftyQuirks = new HashMap<>();
+        thriftyQuirks.put(CameraQuirk.ThriftyOV9281Controls, true);
+        thriftyQuirks.put(CameraQuirk.Gain, true);
+        thriftyQuirks.put(CameraQuirk.MJPEGOnly, true);
+        for (var q : CameraQuirk.values()) {
+            thriftyQuirks.putIfAbsent(q, false);
+        }
+
+        QuirkyCamera thrifty = QuirkyCamera.getQuirkyCamera(0x1BCF, 0x28C5);
+        assertEquals(thrifty.quirks, thriftyQuirks);
+    }
 }

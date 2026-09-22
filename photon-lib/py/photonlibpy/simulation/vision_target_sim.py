@@ -3,7 +3,7 @@ from typing import overload
 
 from wpimath import Pose3d, Translation3d
 
-from ..estimation.targetModel import TargetModel
+from ..estimation.target_model import TargetModel
 
 
 class VisionTargetSim:
@@ -18,7 +18,6 @@ class VisionTargetSim:
         :param pose:  Pose3d of the target in field-relative coordinates
         :param model: TargetModel which describes the shape of the target
         """
-        ...
 
     @overload
     def __init__(self, pose: Pose3d, model: TargetModel, id: int) -> None:
@@ -29,7 +28,6 @@ class VisionTargetSim:
         :param model: TargetModel which describes the geometry of the target (tag)
         :param id:    The ID of this fiducial tag
         """
-        ...
 
     @overload
     def __init__(
@@ -45,7 +43,6 @@ class VisionTargetSim:
         :param objDetConf:    The object detection confidence, or -1.0 to compute from target area
                               in the camera's field of view
         """
-        ...
 
     def __init__(
         self,
@@ -88,17 +85,16 @@ class VisionTargetSim:
     def __eq__(self, other) -> bool:
         # Use 1 inch and 1 degree tolerance
         return (
-            abs(self.pose.translation().X() - other.getPose().translation().X())
+            abs(self.pose.translation().x - other.getPose().translation().x) < 0.0254
+            and abs(self.pose.translation().y - other.getPose().translation().y)
             < 0.0254
-            and abs(self.pose.translation().Y() - other.getPose().translation().Y())
+            and abs(self.pose.translation().z - other.getPose().translation().z)
             < 0.0254
-            and abs(self.pose.translation().Z() - other.getPose().translation().Z())
-            < 0.0254
-            and abs(self.pose.rotation().X() - other.getPose().rotation().X())
+            and abs(self.pose.rotation().x - other.getPose().rotation().x)
             < math.radians(1)
-            and abs(self.pose.rotation().Y() - other.getPose().rotation().Y())
+            and abs(self.pose.rotation().y - other.getPose().rotation().y)
             < math.radians(1)
-            and abs(self.pose.rotation().Z() - other.getPose().rotation().Z())
+            and abs(self.pose.rotation().z - other.getPose().rotation().z)
             < math.radians(1)
             and self.model.getIsPlanar() == other.getModel().getIsPlanar()
         )

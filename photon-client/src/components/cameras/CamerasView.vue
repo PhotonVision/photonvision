@@ -23,7 +23,7 @@ const driverMode = computed<boolean>({
 
 const fpsTooLow = computed<boolean>(() => {
   const currFPS = useStateStore().currentPipelineResults?.fps || 0;
-  const targetFPS = useCameraSettingsStore().currentVideoFormat.fps;
+  const targetFPS = useCameraSettingsStore().currentVideoFormat?.fps || 0;
   const driverMode = useCameraSettingsStore().isDriverMode;
   const gpuAccel = useSettingsStore().general.gpuAcceleration !== undefined;
   const isReflective = useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.Reflective;

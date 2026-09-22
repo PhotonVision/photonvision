@@ -24,6 +24,6 @@
 
 #include "photon/PhotonUtils.h"
 
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
-TEST(PhotonUtilsTest, Include) {}
+TEST_CASE("PhotonUtilsTest Include", "[photonlib]") {}
