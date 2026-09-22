@@ -72,7 +72,7 @@ public class VisionModule implements AutoCloseable {
     private final VisionRunner visionRunner;
     private final StreamRunnable streamRunnable;
     private final VisionModuleChangeSubscriber changeSubscriber;
-    private final SubscriberHandle changeSubscriberHandle;
+    // private final SubscriberHandle changeSubscriberHandle;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the
     // OutputStreamPipeline
@@ -147,7 +147,7 @@ public class VisionModule implements AutoCloseable {
                         // Streams are created after the runner, so read the field lazily
                         () -> inputVideoStreamer != null && inputVideoStreamer.isStreamConsumed());
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
-        changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
+        // changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
         createStreams();
 
@@ -778,7 +778,7 @@ public class VisionModule implements AutoCloseable {
         inputFrameSaver.close();
         outputFrameSaver.close();
 
-        changeSubscriberHandle.stop();
+        // changeSubscriberHandle.stop();
         setVisionLEDs(false);
 
         visionRunner.close();

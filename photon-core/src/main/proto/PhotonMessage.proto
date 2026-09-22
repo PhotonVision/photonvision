@@ -18,10 +18,18 @@ message VisionModuleEvent {
     }
 }
 
-// Photon-internal message. Same as above but with sesison ID
-message VisionModuleChangeEvent {
-    VisionModuleEvent event = 1;
-    
-    // Websocket session this request came from
-    string originCtxSessionId = 2;
+message UiChangeEvent {
+    oneof event {
+        VisionModuleEvent vm_change = 1;
+        // TODO none-VM-specific change messages
+    }
 }
+
+// Only created by backend
+message PhotonDataChangeEvent {
+    // Websocket session this request came from
+    string originCtxSessionId = 1;
+
+    UiChangeEvent event = 2;
+}
+

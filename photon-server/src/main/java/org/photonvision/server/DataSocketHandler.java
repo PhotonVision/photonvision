@@ -25,8 +25,8 @@ import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
-import photonvision.core.proto.PhotonMessage.Event;
-import photonvision.core.proto.PhotonMessage.VisionModuleEvent;
+import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
+import photonvision.core.proto.PhotonMessage.UiChangeEvent;
 import us.hebi.quickbuf.InvalidProtocolBufferException;
 
 import java.net.InetSocketAddress;
@@ -41,12 +41,18 @@ import org.jetbrains.annotations.Nullable;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
+import org.photonvision.common.dataflow.events.PhotonDataChangeWpiProto;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.ProtobufPublisher;
+import org.wpilib.networktables.ProtobufTopic;
 import org.wpilib.util.Pair;
+import org.wpilib.util.protobuf.Protobuf;
 
 @SuppressWarnings("rawtypes")
 public class DataSocketHandler {
@@ -71,7 +77,14 @@ public class DataSocketHandler {
         return DataSocketHandler.ThreadSafeSingleton.INSTANCE;
     }
 
+    private NetworkTableInstance ntInstance = NetworkTableInstance.create();
+
+    // TODO do we need to worry abou queue depth on local topics? I want reliable delivery
+    private final ProtobufPublisher<PhotonDataChangeEvent> vm_change_events = ntInstance.getProtobufTopic("photonvision/VisionModuleEvents", PhotonDataChangeWpiProto.INSTANCE).publish();
+
     private DataSocketHandler() {
+        ntInstance.startLocal();
+
         dcService.addSubscribers(
                 uiOutboundSubscriber,
                 new UIInboundSubscriber()); // Subscribe outgoing messages to the data change service
@@ -111,27 +124,17 @@ public class DataSocketHandler {
     public void onBinaryMessage(WsBinaryMessageContext context) {
         try {
             // convert to proto
-            var protoMessage = VisionModuleEvent.parseFrom(context.data());
-            var camUniqueName = protoMessage.getCameraUniqueName();
+            var protoMessage = UiChangeEvent.parseFrom(context.data());
 
-            // var message = msgpackJsonb.type(WSMessage.class).fromJson(context.data());
+            var event = PhotonDataChangeEvent.newInstance();
+            event.setOriginCtxSessionId(context.sessionId());
+            event.setEvent(protoMessage);
 
-            for (Event changeEvent : protoMessage.getChanges()) {
-                try {
-                    if (changeEvent.hasDriverMode()) {
-                        dcService.publishEvents(
-                                new IncomingWebSocketEvent<>(
-                                        DataChangeDestination.DCD_ACTIVEMODULE,
-                                        "isDriverMode",
-                                        changeEvent.getDriverMode().getIsDriverMode(),
-                                        camUniqueName,
-                                        context));
-                    }
-                    // TODO else if ....
-                } catch (Exception e) {
-                    logger.error("Failed to parse message!", e);
-                }
+            // Seperate if-else by topic. Maybe this can be cleaner -- match?
+            if (protoMessage.hasVmChange()) {
+                vm_change_events.set(event);
             }
+            // TODO else if ...
         } catch (IllegalStateException | JsonException | InvalidProtocolBufferException e) {
             logger.error("Failed to deserialize message!", e);
         }

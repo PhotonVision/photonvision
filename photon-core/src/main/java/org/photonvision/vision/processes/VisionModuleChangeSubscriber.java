@@ -18,6 +18,8 @@
 package org.photonvision.vision.processes;
 
 import io.avaje.jsonb.Jsonb;
+import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,7 +42,7 @@ import org.photonvision.vision.target.RobotOffsetPointOperation;
 import org.wpilib.util.Pair;
 
 @SuppressWarnings("unchecked")
-public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
+public class VisionModuleChangeSubscriber  {
     private final VisionModule parentModule;
     private final Logger logger;
     private List<VisionModuleChange<?>> settingChanges = new ArrayList<>();
@@ -55,27 +57,26 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         LogGroup.VisionModule);
     }
 
-    @Override
-    public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
-        // Camera index -1 means a "multicast event" (i.e. the event is received by all
-        // cameras)
-        if (event instanceof IncomingWebSocketEvent<T> wsEvent
-                && wsEvent.cameraUniqueName != null
-                && wsEvent.cameraUniqueName.equals(parentModule.uniqueName())) {
-            logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
-            changeListLock.lock();
-            try {
-                getSettingChanges()
-                        .add(
-                                new VisionModuleChange<T>(
-                                        wsEvent.propertyName,
-                                        wsEvent.data,
-                                        parentModule.pipelineManager.updateAndReturnCurrentPipeline().getSettings(),
-                                        wsEvent.originContext));
-            } finally {
-                changeListLock.unlock();
-            }
-        }
+    public void onDataChangeEvent(PhotonDataChangeEvent event) {
+        // // Camera index -1 means a "multicast event" (i.e. the event is received by all
+        // // cameras)
+        // if (event instanceof IncomingWebSocketEvent<T> wsEvent
+        //         && wsEvent.cameraUniqueName != null
+        //         && wsEvent.cameraUniqueName.equals(parentModule.uniqueName())) {
+        //     logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
+        //     changeListLock.lock();
+        //     try {
+        //         getSettingChanges()
+        //                 .add(
+        //                         new VisionModuleChange<T>(
+        //                                 wsEvent.propertyName,
+        //                                 wsEvent.data,
+        //                                 parentModule.pipelineManager.updateAndReturnCurrentPipeline().getSettings(),
+        //                                 wsEvent.originContext));
+        //     } finally {
+        //         changeListLock.unlock();
+        //     }
+        // }
     }
 
     public List<VisionModuleChange<?>> getSettingChanges() {

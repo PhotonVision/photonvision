@@ -32,7 +32,6 @@ import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
-import photonvision.core.proto.PhotonMessage;
 
 @SuppressWarnings({"rawtypes", "unused"})
 public class PipelineManager implements AutoCloseable {
@@ -48,7 +47,6 @@ public class PipelineManager implements AutoCloseable {
             throw new UnsupportedOperationException("Unimplemented method 'onDataChangeEvent'");
         }
     }
-    PhotonMessage.VisionModuleEvent idk;
 
     public static final int DRIVERMODE_INDEX = -1;
     public static final int FOCUS_INDEX = -3;
