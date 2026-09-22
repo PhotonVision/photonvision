@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-
 import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 
 // Considered NT, but seems overkill. NewDataChangeService is <60 LOC
@@ -55,8 +54,7 @@ public class NewDataChangeService {
     // Syncronize access to this list
     private final List<NewDataChangeSubscriber> subscribers = new ArrayList<>();
 
-    public NewDataChangeService() {
-    }
+    public NewDataChangeService() {}
 
     public NewDataChangeSubscriber subscribe() {
         var ret = new NewDataChangeSubscriber();

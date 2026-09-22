@@ -36,11 +36,8 @@ import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.NewDataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
-import org.photonvision.common.dataflow.events.PhotonDataChangeWpiProto;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.wpilib.networktables.NetworkTableInstance;
-import org.wpilib.networktables.ProtobufPublisher;
 import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 import photonvision.core.proto.PhotonMessage.UiChangeEvent;
 import us.hebi.quickbuf.InvalidProtocolBufferException;
@@ -68,7 +65,6 @@ public class DataSocketHandler {
     public static DataSocketHandler getInstance() {
         return DataSocketHandler.ThreadSafeSingleton.INSTANCE;
     }
-
 
     private DataSocketHandler() {
         dcService.addSubscribers(

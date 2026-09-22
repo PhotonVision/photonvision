@@ -20,9 +20,7 @@ package org.photonvision.vision.processes;
 import io.avaje.jsonb.Jsonb;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 import org.opencv.core.Point;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.common.dataflow.NewDataChangeService;
@@ -30,7 +28,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -43,14 +40,16 @@ public class VisionModuleChangeSubscriber {
     private final VisionModule parentModule;
     private final Logger logger;
 
-    NewDataChangeService.NewDataChangeSubscriber subscriber = NewDataChangeService.VM_CHANGE_EVENTS.subscribe();
+    NewDataChangeService.NewDataChangeSubscriber subscriber =
+            NewDataChangeService.VM_CHANGE_EVENTS.subscribe();
 
     public VisionModuleChangeSubscriber(VisionModule parentModule) {
         this.parentModule = parentModule;
-        logger = new Logger(
-                VisionModuleChangeSubscriber.class,
-                parentModule.visionSource.getSettables().getConfiguration().nickname,
-                LogGroup.VisionModule);
+        logger =
+                new Logger(
+                        VisionModuleChangeSubscriber.class,
+                        parentModule.visionSource.getSettables().getConfiguration().nickname,
+                        LogGroup.VisionModule);
     }
 
     public void processSettingChanges() {
@@ -116,9 +115,11 @@ public class VisionModuleChangeSubscriber {
             //             for (var method : methods) {
             //                 if (method.getName().equalsIgnoreCase(propMethodName)) {
             //                     try {
-            //                         method.invoke(parentModule.visionSource.getSettables(), newPropValue);
+            //                         method.invoke(parentModule.visionSource.getSettables(),
+            // newPropValue);
             //                     } catch (Exception e) {
-            //                         logger.error("Failed to invoke camera settable method: " + method.getName(), e);
+            //                         logger.error("Failed to invoke camera settable method: " +
+            // method.getName(), e);
             //                     }
             //                 }
             //             }
@@ -213,7 +214,7 @@ public class VisionModuleChangeSubscriber {
                     case CLEAR -> curAdvSettings.offsetSinglePoint = new Point();
                     case TAKE_SINGLE -> curAdvSettings.offsetSinglePoint = newPoint;
                     case TAKE_FIRST_DUAL, TAKE_SECOND_DUAL ->
-                        logger.warn("Dual point operation in single point mode");
+                            logger.warn("Dual point operation in single point mode");
                 }
             }
             case Dual -> {
@@ -242,18 +243,15 @@ public class VisionModuleChangeSubscriber {
     }
 
     /**
-     * Sets the value of a property in the given object using reflection. This
-     * method should not be
-     * used generally and is only known to be correct in the context of
-     * `onDataChangeEvent`.
+     * Sets the value of a property in the given object using reflection. This method should not be
+     * used generally and is only known to be correct in the context of `onDataChangeEvent`.
      *
      * @param currentSettings The object whose property needs to be set.
-     * @param propName        The name of the property to be set.
-     * @param newPropValue    The new value to be assigned to the property.
+     * @param propName The name of the property to be set.
+     * @param newPropValue The new value to be assigned to the property.
      * @throws IllegalAccessException If the field cannot be accessed.
-     * @throws NoSuchFieldException   If the field does not exist.
-     * @throws Exception              If an some other unknown exception occurs
-     *                                while setting the property.
+     * @throws NoSuchFieldException If the field does not exist.
+     * @throws Exception If an some other unknown exception occurs while setting the property.
      */
     protected static void setProperty(Object currentSettings, String propName, Object newPropValue)
             throws IllegalAccessException, NoSuchFieldException, Exception {
@@ -283,7 +281,8 @@ public class VisionModuleChangeSubscriber {
             }
         } else if (propField.getType() == ModelProperties.class
                 && newPropValue instanceof LinkedHashMap) {
-            ModelProperties modelProps = Jsonb.instance().type(ModelProperties.class).fromObject(newPropValue);
+            ModelProperties modelProps =
+                    Jsonb.instance().type(ModelProperties.class).fromObject(newPropValue);
             propField.set(currentSettings, modelProps);
         } else {
             propField.set(currentSettings, newPropValue);
