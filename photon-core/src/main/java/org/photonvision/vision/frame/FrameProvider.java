@@ -104,9 +104,7 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
         Rect effectiveCrop =
                 CropPipe.clampCropToImage(
-                        cropPipe.getParams().rect(),
-                        reference.getMat().cols(),
-                        reference.getMat().rows());
+                        cropPipe.getParams().rect(), reference.getMat().cols(), reference.getMat().rows());
         if (effectiveCrop == null) {
             // Cropping is a no-op, so the cached cropped properties can never be reused; don't hold
             // their native calibration memory alive until a crop happens to come along again.
