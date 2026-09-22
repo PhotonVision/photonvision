@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import org.opencv.core.Point;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
+import org.photonvision.common.dataflow.NewDataChangeService;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.numbers.DoubleCouple;
@@ -41,126 +42,109 @@ import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 public class VisionModuleChangeSubscriber {
     private final VisionModule parentModule;
     private final Logger logger;
-    private List<VisionModuleChange<?>> settingChanges = new ArrayList<>();
-    private final ReentrantLock changeListLock = new ReentrantLock();
+
+    NewDataChangeService.NewDataChangeSubscriber subscriber = NewDataChangeService.VM_CHANGE_EVENTS.subscribe();
 
     public VisionModuleChangeSubscriber(VisionModule parentModule) {
         this.parentModule = parentModule;
-        logger =
-                new Logger(
-                        VisionModuleChangeSubscriber.class,
-                        parentModule.visionSource.getSettables().getConfiguration().nickname,
-                        LogGroup.VisionModule);
-    }
-
-    public void onDataChangeEvent(PhotonDataChangeEvent event) {
-        // // Camera index -1 means a "multicast event" (i.e. the event is received by all
-        // // cameras)
-        // if (event instanceof IncomingWebSocketEvent<T> wsEvent
-        //         && wsEvent.cameraUniqueName != null
-        //         && wsEvent.cameraUniqueName.equals(parentModule.uniqueName())) {
-        //     logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
-        //     changeListLock.lock();
-        //     try {
-        //         getSettingChanges()
-        //                 .add(
-        //                         new VisionModuleChange<T>(
-        //                                 wsEvent.propertyName,
-        //                                 wsEvent.data,
-        //
-        // parentModule.pipelineManager.updateAndReturnCurrentPipeline().getSettings(),
-        //                                 wsEvent.originContext));
-        //     } finally {
-        //         changeListLock.unlock();
-        //     }
-        // }
-    }
-
-    public List<VisionModuleChange<?>> getSettingChanges() {
-        return settingChanges;
+        logger = new Logger(
+                VisionModuleChangeSubscriber.class,
+                parentModule.visionSource.getSettables().getConfiguration().nickname,
+                LogGroup.VisionModule);
     }
 
     public void processSettingChanges() {
         // special case for non-PipelineSetting changes
-        changeListLock.lock();
-        try {
-            for (var change : settingChanges) {
-                var propName = change.getPropName();
-                var newPropValue = change.getNewPropValue();
-                var currentSettings = change.getCurrentSettings();
-                var originContext = change.getOriginContext();
-                if (newPropValue instanceof Long) {
-                    newPropValue = ((Long) newPropValue).intValue();
-                }
-
-                switch (propName) {
-                    case "pipelineName" -> newPipelineNickname((String) newPropValue);
-                    case "newPipelineInfo" -> newPipelineInfo((Pair<String, PipelineType>) newPropValue);
-                    case "deleteCurrPipeline" -> deleteCurrPipeline();
-                    case "changePipeline" -> changePipeline((Integer) newPropValue);
-                    case "startCalibration" -> startCalibration((Map<String, Object>) newPropValue);
-                    case "saveInputSnapshot" -> parentModule.saveInputSnapshot();
-                    case "saveOutputSnapshot" -> parentModule.saveOutputSnapshot();
-                    case "takeCalSnapshot" -> parentModule.takeCalibrationSnapshot();
-                    case "duplicatePipeline" -> duplicatePipeline((Integer) newPropValue);
-                    case "calibrationUploaded" -> {
-                        if (newPropValue instanceof CameraCalibrationCoefficients newCal) {
-                            parentModule.addCalibrationToConfig(newCal);
-                        } else {
-                            logger.warn("Received invalid calibration data");
-                        }
-                    }
-                    case "robotOffsetPoint" -> {
-                        if (currentSettings instanceof AdvancedPipelineSettings curAdvSettings) {
-                            robotOffsetPoint(curAdvSettings, (Integer) newPropValue);
-                        }
-                    }
-                    case "changePipelineType" -> {
-                        parentModule.changePipelineType((Integer) newPropValue);
-                        parentModule.saveAndBroadcastAll();
-                    }
-                    case "isDriverMode" -> parentModule.setDriverMode((Boolean) newPropValue);
-                    default -> {
-                        // special case for camera settables
-                        if (propName.startsWith("camera")) {
-                            var propMethodName = "set" + propName.replace("camera", "");
-                            var methods = parentModule.visionSource.getSettables().getClass().getMethods();
-                            for (var method : methods) {
-                                if (method.getName().equalsIgnoreCase(propMethodName)) {
-                                    try {
-                                        method.invoke(parentModule.visionSource.getSettables(), newPropValue);
-                                    } catch (Exception e) {
-                                        logger.error("Failed to invoke camera settable method: " + method.getName(), e);
-                                    }
-                                }
-                            }
-                        }
-
-                        try {
-                            setProperty(currentSettings, propName, newPropValue);
-                            logger.trace("Set prop " + propName + " to value " + newPropValue);
-                        } catch (NoSuchFieldException | IllegalAccessException e) {
-                            logger.error(
-                                    "Could not set prop "
-                                            + propName
-                                            + " with value "
-                                            + newPropValue
-                                            + " on "
-                                            + currentSettings
-                                            + " | "
-                                            + e.getClass().getSimpleName(),
-                                    e);
-                        } catch (Exception e) {
-                            logger.error("Unknown exception when setting PSC prop!", e);
-                        }
-
-                        parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
-                    }
-                }
+        for (PhotonDataChangeEvent change : subscriber.getAndClearEvents()) {
+            // Should already be enforced, but skip non-vm_change events
+            if (!change.getEvent().hasVmChange()) {
+                continue;
             }
-            getSettingChanges().clear();
-        } finally {
-            changeListLock.unlock();
+
+            var vmChange = change.getEvent().getVmChange();
+
+            // Skip events not meant for us
+            if (!vmChange.getCameraUniqueName().equals(parentModule.uniqueName())) {
+                continue;
+            }
+
+            // I liked the hold switch-case but alas
+            if (vmChange.hasDriverMode()) {
+                parentModule.setDriverMode(vmChange.getDriverMode());
+            }
+
+            // var propName = change.getPropName();
+            // var newPropValue = change.getNewPropValue();
+            // var currentSettings = change.getCurrentSettings();
+            // var originContext = change.getOriginContext();
+            // if (newPropValue instanceof Long) {
+            //     newPropValue = ((Long) newPropValue).intValue();
+            // }
+
+            // switch (propName) {
+            //     case "pipelineName" -> newPipelineNickname((String) newPropValue);
+            //     case "newPipelineInfo" -> newPipelineInfo((Pair<String, PipelineType>) newPropValue);
+            //     case "deleteCurrPipeline" -> deleteCurrPipeline();
+            //     case "changePipeline" -> changePipeline((Integer) newPropValue);
+            //     case "startCalibration" -> startCalibration((Map<String, Object>) newPropValue);
+            //     case "saveInputSnapshot" -> parentModule.saveInputSnapshot();
+            //     case "saveOutputSnapshot" -> parentModule.saveOutputSnapshot();
+            //     case "takeCalSnapshot" -> parentModule.takeCalibrationSnapshot();
+            //     case "duplicatePipeline" -> duplicatePipeline((Integer) newPropValue);
+            //     case "calibrationUploaded" -> {
+            //         if (newPropValue instanceof CameraCalibrationCoefficients newCal) {
+            //             parentModule.addCalibrationToConfig(newCal);
+            //         } else {
+            //             logger.warn("Received invalid calibration data");
+            //         }
+            //     }
+            //     case "robotOffsetPoint" -> {
+            //         if (currentSettings instanceof AdvancedPipelineSettings curAdvSettings) {
+            //             robotOffsetPoint(curAdvSettings, (Integer) newPropValue);
+            //         }
+            //     }
+            //     case "changePipelineType" -> {
+            //         parentModule.changePipelineType((Integer) newPropValue);
+            //         parentModule.saveAndBroadcastAll();
+            //     }
+            //     case "isDriverMode" -> parentModule.setDriverMode((Boolean) newPropValue);
+            //     default -> {
+            //         // special case for camera settables
+            //         if (propName.startsWith("camera")) {
+            //             var propMethodName = "set" + propName.replace("camera", "");
+            //             var methods = parentModule.visionSource.getSettables().getClass().getMethods();
+            //             for (var method : methods) {
+            //                 if (method.getName().equalsIgnoreCase(propMethodName)) {
+            //                     try {
+            //                         method.invoke(parentModule.visionSource.getSettables(), newPropValue);
+            //                     } catch (Exception e) {
+            //                         logger.error("Failed to invoke camera settable method: " + method.getName(), e);
+            //                     }
+            //                 }
+            //             }
+            //         }
+
+            //         try {
+            //             setProperty(currentSettings, propName, newPropValue);
+            //             logger.trace("Set prop " + propName + " to value " + newPropValue);
+            //         } catch (NoSuchFieldException | IllegalAccessException e) {
+            //             logger.error(
+            //                     "Could not set prop "
+            //                             + propName
+            //                             + " with value "
+            //                             + newPropValue
+            //                             + " on "
+            //                             + currentSettings
+            //                             + " | "
+            //                             + e.getClass().getSimpleName(),
+            //                     e);
+            //         } catch (Exception e) {
+            //             logger.error("Unknown exception when setting PSC prop!", e);
+            //         }
+
+            //         parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
+            //     }
+            // }
         }
     }
 
@@ -229,7 +213,7 @@ public class VisionModuleChangeSubscriber {
                     case CLEAR -> curAdvSettings.offsetSinglePoint = new Point();
                     case TAKE_SINGLE -> curAdvSettings.offsetSinglePoint = newPoint;
                     case TAKE_FIRST_DUAL, TAKE_SECOND_DUAL ->
-                            logger.warn("Dual point operation in single point mode");
+                        logger.warn("Dual point operation in single point mode");
                 }
             }
             case Dual -> {
@@ -258,15 +242,18 @@ public class VisionModuleChangeSubscriber {
     }
 
     /**
-     * Sets the value of a property in the given object using reflection. This method should not be
-     * used generally and is only known to be correct in the context of `onDataChangeEvent`.
+     * Sets the value of a property in the given object using reflection. This
+     * method should not be
+     * used generally and is only known to be correct in the context of
+     * `onDataChangeEvent`.
      *
      * @param currentSettings The object whose property needs to be set.
-     * @param propName The name of the property to be set.
-     * @param newPropValue The new value to be assigned to the property.
+     * @param propName        The name of the property to be set.
+     * @param newPropValue    The new value to be assigned to the property.
      * @throws IllegalAccessException If the field cannot be accessed.
-     * @throws NoSuchFieldException If the field does not exist.
-     * @throws Exception If an some other unknown exception occurs while setting the property.
+     * @throws NoSuchFieldException   If the field does not exist.
+     * @throws Exception              If an some other unknown exception occurs
+     *                                while setting the property.
      */
     protected static void setProperty(Object currentSettings, String propName, Object newPropValue)
             throws IllegalAccessException, NoSuchFieldException, Exception {
@@ -296,8 +283,7 @@ public class VisionModuleChangeSubscriber {
             }
         } else if (propField.getType() == ModelProperties.class
                 && newPropValue instanceof LinkedHashMap) {
-            ModelProperties modelProps =
-                    Jsonb.instance().type(ModelProperties.class).fromObject(newPropValue);
+            ModelProperties modelProps = Jsonb.instance().type(ModelProperties.class).fromObject(newPropValue);
             propField.set(currentSettings, modelProps);
         } else {
             propField.set(currentSettings, newPropValue);

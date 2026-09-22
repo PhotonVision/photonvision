@@ -3,18 +3,13 @@ syntax = "proto3";
 package photonvision.core.proto;
 
 
-// List of all the changes that can be requested
-message SetDriverMode {
-    bool isDriverMode = 1;
-}
-
-
 // UI -> Frontend format
 message VisionModuleEvent {
     string cameraUniqueName = 1;
 
+    // List of all the changes that can be requested
     oneof event {
-        SetDriverMode driverMode = 2;
+        bool driverMode = 2;
     }
 }
 

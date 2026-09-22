@@ -24,8 +24,11 @@ import org.photonvision.common.logging.Logger;
 
 import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 
-@SuppressWarnings("rawtypes")
+// Considered NT, but seems overkill. NewDataChangeService is <60 LOC
 public class NewDataChangeService {
+    // Incredibly cursed version of NtTopicSet. Hard-code so we're statically typed
+    public static final NewDataChangeService VM_CHANGE_EVENTS = new NewDataChangeService();
+
     private static final Logger logger = new Logger(NewDataChangeService.class, LogGroup.WebServer);
 
     // Subscribers own their own queues of changes

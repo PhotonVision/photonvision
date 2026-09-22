@@ -110,6 +110,8 @@ public class VisionRunner implements AutoCloseable {
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
         logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
+        
+        // TODO why?
         changeSubscriber.processSettingChanges();
     }
 

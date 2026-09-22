@@ -69,8 +69,6 @@ public class DataSocketHandler {
         return DataSocketHandler.ThreadSafeSingleton.INSTANCE;
     }
 
-    // Considered NT, but seems overkill. NewDataChangeService is <60 LOC
-    public static final NewDataChangeService VM_CHANGE_EVENTS = new NewDataChangeService();
 
     private DataSocketHandler() {
         dcService.addSubscribers(
@@ -119,7 +117,7 @@ public class DataSocketHandler {
 
             // Seperate if-else by topic. Maybe this can be cleaner -- match?
             if (protoMessage.hasVmChange()) {
-                VM_CHANGE_EVENTS.publish(event);
+                NewDataChangeService.VM_CHANGE_EVENTS.publish(event);
             }
             // TODO else if ...
         } catch (IllegalStateException | JsonException | InvalidProtocolBufferException e) {
