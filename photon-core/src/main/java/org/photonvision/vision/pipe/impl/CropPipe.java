@@ -84,26 +84,13 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
         }
     }
 
-    /**
-     * The crop rectangle that applies to an image of the given size: the configured region clamped
-     * into the image.
-     *
-     * @param imageCols The image's width, in pixels.
-     * @param imageRows The image's height, in pixels.
-     * @return The clamped rectangle, or null when no params have been set, there is no crop, the
-     *     region is degenerate, or it covers the whole image (all of which make cropping a no-op).
-     */
-    public Rect effectiveCrop(int imageCols, int imageRows) {
-        return params == null ? null : clampCropToImage(params.rect(), imageCols, imageRows);
-    }
-
     @Override
     protected CVMat process(CVMat in) {
         if (in.getMat().empty()) {
             return null;
         }
 
-        Rect effective = effectiveCrop(in.getMat().cols(), in.getMat().rows());
+        Rect effective = clampCropToImage(params.rect(), in.getMat().cols(), in.getMat().rows());
         if (effective == null) {
             return null;
         }

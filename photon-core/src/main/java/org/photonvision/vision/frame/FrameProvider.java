@@ -29,7 +29,13 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
+
+    // Starts as a no-op crop (null rect) so params are always set; setCropParams replaces them.
     private final CropPipe cropPipe = new CropPipe();
+
+    {
+        cropPipe.setParams(new CropPipe.CropPipeParams(null, null));
+    }
 
     /** How much the cropped-away area is dimmed in the input stream's context image. */
     private static final double CONTEXT_DIM_FACTOR = 0.35;
@@ -97,7 +103,10 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     public final Frame cropFrame(Frame frame, boolean keepContext) {
         var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
         Rect effectiveCrop =
-                cropPipe.effectiveCrop(reference.getMat().cols(), reference.getMat().rows());
+                CropPipe.clampCropToImage(
+                        cropPipe.getParams().rect(),
+                        reference.getMat().cols(),
+                        reference.getMat().rows());
         if (effectiveCrop == null) {
             // Cropping is a no-op, so the cached cropped properties can never be reused; don't hold
             // their native calibration memory alive until a crop happens to come along again.
