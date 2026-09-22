@@ -72,7 +72,7 @@ public class VisionRunner implements AutoCloseable {
      * the consumer.
      *
      * @param frameSupplier
-     * @param pipelineSupplier
+     * @param pipelineSupplier Process all queued updates and provide the current selected pipeline
      * @param pipelineResultConsumer
      * @param cameraQuirks
      * @param changeSubscriber The subscriber to setting changes for this VisionRunner, so it can
@@ -185,24 +185,6 @@ public class VisionRunner implements AutoCloseable {
         return future;
     }
 
-    public <T> Future<T> runSynchronously(Callable<T> callable) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-
-        synchronized (runnableList) {
-            runnableList.add(
-                    () -> {
-                        try {
-                            T result = callable.call();
-                            future.complete(result);
-                        } catch (Exception ex) {
-                            future.completeExceptionally(ex);
-                        }
-                    });
-        }
-
-        return future;
-    }
-
     /**
      * Waits until the next time this VisionRunner should run its pipeline, based on current FPS limit
      */
@@ -268,6 +250,8 @@ public class VisionRunner implements AutoCloseable {
                 runnableList.clear();
             }
 
+            // Supplier does any extra processing/updating/ticking and gives us a pipeline to use
+            // TODO .get() is not descriptive
             var pipeline = pipelineSupplier.get();
 
             // Tell our camera implementation here what kind of pre-processing we need it to
@@ -296,38 +280,38 @@ public class VisionRunner implements AutoCloseable {
 
                 frame.release();
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-            } else if (pipeline == pipelineSupplier.get()) {
-                if (!enabledSupplier.get()) {
-                    // If we are skipping processing due to the camera being disabled, we still want to send a
-                    // result with the new frame and settings, just with a null pipeline result
-                    pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-                    frame.release();
-                    continue;
-                }
+            } 
 
-                // If the pipeline has changed while we are getting our frame we should scrap
-                // that frame it may result in incorrect frame settings like hsv values
-
-                // There's no guarantee the processing type change will occur this tick, so
-                // pipelines should check themselves
-
-                // If we have an FPS limit, check if it's 0, in which case we skip processing and just send
-                // a blank frame, otherwise we sleep until the next tick
-                waitUntilNextTick(start);
-                try {
-                    var pipelineResult = pipeline.run(frame, cameraQuirks);
-                    try {
-                        pipelineResultConsumer.accept(pipelineResult);
-                    } catch (Exception ex) {
-                        logger.error("Exception on loop " + loopCount, ex);
-                        pipelineResult.release();
-                    }
-                } catch (Exception ex) {
-                    logger.error("Pipeline exception on loop " + loopCount, ex);
-                    frame.release();
-                }
-                loopCount++;
+            if (!enabledSupplier.get()) {
+                // If we are skipping processing due to the camera being disabled, we still want to send a
+                // result with the new frame and settings, just with a null pipeline result
+                pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+                frame.release();
+                continue;
             }
+
+            // If the pipeline has changed while we are getting our frame we should scrap
+            // that frame it may result in incorrect frame settings like hsv values
+
+            // There's no guarantee the processing type change will occur this tick, so
+            // pipelines should check themselves
+
+            // If we have an FPS limit, check if it's 0, in which case we skip processing and just send
+            // a blank frame, otherwise we sleep until the next tick
+            waitUntilNextTick(start);
+            try {
+                var pipelineResult = pipeline.run(frame, cameraQuirks);
+                try {
+                    pipelineResultConsumer.accept(pipelineResult);
+                } catch (Exception ex) {
+                    logger.error("Exception on loop " + loopCount, ex);
+                    pipelineResult.release();
+                }
+            } catch (Exception ex) {
+                logger.error("Pipeline exception on loop " + loopCount, ex);
+                frame.release();
+            }
+            loopCount++;
         }
     }
 

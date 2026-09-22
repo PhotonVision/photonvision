@@ -138,7 +138,7 @@ public class VisionModule implements AutoCloseable {
         this.visionRunner =
                 new VisionRunner(
                         this.visionSource.getFrameProvider(),
-                        this.pipelineManager::getCurrentPipeline,
+                        this.pipelineManager::updateAndReturnCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks,
                         getChangeSubscriber(),
@@ -715,7 +715,7 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void setTargetModel(TargetModel targetModel) {
-        var pipelineSettings = pipelineManager.getCurrentPipeline().getSettings();
+        var pipelineSettings = pipelineManager.updateAndReturnCurrentPipeline().getSettings();
         if (pipelineSettings instanceof ReflectivePipelineSettings settings) {
             settings.targetModel = targetModel;
             saveAndBroadcastAll();

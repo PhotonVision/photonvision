@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package photonvision.core.proto;
+
+
+// List of all the changes that can be requested
+message SetDriverMode {
+    bool isDriverMode = 1;
+}
+
+
+// UI -> Frontend format
+message VisionModuleEvent {
+    string cameraUniqueName = 1;
+
+    oneof event {
+        SetDriverMode driverMode = 2;
+    }
+}
+
+// Photon-internal message. Same as above but with sesison ID
+message VisionModuleChangeEvent {
+    VisionModuleEvent event = 1;
+    
+    // Websocket session this request came from
+    string originCtxSessionId = 2;
+}

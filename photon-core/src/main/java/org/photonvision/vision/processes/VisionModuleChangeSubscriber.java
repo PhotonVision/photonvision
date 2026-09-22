@@ -70,7 +70,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                 new VisionModuleChange<T>(
                                         wsEvent.propertyName,
                                         wsEvent.data,
-                                        parentModule.pipelineManager.getCurrentPipeline().getSettings(),
+                                        parentModule.pipelineManager.updateAndReturnCurrentPipeline().getSettings(),
                                         wsEvent.originContext));
             } finally {
                 changeListLock.unlock();
