@@ -1,50 +1,50 @@
 package org.photonvision.common.dataflow.events;
+
+import org.wpilib.util.protobuf.Protobuf;
 import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
-import org.wpilib.util.protobuf.Protobuf;
+public class PhotonDataChangeWpiProto
+        implements Protobuf<PhotonDataChangeEvent, PhotonDataChangeEvent> {
+    public static final PhotonDataChangeWpiProto INSTANCE = new PhotonDataChangeWpiProto();
 
-public class PhotonDataChangeWpiProto implements Protobuf<PhotonDataChangeEvent, PhotonDataChangeEvent> {
-public static final PhotonDataChangeWpiProto INSTANCE = new PhotonDataChangeWpiProto();
-
-      @Override
-      public Class<PhotonDataChangeEvent> getTypeClass() {
+    @Override
+    public Class<PhotonDataChangeEvent> getTypeClass() {
         return PhotonDataChangeEvent.class;
-      }
+    }
 
-      @Override
-      public Descriptor getDescriptor() {
+    @Override
+    public Descriptor getDescriptor() {
         return PhotonDataChangeEvent.getDescriptor();
-      }
+    }
 
-      @Override
-      public PhotonDataChangeEvent createMessage() {
+    @Override
+    public PhotonDataChangeEvent createMessage() {
         return PhotonDataChangeEvent.newInstance();
-      }
+    }
 
-      @Override
-      public PhotonDataChangeEvent unpack(PhotonDataChangeEvent msg) {
+    @Override
+    public PhotonDataChangeEvent unpack(PhotonDataChangeEvent msg) {
         return msg.clone();
-      }
+    }
 
-      @Override
-      public void pack(PhotonDataChangeEvent msg, PhotonDataChangeEvent value) {
+    @Override
+    public void pack(PhotonDataChangeEvent msg, PhotonDataChangeEvent value) {
         msg.copyFrom(value);
-      }
+    }
 
-      @Override
-      public void unpackInto(
-          PhotonDataChangeEvent out, PhotonDataChangeEvent msg) {
+    @Override
+    public void unpackInto(PhotonDataChangeEvent out, PhotonDataChangeEvent msg) {
         out.copyFrom(msg);
-      }
+    }
 
-      @Override
-      public boolean isCloneable() {
+    @Override
+    public boolean isCloneable() {
         return true;
-      }
+    }
 
-      @Override
-      public PhotonDataChangeEvent clone(PhotonDataChangeEvent obj) {
+    @Override
+    public PhotonDataChangeEvent clone(PhotonDataChangeEvent obj) {
         return obj.clone();
-      }
+    }
 }

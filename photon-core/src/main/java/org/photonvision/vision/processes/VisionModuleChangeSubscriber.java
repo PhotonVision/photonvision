@@ -18,8 +18,6 @@
 package org.photonvision.vision.processes;
 
 import io.avaje.jsonb.Jsonb;
-import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,9 +25,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import org.opencv.core.Point;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
-import org.photonvision.common.dataflow.DataChangeSubscriber;
-import org.photonvision.common.dataflow.events.DataChangeEvent;
-import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.numbers.DoubleCouple;
@@ -40,9 +35,10 @@ import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.target.RobotOffsetPointOperation;
 import org.wpilib.util.Pair;
+import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 
 @SuppressWarnings("unchecked")
-public class VisionModuleChangeSubscriber  {
+public class VisionModuleChangeSubscriber {
     private final VisionModule parentModule;
     private final Logger logger;
     private List<VisionModuleChange<?>> settingChanges = new ArrayList<>();
@@ -71,7 +67,8 @@ public class VisionModuleChangeSubscriber  {
         //                         new VisionModuleChange<T>(
         //                                 wsEvent.propertyName,
         //                                 wsEvent.data,
-        //                                 parentModule.pipelineManager.updateAndReturnCurrentPipeline().getSettings(),
+        //
+        // parentModule.pipelineManager.updateAndReturnCurrentPipeline().getSettings(),
         //                                 wsEvent.originContext));
         //     } finally {
         //         changeListLock.unlock();

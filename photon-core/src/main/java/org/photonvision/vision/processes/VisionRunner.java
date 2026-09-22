@@ -19,7 +19,6 @@ package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -280,7 +279,7 @@ public class VisionRunner implements AutoCloseable {
 
                 frame.release();
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-            } 
+            }
 
             if (!enabledSupplier.get()) {
                 // If we are skipping processing due to the camera being disabled, we still want to send a

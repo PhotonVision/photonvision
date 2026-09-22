@@ -25,40 +25,31 @@ import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
-import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
-import photonvision.core.proto.PhotonMessage.UiChangeEvent;
-import us.hebi.quickbuf.InvalidProtocolBufferException;
-
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import org.jetbrains.annotations.Nullable;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.PhotonDataChangeWpiProto;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.pipeline.PipelineType;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.ProtobufPublisher;
-import org.wpilib.networktables.ProtobufTopic;
-import org.wpilib.util.Pair;
-import org.wpilib.util.protobuf.Protobuf;
+import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
+import photonvision.core.proto.PhotonMessage.UiChangeEvent;
+import us.hebi.quickbuf.InvalidProtocolBufferException;
 
 @SuppressWarnings("rawtypes")
 public class DataSocketHandler {
     private final Logger logger = new Logger(DataSocketHandler.class, LogGroup.WebServer);
 
-    // Keep track of users. Map of sessionId to WsContext. Use ConcurrentHashMap for thread safety (I'm lazy)
+    // Keep track of users. Map of sessionId to WsContext. Use ConcurrentHashMap for thread safety
+    // (I'm lazy)
     private final Map<String, WsContext> users = new ConcurrentHashMap<String, WsContext>();
 
     private final JacksonAdapter adapter =
@@ -80,7 +71,10 @@ public class DataSocketHandler {
     private NetworkTableInstance ntInstance = NetworkTableInstance.create();
 
     // TODO do we need to worry abou queue depth on local topics? I want reliable delivery
-    private final ProtobufPublisher<PhotonDataChangeEvent> vm_change_events = ntInstance.getProtobufTopic("photonvision/VisionModuleEvents", PhotonDataChangeWpiProto.INSTANCE).publish();
+    private final ProtobufPublisher<PhotonDataChangeEvent> vm_change_events =
+            ntInstance
+                    .getProtobufTopic("photonvision/VisionModuleEvents", PhotonDataChangeWpiProto.INSTANCE)
+                    .publish();
 
     private DataSocketHandler() {
         ntInstance.startLocal();
@@ -118,7 +112,6 @@ public class DataSocketHandler {
     @Json
     static record WSMessage(
             @Nullable String cameraUniqueName, @Json.Unmapped Map<String, Object> properties) {}
-
 
     @SuppressWarnings({"unchecked"})
     public void onBinaryMessage(WsBinaryMessageContext context) {

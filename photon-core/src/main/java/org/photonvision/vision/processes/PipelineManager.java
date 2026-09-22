@@ -38,8 +38,7 @@ public class PipelineManager implements AutoCloseable {
     private static final Logger logger = new Logger(PipelineManager.class, LogGroup.VisionModule);
 
     private static class PipelineDataChangeSubscriber extends DataChangeSubscriber {
-        PipelineDataChangeSubscriber() {
-        }
+        PipelineDataChangeSubscriber() {}
 
         @Override
         public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
@@ -163,7 +162,10 @@ public class PipelineManager implements AutoCloseable {
     }
 
     /**
-     * Update all internal state with any queued changes, and return the currently active pipeline. This is leaky, but this is only intended to be called from VisionRunner's main update() super-loop. The fact I'm writing this tells us these are coupled despite java pretending otherwise.
+     * Update all internal state with any queued changes, and return the currently active pipeline.
+     * This is leaky, but this is only intended to be called from VisionRunner's main update()
+     * super-loop. The fact I'm writing this tells us these are coupled despite java pretending
+     * otherwise.
      */
     public CVPipeline updateAndReturnCurrentPipeline() {
         updatePipelineFromRequested();
@@ -185,7 +187,6 @@ public class PipelineManager implements AutoCloseable {
     public CVPipelineSettings getCurrentPipelineSettings() {
         return getPipelineSettings(currentPipelineIndex);
     }
-
 
     /**
      * Grab the currently requested pipeline index. The VisionRunner may not have changed over to this
@@ -209,9 +210,9 @@ public class PipelineManager implements AutoCloseable {
 
     /**
      * Based on a requested pipeline index, create/destroy pipelines as necessary. We do this as a
-     * side effect of the main thread that calls updateAndReturnCurrentPipeline to avoid race conditions between
-     * server threads and the VisionRunner TODO: this should be refactored. Shame Java doesn't have
-     * RAII
+     * side effect of the main thread that calls updateAndReturnCurrentPipeline to avoid race
+     * conditions between server threads and the VisionRunner TODO: this should be refactored. Shame
+     * Java doesn't have RAII
      */
     private void updatePipelineFromRequested() {
         int newIndex = requestedIndex;
