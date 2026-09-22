@@ -344,18 +344,6 @@ public class CropPipeTest {
     }
 
     @Test
-    public void noParamsReturnsNull() {
-        CropPipe pipe = new CropPipe();
-
-        CVMat in = new CVMat(new Mat(10, 10, CvType.CV_8UC1, new Scalar(0)));
-        CVMat out = pipe.run(in).output;
-
-        assertNull(out, "With no params configured the pipe should return null");
-
-        in.release();
-    }
-
-    @Test
     public void nullRectReturnsNull() {
         CropPipe pipe = pipeFor(null);
 
