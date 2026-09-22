@@ -263,7 +263,13 @@ public class VisionRunner implements AutoCloseable {
             // Grab the new camera frame, and statically crop it if required.
             var frame = frameSupplier.get();
             if (isCroppablePipeline) {
-                frame = frameSupplier.cropFrame(frame);
+                try {
+                    frame = frameSupplier.cropFrame(frame);
+                } catch (Exception ex) {
+                    logger.error("Exception cropping frame", ex);
+                    frame.release();
+                    continue;
+                }
                 croppedRawStreamAlert.set(pipeline.getSettings().inputShouldShow);
             } else {
                 croppedRawStreamAlert.set(false);
@@ -285,9 +291,6 @@ public class VisionRunner implements AutoCloseable {
                     continue;
                 }
 
-                // If the pipeline has changed while we are getting our frame we should scrap
-                // that frame it may result in incorrect frame settings like hsv values
-
                 // There's no guarantee the processing type change will occur this tick, so
                 // pipelines should check themselves
 
@@ -307,6 +310,10 @@ public class VisionRunner implements AutoCloseable {
                     frame.release();
                 }
                 loopCount++;
+            } else {
+                // If the pipeline has changed while we are getting our frame we should scrap
+                // that frame. It may result in incorrect frame settings like hsv values
+                frame.release();
             }
         }
     }
