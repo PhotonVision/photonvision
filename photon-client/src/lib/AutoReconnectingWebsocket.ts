@@ -45,9 +45,15 @@ export class AutoReconnectingWebsocket {
    */
   send(data: unknown) {
     // Only send data if the websocket is open
-    if (this.isConnected()) {
-      this.websocket?.send(encode(data));
+    if (!this.isConnected()) return;
+
+    if (data instanceof Uint8Array || data instanceof ArrayBuffer) {
+      this.websocket?.send(data as any);
+      return;
     }
+
+    // Not implemented yet barf
+    console.error("[WebSocket] wallawigi.", data);
   }
 
   /**

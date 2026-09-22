@@ -16,6 +16,7 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
 import { resolutionsAreEqual } from "@/lib/PhotonUtils";
+import { UiChangeEvent, VisionModuleEvent } from "@/types/PhotonMessage";
 
 interface CameraSettingsStore {
   cameras: { [key: string]: UiCameraConfiguration };
@@ -292,11 +293,16 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       useStateStore().websocket?.send(payload);
     },
     setDriverMode(isDriverMode: boolean, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
-      const payload = {
-        driverMode: isDriverMode,
-        cameraUniqueName: cameraUniqueName
-      };
-      useStateStore().websocket?.send(payload);
+      const event = UiChangeEvent.encode(
+        {
+          vmChange: {
+            driverMode: isDriverMode,
+            cameraUniqueName: cameraUniqueName
+          }
+        }
+      ).finish();
+
+      useStateStore().websocket?.send(event);
     },
     /**
      * Change the currently selected pipeline of the provided camera.

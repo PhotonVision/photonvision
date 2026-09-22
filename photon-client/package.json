@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@adam-rocska/units-and-measurement": "^1.2.0",
+    "@bufbuild/protobuf": "^2.15.0",
     "@fontsource/prompt": "^5.2.6",
     "@mdi/font": "^7.4.47",
     "@msgpack/msgpack": "^3.1.2",
