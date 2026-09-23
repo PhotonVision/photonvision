@@ -1,5 +1,6 @@
 import { decode, encode } from "@msgpack/msgpack";
 import type { IncomingWebsocketData } from "@/types/WebsocketDataTypes";
+import type { MessageFns } from "@/types/PhotonMessage";
 
 /**
  * {@link WebSocket} wrapper class that automatically reconnects to the provided host address if the connection was closed by the remote host or a connection failure.
@@ -40,20 +41,15 @@ export class AutoReconnectingWebsocket {
    * Send data over the websocket. This is a no-op if the websocket is not in the OPEN state.
    *
    * @param data data to send
+   * @param fns protobuf functions for encoding
    * @see isConnected
    *
    */
-  send(data: unknown) {
-    // Only send data if the websocket is open
+  send<T>(data: T, fns: Pick<MessageFns<T>, 'encode'>): void {
     if (!this.isConnected()) return;
 
-    if (data instanceof Uint8Array || data instanceof ArrayBuffer) {
-      this.websocket?.send(data as any);
-      return;
-    }
-
-    // Not implemented yet barf
-    console.error("[WebSocket] wallawigi.", data);
+    data = fns.encode(data).finish();
+    this.websocket?.send(data);
   }
 
   /**

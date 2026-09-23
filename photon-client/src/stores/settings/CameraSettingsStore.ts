@@ -293,16 +293,14 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       useStateStore().websocket?.send(payload);
     },
     setDriverMode(isDriverMode: boolean, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
-      const event = UiChangeEvent.encode(
-        {
+      const event: UiChangeEvent = {
           vmChange: {
             driverMode: isDriverMode,
             cameraUniqueName: cameraUniqueName
           }
         }
-      ).finish();
 
-      useStateStore().websocket?.send(event);
+      useStateStore().websocket?.send(event, UiChangeEvent);
     },
     /**
      * Change the currently selected pipeline of the provided camera.
