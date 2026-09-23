@@ -285,7 +285,13 @@ public class VisionRunner implements AutoCloseable {
                 // The dimmed full-frame context image exists only for the input stream's viewers --
                 // skip composing it when nothing is actually consuming that stream.
                 keepContext = pipeline.getSettings().inputShouldShow && inputStreamConsumedSupplier.get();
-                frame = frameSupplier.cropFrame(frame, keepContext);
+                try {
+                    frame = frameSupplier.cropFrame(frame, keepContext);
+                } catch (Exception ex) {
+                    logger.error("Exception cropping frame", ex);
+                    frame.release();
+                    continue;
+                }
             }
             updateCroppedRawStreamAlert(keepContext);
 
@@ -304,9 +310,6 @@ public class VisionRunner implements AutoCloseable {
                     frame.release();
                     continue;
                 }
-
-                // If the pipeline has changed while we are getting our frame we should scrap
-                // that frame it may result in incorrect frame settings like hsv values
 
                 // There's no guarantee the processing type change will occur this tick, so
                 // pipelines should check themselves
@@ -327,6 +330,10 @@ public class VisionRunner implements AutoCloseable {
                     frame.release();
                 }
                 loopCount++;
+            } else {
+                // If the pipeline has changed while we are getting our frame we should scrap
+                // that frame. It may result in incorrect frame settings like hsv values
+                frame.release();
             }
         }
     }
