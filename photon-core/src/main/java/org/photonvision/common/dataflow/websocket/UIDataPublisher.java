@@ -85,8 +85,10 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         }
 
         var event = OutgoingDashboardEvent.newInstance();
-        event.getMutableUpdatePipelineResult().setCameraUniqueName(uniqueName);
-        event.getMutableUpdatePipelineResult().setSequenceID(result.sequenceID);
+        var upr = event.getMutableUpdatePipelineResult();
+        upr.setCameraUniqueName(uniqueName);
+        upr.setSequenceID(result.sequenceID);
+        // Eventually more
 
         NewDataChangeService.OUTBOUND_UI_EVENTS.publish(event);
         // DataChangeService.getInstance()
