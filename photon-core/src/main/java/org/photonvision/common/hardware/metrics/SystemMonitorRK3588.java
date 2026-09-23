@@ -20,6 +20,8 @@ package org.photonvision.common.hardware.metrics;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,15 +53,19 @@ public class SystemMonitorRK3588 extends SystemMonitor {
     }
 
     @Override
-    public double[] getNpuUsage() {
+    public Map<String, Double> getNpuUsage() {
         try {
             var contents = Files.readString(Path.of("/sys/kernel/debug/rknpu/load"));
             Matcher matcher = pattern.matcher(contents);
             double[] results =
                     matcher.results().map(mr -> mr.group(1)).mapToDouble(Double::parseDouble).toArray();
-            return results;
+            Map<String, Double> map = new HashMap<>();
+            for (int i = 0; i < results.length; i++) {
+                map.put("core " + i, results[i]);
+            }
+            return map;
         } catch (IOException e) {
-            return new double[0];
+            return new HashMap<>();
         }
     }
 }

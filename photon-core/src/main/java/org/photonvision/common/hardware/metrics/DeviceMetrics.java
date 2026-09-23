@@ -18,6 +18,7 @@
 package org.photonvision.common.hardware.metrics;
 
 import io.avaje.jsonb.Json;
+import java.util.Map;
 import org.photonvision.common.hardware.metrics.proto.DeviceMetricsProto;
 
 @Json
@@ -31,7 +32,7 @@ public record DeviceMetrics(
         double gpuMemUtil,
         double diskUtilPct,
         double diskUsableSpace,
-        double[] npuUsage,
+        Map<String, Double> npuUsage,
         String ipAddress,
         double uptime,
         double sentBitRate,

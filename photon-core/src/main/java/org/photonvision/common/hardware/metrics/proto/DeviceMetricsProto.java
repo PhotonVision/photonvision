@@ -17,6 +17,8 @@
 
 package org.photonvision.common.hardware.metrics.proto;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.photonvision.common.hardware.metrics.DeviceMetrics;
 import org.photonvision.proto.Photon.ProtobufDeviceMetrics;
 import org.wpilib.util.protobuf.Protobuf;
@@ -50,7 +52,7 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
                 msg.getGpuMemUtil(),
                 msg.getDiskUtilPct(),
                 msg.getDiskUsableSpace(),
-                msg.getNpuUsage().toArray(),
+                convertNpuUsage(msg.getNpuUsage()),
                 msg.getIpAddress(),
                 msg.getUptime(),
                 msg.getSentBitRate(),
@@ -69,9 +71,23 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
         msg.setGpuMemUtil(value.gpuMemUtil());
         msg.setDiskUtilPct(value.diskUtilPct());
         msg.setDiskUsableSpace(value.diskUsableSpace());
-        msg.addAllNpuUsage(value.npuUsage());
+        for (var entry : value.npuUsage().entrySet()) {
+            msg.addNpuUsage(
+                    ProtobufDeviceMetrics.NpuUsageEntry.newInstance()
+                            .setKey(entry.getKey())
+                            .setValue(entry.getValue()));
+        }
         msg.setIpAddress(value.ipAddress());
         msg.setSentBitRate(value.sentBitRate());
         msg.setRecvBitRate(value.recvBitRate());
+    }
+
+    private static Map<String, Double> convertNpuUsage(
+            us.hebi.quickbuf.RepeatedMessage<? extends ProtobufDeviceMetrics.NpuUsageEntry> entries) {
+        var map = new HashMap<String, Double>();
+        for (var entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+        return map;
     }
 }
