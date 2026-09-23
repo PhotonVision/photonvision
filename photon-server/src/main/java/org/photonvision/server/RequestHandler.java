@@ -20,6 +20,7 @@ package org.photonvision.server;
 import io.avaje.json.JsonException;
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
 import java.io.*;
@@ -36,6 +37,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.Point3;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
@@ -1084,7 +1086,7 @@ public class RequestHandler {
         }
 
         try {
-            ctx.json(calList.estimateUncertainty());
+            ctx.json(calList.estimateUncertainty(), Types.listOf(Point3.class));
             ctx.status(200);
         } catch (Exception e) {
             ctx.status(422)
