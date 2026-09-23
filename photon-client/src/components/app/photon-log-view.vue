@@ -3,12 +3,17 @@ import { computed, inject, ref, useTemplateRef, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import LogEntry from "@/components/app/photon-log-entry.vue";
+import IconDownload from "~icons/mdi/download";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
+import IconClose from "~icons/mdi/close";
+import IconMagnify from "~icons/mdi/magnify";
+
 import VirtualList from "vue3-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
 
 const searchQuery = ref("");
-const timeInput = ref<string>();
+const timeInput = ref<string>("");
 const autoScroll = ref(true);
 const logList = useTemplateRef<InstanceType<typeof VirtualList>>("logList"); // this needs to be typed in the definition since vue has trouble inferring it
 const logKeeps = ref(40);
@@ -27,6 +32,7 @@ const logs = computed<LogMessage[]>(() =>
         selectedLogLevels.value[message.level] &&
         message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "") &&
         (timeInput.value === undefined ||
+          !timeInput.value ||
           message.timestamp.getTime() >=
             new Date().setHours(
               parseInt(timeInput.value.substring(0, 2)),
@@ -52,7 +58,7 @@ watch(logs, () => {
 });
 
 const getLogLevelFromIndex = (index: number): string => {
-  return LogLevel[index];
+  return LogLevel[index].charAt(0).toUpperCase() + LogLevel[index].slice(1).toLowerCase();
 };
 
 const handleLogExport = () => {
@@ -73,16 +79,15 @@ document.addEventListener("keydown", (e) => {
 </script>
 
 <template>
-  <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card class="dialog-container pa-5" color="surface" flat>
+  <pv-dialog v-model="useStateStore().showLogModal" :width="1500">
+    <pv-card class="dialog-container">
       <!-- Logs header -->
-      <v-row class="pb-3">
-        <v-col cols="4">
-          <v-card-title class="pa-0">Program Logs</v-card-title>
-        </v-col>
-        <v-col class="align-self-center pl-3" style="text-align: right">
-          <v-btn variant="text" color="white" @click="handleLogExport">
-            <v-icon start class="menu-icon" size="large"> mdi-download </v-icon>
+      <div class="flex flex-wrap pb-3">
+        <div class="w-1/3">
+          <div class="text-lg font-semibold">Program Logs</div>
+        </div>
+        <div class="flex-1 self-center pl-3 text-right">
+          <pv-button variant="text" size="sm" :icon="IconDownload" @click="handleLogExport">
             <span class="menu-label">Download</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -93,57 +98,64 @@ document.addEventListener("keydown", (e) => {
               download="photonvision-journalctl.txt"
               target="_blank"
             />
-          </v-btn>
-          <v-btn variant="text" color="white" @click="handleLogClear">
-            <v-icon start class="menu-icon" size="large"> mdi-trash-can-outline </v-icon>
+          </pv-button>
+          <pv-button variant="text" size="sm" :icon="IconTrashCanOutline" @click="handleLogClear">
             <span class="menu-label">Clear Client Logs</span>
-          </v-btn>
-          <v-btn variant="text" color="white" @click="() => (useStateStore().showLogModal = false)">
-            <v-icon start class="menu-icon" size="large"> mdi-close </v-icon>
+          </pv-button>
+          <pv-button variant="text" size="sm" :icon="IconClose" @click="() => (useStateStore().showLogModal = false)">
             <span class="menu-label">Close</span>
-          </v-btn>
-        </v-col>
-      </v-row>
+          </pv-button>
+        </div>
+      </div>
 
-      <v-divider />
+      <hr class="w-full border-t border-white/10" />
 
       <div class="dialog-data">
         <!-- Log view options -->
-        <v-row no-gutters class="pt-4 pt-md-0" style="display: flex; justify-content: space-between">
-          <v-col cols="12" md="7" style="display: flex; align-items: center" class="pr-3">
-            <v-text-field
+        <div class="flex flex-wrap justify-between pt-4 md:pt-0">
+          <div class="flex flex-1 items-center justify-start gap-4 pr-3">
+            <pv-input
               v-model="searchQuery"
-              density="compact"
               clearable
-              hide-details="auto"
-              prepend-icon="mdi-magnify"
-              color="primary"
+              hide-details
+              :prepend-icon="IconMagnify"
               label="Search"
-              variant="underlined"
+              :input-cols="9"
             />
-            <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
-            <v-btn icon variant="flat" @click="timeInput = undefined">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-col>
-          <v-col v-for="level in [0, 1, 2, 3]" :key="level" class="pr-3">
-            <div class="pb-0 pt-0" style="display: flex; align-items: center; flex: min-content">
-              {{ getLogLevelFromIndex(level)
-              }}<v-switch
-                v-model="selectedLogLevels[level]"
-                class="pl-2"
-                hide-details
-                color="rgb(var(--v-theme-primary))"
-              ></v-switch>
+            <pv-input
+              v-model="timeInput"
+              label="Minimum Time"
+              type="time"
+              step="1"
+              class="text-pv-on-surface pl-3"
+              :clearable="true"
+              :input-cols="7"
+            />
+          </div>
+          <div class="flex gap-1">
+            <div v-for="level in [0, 1, 2, 3]" :key="level" class="flex flex-1 items-center justify-center pr-1">
+              <div class="flex basis-[min-content] items-center pt-0 pb-0">
+                <pv-switch
+                  v-model="selectedLogLevels[level]"
+                  class="pl-2"
+                  hide-details
+                  color="primary"
+                  :label="getLogLevelFromIndex(level)"
+                ></pv-switch>
+              </div>
             </div>
-          </v-col>
-        </v-row>
+          </div>
+        </div>
 
         <!-- Log entry list display -->
         <div class="log-display">
-          <v-card-text v-if="!logs.length" style="font-size: 18px; font-weight: 150; height: 100%; text-align: center">
+          <div
+            v-if="!logs.length"
+            class="flex h-full items-center justify-center text-center"
+            style="font-size: 18px; font-weight: 150"
+          >
             No available logs
-          </v-card-text>
+          </div>
           <virtual-list
             v-else
             ref="logList"
@@ -156,11 +168,11 @@ document.addEventListener("keydown", (e) => {
           />
         </div>
       </div>
-    </v-card>
-  </v-dialog>
+    </pv-card>
+  </pv-dialog>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .dialog-container {
   height: 90vh;
   min-height: 300px !important;
@@ -175,7 +187,7 @@ document.addEventListener("keydown", (e) => {
   /* Dialog data size - options */
   height: calc(100% - 56px);
   padding: 10px;
-  background-color: rgb(var(--v-theme-logsBackground)) !important;
+  background-color: var(--color-pv-logs-background) !important;
   border-radius: 5px;
 }
 

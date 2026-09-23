@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import PvSlider from "@/components/common/pv-slider.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import PvSwitch from "@/components/common/pv-switch.vue";
-import PvSelect from "@/components/common/pv-select.vue";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import { computed, watch } from "vue";
-import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
-import { FrameEdgeCropBound, type ConfigurablePipelineSettings } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+import { FrameEdgeCropBound, type ConfigurablePipelineSettings } from "@/types/PipelineTypes";
 import { PVUsbCamera } from "@/types/SettingTypes";
-import { useDisplay } from "vuetify";
+import IconRestore from "~icons/mdi/restore";
 
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
 const cameraRotations = computed(() =>
@@ -44,8 +41,8 @@ const cameraResolutions = (): { name: string; value: number }[] =>
 const handleResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
 
-  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: getNumberOfSkippedDivisors() }, false);
-  useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor = 0;
+  const skipped = getNumberOfSkippedDivisors();
+  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: skipped }, false);
 
   if (!useCameraSettingsStore().isCurrentVideoFormatCalibrated && !useCameraSettingsStore().isDriverMode) {
     useCameraSettingsStore().changeCurrentPipelineSetting({ solvePNPEnabled: false }, true);
@@ -66,7 +63,7 @@ const currentStreamResolutionIndex = computed<number>({
   get: () => {
     const stored = useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor;
     const skipped = getNumberOfSkippedDivisors();
-    return stored - skipped;
+    return Math.max(0, stored - skipped);
   },
   set: (index) => {
     useCameraSettingsStore().changeCurrentPipelineSetting({
@@ -74,6 +71,8 @@ const currentStreamResolutionIndex = computed<number>({
     });
   }
 });
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 
 const showStaticCrop = computed(
   () =>
@@ -104,12 +103,24 @@ const clampCropRange = (range: WebsocketNumberPair | [number, number] | undefine
 const staticCropX = computed<[number, number]>({
   get: () =>
     clampCropRange(useCameraSettingsStore().currentPipelineSettings.staticCropX, croppableResolution.value.width),
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.staticCropX = v)
+  set: (v) => {
+    const original = cropBounds(useCameraSettingsStore().currentPipelineSettings.staticCropX);
+    useCameraSettingsStore().currentPipelineSettings.staticCropX = [
+      v[0],
+      v[1] >= croppableResolution.value.width && original[1] >= FrameEdgeCropBound ? FrameEdgeCropBound : v[1]
+    ];
+  }
 });
 const staticCropY = computed<[number, number]>({
   get: () =>
     clampCropRange(useCameraSettingsStore().currentPipelineSettings.staticCropY, croppableResolution.value.height),
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.staticCropY = v)
+  set: (v) => {
+    const original = cropBounds(useCameraSettingsStore().currentPipelineSettings.staticCropY);
+    useCameraSettingsStore().currentPipelineSettings.staticCropY = [
+      v[0],
+      v[1] >= croppableResolution.value.height && original[1] >= FrameEdgeCropBound ? FrameEdgeCropBound : v[1]
+    ];
+  }
 });
 
 const rotatedDims = (width: number, height: number, rotation: number) =>
@@ -213,8 +224,6 @@ const resetCrop = () => {
   );
 };
 
-const { mdAndDown } = useDisplay();
-
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
@@ -228,7 +237,9 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
+        (args: boolean | undefined) =>
+          args !== undefined &&
+          useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
       "
     />
     <pv-slider
@@ -241,7 +252,7 @@ const interactiveCols = computed(() =>
       :slider-cols="interactiveCols"
       :step="1"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
+        (args: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
       "
     />
     <pv-slider
@@ -251,7 +262,7 @@ const interactiveCols = computed(() =>
       :max="100"
       :slider-cols="interactiveCols"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
+        (args: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
       "
     />
     <pv-slider
@@ -262,7 +273,9 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
+      @update:modelValue="
+        (args: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)
+      "
     />
     <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
@@ -273,7 +286,7 @@ const interactiveCols = computed(() =>
       :slider-cols="interactiveCols"
       tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
+        (args: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
       "
     />
     <pv-slider
@@ -285,7 +298,7 @@ const interactiveCols = computed(() =>
       :slider-cols="interactiveCols"
       tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
+        (args: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
       "
     />
     <pv-switch
@@ -294,7 +307,9 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoWhiteBalance: args }, false)
+        (args: boolean | undefined) =>
+          args !== undefined &&
+          useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoWhiteBalance: args }, false)
       "
     />
     <pv-slider
@@ -305,7 +320,7 @@ const interactiveCols = computed(() =>
       :max="useCameraSettingsStore().maxWhiteBalanceTemp"
       :slider-cols="interactiveCols"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraWhiteBalanceTemp: args }, false)
+        (args: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraWhiteBalanceTemp: args }, false)
       "
     />
     <pv-switch
@@ -315,7 +330,8 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       tooltip="When enabled, USB cameras wait for the next camera frame for lowest latency. When disabled, uses the most recent available frame for higher FPS."
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ blockForFrames: args }, false)
+        (args: boolean | undefined) =>
+          args !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ blockForFrames: args }, false)
       "
     />
     <pv-select
@@ -325,7 +341,7 @@ const interactiveCols = computed(() =>
       :items="cameraRotations"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)
+        (args: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)
       "
     />
     <pv-select
@@ -334,7 +350,7 @@ const interactiveCols = computed(() =>
       tooltip="Resolution and FPS the camera should directly capture at"
       :items="cameraResolutions()"
       :select-cols="interactiveCols"
-      @update:modelValue="(args) => handleResolutionChange(args)"
+      @update:modelValue="(args: number) => handleResolutionChange(args)"
     />
     <pv-select
       v-model="currentStreamResolutionIndex"
@@ -381,19 +397,19 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropY: value }, false)
       "
     />
-    <v-row v-if="showStaticCrop" class="pt-2 pb-2 ma-0">
-      <v-btn size="small" color="primary" class="text-black" @click="resetCrop">
-        <v-icon start size="large"> mdi-restore </v-icon>
-        Reset Crop
-      </v-btn>
-    </v-row>
+    <div v-if="showStaticCrop" class="py-2">
+      <pv-button variant="primary" size="sm" :icon="IconRestore" @click="resetCrop">Reset Crop</pv-button>
+    </div>
     <pv-switch
       v-if="useCameraSettingsStore().isDriverMode"
       v-model="useCameraSettingsStore().currentPipelineSettings.crosshair"
       label="Crosshair"
       :switch-cols="interactiveCols"
       tooltip="Enables or disables a crosshair overlay on the camera stream"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ crosshair: args }, false)"
+      @update:modelValue="
+        (args: boolean | undefined) =>
+          args !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ crosshair: args }, false)
+      "
     />
   </div>
 </template>

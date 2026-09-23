@@ -1,15 +1,14 @@
 <script setup lang="ts">
+import IconMinus from "~icons/mdi/minus";
+import IconPlusMinus from "~icons/mdi/plus-minus";
+import IconPlus from "~icons/mdi/plus";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, onBeforeUnmount, onMounted } from "vue";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
+
 import { useStateStore } from "@/stores/StateStore";
 import { ColorPicker, type HSV } from "@/lib/ColorPicker";
-import { useDisplay } from "vuetify";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
-
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
   let val = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue).reduce((a, b) => a + b, 0);
@@ -34,11 +33,15 @@ const hsvValue = computed<[number, number]>({
   set: (v) => (useCameraSettingsStore().currentPipelineSettings.hsvValue = v)
 });
 
+const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
+  Array.isArray(value) ? value : [value.first, value.second];
+
 let selectedEventMode: 0 | 1 | 2 | 3 = 0;
 const handleStreamClick = (event: MouseEvent) => {
   if (!useStateStore().colorPickingMode || selectedEventMode === 0) return;
 
   const cameraStream = document.getElementById("input-camera-stream");
+  console.log(cameraStream);
   if (cameraStream === null) return;
 
   const canvas = document.createElement("canvas");
@@ -117,8 +120,9 @@ const disableColorPicking = () => {
 
 onMounted(() => {
   const cameraStream = document.getElementById("input-camera-stream");
+  console.log(cameraStream);
   if (cameraStream === null) return;
-
+  //
   cameraStream.addEventListener("click", handleStreamClick);
 });
 onBeforeUnmount(() => {
@@ -127,7 +131,8 @@ onBeforeUnmount(() => {
 
   cameraStream.removeEventListener("click", handleStreamClick);
 });
-const { mdAndDown } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
@@ -139,6 +144,7 @@ const interactiveCols = computed(() =>
     <pv-range-slider
       id="hue-slider"
       v-model="hsvHue"
+      class="hue-slider"
       :class="useCameraSettingsStore().currentPipelineSettings.hueInverted ? 'inverted-slider' : 'normal-slider'"
       label="Hue"
       tooltip="Describes color"
@@ -146,31 +152,38 @@ const interactiveCols = computed(() =>
       :max="180"
       :slider-cols="interactiveCols"
       :inverted="useCameraSettingsStore().currentPipelineSettings.hueInverted"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
+      @update:modelValue="
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: normalizeNumberPair(value) }, false)
+      "
     />
     <pv-range-slider
       id="sat-slider"
       v-model="hsvSaturation"
-      class="normal-slider"
+      class="normal-slider sat-slider"
       label="Saturation"
       tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
       :min="0"
       :max="255"
       :slider-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: normalizeNumberPair(value) }, false)
       "
     />
     <pv-range-slider
       id="value-slider"
       v-model="hsvValue"
-      class="normal-slider"
+      class="normal-slider value-slider"
       label="Value"
       tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
       :min="0"
       :max="255"
       :slider-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
+      @update:modelValue="
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: normalizeNumberPair(value) }, false)
+      "
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
@@ -178,66 +191,46 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)
       "
     />
     <div>
-      <div class="text-white pt-3">Color Picker</div>
-      <div class="d-flex pt-3">
+      <div class="text-pv-on-surface pt-3">Color Picker</div>
+      <div class="flex pt-3">
         <template v-if="!useStateStore().colorPickingMode">
-          <v-col cols="4" class="pl-0 pr-2">
-            <v-btn
-              size="small"
+          <div class="w-1/3 pr-2 pl-0">
+            <pv-button
+              size="sm"
+              variant="primary"
+              :icon="IconMinus"
               block
-              color="primary"
-              class="text-black"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
             >
-              <v-icon start size="large"> mdi-minus </v-icon>
               Shrink Range
-            </v-btn>
-          </v-col>
-          <v-col cols="4" class="pl-0 pr-0">
-            <v-btn
-              color="primary"
-              class="text-black"
-              size="small"
-              block
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              @click="enableColorPicking(1)"
-            >
-              <v-icon start size="large"> mdi-plus-minus </v-icon>
+            </pv-button>
+          </div>
+          <div class="w-1/3 pr-0 pl-0">
+            <pv-button size="sm" variant="primary" :icon="IconPlusMinus" block @click="enableColorPicking(1)">
               {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
-            </v-btn>
-          </v-col>
-          <v-col cols="4" class="pl-2 pr-0">
-            <v-btn
-              size="small"
+            </pv-button>
+          </div>
+          <div class="w-1/3 pr-0 pl-2">
+            <pv-button
+              size="sm"
+              variant="primary"
+              :icon="IconPlus"
               block
-              color="primary"
-              class="text-black"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
             >
-              <v-icon start size="large"> mdi-plus </v-icon>
               Expand Range
-            </v-btn>
-          </v-col>
+            </pv-button>
+          </div>
         </template>
         <template v-else>
-          <v-card-text class="pa-0 pt-3 pb-3">
-            <v-btn
-              block
-              color="primary"
-              class="text-black"
-              size="small"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              @click="disableColorPicking"
-            >
-              Cancel
-            </v-btn>
-          </v-card-text>
+          <div class="p-0 pt-3 pb-3">
+            <pv-button size="sm" variant="primary" block @click="disableColorPicking"> Cancel </pv-button>
+          </div>
         </template>
       </div>
     </div>
@@ -248,32 +241,31 @@ const interactiveCols = computed(() =>
 .threshold-modifiers {
   --averageHue: 0;
 }
-#hue-slider:deep(.v-slider__container) {
+.hue-slider:deep(.pv-slider-track) {
   background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#sat-slider:deep(.v-slider__container) {
+.sat-slider:deep(.pv-slider-track) {
   background: linear-gradient(to right, #fff 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#value-slider:deep(.v-slider__container) {
+.value-slider:deep(.pv-slider-track) {
   background: linear-gradient(to right, #000 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-:deep(.v-slider__thumb) {
-  outline: black solid thin;
-}
-.normal-slider:deep(.v-slider__track-fill) {
+
+.normal-slider:deep(.pv-slider-range) {
+  background: transparent;
   outline: black solid thin;
 }
 
-.inverted-slider:deep(.v-slider__track-background) {
+.inverted-slider:deep(.pv-slider-range) {
   outline: black solid thin;
 }
 </style>

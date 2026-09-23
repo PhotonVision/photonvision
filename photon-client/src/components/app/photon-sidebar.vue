@@ -1,159 +1,232 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useRoute } from "vue-router";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useRoute } from "vue-router";
-import { useDisplay, useTheme } from "vuetify";
+import { useTheme } from "@/composables/useTheme";
 import { toggleTheme } from "@/lib/ThemeManager";
+import { NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot } from "reka-ui";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
+
+import IconDashboard from "~icons/mdi/view-dashboard";
+import IconCog from "~icons/mdi/cog";
+import IconCamera from "~icons/mdi/camera";
+import IconBookshelf from "~icons/mdi/bookshelf";
+import IconSwapHorizontalBold from "~icons/mdi/swap-horizontal-bold";
+import IconChevronLeft from "~icons/mdi/chevron-left";
+import IconChevronRight from "~icons/mdi/chevron-right";
+import IconWeatherNight from "~icons/mdi/weather-night";
+import IconWhiteBalanceSunny from "~icons/mdi/white-balance-sunny";
+import IconServer from "~icons/mdi/server";
+import IconRobot from "~icons/mdi/robot";
+import IconRobotOff from "~icons/mdi/robot-off";
+import IconServerNetwork from "~icons/mdi/server-network";
+import IconServerNetworkOff from "~icons/mdi/server-network-off";
 
 const compact = computed<boolean>({
-  get: () => {
-    return useStateStore().sidebarFolded;
-  },
-  set: (val) => {
-    useStateStore().setSidebarFolded(val);
-  }
+  get: () => useStateStore().sidebarFolded,
+  set: (val) => useStateStore().setSidebarFolded(val)
 });
-const { mdAndUp } = useDisplay();
-
+const breakpoints = useCustomBreakpoints();
+const mdAndUp = breakpoints.greaterOrEqual("md");
 const theme = useTheme();
+const route = useRoute();
 
 const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
+
+const compactIcon = computed(() => (compact.value || !mdAndUp.value ? IconChevronRight : IconChevronLeft));
+const themeIcon = computed(() => (theme.isDark.value ? IconWeatherNight : IconWhiteBalanceSunny));
+const ntStatusIcon = computed(() =>
+  useSettingsStore().network.runNTServer
+    ? IconServer
+    : useStateStore().ntConnectionStatus.connected
+      ? IconRobot
+      : IconRobotOff
+);
+const backendStatusIcon = computed(() => (useStateStore().backendConnected ? IconServerNetwork : IconServerNetworkOff));
+
+const navItems = [
+  { title: "Dashboard", to: "/dashboard", icon: IconDashboard },
+  { title: "Settings", to: "/settings", icon: IconCog },
+  { title: "Camera", to: "/cameras", icon: IconCamera },
+  { title: "Documentation", to: "/docs", icon: IconBookshelf }
+];
+
+const baseItemClass =
+  "sidebar-item group flex items-center gap-3 rounded-xl px-3 py-2  text-pv-on-background/80 transition-width duration-200";
+const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
 </script>
 
 <template>
-  <v-navigation-drawer permanent :rail="renderCompact" color="sidebar">
-    <v-list nav color="primary">
-      <v-list-item class="pr-0 pl-0" style="display: flex; justify-content: center">
-        <template #prepend>
-          <img v-if="!renderCompact" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
-          <img v-else class="logo" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
-        </template>
-      </v-list-item>
+  <aside
+    class="text-pv-on-background transition-width sticky top-0 flex h-screen flex-col rounded-none duration-200"
+    :class="renderCompact ? 'w-20' : 'w-64'"
+  >
+    <div class="flex items-center justify-center px-3 py-4">
+      <img
+        v-if="!renderCompact"
+        class="h-16 w-full object-contain"
+        src="@/assets/images/logoLarge.svg"
+        alt="large logo"
+      />
+      <img v-else class="h-16 w-full object-contain" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
+    </div>
 
-      <v-list-item link to="/dashboard" prepend-icon="mdi-view-dashboard">
-        <v-list-item-title>Dashboard</v-list-item-title>
-      </v-list-item>
-      <v-list-item link to="/settings" prepend-icon="mdi-cog">
-        <v-list-item-title>Settings</v-list-item-title>
-      </v-list-item>
-      <v-list-item link to="/cameras" prepend-icon="mdi-camera">
-        <v-list-item-title>Camera</v-list-item-title>
-      </v-list-item>
-      <v-list-item
-        link
-        to="/cameraConfigs"
-        :class="{
-          cameraicon: useCameraSettingsStore().needsCameraConfiguration && useRoute().path !== '/cameraConfigs'
-        }"
+    <NavigationMenuRoot class="flex flex-1 flex-col" orientation="vertical">
+      <NavigationMenuList class="flex flex-1 flex-col gap-1 px-3">
+        <NavigationMenuItem v-for="item in navItems" :key="item.to">
+          <NavigationMenuLink as-child :active="route.path === item.to">
+            <RouterLink
+              :to="item.to"
+              :class="[baseItemClass, renderCompact ? 'justify-center px-2' : '']"
+              :active-class="activeItemClass"
+            >
+              <component :is="item.icon" class="text-pv-on-background/80 size-6 text-lg transition" />
+              <span
+                class="transition-[opacity,width,height] duration-200"
+                :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
+              >
+                {{ item.title }}
+              </span>
+            </RouterLink>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink as-child :active="route.path === '/cameraConfigs'">
+            <RouterLink
+              to="/cameraConfigs"
+              :class="[
+                baseItemClass,
+                renderCompact ? 'justify-center px-2' : '',
+                route.path === '/cameraConfigs' ? activeItemClass : '',
+                useCameraSettingsStore().needsCameraConfiguration && route.path !== '/cameraConfigs' ? 'pulse' : ''
+              ]"
+            >
+              <IconSwapHorizontalBold
+                class="text-pv-on-background/80 group-hover:text-pv-on-background size-6 text-lg transition"
+                :class="{ 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }"
+              />
+              <span
+                class="transition-opacity duration-200"
+                :class="[
+                  renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100',
+                  { 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }
+                ]"
+              >
+                Camera Matching
+              </span>
+            </RouterLink>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenuRoot>
+
+    <div class="flex flex-col border-t border-white/10 px-3 py-3">
+      <button
+        v-if="mdAndUp"
+        type="button"
+        class="sidebar-item text-pv-on-background/80 mb-2 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2"
+        :class="renderCompact ? 'justify-center px-2' : ''"
+        @click="() => (compact = !compact)"
       >
-        <template #prepend>
-          <v-icon :class="{ 'text-red': useCameraSettingsStore().needsCameraConfiguration }"
-            >mdi-swap-horizontal-bold</v-icon
-          >
-        </template>
-        <v-list-item-title :class="{ 'text-red': useCameraSettingsStore().needsCameraConfiguration }"
-          >Camera Matching</v-list-item-title
+        <pv-icon
+          :icon="compactIcon"
+          class="text-pv-on-background/80 group-hover:text-pv-on-background transition"
+          size="24"
+        />
+        <span
+          class="transition-[width,opacity] duration-200"
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
         >
-      </v-list-item>
-      <v-list-item link to="/docs" prepend-icon="mdi-bookshelf">
-        <v-list-item-title>Documentation</v-list-item-title>
-      </v-list-item>
-    </v-list>
-    <template #append>
-      <v-list nav>
-        <v-list-item
-          v-if="mdAndUp"
-          link
-          :prepend-icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
-          @click="() => (compact = !compact)"
+          Compact
+        </span>
+      </button>
+      <button
+        type="button"
+        class="sidebar-item text-pv-on-background/80 mb-3 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2"
+        :class="renderCompact ? 'justify-center px-2' : ''"
+        @click="() => toggleTheme()"
+      >
+        <pv-icon
+          :icon="themeIcon"
+          class="text-pv-on-background/80 group-hover:text-pv-on-background transition"
+          size="24"
+        />
+        <span
+          class="transition-opacity duration-200"
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
         >
-          <v-list-item-title>Compact</v-list-item-title>
-        </v-list-item>
-        <v-list-item
-          link
-          :prepend-icon="theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
-          @click="() => toggleTheme(theme)"
+          Theme
+        </span>
+      </button>
+
+      <div
+        class="text-pv-on-background/70 flex items-center gap-3 rounded-xl px-3 py-2"
+        :class="renderCompact ? 'justify-center' : 'justify-between'"
+      >
+        <pv-icon
+          :icon="ntStatusIcon"
+          :color="
+            useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected ? 'success' : 'error'
+          "
+          size="24"
+          class="shrink-0"
+        />
+        <div
+          class="text-end leading-snug transition-opacity duration-200"
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
         >
-          <v-list-item-title>Theme</v-list-item-title>
-        </v-list-item>
-        <v-list-item>
-          <template #prepend>
-            <v-icon
-              :icon="
-                useSettingsStore().network.runNTServer
-                  ? 'mdi-server'
-                  : useStateStore().ntConnectionStatus.connected
-                    ? 'mdi-robot'
-                    : 'mdi-robot-off'
-              "
-              :color="
-                useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected
-                  ? '#00ff00'
-                  : '#ff0000'
-              "
-            />
-          </template>
-          <v-list-item-title v-if="useSettingsStore().network.runNTServer" v-show="!renderCompact" class="text-wrap">
+          <span v-if="useSettingsStore().network.runNTServer">
             NetworkTables server running for
             <span class="text-primary">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
-          </v-list-item-title>
-          <v-list-item-title
-            v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
-            v-show="!renderCompact"
-            class="text-wrap"
-            style="flex-direction: column; display: flex"
-          >
+          </span>
+          <span v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected">
             NetworkTables Server Connected!
-            <span class="text-primary"> {{ useStateStore().ntConnectionStatus.address }} </span>
-          </v-list-item-title>
-          <v-list-item-title
-            v-else
-            v-show="!renderCompact"
-            class="text-wrap"
-            style="flex-direction: column; display: flex"
-          >
-            Not connected to NetworkTables Server!
-          </v-list-item-title>
-        </v-list-item>
-        <v-list-item>
-          <template #prepend>
-            <v-icon
-              :icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'"
-              :color="useStateStore().backendConnected ? '#00ff00' : '#ff0000'"
-            />
-          </template>
-          <v-list-item-title v-show="!renderCompact" class="text-wrap">
-            {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend..." }}
-          </v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </template>
-  </v-navigation-drawer>
+            <span class="text-primary">{{ useStateStore().ntConnectionStatus.address }}</span>
+          </span>
+          <span v-else>Not connected to NetworkTables Server!</span>
+        </div>
+      </div>
+
+      <div
+        class="text-pv-on-background/70 mt-2 flex items-start gap-3 rounded-xl px-3 py-2"
+        :class="renderCompact ? 'justify-center' : 'justify-between'"
+      >
+        <pv-icon
+          :icon="backendStatusIcon"
+          :color="useStateStore().backendConnected ? 'success' : 'error'"
+          size="24"
+          class="shrink-0"
+        />
+        <div
+          class="leading-snug transition-opacity duration-200"
+          :class="renderCompact ? 'absolute h-0 w-0 overflow-hidden opacity-0' : 'opacity-100'"
+        >
+          {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend..." }}
+        </div>
+      </div>
+    </div>
+  </aside>
 </template>
 
 <style scoped>
-.v-navigation-drawer {
-  border: none;
+.sidebar-item {
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
 }
 
-.v-navigation-drawer--rail {
-  border: none;
+.sidebar-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
 }
 
-.v-list-item-title {
-  font-size: 1rem !important;
-  line-height: 1.2rem !important;
-}
-
-.logo {
-  width: 100%;
-  height: 70px;
-  object-fit: contain;
-}
-
-.cameraicon {
+.pulse {
   animation: pulse 2s infinite;
 }
 
