@@ -173,8 +173,8 @@ public class CalibrationTool {
                 var oldCalibration = calibrationJsonb.fromJson(rcArgs.calibrationPath);
                 pipe.setParams(
                         new CalibratePipeParams(
-                                (int) oldCalibration.calobjectSize.height,
-                                (int) oldCalibration.calobjectSize.width,
+                                (int) oldCalibration.calobjectSize.height + 1,
+                                (int) oldCalibration.calobjectSize.width + 1,
                                 oldCalibration.calobjectSpacing,
                                 !rcArgs.useOpenCV));
                 var newCalibration =
