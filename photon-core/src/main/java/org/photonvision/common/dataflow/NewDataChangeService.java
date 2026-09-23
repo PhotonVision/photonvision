@@ -21,28 +21,32 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+
+import photonvision.core.proto.PhotonMessage.OutgoingDashboardEvent;
 import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
+import us.hebi.quickbuf.ProtoMessage;
 
 // Considered NT, but seems overkill. NewDataChangeService is <60 LOC
-public class NewDataChangeService {
+public class NewDataChangeService<T extends ProtoMessage<?>> {
     // Incredibly cursed version of NtTopicSet. Hard-code so we're statically typed
-    public static final NewDataChangeService VM_CHANGE_EVENTS = new NewDataChangeService();
+    public static final NewDataChangeService<PhotonDataChangeEvent> INBOUND_UI_EVENTS = new NewDataChangeService<>();
+    public static final NewDataChangeService<OutgoingDashboardEvent> OUTBOUND_UI_EVENTS = new NewDataChangeService<>();
 
     private static final Logger logger = new Logger(NewDataChangeService.class, LogGroup.WebServer);
 
     // Subscribers own their own queues of changes
-    public static class NewDataChangeSubscriber {
+    public static class NewDataChangeSubscriber<T extends ProtoMessage<?>> {
         // Make sure access is syncronized
         // TODO length is unbounded
-        private final List<PhotonDataChangeEvent> unprocessedEvents = new ArrayList<>();
+        private final List<T> unprocessedEvents = new ArrayList<>();
 
-        public void publish(PhotonDataChangeEvent event) {
+        public void publish(T event) {
             synchronized (unprocessedEvents) {
                 unprocessedEvents.add(event);
             }
         }
 
-        public final List<PhotonDataChangeEvent> getAndClearEvents() {
+        public final List<T> getAndClearEvents() {
             synchronized (unprocessedEvents) {
                 var copy = new ArrayList<>(unprocessedEvents);
                 unprocessedEvents.clear();
@@ -52,19 +56,19 @@ public class NewDataChangeService {
     }
 
     // Syncronize access to this list
-    private final List<NewDataChangeSubscriber> subscribers = new ArrayList<>();
+    private final List<NewDataChangeSubscriber<T>> subscribers = new ArrayList<>();
 
     public NewDataChangeService() {}
 
-    public NewDataChangeSubscriber subscribe() {
-        var ret = new NewDataChangeSubscriber();
+    public NewDataChangeSubscriber<T> subscribe() {
+        var ret = new NewDataChangeSubscriber<T>();
         synchronized (subscribers) {
             subscribers.add(ret);
         }
         return ret;
     }
 
-    public void publish(PhotonDataChangeEvent event) {
+    public void publish(T event) {
         synchronized (subscribers) {
             for (var sub : subscribers) {
                 sub.publish(event);

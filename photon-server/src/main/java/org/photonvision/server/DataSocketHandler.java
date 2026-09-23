@@ -42,6 +42,7 @@ import org.photonvision.common.logging.Logger;
 import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 import photonvision.core.proto.PhotonMessage.UiChangeEvent;
 import us.hebi.quickbuf.InvalidProtocolBufferException;
+import us.hebi.quickbuf.ProtoMessage;
 
 @SuppressWarnings("rawtypes")
 public class DataSocketHandler {
@@ -57,7 +58,7 @@ public class DataSocketHandler {
     private final DataChangeService dcService = DataChangeService.getInstance();
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber(this);
+    private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber();
 
     private static class ThreadSafeSingleton {
         private static final DataSocketHandler INSTANCE = new DataSocketHandler();
@@ -68,9 +69,9 @@ public class DataSocketHandler {
     }
 
     private DataSocketHandler() {
-        dcService.addSubscribers(
-                uiOutboundSubscriber,
-                new UIInboundSubscriber()); // Subscribe outgoing messages to the data change service
+        // dcService.addSubscribers(
+        //         uiOutboundSubscriber,
+        //         new UIInboundSubscriber()); // Subscribe outgoing messages to the data change service
     }
 
     public void onConnect(WsConnectContext context) {
@@ -114,7 +115,7 @@ public class DataSocketHandler {
 
             // Seperate if-else by topic. Maybe this can be cleaner -- match?
             if (protoMessage.hasVmChange()) {
-                NewDataChangeService.VM_CHANGE_EVENTS.publish(event);
+                NewDataChangeService.INBOUND_UI_EVENTS.publish(event);
             }
             // TODO else if ...
         } catch (IllegalStateException | JsonException | InvalidProtocolBufferException e) {
@@ -128,20 +129,16 @@ public class DataSocketHandler {
         }
     }
 
-    public void broadcastMessage(Object message, WsContext userToSkip) throws JsonException {
-        ByteBuffer b = ByteBuffer.wrap(msgpackJsonb.toJsonBytes(message));
+    public void broadcastMessage(ProtoMessage<?> message, WsContext userToSkip) throws JsonException {
+        var data = ByteBuffer.wrap(message.toByteArray());
 
-        if (userToSkip == null) {
-            for (WsContext user : users.values()) {
-                sendMessage(b, user);
-            }
-        } else {
-            var skipUserPort = ((InetSocketAddress) userToSkip.session.getRemoteAddress()).getPort();
-            for (WsContext user : users.values()) {
-                var userPort = ((InetSocketAddress) user.session.getRemoteAddress()).getPort();
-                if (userPort != skipUserPort) {
-                    sendMessage(b, user);
-                }
+        var skipSession = userToSkip == null ? null : userToSkip.sessionId();
+
+        for (Map.Entry<String, WsContext> entry : users.entrySet()) {
+            var userSession = entry.getKey();
+            var userCtx = entry.getValue();
+            if (!userSession.equals(skipSession)) {
+                sendMessage(data, userCtx);
             }
         }
     }

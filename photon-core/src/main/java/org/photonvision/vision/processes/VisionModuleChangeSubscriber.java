@@ -40,8 +40,8 @@ public class VisionModuleChangeSubscriber {
     private final VisionModule parentModule;
     private final Logger logger;
 
-    NewDataChangeService.NewDataChangeSubscriber subscriber =
-            NewDataChangeService.VM_CHANGE_EVENTS.subscribe();
+    NewDataChangeService.NewDataChangeSubscriber<PhotonDataChangeEvent> subscriber =
+            NewDataChangeService.INBOUND_UI_EVENTS.subscribe();
 
     public VisionModuleChangeSubscriber(VisionModule parentModule) {
         this.parentModule = parentModule;

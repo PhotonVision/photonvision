@@ -48,8 +48,8 @@ export class AutoReconnectingWebsocket {
   send<T>(data: T, fns: Pick<MessageFns<T>, 'encode'>): void {
     if (!this.isConnected()) return;
 
-    data = fns.encode(data).finish();
-    this.websocket?.send(data);
+    const bin = fns.encode(data).finish();
+    this.websocket?.send(bin);
   }
 
   /**
