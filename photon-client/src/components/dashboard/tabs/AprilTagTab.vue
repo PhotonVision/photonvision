@@ -142,6 +142,15 @@ const selectedModel = computed<string>({
         :select-cols="interactiveCols"
         :items="modelWrapper"
       />
+      <pv-switch
+        v-model="currentPipelineSettings.mltagFallbackEnabled"
+        :switch-cols="interactiveCols"
+        label="Full-Frame Fallback"
+        tooltip="When the ML model finds no tags, run the AprilTag detector on the whole frame as a fallback. Turning this off saves CPU when you only want ML-proposed regions scanned."
+        @update:modelValue="
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mltagFallbackEnabled: value }, false)
+        "
+      />
       <pv-slider
         v-model="currentPipelineSettings.mlConfidence"
         :slider-cols="interactiveCols"

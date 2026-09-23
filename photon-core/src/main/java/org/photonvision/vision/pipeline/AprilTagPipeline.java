@@ -237,7 +237,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             }
         }
 
-        if (!settings.mltagEnabled || mltagNoneFound) {
+        if (!settings.mltagEnabled || (mltagNoneFound && settings.mltagFallbackEnabled)) {
             CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
             tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
             sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;

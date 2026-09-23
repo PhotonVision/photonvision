@@ -291,6 +291,7 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   doMultiTarget: boolean;
   doSingleTargetAlways: boolean;
   mltagEnabled: boolean;
+  mltagFallbackEnabled: boolean;
   mlConfidence: number;
   mlNms: number;
   mlPadding: number;
@@ -320,6 +321,7 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   doMultiTarget: false,
   doSingleTargetAlways: false,
   mltagEnabled: false,
+  mltagFallbackEnabled: true,
   mlConfidence: 0.5,
   mlNms: 0.45,
   mlPadding: 0.15,

@@ -41,6 +41,9 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public double mlConfidence = 0.5;
     public double mlNms = 0.45;
     public double mlPadding = 0.15;
+    // When ML assisted detection finds no tags, fall back to running the AprilTag detector on the
+    // whole frame
+    public boolean mltagFallbackEnabled = true;
 
     public NeuralNetworkModelsSettings.ModelProperties tagModel = null;
 
@@ -76,6 +79,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + (doMultiTarget ? 1231 : 1237);
         result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
         result = prime * result + (mltagEnabled ? 1231 : 1237);
+        result = prime * result + (mltagFallbackEnabled ? 1231 : 1237);
         result = prime * result + (int) Math.round(mlConfidence);
         result = prime * result + (int) Math.round(mlNms);
         result = prime * result + (int) Math.round(mlPadding);
@@ -101,6 +105,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (doMultiTarget != other.doMultiTarget) return false;
         if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
         if (mltagEnabled != other.mltagEnabled) return false;
+        if (mltagFallbackEnabled != other.mltagFallbackEnabled) return false;
         if (mlConfidence != other.mlConfidence) return false;
         if (mlNms != other.mlNms) return false;
         if (mlPadding != other.mlPadding) return false;
