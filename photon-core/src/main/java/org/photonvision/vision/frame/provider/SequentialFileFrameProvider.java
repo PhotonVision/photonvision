@@ -26,10 +26,10 @@ import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
+import org.wpilib.networktables.NetworkTablesJNI;
 
 public class SequentialFileFrameProvider extends CpuImageProcessor {
     public static final int MAX_FPS = 10;
@@ -153,7 +153,7 @@ public class SequentialFileFrameProvider extends CpuImageProcessor {
         }
 
         lastGetMillis = System.currentTimeMillis();
-        return new CapturedFrame(out, properties, MathUtils.wpiNanoTime());
+        return new CapturedFrame(out, properties, NetworkTablesJNI.now());
     }
 
     @Override
