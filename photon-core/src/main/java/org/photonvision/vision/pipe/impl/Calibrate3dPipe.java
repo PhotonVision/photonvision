@@ -80,7 +80,9 @@ public class Calibrate3dPipe
                                                             observation.locationInObjectSpace.toArray(new Point3[0])),
                                                     new MatOfPoint2f(observation.locationInImageSpace.toArray(new Point[0])),
                                                     0.0f,
-                                                    new MatOfInt(observation.cornerIds)))
+                                                    observation.cornerIds != null
+                                                            ? new MatOfInt(observation.cornerIds)
+                                                            : null))
                             .toList();
             return new CalibrationInput(
                     observations,
