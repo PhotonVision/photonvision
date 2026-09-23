@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-
 import photonvision.core.proto.PhotonMessage.OutgoingDashboardEvent;
 import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 import us.hebi.quickbuf.ProtoMessage;
@@ -29,8 +28,10 @@ import us.hebi.quickbuf.ProtoMessage;
 // Considered NT, but seems overkill. NewDataChangeService is <60 LOC
 public class NewDataChangeService<T extends ProtoMessage<?>> {
     // Incredibly cursed version of NtTopicSet. Hard-code so we're statically typed
-    public static final NewDataChangeService<PhotonDataChangeEvent> INBOUND_UI_EVENTS = new NewDataChangeService<>();
-    public static final NewDataChangeService<OutgoingDashboardEvent> OUTBOUND_UI_EVENTS = new NewDataChangeService<>();
+    public static final NewDataChangeService<PhotonDataChangeEvent> INBOUND_UI_EVENTS =
+            new NewDataChangeService<>();
+    public static final NewDataChangeService<OutgoingDashboardEvent> OUTBOUND_UI_EVENTS =
+            new NewDataChangeService<>();
 
     private static final Logger logger = new Logger(NewDataChangeService.class, LogGroup.WebServer);
 
