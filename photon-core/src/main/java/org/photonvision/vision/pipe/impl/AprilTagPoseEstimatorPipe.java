@@ -31,7 +31,8 @@ public class AprilTagPoseEstimatorPipe
         extends CVPipe<
                 AprilTagDetection,
                 AprilTagPoseEstimate,
-                AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams> {
+                AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams>
+        implements SingleTagPoseEstimator {
     private final AprilTagPoseEstimator m_poseEstimator =
             new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
 

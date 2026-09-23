@@ -11,7 +11,10 @@ export enum PipelineType {
   ColoredShape = 4,
   AprilTag = 5,
   Aruco = 6,
-  ObjectDetection = 7
+  ObjectDetection = 7,
+  // Must match Java: PipelineType.AprilTagVulkan is appended last (ordinal 8) so that
+  // DataSocketHandler's baseIndex -> ordinal mapping (values()[baseIndex + 3]) stays valid.
+  AprilTagVulkan = 8
 }
 
 export enum AprilTagFamily {
@@ -316,6 +319,60 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   doSingleTargetAlways: false
 };
 
+// BETA. Deliberately has no `blur` - vkapriltag has no pre-blur stage, so there's no control here
+// that would silently do nothing. Unlike blur, both `decimation` (configurable DetectorConfig
+// field since vkapriltag v1.3.0, replacing a fixed 2x hardcoded into GpuDetector) and
+// `refineEdges` (vkapriltag v1.4.0+) ARE present.
+export enum VkAprilTagPoseEstimatorBackend {
+  CPU = 0,
+  VULKAN = 1
+}
+
+export interface VkAprilTagPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.AprilTagVulkan;
+  hammingDist: number;
+  numIterations: number;
+  decisionMargin: number;
+  tagFamily: AprilTagFamily;
+  doMultiTarget: boolean;
+  doSingleTargetAlways: boolean;
+  // -1 = automatic (vkapriltag's own scored device selection)
+  vulkanDeviceIndex: number;
+  cpuThreads: number;
+  // Must evenly divide the camera's current resolution, or this pipeline falls back to CPU.
+  decimation: number;
+  // Gradient-based edge refinement (vkapriltag v1.4.0+). Off by default, matching this pipeline's
+  // historical behavior - see this field's tooltip in VkAprilTagTab.vue.
+  refineEdges: boolean;
+  // EXPERIMENTAL. See this field's tooltip in VkAprilTagTab.vue - unverified against CPU/WPILib
+  // for real-world accuracy, defaults to CPU.
+  poseEstimatorBackend: VkAprilTagPoseEstimatorBackend;
+}
+export type ConfigurableVkAprilTagPipelineSettings = Partial<
+  Omit<VkAprilTagPipelineSettings, "pipelineType" | "hammingDist">
+> &
+  ConfigurablePipelineSettings;
+export const DefaultVkAprilTagPipelineSettings: VkAprilTagPipelineSettings = {
+  ...DefaultPipelineSettings,
+  cameraGain: 75,
+  targetModel: TargetModel.AprilTag6p5in_36h11,
+  ledMode: false,
+  outputMaximumTargets: 127,
+  cameraExposureRaw: 20,
+  pipelineType: PipelineType.AprilTagVulkan,
+  hammingDist: 0,
+  numIterations: 40,
+  decisionMargin: 35,
+  tagFamily: AprilTagFamily.Family36h11,
+  doMultiTarget: false,
+  doSingleTargetAlways: false,
+  vulkanDeviceIndex: -1,
+  cpuThreads: 0,
+  decimation: 2,
+  refineEdges: false,
+  poseEstimatorBackend: VkAprilTagPoseEstimatorBackend.CPU
+};
+
 export interface ArucoPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.Aruco;
 
@@ -406,6 +463,7 @@ export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
+  | VkAprilTagPipelineSettings
   | ArucoPipelineSettings
   | ObjectDetectionPipelineSettings
   | Calibration3dPipelineSettings;
@@ -414,6 +472,7 @@ export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
+  | ConfigurableVkAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
   | ConfigurableObjectDetectionPipelineSettings
   | ConfigurableCalibration3dPipelineSettings;

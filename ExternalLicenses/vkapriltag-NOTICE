@@ -1,0 +1,10 @@
+vkapriltag
+Copyright 2026 Yoav John Barak-Maurice
+
+This product is based on apriltags_cuda by FRC Team 766
+(https://github.com/Team766/apriltags_cuda).
+
+This product includes software derived from AprilTag 3, developed in the
+APRIL Robotics Lab at the University of Michigan under the direction of Edwin Olson
+(https://github.com/AprilRobotics/apriltag).
+Copyright (C) 2013-2016, The Regents of The University of Michigan.

@@ -58,6 +58,37 @@ dependencies {
         }
     }
 
+    // vkapriltag_jni does not publish to maven.photonvision.org - see
+    // vkapriltag-jni's own repo, which builds and tests the native shim via a
+    // hand-rolled CMake build rather than the real WPILib GradleJni/
+    // NativeUtils artifact pipeline. $vkAprilTagVersion instead resolves
+    // against the anonymous ivy patternLayout repo declared in the root
+    // build.gradle, pointed directly at vkapriltag-jni's GitHub Release
+    // assets for that tag - no POM/publish step needed, just the two jars
+    // its build-and-release.yml already produces on every v* tag push: a
+    // plain jar with linux/<arch>/shared/*.so inside for the -jni
+    // classifier, matching rknn_jni-jni/tflite_jni-jni's own shape (see
+    // e.g. tflite_jni-jni-*-linuxarm64.jar), plus an unclassified -java jar.
+    //
+    // Bump $vkAprilTagVersion (root build.gradle) to a new vkapriltag-jni
+    // tag whenever one is cut; nothing else here needs to change.
+    //
+    // linuxarm64 only for now: that artifact was built against this
+    // machine's exact WPILib OpenCV native (2027-4.13.0-3) for ABI-correct
+    // cv::Mat access - see VkAprilTagJNI.cpp's detect(). A linuxx86-64
+    // artifact needs the same care, not just a recompile, so it's not wired
+    // up here yet (even though vkapriltag-jni's CI already builds and
+    // releases one, for its own dev/CI parity - see that repo's workflow
+    // comment).
+    if (jniPlatform == "linuxarm64") {
+        wpilibNatives("org.photonvision:vkapriltag_jni-jni:$vkAprilTagVersion:$jniPlatform") {
+            transitive = false
+        }
+    }
+    implementation("org.photonvision:vkapriltag_jni-java:$vkAprilTagVersion") {
+        transitive = false
+    }
+
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
         transitive = false
     }

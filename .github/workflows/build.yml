@@ -133,7 +133,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - run: git config --global --add safe.directory /__w/photonvision/photonvision
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: git fetch --tags --force
       - uses: actions/setup-java@v5
         with:
@@ -280,7 +280,7 @@ jobs:
           fetch-depth: 0
       - name: Config Git
         run: |
-          git config --global --add safe.directory /__w/photonvision/photonvision
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
         run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
