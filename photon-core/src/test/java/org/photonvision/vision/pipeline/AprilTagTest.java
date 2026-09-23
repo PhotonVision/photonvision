@@ -18,15 +18,19 @@
 package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.cartesian.CartesianTest;
+import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
+import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.math.geometry.Transform3d;
@@ -176,6 +180,70 @@ public class AprilTagTest {
                     // the pipeline will only give us Byte.MAX_VALUE many
                     assertEquals(Byte.MAX_VALUE, pipelineResult.targets.size());
                 }
+            }
+        }
+    }
+
+    @CartesianTest
+    public void testMultiTargetTranslationIsInvariantToInputRotation(
+            @Enum ImageRotationMode rotationMode) {
+
+        var imagePath =
+                TestUtils.getResourcesFolderPath(true)
+                        .resolve("testimages")
+                        .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path);
+
+        try (var cal =
+                        TestUtils.calibrationFromIntrinsics(
+                                (int) TestUtils.WPI2026Images.resolution.width,
+                                (int) TestUtils.WPI2026Images.resolution.height,
+                                TestUtils.WPI2026Images.FOV.getDegrees());
+                var baselinePipeline = new AprilTagPipeline();
+                var rotatedPipeline = new AprilTagPipeline();
+                var baselineProvider =
+                        new FileFrameProvider(imagePath, TestUtils.WPI2026Images.FOV.getDegrees(), cal);
+                var rotatedProvider =
+                        new FileFrameProvider(imagePath, TestUtils.WPI2026Images.FOV.getDegrees(), cal)) {
+            baselinePipeline.getSettings().solvePNPEnabled = true;
+            baselinePipeline.getSettings().doMultiTarget = true;
+            baselinePipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
+            baselinePipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+
+            rotatedPipeline.getSettings().solvePNPEnabled = true;
+            rotatedPipeline.getSettings().doMultiTarget = true;
+            rotatedPipeline.getSettings().inputImageRotationMode = rotationMode;
+            rotatedPipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
+            rotatedPipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+
+            baselineProvider.requestFrameThresholdType(baselinePipeline.getThresholdType());
+            rotatedProvider.requestFrameRotation(rotationMode);
+            rotatedProvider.requestFrameThresholdType(rotatedPipeline.getThresholdType());
+
+            try (var baselineResult =
+                            baselinePipeline.run(baselineProvider.get(), QuirkyCamera.DefaultCamera);
+                    var rotatedResult =
+                            rotatedPipeline.run(rotatedProvider.get(), QuirkyCamera.DefaultCamera)) {
+                assertTrue(baselineResult.multiTagResult.isPresent());
+                assertTrue(rotatedResult.multiTagResult.isPresent());
+
+                var baselineTranslation =
+                        baselineResult.multiTagResult.get().estimatedPose.best.getTranslation();
+                var rotatedTranslation =
+                        rotatedResult.multiTagResult.get().estimatedPose.best.getTranslation();
+
+                System.out.println("Baseline camera to target pose: " + baselineResult.targets.get(0).getBestCameraToTarget3d());
+                System.out.println("Rotated camera to target pose: " + rotatedResult.targets.get(0).getBestCameraToTarget3d());
+                System.out.println(
+                        "Baseline translation: "
+                                + baselineTranslation
+                                + "\nRotated translation: "
+                                + rotatedTranslation);
+                assertEquals(
+                        baselineTranslation.getX(), rotatedTranslation.getX(), 0.01, rotationMode.name());
+                assertEquals(
+                        baselineTranslation.getY(), rotatedTranslation.getY(), 0.01, rotationMode.name());
+                assertEquals(
+                        baselineTranslation.getZ(), rotatedTranslation.getZ(), 0.01, rotationMode.name());
             }
         }
     }

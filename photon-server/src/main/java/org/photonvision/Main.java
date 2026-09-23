@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
-import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -44,9 +43,6 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.calibration.CameraLensModel;
-import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.CVMat;
@@ -56,7 +52,6 @@ import org.photonvision.vision.pipeline.PipelineProfiler;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.hardware.hal.HAL;
-import org.wpilib.math.geometry.Rotation2d;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -121,31 +116,9 @@ public class Main implements Callable<Integer> {
             // stolen from SimCameraProperties
             int resWidth = (int) TestUtils.WPI2026Images.resolution.width;
             int resHeight = (int) TestUtils.WPI2026Images.resolution.height;
-            double cx = resWidth / 2.0 - 0.5;
-            double cy = resHeight / 2.0 - 0.5;
-
-            double resDiag = Math.hypot(resWidth, resHeight);
-            double diagRatio = Math.tan(TestUtils.WPI2026Images.FOV.getRadians() / 2);
-            var fovWidth = new Rotation2d(Math.atan(diagRatio * (resWidth / resDiag)) * 2);
-            var fovHeight = new Rotation2d(Math.atan(diagRatio * (resHeight / resDiag)) * 2);
-
-            double fx = cx / Math.tan(fovWidth.getRadians() / 2.0);
-            double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
-
-            JsonMatOfDouble testCameraMatrix =
-                    new JsonMatOfDouble(3, 3, new double[] {fx, 0, cx, 0, fy, cy, 0, 0, 1});
-            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {0, 0, 0, 0, 0});
 
             camConf2026.calibrations.add(
-                    new CameraCalibrationCoefficients(
-                            new Size(4000, 1868),
-                            testCameraMatrix,
-                            testDistortion,
-                            new double[0],
-                            List.of(),
-                            new Size(),
-                            1,
-                            CameraLensModel.LENSMODEL_OPENCV));
+                    TestUtils.calibrationFromIntrinsics(resWidth, resHeight, camConf2026.FOV));
 
             logger.info("Added test camera calibration for WPI2026 " + camConf2026.calibrations);
 

@@ -23,10 +23,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraLensModel;
+import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.opencv.CVMat;
@@ -256,7 +259,8 @@ public class TestUtils {
     public static Path getResourcesFolderPath(boolean testMode) {
         System.out.println("CWD: " + Path.of("").toAbsolutePath());
 
-        // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
+        // VSCode likes to make this path relative to the wrong root directory, so a fun
+        // hack to tell
         // if it's wrong
         Path ret = Path.of("test-resources").toAbsolutePath();
         if (Path.of("test-resources")
@@ -432,5 +436,36 @@ public class TestUtils {
 
     public static Path getConfigDirectoriesPath(boolean testMode) {
         return getResourcesFolderPath(testMode).resolve("old_configs");
+    }
+
+    public static CameraCalibrationCoefficients calibrationFromIntrinsics(
+            int width, int height, double fovDegrees) {
+        // stolen from SimCameraProperties
+        int resWidth = (int) TestUtils.WPI2026Images.resolution.width;
+        int resHeight = (int) TestUtils.WPI2026Images.resolution.height;
+        double cx = resWidth / 2.0 - 0.5;
+        double cy = resHeight / 2.0 - 0.5;
+
+        double resDiag = Math.hypot(resWidth, resHeight);
+        double diagRatio = Math.tan(TestUtils.WPI2026Images.FOV.getRadians() / 2);
+        var fovWidth = new Rotation2d(Math.atan(diagRatio * (resWidth / resDiag)) * 2);
+        var fovHeight = new Rotation2d(Math.atan(diagRatio * (resHeight / resDiag)) * 2);
+
+        double fx = cx / Math.tan(fovWidth.getRadians() / 2.0);
+        double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
+
+        JsonMatOfDouble testCameraMatrix =
+                new JsonMatOfDouble(3, 3, new double[] {fx, 0, cx, 0, fy, cy, 0, 0, 1});
+        JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {0, 0, 0, 0, 0});
+
+        return new CameraCalibrationCoefficients(
+                new Size(resWidth, resHeight),
+                testCameraMatrix,
+                testDistortion,
+                new double[0],
+                List.of(),
+                new Size(),
+                1,
+                CameraLensModel.LENSMODEL_OPENCV);
     }
 }
