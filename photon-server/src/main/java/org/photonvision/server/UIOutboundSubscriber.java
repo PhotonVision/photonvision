@@ -33,12 +33,29 @@ class UIOutboundSubscriber {
 
     private NewDataChangeSubscriber<OutgoingDashboardEvent> subscriber;
 
+    private Thread listenerThread;
+
     public UIOutboundSubscriber() {
         this.subscriber = NewDataChangeService.OUTBOUND_UI_EVENTS.subscribe();
+
+        this.listenerThread =
+                new Thread(
+                        () -> {
+                            while (true) {
+                                try {
+                                    // Arbitrary limit. Processes queued events in batches
+                                    Thread.sleep(100);
+                                    update();
+                                } catch (InterruptedException e) {
+                                    logger.error("UIOutboundSubscriber thread interrupted!", e);
+                                }
+                            }
+                        });
+        this.listenerThread.start();
     }
 
-    public void update() {
-        var events = subscriber.getAndClearEvents();
+    public void update() throws InterruptedException {
+        var events = subscriber.waitForEvents();
         for (var event : events) {
             // TODO add originContext to event
             try {

@@ -44,11 +44,24 @@ public class NewDataChangeService<T extends ProtoMessage<?>> {
         public void publish(T event) {
             synchronized (unprocessedEvents) {
                 unprocessedEvents.add(event);
+                unprocessedEvents.notifyAll();
             }
         }
 
         public final List<T> getAndClearEvents() {
             synchronized (unprocessedEvents) {
+                var copy = new ArrayList<>(unprocessedEvents);
+                unprocessedEvents.clear();
+                return copy;
+            }
+        }
+
+        // Block until at least one event is available, then return all events
+        public final List<T> waitForEvents() throws InterruptedException {
+            synchronized (unprocessedEvents) {
+                while (unprocessedEvents.isEmpty()) {
+                    unprocessedEvents.wait();
+                }
                 var copy = new ArrayList<>(unprocessedEvents);
                 unprocessedEvents.clear();
                 return copy;

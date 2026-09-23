@@ -15,15 +15,61 @@ export interface VisionModuleEvent {
   driverMode?: boolean | undefined;
 }
 
-export interface UiChangeEvent {
-  /** TODO none-VM-specific change messages */
-  vmChange?: VisionModuleEvent | undefined;
+export interface CameraCalibrationCoefficients {
+  /** TODO fill this out */
+  cameraIntrinsics: number[];
 }
 
-/** Only created by backend */
+export interface CalibrationUploadedEvent {
+  cameraUniqueName: string;
+  newCal: CameraCalibrationCoefficients | undefined;
+}
+
+export interface UiChangeEvent {
+  /** Messages from UI -> backend */
+  vmChange?:
+    | VisionModuleEvent
+    | undefined;
+  /** Messages internal to backend */
+  userConnected?: boolean | undefined;
+  calibrationUploaded?: CalibrationUploadedEvent | undefined;
+}
+
+export interface PipelineResult {
+  cameraUniqueName: string;
+  sequenceID: number;
+}
+
+export interface UiMetrics {
+}
+
+export interface LogMessage {
+}
+
+export interface UiCalibrationData {
+}
+
+export interface VisionSourceManagerState {
+}
+
+export interface MutatePipelineSettings {
+}
+
+export interface OutgoingDashboardEvent {
+  fullsettings?: boolean | undefined;
+  networkTablesConnected?: boolean | undefined;
+  updatePipelineResult?: PipelineResult | undefined;
+  metrics?: UiMetrics | undefined;
+  log?: LogMessage | undefined;
+  calibrationData?: UiCalibrationData | undefined;
+  visionSourceManager?: VisionSourceManagerState | undefined;
+  mutatePipeline?: MutatePipelineSettings | undefined;
+}
+
+/** Wrapper created by backend to add context */
 export interface PhotonDataChangeEvent {
-  /** Websocket session this request came from */
-  originCtxSessionId: string;
+  /** Websocket session this request came from, if it came from a websocket */
+  originCtxSessionId?: string | undefined;
   event: UiChangeEvent | undefined;
 }
 
@@ -112,14 +158,192 @@ export const VisionModuleEvent: MessageFns<VisionModuleEvent> = {
   },
 };
 
+function createBaseCameraCalibrationCoefficients(): CameraCalibrationCoefficients {
+  return { cameraIntrinsics: [] };
+}
+
+export const CameraCalibrationCoefficients: MessageFns<CameraCalibrationCoefficients> = {
+  encode(message: CameraCalibrationCoefficients, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    writer.uint32(10).fork();
+    for (const v of message.cameraIntrinsics) {
+      writer.double(v);
+    }
+    writer.join();
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CameraCalibrationCoefficients {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseCameraCalibrationCoefficients();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag === 9) {
+              message.cameraIntrinsics.push(reader.double());
+
+              continue;
+            }
+
+            if (tag === 10) {
+              const end2 = reader.uint32() + reader.pos;
+              while (reader.pos < end2) {
+                message.cameraIntrinsics.push(reader.double());
+              }
+
+              continue;
+            }
+
+            break;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): CameraCalibrationCoefficients {
+    return {
+      cameraIntrinsics: globalThis.Array.isArray(object?.cameraIntrinsics)
+        ? object.cameraIntrinsics.map((e: any) => globalThis.Number(e))
+        : [],
+    };
+  },
+
+  toJSON(message: CameraCalibrationCoefficients): unknown {
+    const obj: any = {};
+    if (message.cameraIntrinsics?.length) {
+      obj.cameraIntrinsics = message.cameraIntrinsics;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CameraCalibrationCoefficients>, I>>(base?: I): CameraCalibrationCoefficients {
+    return CameraCalibrationCoefficients.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CameraCalibrationCoefficients>, I>>(
+    object: I,
+  ): CameraCalibrationCoefficients {
+    const message = createBaseCameraCalibrationCoefficients();
+    message.cameraIntrinsics = object.cameraIntrinsics?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseCalibrationUploadedEvent(): CalibrationUploadedEvent {
+  return { cameraUniqueName: "", newCal: undefined };
+}
+
+export const CalibrationUploadedEvent: MessageFns<CalibrationUploadedEvent> = {
+  encode(message: CalibrationUploadedEvent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cameraUniqueName !== "") {
+      writer.uint32(10).string(message.cameraUniqueName);
+    }
+    if (message.newCal !== undefined) {
+      CameraCalibrationCoefficients.encode(message.newCal, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CalibrationUploadedEvent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseCalibrationUploadedEvent();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.cameraUniqueName = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.newCal = CameraCalibrationCoefficients.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): CalibrationUploadedEvent {
+    return {
+      cameraUniqueName: isSet(object.cameraUniqueName) ? globalThis.String(object.cameraUniqueName) : "",
+      newCal: isSet(object.newCal) ? CameraCalibrationCoefficients.fromJSON(object.newCal) : undefined,
+    };
+  },
+
+  toJSON(message: CalibrationUploadedEvent): unknown {
+    const obj: any = {};
+    if (message.cameraUniqueName !== "") {
+      obj.cameraUniqueName = message.cameraUniqueName;
+    }
+    if (message.newCal !== undefined) {
+      obj.newCal = CameraCalibrationCoefficients.toJSON(message.newCal);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CalibrationUploadedEvent>, I>>(base?: I): CalibrationUploadedEvent {
+    return CalibrationUploadedEvent.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CalibrationUploadedEvent>, I>>(object: I): CalibrationUploadedEvent {
+    const message = createBaseCalibrationUploadedEvent();
+    message.cameraUniqueName = object.cameraUniqueName ?? "";
+    message.newCal = (object.newCal !== undefined && object.newCal !== null)
+      ? CameraCalibrationCoefficients.fromPartial(object.newCal)
+      : undefined;
+    return message;
+  },
+};
+
 function createBaseUiChangeEvent(): UiChangeEvent {
-  return { vmChange: undefined };
+  return { vmChange: undefined, userConnected: undefined, calibrationUploaded: undefined };
 }
 
 export const UiChangeEvent: MessageFns<UiChangeEvent> = {
   encode(message: UiChangeEvent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.vmChange !== undefined) {
       VisionModuleEvent.encode(message.vmChange, writer.uint32(10).fork()).join();
+    }
+    if (message.userConnected !== undefined) {
+      writer.uint32(16).bool(message.userConnected);
+    }
+    if (message.calibrationUploaded !== undefined) {
+      CalibrationUploadedEvent.encode(message.calibrationUploaded, writer.uint32(26).fork()).join();
     }
     return writer;
   },
@@ -145,6 +369,22 @@ export const UiChangeEvent: MessageFns<UiChangeEvent> = {
             message.vmChange = VisionModuleEvent.decode(reader, reader.uint32());
             continue;
           }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.userConnected = reader.bool();
+            continue;
+          }
+          case 3: {
+            if (tag !== 26) {
+              break;
+            }
+
+            message.calibrationUploaded = CalibrationUploadedEvent.decode(reader, reader.uint32());
+            continue;
+          }
         }
         if ((tag & 7) === 4 || tag === 0) {
           break;
@@ -164,6 +404,10 @@ export const UiChangeEvent: MessageFns<UiChangeEvent> = {
         : isSet(object.vm_change)
         ? VisionModuleEvent.fromJSON(object.vm_change)
         : undefined,
+      userConnected: isSet(object.userConnected) ? globalThis.Boolean(object.userConnected) : undefined,
+      calibrationUploaded: isSet(object.calibrationUploaded)
+        ? CalibrationUploadedEvent.fromJSON(object.calibrationUploaded)
+        : undefined,
     };
   },
 
@@ -171,6 +415,12 @@ export const UiChangeEvent: MessageFns<UiChangeEvent> = {
     const obj: any = {};
     if (message.vmChange !== undefined) {
       obj.vmChange = VisionModuleEvent.toJSON(message.vmChange);
+    }
+    if (message.userConnected !== undefined) {
+      obj.userConnected = message.userConnected;
+    }
+    if (message.calibrationUploaded !== undefined) {
+      obj.calibrationUploaded = CalibrationUploadedEvent.toJSON(message.calibrationUploaded);
     }
     return obj;
   },
@@ -183,17 +433,572 @@ export const UiChangeEvent: MessageFns<UiChangeEvent> = {
     message.vmChange = (object.vmChange !== undefined && object.vmChange !== null)
       ? VisionModuleEvent.fromPartial(object.vmChange)
       : undefined;
+    message.userConnected = object.userConnected ?? undefined;
+    message.calibrationUploaded = (object.calibrationUploaded !== undefined && object.calibrationUploaded !== null)
+      ? CalibrationUploadedEvent.fromPartial(object.calibrationUploaded)
+      : undefined;
+    return message;
+  },
+};
+
+function createBasePipelineResult(): PipelineResult {
+  return { cameraUniqueName: "", sequenceID: 0 };
+}
+
+export const PipelineResult: MessageFns<PipelineResult> = {
+  encode(message: PipelineResult, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cameraUniqueName !== "") {
+      writer.uint32(10).string(message.cameraUniqueName);
+    }
+    if (message.sequenceID !== 0) {
+      writer.uint32(16).int64(message.sequenceID);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PipelineResult {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBasePipelineResult();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.cameraUniqueName = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.sequenceID = longToNumber(reader.int64());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): PipelineResult {
+    return {
+      cameraUniqueName: isSet(object.cameraUniqueName) ? globalThis.String(object.cameraUniqueName) : "",
+      sequenceID: isSet(object.sequenceID) ? globalThis.Number(object.sequenceID) : 0,
+    };
+  },
+
+  toJSON(message: PipelineResult): unknown {
+    const obj: any = {};
+    if (message.cameraUniqueName !== "") {
+      obj.cameraUniqueName = message.cameraUniqueName;
+    }
+    if (message.sequenceID !== 0) {
+      obj.sequenceID = Math.round(message.sequenceID);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PipelineResult>, I>>(base?: I): PipelineResult {
+    return PipelineResult.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PipelineResult>, I>>(object: I): PipelineResult {
+    const message = createBasePipelineResult();
+    message.cameraUniqueName = object.cameraUniqueName ?? "";
+    message.sequenceID = object.sequenceID ?? 0;
+    return message;
+  },
+};
+
+function createBaseUiMetrics(): UiMetrics {
+  return {};
+}
+
+export const UiMetrics: MessageFns<UiMetrics> = {
+  encode(_: UiMetrics, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UiMetrics {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseUiMetrics();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(_: any): UiMetrics {
+    return {};
+  },
+
+  toJSON(_: UiMetrics): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UiMetrics>, I>>(base?: I): UiMetrics {
+    return UiMetrics.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UiMetrics>, I>>(_: I): UiMetrics {
+    const message = createBaseUiMetrics();
+    return message;
+  },
+};
+
+function createBaseLogMessage(): LogMessage {
+  return {};
+}
+
+export const LogMessage: MessageFns<LogMessage> = {
+  encode(_: LogMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LogMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseLogMessage();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(_: any): LogMessage {
+    return {};
+  },
+
+  toJSON(_: LogMessage): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<LogMessage>, I>>(base?: I): LogMessage {
+    return LogMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<LogMessage>, I>>(_: I): LogMessage {
+    const message = createBaseLogMessage();
+    return message;
+  },
+};
+
+function createBaseUiCalibrationData(): UiCalibrationData {
+  return {};
+}
+
+export const UiCalibrationData: MessageFns<UiCalibrationData> = {
+  encode(_: UiCalibrationData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UiCalibrationData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseUiCalibrationData();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(_: any): UiCalibrationData {
+    return {};
+  },
+
+  toJSON(_: UiCalibrationData): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UiCalibrationData>, I>>(base?: I): UiCalibrationData {
+    return UiCalibrationData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UiCalibrationData>, I>>(_: I): UiCalibrationData {
+    const message = createBaseUiCalibrationData();
+    return message;
+  },
+};
+
+function createBaseVisionSourceManagerState(): VisionSourceManagerState {
+  return {};
+}
+
+export const VisionSourceManagerState: MessageFns<VisionSourceManagerState> = {
+  encode(_: VisionSourceManagerState, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VisionSourceManagerState {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseVisionSourceManagerState();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(_: any): VisionSourceManagerState {
+    return {};
+  },
+
+  toJSON(_: VisionSourceManagerState): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VisionSourceManagerState>, I>>(base?: I): VisionSourceManagerState {
+    return VisionSourceManagerState.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VisionSourceManagerState>, I>>(_: I): VisionSourceManagerState {
+    const message = createBaseVisionSourceManagerState();
+    return message;
+  },
+};
+
+function createBaseMutatePipelineSettings(): MutatePipelineSettings {
+  return {};
+}
+
+export const MutatePipelineSettings: MessageFns<MutatePipelineSettings> = {
+  encode(_: MutatePipelineSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MutatePipelineSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMutatePipelineSettings();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(_: any): MutatePipelineSettings {
+    return {};
+  },
+
+  toJSON(_: MutatePipelineSettings): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MutatePipelineSettings>, I>>(base?: I): MutatePipelineSettings {
+    return MutatePipelineSettings.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MutatePipelineSettings>, I>>(_: I): MutatePipelineSettings {
+    const message = createBaseMutatePipelineSettings();
+    return message;
+  },
+};
+
+function createBaseOutgoingDashboardEvent(): OutgoingDashboardEvent {
+  return {
+    fullsettings: undefined,
+    networkTablesConnected: undefined,
+    updatePipelineResult: undefined,
+    metrics: undefined,
+    log: undefined,
+    calibrationData: undefined,
+    visionSourceManager: undefined,
+    mutatePipeline: undefined,
+  };
+}
+
+export const OutgoingDashboardEvent: MessageFns<OutgoingDashboardEvent> = {
+  encode(message: OutgoingDashboardEvent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.fullsettings !== undefined) {
+      writer.uint32(8).bool(message.fullsettings);
+    }
+    if (message.networkTablesConnected !== undefined) {
+      writer.uint32(16).bool(message.networkTablesConnected);
+    }
+    if (message.updatePipelineResult !== undefined) {
+      PipelineResult.encode(message.updatePipelineResult, writer.uint32(26).fork()).join();
+    }
+    if (message.metrics !== undefined) {
+      UiMetrics.encode(message.metrics, writer.uint32(34).fork()).join();
+    }
+    if (message.log !== undefined) {
+      LogMessage.encode(message.log, writer.uint32(42).fork()).join();
+    }
+    if (message.calibrationData !== undefined) {
+      UiCalibrationData.encode(message.calibrationData, writer.uint32(50).fork()).join();
+    }
+    if (message.visionSourceManager !== undefined) {
+      VisionSourceManagerState.encode(message.visionSourceManager, writer.uint32(58).fork()).join();
+    }
+    if (message.mutatePipeline !== undefined) {
+      MutatePipelineSettings.encode(message.mutatePipeline, writer.uint32(66).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OutgoingDashboardEvent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseOutgoingDashboardEvent();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.fullsettings = reader.bool();
+            continue;
+          }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.networkTablesConnected = reader.bool();
+            continue;
+          }
+          case 3: {
+            if (tag !== 26) {
+              break;
+            }
+
+            message.updatePipelineResult = PipelineResult.decode(reader, reader.uint32());
+            continue;
+          }
+          case 4: {
+            if (tag !== 34) {
+              break;
+            }
+
+            message.metrics = UiMetrics.decode(reader, reader.uint32());
+            continue;
+          }
+          case 5: {
+            if (tag !== 42) {
+              break;
+            }
+
+            message.log = LogMessage.decode(reader, reader.uint32());
+            continue;
+          }
+          case 6: {
+            if (tag !== 50) {
+              break;
+            }
+
+            message.calibrationData = UiCalibrationData.decode(reader, reader.uint32());
+            continue;
+          }
+          case 7: {
+            if (tag !== 58) {
+              break;
+            }
+
+            message.visionSourceManager = VisionSourceManagerState.decode(reader, reader.uint32());
+            continue;
+          }
+          case 8: {
+            if (tag !== 66) {
+              break;
+            }
+
+            message.mutatePipeline = MutatePipelineSettings.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): OutgoingDashboardEvent {
+    return {
+      fullsettings: isSet(object.fullsettings) ? globalThis.Boolean(object.fullsettings) : undefined,
+      networkTablesConnected: isSet(object.networkTablesConnected)
+        ? globalThis.Boolean(object.networkTablesConnected)
+        : undefined,
+      updatePipelineResult: isSet(object.updatePipelineResult)
+        ? PipelineResult.fromJSON(object.updatePipelineResult)
+        : undefined,
+      metrics: isSet(object.metrics) ? UiMetrics.fromJSON(object.metrics) : undefined,
+      log: isSet(object.log) ? LogMessage.fromJSON(object.log) : undefined,
+      calibrationData: isSet(object.calibrationData) ? UiCalibrationData.fromJSON(object.calibrationData) : undefined,
+      visionSourceManager: isSet(object.visionSourceManager)
+        ? VisionSourceManagerState.fromJSON(object.visionSourceManager)
+        : undefined,
+      mutatePipeline: isSet(object.mutatePipeline) ? MutatePipelineSettings.fromJSON(object.mutatePipeline) : undefined,
+    };
+  },
+
+  toJSON(message: OutgoingDashboardEvent): unknown {
+    const obj: any = {};
+    if (message.fullsettings !== undefined) {
+      obj.fullsettings = message.fullsettings;
+    }
+    if (message.networkTablesConnected !== undefined) {
+      obj.networkTablesConnected = message.networkTablesConnected;
+    }
+    if (message.updatePipelineResult !== undefined) {
+      obj.updatePipelineResult = PipelineResult.toJSON(message.updatePipelineResult);
+    }
+    if (message.metrics !== undefined) {
+      obj.metrics = UiMetrics.toJSON(message.metrics);
+    }
+    if (message.log !== undefined) {
+      obj.log = LogMessage.toJSON(message.log);
+    }
+    if (message.calibrationData !== undefined) {
+      obj.calibrationData = UiCalibrationData.toJSON(message.calibrationData);
+    }
+    if (message.visionSourceManager !== undefined) {
+      obj.visionSourceManager = VisionSourceManagerState.toJSON(message.visionSourceManager);
+    }
+    if (message.mutatePipeline !== undefined) {
+      obj.mutatePipeline = MutatePipelineSettings.toJSON(message.mutatePipeline);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<OutgoingDashboardEvent>, I>>(base?: I): OutgoingDashboardEvent {
+    return OutgoingDashboardEvent.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<OutgoingDashboardEvent>, I>>(object: I): OutgoingDashboardEvent {
+    const message = createBaseOutgoingDashboardEvent();
+    message.fullsettings = object.fullsettings ?? undefined;
+    message.networkTablesConnected = object.networkTablesConnected ?? undefined;
+    message.updatePipelineResult = (object.updatePipelineResult !== undefined && object.updatePipelineResult !== null)
+      ? PipelineResult.fromPartial(object.updatePipelineResult)
+      : undefined;
+    message.metrics = (object.metrics !== undefined && object.metrics !== null)
+      ? UiMetrics.fromPartial(object.metrics)
+      : undefined;
+    message.log = (object.log !== undefined && object.log !== null) ? LogMessage.fromPartial(object.log) : undefined;
+    message.calibrationData = (object.calibrationData !== undefined && object.calibrationData !== null)
+      ? UiCalibrationData.fromPartial(object.calibrationData)
+      : undefined;
+    message.visionSourceManager = (object.visionSourceManager !== undefined && object.visionSourceManager !== null)
+      ? VisionSourceManagerState.fromPartial(object.visionSourceManager)
+      : undefined;
+    message.mutatePipeline = (object.mutatePipeline !== undefined && object.mutatePipeline !== null)
+      ? MutatePipelineSettings.fromPartial(object.mutatePipeline)
+      : undefined;
     return message;
   },
 };
 
 function createBasePhotonDataChangeEvent(): PhotonDataChangeEvent {
-  return { originCtxSessionId: "", event: undefined };
+  return { originCtxSessionId: undefined, event: undefined };
 }
 
 export const PhotonDataChangeEvent: MessageFns<PhotonDataChangeEvent> = {
   encode(message: PhotonDataChangeEvent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.originCtxSessionId !== "") {
+    if (message.originCtxSessionId !== undefined) {
       writer.uint32(10).string(message.originCtxSessionId);
     }
     if (message.event !== undefined) {
@@ -245,14 +1050,14 @@ export const PhotonDataChangeEvent: MessageFns<PhotonDataChangeEvent> = {
 
   fromJSON(object: any): PhotonDataChangeEvent {
     return {
-      originCtxSessionId: isSet(object.originCtxSessionId) ? globalThis.String(object.originCtxSessionId) : "",
+      originCtxSessionId: isSet(object.originCtxSessionId) ? globalThis.String(object.originCtxSessionId) : undefined,
       event: isSet(object.event) ? UiChangeEvent.fromJSON(object.event) : undefined,
     };
   },
 
   toJSON(message: PhotonDataChangeEvent): unknown {
     const obj: any = {};
-    if (message.originCtxSessionId !== "") {
+    if (message.originCtxSessionId !== undefined) {
       obj.originCtxSessionId = message.originCtxSessionId;
     }
     if (message.event !== undefined) {
@@ -266,7 +1071,7 @@ export const PhotonDataChangeEvent: MessageFns<PhotonDataChangeEvent> = {
   },
   fromPartial<I extends Exact<DeepPartial<PhotonDataChangeEvent>, I>>(object: I): PhotonDataChangeEvent {
     const message = createBasePhotonDataChangeEvent();
-    message.originCtxSessionId = object.originCtxSessionId ?? "";
+    message.originCtxSessionId = object.originCtxSessionId ?? undefined;
     message.event = (object.event !== undefined && object.event !== null)
       ? UiChangeEvent.fromPartial(object.event)
       : undefined;
@@ -285,6 +1090,17 @@ export type DeepPartial<T> = T extends Builtin ? T
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function longToNumber(int64: { toString(): string }): number {
+  const num = globalThis.Number(int64.toString());
+  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
+    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
+  }
+  return num;
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

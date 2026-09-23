@@ -1,6 +1,6 @@
-import { decode, encode } from "@msgpack/msgpack";
 import type { IncomingWebsocketData } from "@/types/WebsocketDataTypes";
 import type { MessageFns } from "@/types/PhotonMessage";
+import { OutgoingDashboardEvent } from "@/types/PhotonMessage";
 
 /**
  * {@link WebSocket} wrapper class that automatically reconnects to the provided host address if the connection was closed by the remote host or a connection failure.
@@ -75,7 +75,10 @@ export class AutoReconnectingWebsocket {
       this.onConnect();
     };
     this.websocket.onmessage = (event: MessageEvent) => {
-      this.onData(decode(event.data) as IncomingWebsocketData);
+      // Decode from OutgoingDashboardEvent
+      const message = OutgoingDashboardEvent.decode(new Uint8Array(event.data));
+
+      this.onData(message as IncomingWebsocketData);
     };
     this.websocket.onclose = (event: CloseEvent) => {
       this.onDisconnect();

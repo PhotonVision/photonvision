@@ -16,7 +16,7 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import axios from "axios";
 import { resolutionsAreEqual } from "@/lib/PhotonUtils";
-import { UiChangeEvent, VisionModuleEvent } from "@/types/PhotonMessage";
+import { UiChangeEvent } from "@/types/PhotonMessage";
 
 interface CameraSettingsStore {
   cameras: { [key: string]: UiCameraConfiguration };

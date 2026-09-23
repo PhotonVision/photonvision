@@ -51,6 +51,8 @@ message UiCalibrationData {
 }
 message VisionSourceManagerState {
 }
+message MutatePipelineSettings {
+}
 
 message OutgoingDashboardEvent {
     // Things backend wants to send to dashboards
@@ -62,6 +64,7 @@ message OutgoingDashboardEvent {
         LogMessage log = 5;
         UiCalibrationData calibrationData = 6;
         VisionSourceManagerState visionSourceManager = 7;
+        MutatePipelineSettings mutatePipeline = 8;
     }
 }
 
