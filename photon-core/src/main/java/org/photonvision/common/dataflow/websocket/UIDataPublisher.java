@@ -22,14 +22,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
-import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.NewDataChangeService;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.pipeline.result.FocusPipelineResult;
+import photonvision.core.proto.PhotonMessage.OutgoingDashboardEvent;
 
 public class UIDataPublisher implements CVPipelineResultConsumer {
     private static final Logger logger = new Logger(UIDataPublisher.class, LogGroup.VisionModule);
@@ -84,8 +84,14 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
             dataMap.put("focus", focusResult.focus);
         }
 
-        DataChangeService.getInstance()
-                .publishEvent(OutgoingUIEvent.wrappedOf("updatePipelineResult", uiMap));
+        var event = OutgoingDashboardEvent.newInstance();
+        var upr = event.getMutableUpdatePipelineResult();
+        upr.setCameraUniqueName(uniqueName);
+        upr.setSequenceID(result.sequenceID);
+        // Eventually more
+
+        NewDataChangeService.OUTBOUND_UI_EVENTS.publish(event);
+
         lastUIResultUpdateTime = now;
     }
 }

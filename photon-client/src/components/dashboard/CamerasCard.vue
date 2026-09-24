@@ -58,7 +58,7 @@ const performanceRecommendation = computed<string>(() => {
       <v-switch
         v-model="driverMode"
         :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
-        label="Driver Mode"
+        label="Driver Mode ooga booga"
         color="primary"
         hide-details="auto"
       />

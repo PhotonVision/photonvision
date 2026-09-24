@@ -30,7 +30,6 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
@@ -72,7 +71,7 @@ public class VisionModule implements AutoCloseable {
     private final VisionRunner visionRunner;
     private final StreamRunnable streamRunnable;
     private final VisionModuleChangeSubscriber changeSubscriber;
-    private final SubscriberHandle changeSubscriberHandle;
+    // private final SubscriberHandle changeSubscriberHandle;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the
     // OutputStreamPipeline
@@ -138,7 +137,7 @@ public class VisionModule implements AutoCloseable {
         this.visionRunner =
                 new VisionRunner(
                         this.visionSource.getFrameProvider(),
-                        this.pipelineManager::getCurrentPipeline,
+                        this.pipelineManager::updateAndReturnCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks,
                         getChangeSubscriber(),
@@ -147,7 +146,7 @@ public class VisionModule implements AutoCloseable {
                         // Streams are created after the runner, so read the field lazily
                         () -> inputVideoStreamer != null && inputVideoStreamer.isStreamConsumed());
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
-        changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
+        // changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
         createStreams();
 
@@ -715,7 +714,7 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void setTargetModel(TargetModel targetModel) {
-        var pipelineSettings = pipelineManager.getCurrentPipeline().getSettings();
+        var pipelineSettings = pipelineManager.updateAndReturnCurrentPipeline().getSettings();
         if (pipelineSettings instanceof ReflectivePipelineSettings settings) {
             settings.targetModel = targetModel;
             saveAndBroadcastAll();
@@ -778,7 +777,7 @@ public class VisionModule implements AutoCloseable {
         inputFrameSaver.close();
         outputFrameSaver.close();
 
-        changeSubscriberHandle.stop();
+        // changeSubscriberHandle.stop();
         setVisionLEDs(false);
 
         visionRunner.close();

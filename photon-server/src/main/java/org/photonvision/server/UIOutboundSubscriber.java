@@ -18,39 +18,48 @@
 package org.photonvision.server;
 
 import io.avaje.json.JsonDataException;
-import java.util.Collections;
-import java.util.HashMap;
-import org.photonvision.common.dataflow.DataChangeDestination;
-import org.photonvision.common.dataflow.DataChangeSource;
-import org.photonvision.common.dataflow.DataChangeSubscriber;
-import org.photonvision.common.dataflow.events.DataChangeEvent;
-import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.NewDataChangeService;
+import org.photonvision.common.dataflow.NewDataChangeService.NewDataChangeSubscriber;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import photonvision.core.proto.PhotonMessage.OutgoingDashboardEvent;
 
 @SuppressWarnings("rawtypes")
 /*
  * DO NOT use logging in this class. If you do, the logs will recurse forever!
  */
-class UIOutboundSubscriber extends DataChangeSubscriber {
+class UIOutboundSubscriber {
     Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.WebServer);
 
-    private final DataSocketHandler socketHandler;
+    private NewDataChangeSubscriber<OutgoingDashboardEvent> subscriber;
 
-    public UIOutboundSubscriber(DataSocketHandler socketHandler) {
-        super(DataChangeSource.AllSources, Collections.singletonList(DataChangeDestination.DCD_UI));
-        this.socketHandler = socketHandler;
+    private Thread listenerThread;
+
+    public UIOutboundSubscriber() {
+        this.subscriber = NewDataChangeService.OUTBOUND_UI_EVENTS.subscribe();
+
+        this.listenerThread =
+                new Thread(
+                        () -> {
+                            while (true) {
+                                try {
+                                    // Arbitrary limit. Processes queued events in batches
+                                    Thread.sleep(100);
+                                    update();
+                                } catch (InterruptedException e) {
+                                    logger.error("UIOutboundSubscriber thread interrupted!", e);
+                                }
+                            }
+                        });
+        this.listenerThread.start();
     }
 
-    @Override
-    public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
-        if (event instanceof OutgoingUIEvent<T> thisEvent) {
+    public void update() throws InterruptedException {
+        var events = subscriber.waitForEvents();
+        for (var event : events) {
+            // TODO add originContext to event
             try {
-                if (event.data instanceof HashMap data) {
-                    socketHandler.broadcastMessage(data, thisEvent.originContext);
-                } else {
-                    socketHandler.broadcastMessage(event.data, thisEvent.originContext);
-                }
+                DataSocketHandler.getInstance().broadcastMessage(event, null);
             } catch (JsonDataException e) {
                 logger.error("Failed to process outgoing message!", e);
             }

@@ -75,7 +75,7 @@ public class PipelineManagerTest {
         // add a reflective pipeline
         manager.addPipeline(PipelineType.Reflective, "Another");
         manager.setIndex(0);
-        manager.getCurrentPipeline();
+        manager.updateAndReturnCurrentPipeline();
         // and change
         manager.changePipelineType(PipelineType.Aruco.baseIndex);
     }

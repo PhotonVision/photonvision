@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@adam-rocska/units-and-measurement": "^1.2.0",
+    "@bufbuild/protobuf": "^2.15.0",
     "@fontsource/prompt": "^5.2.6",
     "@mdi/font": "^7.4.47",
     "@msgpack/msgpack": "^3.1.2",
@@ -32,6 +33,7 @@
     "pinia": "^3.0.2",
     "svg2pdf.js": "^2.7.0",
     "three": "^0.178.0",
+    "ts-proto": "^2.12.4",
     "vue": "^3.5.13",
     "vue-router": "^4.5.1",
     "vue3-virtual-scroll-list": "^0.2.1",

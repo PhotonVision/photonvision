@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package photonvision.core.proto;
+
+
+// UI -> Frontend format
+message VisionModuleEvent {
+    string cameraUniqueName = 1;
+
+    // List of all the changes that can be requested
+    oneof event {
+        bool driverMode = 2;
+    }
+}
+
+message CameraCalibrationCoefficients {
+    // TODO fill this out
+    repeated double cameraIntrinsics = 1;
+}
+
+message CalibrationUploadedEvent {
+    string cameraUniqueName = 1;
+    CameraCalibrationCoefficients newCal = 2;
+}
+
+message UiChangeEvent {
+    oneof event {
+        // Messages from UI -> backend
+        VisionModuleEvent vm_change = 1;
+        // TODO add more
+        
+        // Messages internal to backend
+        bool userConnected = 2;
+        CalibrationUploadedEvent calibrationUploaded = 3;
+
+    }
+}
+
+// ===========================
+
+message PipelineResult {
+    string cameraUniqueName = 1;
+    int64 sequenceID = 2;
+}
+
+message UiMetrics {
+}
+message LogMessage {
+}
+message UiCalibrationData {
+}
+message VisionSourceManagerState {
+}
+message MutatePipelineSettings {
+}
+
+message OutgoingDashboardEvent {
+    // Things backend wants to send to dashboards
+    oneof event {
+        bool fullsettings = 1;
+        bool networkTablesConnected = 2;
+        PipelineResult updatePipelineResult = 3;
+        UiMetrics metrics = 4;
+        LogMessage log = 5;
+        UiCalibrationData calibrationData = 6;
+        VisionSourceManagerState visionSourceManager = 7;
+        MutatePipelineSettings mutatePipeline = 8;
+    }
+}
+
+// ===========================
+
+// Wrapper created by backend to add context
+message PhotonDataChangeEvent {
+    // Websocket session this request came from, if it came from a websocket
+    optional string originCtxSessionId = 1;
+
+    UiChangeEvent event = 2;
+}
+
