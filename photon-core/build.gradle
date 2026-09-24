@@ -51,8 +51,8 @@ protobuf {
 
 tasks.register('copyTsProto', Copy) {
     dependsOn('generateProto')
-    from layout.buildDirectory.file('generated/sources/proto/main/tsproto/PhotonMessage.ts')
-    into rootProject.file('photon-client/src/types/')
+    from layout.buildDirectory.file('generated/sources/proto/main/tsproto')
+    into rootProject.file('photon-client/src/types/proto')
 }
 
 dependencies {

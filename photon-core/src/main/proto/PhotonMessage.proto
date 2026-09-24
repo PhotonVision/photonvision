@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package photonvision.core.proto;
 
+import "wpimath/protobuf/geometry3d.proto";
 
 // UI -> Frontend format
 message VisionModuleEvent {
@@ -38,9 +39,33 @@ message UiChangeEvent {
 
 // ===========================
 
+message PhotonTarget {
+    double yaw = 1;
+    double pitch = 2;
+    double skew = 3;
+    double area = 4;
+    double ambiguity = 5;
+    int32 fiducialId = 6;
+    double confidence = 7;
+    int32 classId = 8;
+    optional wpi.proto.ProtobufTransform3d pose = 9;
+}
+
+message MultitagResult {
+    wpi.proto.ProtobufTransform3d bestTransform = 1;
+    double bestReprojectionError = 2;
+    repeated int32 fiducialIDsUsed = 3;
+}
+
 message PipelineResult {
     string cameraUniqueName = 1;
     int64 sequenceID = 2;
+    double fps = 3;
+    double latency = 4;
+    optional double focus = 5;
+    repeated PhotonTarget targets = 6;
+    optional MultitagResult multitagResult = 7;
+    repeated string classNames = 8;
 }
 
 message UiMetrics {

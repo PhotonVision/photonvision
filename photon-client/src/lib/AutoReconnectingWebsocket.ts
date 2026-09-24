@@ -1,6 +1,6 @@
 import type { IncomingWebsocketData } from "@/types/WebsocketDataTypes";
-import type { MessageFns } from "@/types/PhotonMessage";
-import { OutgoingDashboardEvent } from "@/types/PhotonMessage";
+import type { MessageFns } from "@/types/proto/PhotonMessage";
+import { OutgoingDashboardEvent } from "@/types/proto/PhotonMessage";
 
 /**
  * {@link WebSocket} wrapper class that automatically reconnects to the provided host address if the connection was closed by the remote host or a connection failure.

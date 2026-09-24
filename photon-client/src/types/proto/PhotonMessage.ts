@@ -6,6 +6,7 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import { ProtobufTransform3d } from "./wpimath/protobuf/geometry3d";
 
 export const protobufPackage = "photonvision.core.proto";
 
@@ -35,9 +36,33 @@ export interface UiChangeEvent {
   calibrationUploaded?: CalibrationUploadedEvent | undefined;
 }
 
+export interface PhotonTarget {
+  yaw: number;
+  pitch: number;
+  skew: number;
+  area: number;
+  ambiguity: number;
+  fiducialId: number;
+  confidence: number;
+  classId: number;
+  pose?: ProtobufTransform3d | undefined;
+}
+
+export interface MultitagResult {
+  bestTransform: ProtobufTransform3d | undefined;
+  bestReprojectionError: number;
+  fiducialIDsUsed: number[];
+}
+
 export interface PipelineResult {
   cameraUniqueName: string;
   sequenceID: number;
+  fps: number;
+  latency: number;
+  focus?: number | undefined;
+  targets: PhotonTarget[];
+  multitagResult?: MultitagResult | undefined;
+  classNames: string[];
 }
 
 export interface UiMetrics {
@@ -441,8 +466,343 @@ export const UiChangeEvent: MessageFns<UiChangeEvent> = {
   },
 };
 
+function createBasePhotonTarget(): PhotonTarget {
+  return {
+    yaw: 0,
+    pitch: 0,
+    skew: 0,
+    area: 0,
+    ambiguity: 0,
+    fiducialId: 0,
+    confidence: 0,
+    classId: 0,
+    pose: undefined,
+  };
+}
+
+export const PhotonTarget: MessageFns<PhotonTarget> = {
+  encode(message: PhotonTarget, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.yaw !== 0) {
+      writer.uint32(9).double(message.yaw);
+    }
+    if (message.pitch !== 0) {
+      writer.uint32(17).double(message.pitch);
+    }
+    if (message.skew !== 0) {
+      writer.uint32(25).double(message.skew);
+    }
+    if (message.area !== 0) {
+      writer.uint32(33).double(message.area);
+    }
+    if (message.ambiguity !== 0) {
+      writer.uint32(41).double(message.ambiguity);
+    }
+    if (message.fiducialId !== 0) {
+      writer.uint32(48).int32(message.fiducialId);
+    }
+    if (message.confidence !== 0) {
+      writer.uint32(57).double(message.confidence);
+    }
+    if (message.classId !== 0) {
+      writer.uint32(64).int32(message.classId);
+    }
+    if (message.pose !== undefined) {
+      ProtobufTransform3d.encode(message.pose, writer.uint32(74).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PhotonTarget {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBasePhotonTarget();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 9) {
+              break;
+            }
+
+            message.yaw = reader.double();
+            continue;
+          }
+          case 2: {
+            if (tag !== 17) {
+              break;
+            }
+
+            message.pitch = reader.double();
+            continue;
+          }
+          case 3: {
+            if (tag !== 25) {
+              break;
+            }
+
+            message.skew = reader.double();
+            continue;
+          }
+          case 4: {
+            if (tag !== 33) {
+              break;
+            }
+
+            message.area = reader.double();
+            continue;
+          }
+          case 5: {
+            if (tag !== 41) {
+              break;
+            }
+
+            message.ambiguity = reader.double();
+            continue;
+          }
+          case 6: {
+            if (tag !== 48) {
+              break;
+            }
+
+            message.fiducialId = reader.int32();
+            continue;
+          }
+          case 7: {
+            if (tag !== 57) {
+              break;
+            }
+
+            message.confidence = reader.double();
+            continue;
+          }
+          case 8: {
+            if (tag !== 64) {
+              break;
+            }
+
+            message.classId = reader.int32();
+            continue;
+          }
+          case 9: {
+            if (tag !== 74) {
+              break;
+            }
+
+            message.pose = ProtobufTransform3d.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): PhotonTarget {
+    return {
+      yaw: isSet(object.yaw) ? globalThis.Number(object.yaw) : 0,
+      pitch: isSet(object.pitch) ? globalThis.Number(object.pitch) : 0,
+      skew: isSet(object.skew) ? globalThis.Number(object.skew) : 0,
+      area: isSet(object.area) ? globalThis.Number(object.area) : 0,
+      ambiguity: isSet(object.ambiguity) ? globalThis.Number(object.ambiguity) : 0,
+      fiducialId: isSet(object.fiducialId) ? globalThis.Number(object.fiducialId) : 0,
+      confidence: isSet(object.confidence) ? globalThis.Number(object.confidence) : 0,
+      classId: isSet(object.classId) ? globalThis.Number(object.classId) : 0,
+      pose: isSet(object.pose) ? ProtobufTransform3d.fromJSON(object.pose) : undefined,
+    };
+  },
+
+  toJSON(message: PhotonTarget): unknown {
+    const obj: any = {};
+    if (message.yaw !== 0) {
+      obj.yaw = message.yaw;
+    }
+    if (message.pitch !== 0) {
+      obj.pitch = message.pitch;
+    }
+    if (message.skew !== 0) {
+      obj.skew = message.skew;
+    }
+    if (message.area !== 0) {
+      obj.area = message.area;
+    }
+    if (message.ambiguity !== 0) {
+      obj.ambiguity = message.ambiguity;
+    }
+    if (message.fiducialId !== 0) {
+      obj.fiducialId = Math.round(message.fiducialId);
+    }
+    if (message.confidence !== 0) {
+      obj.confidence = message.confidence;
+    }
+    if (message.classId !== 0) {
+      obj.classId = Math.round(message.classId);
+    }
+    if (message.pose !== undefined) {
+      obj.pose = ProtobufTransform3d.toJSON(message.pose);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PhotonTarget>, I>>(base?: I): PhotonTarget {
+    return PhotonTarget.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PhotonTarget>, I>>(object: I): PhotonTarget {
+    const message = createBasePhotonTarget();
+    message.yaw = object.yaw ?? 0;
+    message.pitch = object.pitch ?? 0;
+    message.skew = object.skew ?? 0;
+    message.area = object.area ?? 0;
+    message.ambiguity = object.ambiguity ?? 0;
+    message.fiducialId = object.fiducialId ?? 0;
+    message.confidence = object.confidence ?? 0;
+    message.classId = object.classId ?? 0;
+    message.pose = (object.pose !== undefined && object.pose !== null)
+      ? ProtobufTransform3d.fromPartial(object.pose)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseMultitagResult(): MultitagResult {
+  return { bestTransform: undefined, bestReprojectionError: 0, fiducialIDsUsed: [] };
+}
+
+export const MultitagResult: MessageFns<MultitagResult> = {
+  encode(message: MultitagResult, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.bestTransform !== undefined) {
+      ProtobufTransform3d.encode(message.bestTransform, writer.uint32(10).fork()).join();
+    }
+    if (message.bestReprojectionError !== 0) {
+      writer.uint32(17).double(message.bestReprojectionError);
+    }
+    writer.uint32(26).fork();
+    for (const v of message.fiducialIDsUsed) {
+      writer.int32(v);
+    }
+    writer.join();
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MultitagResult {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMultitagResult();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.bestTransform = ProtobufTransform3d.decode(reader, reader.uint32());
+            continue;
+          }
+          case 2: {
+            if (tag !== 17) {
+              break;
+            }
+
+            message.bestReprojectionError = reader.double();
+            continue;
+          }
+          case 3: {
+            if (tag === 24) {
+              message.fiducialIDsUsed.push(reader.int32());
+
+              continue;
+            }
+
+            if (tag === 26) {
+              const end2 = reader.uint32() + reader.pos;
+              while (reader.pos < end2) {
+                message.fiducialIDsUsed.push(reader.int32());
+              }
+
+              continue;
+            }
+
+            break;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): MultitagResult {
+    return {
+      bestTransform: isSet(object.bestTransform) ? ProtobufTransform3d.fromJSON(object.bestTransform) : undefined,
+      bestReprojectionError: isSet(object.bestReprojectionError) ? globalThis.Number(object.bestReprojectionError) : 0,
+      fiducialIDsUsed: globalThis.Array.isArray(object?.fiducialIDsUsed)
+        ? object.fiducialIDsUsed.map((e: any) => globalThis.Number(e))
+        : [],
+    };
+  },
+
+  toJSON(message: MultitagResult): unknown {
+    const obj: any = {};
+    if (message.bestTransform !== undefined) {
+      obj.bestTransform = ProtobufTransform3d.toJSON(message.bestTransform);
+    }
+    if (message.bestReprojectionError !== 0) {
+      obj.bestReprojectionError = message.bestReprojectionError;
+    }
+    if (message.fiducialIDsUsed?.length) {
+      obj.fiducialIDsUsed = message.fiducialIDsUsed.map((e) => Math.round(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MultitagResult>, I>>(base?: I): MultitagResult {
+    return MultitagResult.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MultitagResult>, I>>(object: I): MultitagResult {
+    const message = createBaseMultitagResult();
+    message.bestTransform = (object.bestTransform !== undefined && object.bestTransform !== null)
+      ? ProtobufTransform3d.fromPartial(object.bestTransform)
+      : undefined;
+    message.bestReprojectionError = object.bestReprojectionError ?? 0;
+    message.fiducialIDsUsed = object.fiducialIDsUsed?.map((e) => e) || [];
+    return message;
+  },
+};
+
 function createBasePipelineResult(): PipelineResult {
-  return { cameraUniqueName: "", sequenceID: 0 };
+  return {
+    cameraUniqueName: "",
+    sequenceID: 0,
+    fps: 0,
+    latency: 0,
+    focus: undefined,
+    targets: [],
+    multitagResult: undefined,
+    classNames: [],
+  };
 }
 
 export const PipelineResult: MessageFns<PipelineResult> = {
@@ -452,6 +812,24 @@ export const PipelineResult: MessageFns<PipelineResult> = {
     }
     if (message.sequenceID !== 0) {
       writer.uint32(16).int64(message.sequenceID);
+    }
+    if (message.fps !== 0) {
+      writer.uint32(25).double(message.fps);
+    }
+    if (message.latency !== 0) {
+      writer.uint32(33).double(message.latency);
+    }
+    if (message.focus !== undefined) {
+      writer.uint32(41).double(message.focus);
+    }
+    for (const v of message.targets) {
+      PhotonTarget.encode(v!, writer.uint32(50).fork()).join();
+    }
+    if (message.multitagResult !== undefined) {
+      MultitagResult.encode(message.multitagResult, writer.uint32(58).fork()).join();
+    }
+    for (const v of message.classNames) {
+      writer.uint32(66).string(v!);
     }
     return writer;
   },
@@ -485,6 +863,54 @@ export const PipelineResult: MessageFns<PipelineResult> = {
             message.sequenceID = longToNumber(reader.int64());
             continue;
           }
+          case 3: {
+            if (tag !== 25) {
+              break;
+            }
+
+            message.fps = reader.double();
+            continue;
+          }
+          case 4: {
+            if (tag !== 33) {
+              break;
+            }
+
+            message.latency = reader.double();
+            continue;
+          }
+          case 5: {
+            if (tag !== 41) {
+              break;
+            }
+
+            message.focus = reader.double();
+            continue;
+          }
+          case 6: {
+            if (tag !== 50) {
+              break;
+            }
+
+            message.targets.push(PhotonTarget.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 7: {
+            if (tag !== 58) {
+              break;
+            }
+
+            message.multitagResult = MultitagResult.decode(reader, reader.uint32());
+            continue;
+          }
+          case 8: {
+            if (tag !== 66) {
+              break;
+            }
+
+            message.classNames.push(reader.string());
+            continue;
+          }
         }
         if ((tag & 7) === 4 || tag === 0) {
           break;
@@ -501,6 +927,16 @@ export const PipelineResult: MessageFns<PipelineResult> = {
     return {
       cameraUniqueName: isSet(object.cameraUniqueName) ? globalThis.String(object.cameraUniqueName) : "",
       sequenceID: isSet(object.sequenceID) ? globalThis.Number(object.sequenceID) : 0,
+      fps: isSet(object.fps) ? globalThis.Number(object.fps) : 0,
+      latency: isSet(object.latency) ? globalThis.Number(object.latency) : 0,
+      focus: isSet(object.focus) ? globalThis.Number(object.focus) : undefined,
+      targets: globalThis.Array.isArray(object?.targets)
+        ? object.targets.map((e: any) => PhotonTarget.fromJSON(e))
+        : [],
+      multitagResult: isSet(object.multitagResult) ? MultitagResult.fromJSON(object.multitagResult) : undefined,
+      classNames: globalThis.Array.isArray(object?.classNames)
+        ? object.classNames.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -512,6 +948,24 @@ export const PipelineResult: MessageFns<PipelineResult> = {
     if (message.sequenceID !== 0) {
       obj.sequenceID = Math.round(message.sequenceID);
     }
+    if (message.fps !== 0) {
+      obj.fps = message.fps;
+    }
+    if (message.latency !== 0) {
+      obj.latency = message.latency;
+    }
+    if (message.focus !== undefined) {
+      obj.focus = message.focus;
+    }
+    if (message.targets?.length) {
+      obj.targets = message.targets.map((e) => PhotonTarget.toJSON(e));
+    }
+    if (message.multitagResult !== undefined) {
+      obj.multitagResult = MultitagResult.toJSON(message.multitagResult);
+    }
+    if (message.classNames?.length) {
+      obj.classNames = message.classNames;
+    }
     return obj;
   },
 
@@ -522,6 +976,14 @@ export const PipelineResult: MessageFns<PipelineResult> = {
     const message = createBasePipelineResult();
     message.cameraUniqueName = object.cameraUniqueName ?? "";
     message.sequenceID = object.sequenceID ?? 0;
+    message.fps = object.fps ?? 0;
+    message.latency = object.latency ?? 0;
+    message.focus = object.focus ?? undefined;
+    message.targets = object.targets?.map((e) => PhotonTarget.fromPartial(e)) || [];
+    message.multitagResult = (object.multitagResult !== undefined && object.multitagResult !== null)
+      ? MultitagResult.fromPartial(object.multitagResult)
+      : undefined;
+    message.classNames = object.classNames?.map((e) => e) || [];
     return message;
   },
 };
