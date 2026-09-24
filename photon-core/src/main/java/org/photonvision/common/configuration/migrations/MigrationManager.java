@@ -58,34 +58,59 @@ public class MigrationManager {
         // Extract the file path from the JDBC URL (jdbc:sqlite:/path/to/db)
         String filePath = url.replace("jdbc:sqlite:", "");
         File dbFile = new File(filePath);
-        int currentVersion = 0;
 
         var newDb = !dbFile.exists();
 
         if (newDb) {
             logger.info("Settings database not found");
-            // check for a conf.d directory in the same directory as the database
-            File defaultsDir = dbFile.getParentFile().toPath().resolve("conf.d").toFile();
-            if (defaultsDir.exists() && defaultsDir.isDirectory()) {
-                File defaultDatabase = null;
-                var sqliteFiles = defaultsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".sqlite"));
-                if (sqliteFiles != null && sqliteFiles.length > 0) {
-                    defaultDatabase = sqliteFiles[0];
-                    logger.debug("Using default database found at " + defaultDatabase.getAbsolutePath());
+            File configDir = dbFile.getParentFile().getParentFile().toPath().resolve("conf.d").toFile();
+            newDb = !copyDefaultDatabase(dbFile, configDir);
+        }
+
+        if (!newDb) {
+            try {
+                return applyMigrations(url, newDb);
+            } catch (MigrationException e) {
+                logger.error("Couldn't migrate the existing database", e);
+                if (!backupDatabase(dbFile)) {
                     try {
-                        Files.copy(defaultDatabase.toPath(), dbFile.toPath());
-                        newDb = false;
-                    } catch (IOException e) {
-                        logger.error("Error copying default database", e);
+                        Files.deleteIfExists(dbFile.toPath());
+                        logger.info("Deleted failed database " + dbFile.getAbsolutePath());
+                    } catch (IOException deleteException) {
+                        logger.error("Failed to delete database " + dbFile.getAbsolutePath(), deleteException);
                     }
                 }
             }
         }
 
-        if (newDb) {
-            logger.info("Creating new database");
-        }
+        logger.info("Creating new database");
+        return applyMigrations(url, true);
+    }
 
+    private boolean backupDatabase(File dbFile) {
+        File backup = new File(dbFile.getPath() + ".backup");
+        File backup1 = new File(dbFile.getPath() + ".backup.1");
+        File backup2 = new File(dbFile.getPath() + ".backup.2");
+
+        try {
+            Files.deleteIfExists(backup2.toPath());
+            if (backup1.exists()) {
+                Files.move(backup1.toPath(), backup2.toPath());
+            }
+            if (backup.exists()) {
+                Files.move(backup.toPath(), backup1.toPath());
+            }
+            Files.move(dbFile.toPath(), backup.toPath());
+            logger.info("Backed up failed database to " + backup.getAbsolutePath());
+            return true;
+        } catch (IOException e) {
+            logger.error("Failed to back up database " + dbFile.getAbsolutePath(), e);
+            return false;
+        }
+    }
+
+    private int applyMigrations(String url, boolean newDb) throws MigrationException {
+        int currentVersion;
         try (Connection conn = DriverManager.getConnection(url)) {
             currentVersion = SQLUtils.getUserVersion(conn);
             if (newDb || stepMap.containsKey(currentVersion)) {
@@ -101,8 +126,28 @@ public class MigrationManager {
         } catch (SQLException e) {
             throw new MigrationException("Error connecting to database", e);
         }
+    }
 
-        // return currentVersion;
+    private boolean copyDefaultDatabase(File dbFile, File configDir) {
+        // Check for a conf.d directory in the same directory as the database.
+        if (!configDir.exists() || !configDir.isDirectory()) {
+            return false;
+        }
+
+        var sqliteFiles = configDir.listFiles(file -> file.isFile() && file.getName().endsWith(".sqlite"));
+        if (sqliteFiles == null || sqliteFiles.length == 0) {
+            return false;
+        }
+
+        File defaultDatabase = sqliteFiles[0];
+        logger.debug("Using default database found at " + defaultDatabase.getAbsolutePath());
+        try {
+            Files.copy(defaultDatabase.toPath(), dbFile.toPath());
+            return true;
+        } catch (IOException e) {
+            logger.error("Error copying default database", e);
+            return false;
+        }
     }
 
     // private int applyMigrations(String url) {
