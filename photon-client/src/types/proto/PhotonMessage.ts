@@ -41,7 +41,9 @@ export interface PhotonTarget {
   pitch: number;
   skew: number;
   area: number;
+  /** -1 if not set */
   ambiguity: number;
+  /** -1 if not set */
   fiducialId: number;
   confidence: number;
   classId: number;
@@ -80,9 +82,26 @@ export interface VisionSourceManagerState {
 export interface MutatePipelineSettings {
 }
 
+export interface PhotonSettings {
+}
+
+export interface CameraSettings {
+  nickname: string;
+  uniqueName: string;
+  inputStreamPort: number;
+  outputStreamPort: number;
+  isEnabled: boolean;
+  isConnected: boolean;
+  hasConnected: boolean;
+  mismatch: boolean;
+}
+
+/** Things backend wants to send to dashboards */
 export interface OutgoingDashboardEvent {
-  fullsettings?: boolean | undefined;
-  networkTablesConnected?: boolean | undefined;
+  /** Send settings + cameraSettings for "full settings" */
+  settings?: PhotonSettings | undefined;
+  cameraSettings: CameraSettings[];
+  /** Update events */
   updatePipelineResult?: PipelineResult | undefined;
   metrics?: UiMetrics | undefined;
   log?: LogMessage | undefined;
@@ -1248,10 +1267,252 @@ export const MutatePipelineSettings: MessageFns<MutatePipelineSettings> = {
   },
 };
 
+function createBasePhotonSettings(): PhotonSettings {
+  return {};
+}
+
+export const PhotonSettings: MessageFns<PhotonSettings> = {
+  encode(_: PhotonSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PhotonSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBasePhotonSettings();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(_: any): PhotonSettings {
+    return {};
+  },
+
+  toJSON(_: PhotonSettings): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PhotonSettings>, I>>(base?: I): PhotonSettings {
+    return PhotonSettings.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PhotonSettings>, I>>(_: I): PhotonSettings {
+    const message = createBasePhotonSettings();
+    return message;
+  },
+};
+
+function createBaseCameraSettings(): CameraSettings {
+  return {
+    nickname: "",
+    uniqueName: "",
+    inputStreamPort: 0,
+    outputStreamPort: 0,
+    isEnabled: false,
+    isConnected: false,
+    hasConnected: false,
+    mismatch: false,
+  };
+}
+
+export const CameraSettings: MessageFns<CameraSettings> = {
+  encode(message: CameraSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.nickname !== "") {
+      writer.uint32(10).string(message.nickname);
+    }
+    if (message.uniqueName !== "") {
+      writer.uint32(18).string(message.uniqueName);
+    }
+    if (message.inputStreamPort !== 0) {
+      writer.uint32(24).int32(message.inputStreamPort);
+    }
+    if (message.outputStreamPort !== 0) {
+      writer.uint32(32).int32(message.outputStreamPort);
+    }
+    if (message.isEnabled !== false) {
+      writer.uint32(40).bool(message.isEnabled);
+    }
+    if (message.isConnected !== false) {
+      writer.uint32(48).bool(message.isConnected);
+    }
+    if (message.hasConnected !== false) {
+      writer.uint32(56).bool(message.hasConnected);
+    }
+    if (message.mismatch !== false) {
+      writer.uint32(64).bool(message.mismatch);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CameraSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseCameraSettings();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.nickname = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.uniqueName = reader.string();
+            continue;
+          }
+          case 3: {
+            if (tag !== 24) {
+              break;
+            }
+
+            message.inputStreamPort = reader.int32();
+            continue;
+          }
+          case 4: {
+            if (tag !== 32) {
+              break;
+            }
+
+            message.outputStreamPort = reader.int32();
+            continue;
+          }
+          case 5: {
+            if (tag !== 40) {
+              break;
+            }
+
+            message.isEnabled = reader.bool();
+            continue;
+          }
+          case 6: {
+            if (tag !== 48) {
+              break;
+            }
+
+            message.isConnected = reader.bool();
+            continue;
+          }
+          case 7: {
+            if (tag !== 56) {
+              break;
+            }
+
+            message.hasConnected = reader.bool();
+            continue;
+          }
+          case 8: {
+            if (tag !== 64) {
+              break;
+            }
+
+            message.mismatch = reader.bool();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): CameraSettings {
+    return {
+      nickname: isSet(object.nickname) ? globalThis.String(object.nickname) : "",
+      uniqueName: isSet(object.uniqueName) ? globalThis.String(object.uniqueName) : "",
+      inputStreamPort: isSet(object.inputStreamPort) ? globalThis.Number(object.inputStreamPort) : 0,
+      outputStreamPort: isSet(object.outputStreamPort) ? globalThis.Number(object.outputStreamPort) : 0,
+      isEnabled: isSet(object.isEnabled) ? globalThis.Boolean(object.isEnabled) : false,
+      isConnected: isSet(object.isConnected) ? globalThis.Boolean(object.isConnected) : false,
+      hasConnected: isSet(object.hasConnected) ? globalThis.Boolean(object.hasConnected) : false,
+      mismatch: isSet(object.mismatch) ? globalThis.Boolean(object.mismatch) : false,
+    };
+  },
+
+  toJSON(message: CameraSettings): unknown {
+    const obj: any = {};
+    if (message.nickname !== "") {
+      obj.nickname = message.nickname;
+    }
+    if (message.uniqueName !== "") {
+      obj.uniqueName = message.uniqueName;
+    }
+    if (message.inputStreamPort !== 0) {
+      obj.inputStreamPort = Math.round(message.inputStreamPort);
+    }
+    if (message.outputStreamPort !== 0) {
+      obj.outputStreamPort = Math.round(message.outputStreamPort);
+    }
+    if (message.isEnabled !== false) {
+      obj.isEnabled = message.isEnabled;
+    }
+    if (message.isConnected !== false) {
+      obj.isConnected = message.isConnected;
+    }
+    if (message.hasConnected !== false) {
+      obj.hasConnected = message.hasConnected;
+    }
+    if (message.mismatch !== false) {
+      obj.mismatch = message.mismatch;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CameraSettings>, I>>(base?: I): CameraSettings {
+    return CameraSettings.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CameraSettings>, I>>(object: I): CameraSettings {
+    const message = createBaseCameraSettings();
+    message.nickname = object.nickname ?? "";
+    message.uniqueName = object.uniqueName ?? "";
+    message.inputStreamPort = object.inputStreamPort ?? 0;
+    message.outputStreamPort = object.outputStreamPort ?? 0;
+    message.isEnabled = object.isEnabled ?? false;
+    message.isConnected = object.isConnected ?? false;
+    message.hasConnected = object.hasConnected ?? false;
+    message.mismatch = object.mismatch ?? false;
+    return message;
+  },
+};
+
 function createBaseOutgoingDashboardEvent(): OutgoingDashboardEvent {
   return {
-    fullsettings: undefined,
-    networkTablesConnected: undefined,
+    settings: undefined,
+    cameraSettings: [],
     updatePipelineResult: undefined,
     metrics: undefined,
     log: undefined,
@@ -1263,11 +1524,11 @@ function createBaseOutgoingDashboardEvent(): OutgoingDashboardEvent {
 
 export const OutgoingDashboardEvent: MessageFns<OutgoingDashboardEvent> = {
   encode(message: OutgoingDashboardEvent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.fullsettings !== undefined) {
-      writer.uint32(8).bool(message.fullsettings);
+    if (message.settings !== undefined) {
+      PhotonSettings.encode(message.settings, writer.uint32(10).fork()).join();
     }
-    if (message.networkTablesConnected !== undefined) {
-      writer.uint32(16).bool(message.networkTablesConnected);
+    for (const v of message.cameraSettings) {
+      CameraSettings.encode(v!, writer.uint32(18).fork()).join();
     }
     if (message.updatePipelineResult !== undefined) {
       PipelineResult.encode(message.updatePipelineResult, writer.uint32(26).fork()).join();
@@ -1304,19 +1565,19 @@ export const OutgoingDashboardEvent: MessageFns<OutgoingDashboardEvent> = {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1: {
-            if (tag !== 8) {
+            if (tag !== 10) {
               break;
             }
 
-            message.fullsettings = reader.bool();
+            message.settings = PhotonSettings.decode(reader, reader.uint32());
             continue;
           }
           case 2: {
-            if (tag !== 16) {
+            if (tag !== 18) {
               break;
             }
 
-            message.networkTablesConnected = reader.bool();
+            message.cameraSettings.push(CameraSettings.decode(reader, reader.uint32()));
             continue;
           }
           case 3: {
@@ -1381,10 +1642,10 @@ export const OutgoingDashboardEvent: MessageFns<OutgoingDashboardEvent> = {
 
   fromJSON(object: any): OutgoingDashboardEvent {
     return {
-      fullsettings: isSet(object.fullsettings) ? globalThis.Boolean(object.fullsettings) : undefined,
-      networkTablesConnected: isSet(object.networkTablesConnected)
-        ? globalThis.Boolean(object.networkTablesConnected)
-        : undefined,
+      settings: isSet(object.settings) ? PhotonSettings.fromJSON(object.settings) : undefined,
+      cameraSettings: globalThis.Array.isArray(object?.cameraSettings)
+        ? object.cameraSettings.map((e: any) => CameraSettings.fromJSON(e))
+        : [],
       updatePipelineResult: isSet(object.updatePipelineResult)
         ? PipelineResult.fromJSON(object.updatePipelineResult)
         : undefined,
@@ -1400,11 +1661,11 @@ export const OutgoingDashboardEvent: MessageFns<OutgoingDashboardEvent> = {
 
   toJSON(message: OutgoingDashboardEvent): unknown {
     const obj: any = {};
-    if (message.fullsettings !== undefined) {
-      obj.fullsettings = message.fullsettings;
+    if (message.settings !== undefined) {
+      obj.settings = PhotonSettings.toJSON(message.settings);
     }
-    if (message.networkTablesConnected !== undefined) {
-      obj.networkTablesConnected = message.networkTablesConnected;
+    if (message.cameraSettings?.length) {
+      obj.cameraSettings = message.cameraSettings.map((e) => CameraSettings.toJSON(e));
     }
     if (message.updatePipelineResult !== undefined) {
       obj.updatePipelineResult = PipelineResult.toJSON(message.updatePipelineResult);
@@ -1432,8 +1693,10 @@ export const OutgoingDashboardEvent: MessageFns<OutgoingDashboardEvent> = {
   },
   fromPartial<I extends Exact<DeepPartial<OutgoingDashboardEvent>, I>>(object: I): OutgoingDashboardEvent {
     const message = createBaseOutgoingDashboardEvent();
-    message.fullsettings = object.fullsettings ?? undefined;
-    message.networkTablesConnected = object.networkTablesConnected ?? undefined;
+    message.settings = (object.settings !== undefined && object.settings !== null)
+      ? PhotonSettings.fromPartial(object.settings)
+      : undefined;
+    message.cameraSettings = object.cameraSettings?.map((e) => CameraSettings.fromPartial(e)) || [];
     message.updatePipelineResult = (object.updatePipelineResult !== undefined && object.updatePipelineResult !== null)
       ? PipelineResult.fromPartial(object.updatePipelineResult)
       : undefined;

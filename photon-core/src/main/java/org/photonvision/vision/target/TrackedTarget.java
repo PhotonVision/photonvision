@@ -18,7 +18,6 @@
 package org.photonvision.vision.target;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -26,7 +25,6 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
-import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -40,6 +38,7 @@ import org.photonvision.vision.opencv.Releasable;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.vision.apriltag.AprilTagDetection;
 import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
+import photonvision.core.proto.PhotonMessage.PhotonTarget;
 
 public class TrackedTarget implements Releasable {
     public final Contour m_mainContour;
@@ -405,21 +404,27 @@ public class TrackedTarget implements Releasable {
         this.m_shape = shape;
     }
 
-    public HashMap<String, Object> toHashMap() {
-        var ret = new HashMap<String, Object>();
-        ret.put("pitch", getPitch());
-        ret.put("yaw", getYaw());
-        ret.put("skew", getSkew());
-        ret.put("area", getArea());
-        ret.put("ambiguity", getPoseAmbiguity());
-        ret.put("confidence", m_confidence);
-        ret.put("classId", m_classId);
+    // public HashMap<String, Object> toHashMap() {
+    //     var ret = new HashMap<String, Object>();
+    //     ret.put("pitch", getPitch());
+    //     ret.put("yaw", getYaw());
+    //     ret.put("skew", getSkew());
+    //     ret.put("area", getArea());
+    //     ret.put("ambiguity", getPoseAmbiguity());
+    //     ret.put("confidence", m_confidence);
+    //     ret.put("classId", m_classId);
+    //     var bestCameraToTarget3d = getBestCameraToTarget3d();
+    //     if (bestCameraToTarget3d != null) {
+    //         ret.put("pose", SerializationUtils.transformToHashMap(bestCameraToTarget3d));
+    //     }
+    //     ret.put("fiducialId", getFiducialId());
+    //     return ret;
+    // }
 
-        var bestCameraToTarget3d = getBestCameraToTarget3d();
-        if (bestCameraToTarget3d != null) {
-            ret.put("pose", SerializationUtils.transformToHashMap(bestCameraToTarget3d));
-        }
-        ret.put("fiducialId", getFiducialId());
+    public PhotonTarget toProto() {
+        var ret = PhotonTarget.newInstance();
+        ret.setArea(getArea());
+        // TODO plumb the rest of these
         return ret;
     }
 

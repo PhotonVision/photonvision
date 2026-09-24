@@ -32,12 +32,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
-import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.NewDataChangeService;
-import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import photonvision.core.proto.PhotonMessage.OutgoingDashboardEvent;
 import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
 import photonvision.core.proto.PhotonMessage.UiChangeEvent;
 import us.hebi.quickbuf.InvalidProtocolBufferException;
@@ -80,9 +81,11 @@ public class DataSocketHandler {
         var remote = (InetSocketAddress) context.session.getRemoteAddress();
         var host = remote.getAddress().toString() + ":" + remote.getPort();
         logger.info("New websocket connection from " + host);
-        dcService.publishEvent(
-                new IncomingWebSocketEvent<>(
-                        DataChangeDestination.DCD_GENSETTINGS, "userConnected", context));
+
+        var event = OutgoingDashboardEvent.newInstance();
+        // TODO this hard attaches us to ConfigManager
+        NewDataChangeService.OUTBOUND_UI_EVENTS.publish(
+                UIPhotonConfiguration.programStateToProto(ConfigManager.getInstance().getConfig()));
     }
 
     protected void onClose(WsCloseContext context) {

@@ -76,9 +76,6 @@ export interface WebsocketNTUpdate {
   clients?: number;
 }
 
-// key is the index of the camera, value is that camera's result
-export type WebsocketPipelineResultUpdate = Record<string, PipelineResult>;
-
 export interface WebsocketCalibrationData {
   patternWidth: number;
   boardType: number;

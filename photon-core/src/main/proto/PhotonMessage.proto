@@ -44,7 +44,9 @@ message PhotonTarget {
     double pitch = 2;
     double skew = 3;
     double area = 4;
+    // -1 if not set
     double ambiguity = 5;
+    // -1 if not set
     int32 fiducialId = 6;
     double confidence = 7;
     int32 classId = 8;
@@ -79,18 +81,34 @@ message VisionSourceManagerState {
 message MutatePipelineSettings {
 }
 
+message PhotonSettings {
+}
+message CameraSettings {
+    string nickname = 1;
+    string uniqueName = 2;
+
+    int32 inputStreamPort = 3;
+    int32 outputStreamPort = 4;
+
+    bool isEnabled = 5;
+    bool isConnected = 6;
+    bool hasConnected = 7;
+    bool mismatch = 8;
+}
+
+// Things backend wants to send to dashboards
 message OutgoingDashboardEvent {
-    // Things backend wants to send to dashboards
-    oneof event {
-        bool fullsettings = 1;
-        bool networkTablesConnected = 2;
-        PipelineResult updatePipelineResult = 3;
-        UiMetrics metrics = 4;
-        LogMessage log = 5;
-        UiCalibrationData calibrationData = 6;
-        VisionSourceManagerState visionSourceManager = 7;
-        MutatePipelineSettings mutatePipeline = 8;
-    }
+    // Send settings + cameraSettings for "full settings"
+    optional PhotonSettings settings = 1;
+    repeated CameraSettings cameraSettings = 2;
+
+    // Update events
+    optional PipelineResult updatePipelineResult = 3;
+    optional UiMetrics metrics = 4;
+    optional LogMessage log = 5;
+    optional UiCalibrationData calibrationData = 6;
+    optional VisionSourceManagerState visionSourceManager = 7;
+    optional MutatePipelineSettings mutatePipeline = 8;
 }
 
 // ===========================

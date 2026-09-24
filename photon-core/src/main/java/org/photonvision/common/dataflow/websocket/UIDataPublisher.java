@@ -17,18 +17,16 @@
 
 package org.photonvision.common.dataflow.websocket;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.NewDataChangeService;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.pipeline.result.FocusPipelineResult;
+import photonvision.core.proto.PhotonMessage.MultitagResult;
 import photonvision.core.proto.PhotonMessage.OutgoingDashboardEvent;
 
 public class UIDataPublisher implements CVPipelineResultConsumer {
@@ -48,47 +46,53 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         // only update the UI at 10hz
         if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) return;
 
-        Map<String, Object> dataMap = new HashMap<>();
-        dataMap.put("sequenceID", result.sequenceID);
-        dataMap.put("fps", result.fps);
-        dataMap.put("latency", result.getLatencyMillis());
-        List<Map<String, Object>> uiTargets = new ArrayList<>(result.targets.size());
+        var event = OutgoingDashboardEvent.newInstance();
+        var upr = event.getMutableUpdatePipelineResult();
+
+        upr.setSequenceID(result.sequenceID);
+        upr.setFps(result.fps);
+        upr.setLatency(result.getLatencyMillis());
 
         // We don't actually need to send targets during calibration and it can take up a lot (up to
         // 1.2Mbps for 60 snapshots) of target results with no pitch/yaw/etc set
         if (!(result instanceof CalibrationPipelineResult)) {
             for (var t : result.targets) {
-                uiTargets.add(t.toHashMap());
+                upr.getMutableTargets().add(t.toProto());
             }
         }
 
-        dataMap.put("targets", uiTargets);
-        dataMap.put("classNames", result.objectDetectionClassNames);
+        upr.getMutableClassNames().addAll(result.objectDetectionClassNames.toArray(new String[] {}));
 
         // Only send Multitag Results if they are present, similar to 3d pose
         if (result.multiTagResult.isPresent()) {
-            var multitagData = new HashMap<String, Object>();
-            multitagData.put(
-                    "bestTransform",
-                    SerializationUtils.transformToHashMap(result.multiTagResult.get().estimatedPose.best));
-            multitagData.put(
-                    "bestReprojectionError", result.multiTagResult.get().estimatedPose.bestReprojErr);
-            multitagData.put("fiducialIDsUsed", result.multiTagResult.get().fiducialIDsUsed);
-            dataMap.put("multitagResult", multitagData);
+            var mtr = MultitagResult.newInstance();
+            // TODO plumb transforms
+            mtr.getMutableFiducialIDsUsed()
+                    .addAll(
+                            result.multiTagResult.get().fiducialIDsUsed.stream()
+                                    .mapToInt(Short::intValue)
+                                    .toArray());
+
+            upr.setMultitagResult(mtr);
+
+            // var multitagData = new HashMap<String, Object>();
+            // multitagData.put(
+            //         "bestTransform",
+            //
+            // SerializationUtils.transformToHashMap(result.multiTagResult.get().estimatedPose.best));
+            // multitagData.put(
+            //         "bestReprojectionError", result.multiTagResult.get().estimatedPose.bestReprojErr);
+            // multitagData.put("fiducialIDsUsed", result.multiTagResult.get().fiducialIDsUsed);
+            // dataMap.put("multitagResult", multitagData);
         }
 
         Map<String, Map<String, Object>> uiMap = new HashMap<>();
-        uiMap.put(uniqueName, dataMap);
+        upr.setCameraUniqueName(uniqueName);
 
         if (result instanceof FocusPipelineResult focusResult) {
-            dataMap.put("focus", focusResult.focus);
+            // dataMap.put("focus", focusResult.focus);
+            upr.setFocus(focusResult.focus);
         }
-
-        var event = OutgoingDashboardEvent.newInstance();
-        var upr = event.getMutableUpdatePipelineResult();
-        upr.setCameraUniqueName(uniqueName);
-        upr.setSequenceID(result.sequenceID);
-        // Eventually more
 
         NewDataChangeService.OUTBOUND_UI_EVENTS.publish(event);
 

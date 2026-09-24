@@ -1,14 +1,13 @@
 import { defineStore } from "pinia";
 import type { LogMessage, VsmState } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
-import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import type {
   WebsocketCalibrationData,
   WebsocketLogMessage,
   WebsocketNTUpdate,
-  WebsocketPipelineResultUpdate
 } from "@/types/WebsocketDataTypes";
+import type { MultitagResult, PipelineResult } from "@/types/proto/PhotonMessage";
 
 export interface NTConnectionStatus {
   connected: boolean;
@@ -134,24 +133,19 @@ export const useStateStore = defineStore("state", {
         clients: data.clients
       };
     },
-    updateBackendResultsFromWebsocket(data: WebsocketPipelineResultUpdate) {
-      this.backendResults = {
-        ...this.backendResults,
-        ...data
-      };
+    updateBackendResultsFromWebsocket(data: PipelineResult) {
+      const key = data.cameraUniqueName;
 
-      for (const key in data) {
-        const multitagRes = data[key].multitagResult;
+      this.backendResults[key] = data;
 
-        if (multitagRes) {
-          if (!this.multitagResultBuffer[key]) {
-            this.multitagResultBuffer[key] = [];
-          }
+      if (data.multitagResult) {
+        if (!this.multitagResultBuffer[key]) {
+          this.multitagResultBuffer[key] = [];
+        }
 
-          this.multitagResultBuffer[key].push(multitagRes);
-          if (this.multitagResultBuffer[key].length > 100) {
-            this.multitagResultBuffer[key].shift();
-          }
+        this.multitagResultBuffer[key].push(data.multitagResult);
+        if (this.multitagResultBuffer[key].length > 100) {
+          this.multitagResultBuffer[key].shift();
         }
       }
     },
