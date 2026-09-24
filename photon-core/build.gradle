@@ -27,6 +27,10 @@ protobuf {
         quickbuf {
             artifact = 'us.hebi.quickbuf:protoc-gen-quickbuf:1.3.3'
         }
+        tsproto {
+            path = "${rootDir}/photon-client/node_modules/.bin/protoc-gen-ts_proto" + 
+                (org.gradle.internal.os.OperatingSystem.current().isWindows() ? ".cmd" : "")
+        }
     }
     generateProtoTasks {
         all().configureEach { task ->
@@ -39,11 +43,17 @@ protobuf {
                 quickbuf {
                     option "gen_descriptors=true"
                 }
+                tsproto {}
             }
         }
     }
 }
-sourceSets.main.java.srcDir "${buildDir}/generated/sources/proto/main/quickbuf"
+
+tasks.register('copyTsProto', Copy) {
+    dependsOn('generateProto')
+    from layout.buildDirectory.file('generated/sources/proto/main/tsproto/PhotonMessage.ts')
+    into rootProject.file('photon-client/src/types/')
+}
 
 dependencies {
     wpilibNatives project(path: ':photon-targeting', configuration: 'wpilibNatives')

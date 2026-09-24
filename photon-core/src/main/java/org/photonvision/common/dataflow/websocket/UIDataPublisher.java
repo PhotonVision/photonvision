@@ -91,8 +91,6 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         // Eventually more
 
         NewDataChangeService.OUTBOUND_UI_EVENTS.publish(event);
-        // DataChangeService.getInstance()
-        //         .publishEvent(OutgoingUIEvent.wrappedOf("updatePipelineResult", uiMap));
 
         lastUIResultUpdateTime = now;
     }

@@ -122,12 +122,6 @@ public class DataSocketHandler {
         }
     }
 
-    private void sendMessage(ByteBuffer b, WsContext user) {
-        if (user.session.isOpen()) {
-            user.send(b);
-        }
-    }
-
     public void broadcastMessage(ProtoMessage<?> message, WsContext userToSkip) throws JsonException {
         var data = ByteBuffer.wrap(message.toByteArray());
 
@@ -137,7 +131,9 @@ public class DataSocketHandler {
             var userSession = entry.getKey();
             var userCtx = entry.getValue();
             if (!userSession.equals(skipSession)) {
-                sendMessage(data, userCtx);
+                if (userCtx.session.isOpen()) {
+                    userCtx.send(data);
+                }
             }
         }
     }
