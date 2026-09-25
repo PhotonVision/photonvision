@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <limits>
 #include <string>
 
 #include <opencv2/core/mat.hpp>
@@ -140,9 +141,31 @@ Java_org_photonvision_jni_CscoreExtras_wrapRawFrame
 {
   auto* frame = reinterpret_cast<wpi::util::RawFrame*>(framePtr);
 
+  if (frame->pixelFormat == WPI_PIXFMT_MJPEG) {
+    if (!frame->data || frame->size == 0 || frame->size > frame->capacity ||
+        frame->size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+      return reinterpret_cast<jlong>(new cv::Mat());
+    }
+    return reinterpret_cast<jlong>(
+        new cv::Mat(1, static_cast<int>(frame->size), CV_8UC1, frame->data));
+  }
+
   return reinterpret_cast<jlong>(new cv::Mat(frame->height, frame->width,
                                              GetCVFormat(frame->pixelFormat),
                                              frame->data, frame->stride));
+}
+
+/*
+ * Class:     org_photonvision_jni_CscoreExtras
+ * Method:    getPixelFormatNative
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL
+Java_org_photonvision_jni_CscoreExtras_getPixelFormatNative
+  (JNIEnv*, jclass, jlong framePtr)
+{
+  auto* frame = reinterpret_cast<wpi::util::RawFrame*>(framePtr);
+  return frame->pixelFormat;
 }
 
 /*

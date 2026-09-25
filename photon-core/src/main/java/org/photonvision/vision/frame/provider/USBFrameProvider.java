@@ -18,6 +18,7 @@
 package org.photonvision.vision.frame.provider;
 
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.jni.CscoreExtras;
@@ -41,6 +42,7 @@ public class USBFrameProvider extends CpuImageProcessor {
     private Runnable connectedCallback;
 
     private long lastTime = 0;
+    private volatile boolean grayscaleInput = false;
 
     @SuppressWarnings("SpellCheckingInspection")
     public USBFrameProvider(
@@ -65,7 +67,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             onCameraConnected();
         }
 
-        if (m_blockForFrames) {
+        if (m_blockForFrames && !grayscaleInput) {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             var mat = new CVMat();
             // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is nS since
@@ -81,42 +83,80 @@ public class USBFrameProvider extends CpuImageProcessor {
 
             return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
         } else {
-            // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
-            // TODO - consider a frame pool
-            // TODO - getCurrentVideoMode is a JNI call for us, but profiling indicates it's fast
-            var cameraMode = settables.getCurrentVideoMode();
-            var frame = new RawFrame();
+            return getRawInputMat();
+        }
+    }
+
+    private CapturedFrame getRawInputMat() {
+        var cameraMode = settables.getCurrentVideoMode();
+        boolean captureGrayscale = grayscaleInput;
+        // CSCore's MJPEG-to-gray conversion first decodes BGR. Capture compressed bytes instead
+        // so OpenCV can decode JPEG luminance directly at the original camera resolution.
+        boolean decodeMjpeg = captureGrayscale && cameraMode.pixelFormat == PixelFormat.MJPEG;
+        // UNKNOWN asks for the original image. CSCore's converted-image API rejects MJPEG.
+        var format =
+                decodeMjpeg ? PixelFormat.UNKNOWN : captureGrayscale ? PixelFormat.GRAY : PixelFormat.BGR;
+        var frame = new RawFrame();
+        CVMat image = null;
+        boolean ownershipTransferred = false;
+        long captureTimeNs = 0;
+        try {
             frame.setInfo(
                     cameraMode.width,
                     cameraMode.height,
-                    // hard-coded 3 channel
-                    cameraMode.width * 3,
-                    PixelFormat.BGR);
-
-            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is nS since
-            // Hal::initialize was called
-            long captureTimeNs =
+                    decodeMjpeg ? 0 : cameraMode.width * (captureGrayscale ? 1 : 3),
+                    format);
+            // Zero waits for a newly arriving frame, matching CvSink.grabFrame's blocking mode.
+            // Otherwise allow the latest frame as long as it differs from our previous capture.
+            captureTimeNs =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                            cvSink.getHandle(), frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
+                            cvSink.getHandle(),
+                            frame.getNativeObj(),
+                            CSCORE_DEFAULT_FRAME_TIMEOUT,
+                            m_blockForFrames ? 0 : lastTime);
             lastTime = captureTimeNs;
-
-            CVMat ret;
-
             if (captureTimeNs == 0) {
-                var error = cvSink.getError();
-                logger.error("Error grabbing image: " + error);
-
-                frame.close();
-                ret = new CVMat();
-            } else {
-                // No error! yay
-                var mat = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
-
-                ret = new CVMat(mat, frame);
+                logger.error("Error grabbing image: " + cvSink.getError());
+                return new CapturedFrame(new CVMat(), settables.getFrameStaticProperties(), 0);
             }
 
-            return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeNs);
+            if (decodeMjpeg && CscoreExtras.getPixelFormat(frame) != PixelFormat.MJPEG) {
+                // A camera mode change can leave one frame from the previous mode in the sink.
+                return new CapturedFrame(new CVMat(), settables.getFrameStaticProperties(), 0);
+            }
+            image = new CVMat(new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj())), frame);
+            ownershipTransferred = true;
+            if (decodeMjpeg) {
+                image = decodeMjpegGrayscale(image);
+                if (image.getMat().empty()) {
+                    logger.error("Error decoding MJPEG image");
+                }
+            }
+            return new CapturedFrame(image, settables.getFrameStaticProperties(), captureTimeNs);
+        } catch (RuntimeException ex) {
+            if (image != null) image.release();
+            logger.error("Error grabbing image", ex);
+            return new CapturedFrame(new CVMat(), settables.getFrameStaticProperties(), captureTimeNs);
+        } finally {
+            if (!ownershipTransferred) {
+                frame.close();
+            }
         }
+    }
+
+    /** Decode into owned storage before releasing the compressed frame and its native buffer. */
+    static CVMat decodeMjpegGrayscale(CVMat encoded) {
+        try {
+            if (encoded.getMat().empty()) return new CVMat();
+            return new CVMat(Imgcodecs.imdecode(encoded.getMat(), Imgcodecs.IMREAD_GRAYSCALE));
+        } finally {
+            encoded.release();
+        }
+    }
+
+    @Override
+    public void requestGrayscaleInput(boolean grayscaleInput) {
+        this.grayscaleInput = grayscaleInput;
     }
 
     @Override

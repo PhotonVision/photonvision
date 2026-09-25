@@ -17,6 +17,7 @@
 
 package org.photonvision.jni;
 
+import org.wpilib.util.PixelFormat;
 import org.wpilib.util.RawFrame;
 import org.wpilib.util.TimestampSource;
 
@@ -39,12 +40,20 @@ public class CscoreExtras {
             int sink, long framePtr, double timeout, long lastFrameTime);
 
     /**
-     * Wrap the data owned by a RawFrame in a cv::Mat
+     * Wrap the data owned by a RawFrame in a cv::Mat. MJPEG frames are exposed as a one-row
+     * compressed byte buffer for decoding. The RawFrame must outlive the returned Mat.
      *
      * @param rawFramePtr
      * @return pointer to a cv::Mat
      */
     public static native long wrapRawFrame(long rawFramePtr);
+
+    private static native int getPixelFormatNative(long rawFramePtr);
+
+    /** Read the actual format after a native grab, which does not update Java's cached metadata. */
+    public static PixelFormat getPixelFormat(RawFrame frame) {
+        return PixelFormat.getFromInt(getPixelFormatNative(frame.getNativeObj()));
+    }
 
     private static native int getTimestampSourceNative(long rawFramePtr);
 

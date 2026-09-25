@@ -39,6 +39,15 @@ public class Letterbox {
         this.scale = scale;
     }
 
+    /** Prepare three-channel model input, expanding grayscale only at model resolution. */
+    public static Letterbox letterboxBgr(Mat frame, Mat letterboxed, Size newShape, Scalar color) {
+        var transform = letterbox(frame, letterboxed, newShape, color);
+        if (letterboxed.channels() == 1) {
+            Imgproc.cvtColor(letterboxed, letterboxed, Imgproc.COLOR_GRAY2BGR);
+        }
+        return transform;
+    }
+
     /**
      * Resize the frame to the new shape and "letterbox" it.
      *

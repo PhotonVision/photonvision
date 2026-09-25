@@ -138,6 +138,15 @@ public class OutputStreamPipeline implements Releasable {
         var contextImage = inputAndOutputFrame.contextColorImage;
         if (contextImage != null && !contextImage.getMat().empty()) {
             sumPipeNanosElapsed += resizeImagePipe.run(contextImage.getMat()).nanosElapsed;
+            if (contextImage.getMat().channels() == 1) {
+                sumPipeNanosElapsed += outputMatPipe.run(contextImage.getMat()).nanosElapsed;
+            }
+        }
+
+        // AprilTag capture can supply grayscale input. Expand only the resized preview so
+        // crosshairs and stream consumers keep their normal three-channel image contract.
+        if (!inEmpty && inMat.channels() == 1) {
+            sumPipeNanosElapsed += outputMatPipe.run(inMat).nanosElapsed;
         }
 
         // Only attempt drawing on a non-empty frame
