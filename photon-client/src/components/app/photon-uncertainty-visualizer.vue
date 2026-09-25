@@ -85,12 +85,13 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
     z: zMatrix,
 
     // gnuplot pm3d
+    // Stops are at (2^i-1)/(2^n-1) for i=0..n, n=5
     colorscale: [
       [0.0, "#000000"],
-      [0.25, "#2b0066"],
-      [0.5, "#7f00ff"],
-      [0.7, "#ff0000"],
-      [0.85, "#ff7f00"],
+      [0.03, "#2b0066"],
+      [0.1, "#7f00ff"],
+      [0.23, "#ff0000"],
+      [0.48, "#ff7f00"],
       [1.0, "#ffff00"]
     ],
 
