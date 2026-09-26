@@ -28,34 +28,95 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 
 import org.photonvision.PhotonVersion;
-import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
+/** Manages the ordered migration steps for a SQLite settings database. */
 public class MigrationManager {
     private static final Logger logger = new Logger(MigrationManager.class, LogGroup.Config);
 
     private final LinkedHashMap<Integer, MigrationStep> stepMap = new LinkedHashMap<>();
 
-    public MigrationManager() {
+    /**
+     * Creates a manager with the initial database schema. The schema is one or
+     * more `CREATE TABLE` SQL statements that define the structure of the
+     * oldest database that is supported. This is needed so that
+     * `MigrationManager` can create an empty database if one isn't present.
+     * 
+     * <p> Add migration steps using the {@link #addStep(int, MigrationFunction)}
+     * or {@link #addStep(int, String)} methods after creating the manager.
+     *
+     * @param baseVersion version of the initial schema
+     * @param schema SQL statement(s) used to create the initial schema
+     */
+    public MigrationManager(int baseVersion, String schema) {
+        this.addStep(baseVersion, schema);
     }
 
+    /**
+     * Return the latest registered database version. This is the version that
+     * the database will be migrated to.
+     *
+     * @return the latest version, or {@code 0} if no steps are registered
+     */
     public int getVersion() {
         return (stepMap.isEmpty()) ? 0 : stepMap.lastEntry().getValue().getVersion();
     }
 
+    /**
+     * Adds a migration step that is carried out by a {@link MigrationFunction}
+     * defined by the user.
+     *
+     * @param toVersion database version that will be migrated to
+     * @param migrate migration function of type {@link MigrationFunction}
+     * @return this manager
+     */
     public MigrationManager addStep(int toVersion, MigrationFunction migrate) {
         stepMap.put(toVersion, new MigrationStep(getVersion(), toVersion, migrate));
         return this;
     }
 
+    /**
+     * Adds a migration step defined by SQL statement(s).
+     *
+     * <p>SQL statements must end with a semicolon. Multiple statements can be
+     * included in a single string, as long as each one ends with a semicolon.
+     *
+     * @param toVersion database version that will be migrated to
+     * @param sql SQL statement(s) to execute
+     * @return this manager
+     */
     public MigrationManager addStep(int toVersion, String sql) {
         return addStep(toVersion, MigrationStep.sqlMigration(sql));
     }
 
+    /**
+     * Creates or migrates the database referenced by a SQLite JDBC URL.
+     *
+     * <p>This method expects a SQLite JDBC URL in the format
+     * "jdbc:sqlite:/path/to/db".
+     *
+     * <p>If there is no database at that location, the function will search for a
+     * default database (`*.sqlite`) in the configuration directory
+     * `../../conf.d`. If any default database is found, it will be copied to
+     * the expected path.
+     *
+     * <p>If there is either an existing database or a copied default database, it
+     * will be migrated to the latest version. On success it will return the
+     * resulting database version.
+     *
+     * <p>If the migration fails for any reason, the original database will be
+     * backed up and the failed database will be deleted.
+     *
+     * <p>Finally, if there was no database, no default, and/or the migration
+     * failed, a new database will be created.
+     *
+     * @param url SQLite JDBC URL for the database
+     * @return the resulting database version
+     * @throws MigrationException if the database cannot be migrated or created
+     */
     public int run(String url) throws MigrationException {
-        // Extract the file path from the JDBC URL (jdbc:sqlite:/path/to/db)
         String filePath = url.replace("jdbc:sqlite:", "");
         File dbFile = new File(filePath);
 
@@ -72,7 +133,7 @@ public class MigrationManager {
                 return applyMigrations(url, newDb);
             } catch (MigrationException e) {
                 logger.error("Couldn't migrate the existing database", e);
-                if (!backupDatabase(dbFile)) {
+                if (!backupDatabase(dbFile, 3)) {
                     try {
                         Files.deleteIfExists(dbFile.toPath());
                         logger.info("Deleted failed database " + dbFile.getAbsolutePath());
@@ -87,28 +148,6 @@ public class MigrationManager {
         return applyMigrations(url, true);
     }
 
-    private boolean backupDatabase(File dbFile) {
-        File backup = new File(dbFile.getPath() + ".backup");
-        File backup1 = new File(dbFile.getPath() + ".backup.1");
-        File backup2 = new File(dbFile.getPath() + ".backup.2");
-
-        try {
-            Files.deleteIfExists(backup2.toPath());
-            if (backup1.exists()) {
-                Files.move(backup1.toPath(), backup2.toPath());
-            }
-            if (backup.exists()) {
-                Files.move(backup.toPath(), backup1.toPath());
-            }
-            Files.move(dbFile.toPath(), backup.toPath());
-            logger.info("Backed up failed database to " + backup.getAbsolutePath());
-            return true;
-        } catch (IOException e) {
-            logger.error("Failed to back up database " + dbFile.getAbsolutePath(), e);
-            return false;
-        }
-    }
-
     private int applyMigrations(String url, boolean newDb) throws MigrationException {
         int currentVersion;
         try (Connection conn = DriverManager.getConnection(url)) {
@@ -121,7 +160,7 @@ public class MigrationManager {
                 return currentVersion;
             } else {
                 // database version isn't recognized for migration
-                throw new MigrationException("Database verison " + currentVersion + " is not supported for migration");
+                throw new MigrationException("Database version " + currentVersion + " is not supported for migration");
             }
         } catch (SQLException e) {
             throw new MigrationException("Error connecting to database", e);
@@ -150,27 +189,48 @@ public class MigrationManager {
         }
     }
 
-    // private int applyMigrations(String url) {
-    //     int currentVersion = 0;
-    //     try (Connection conn = DriverManager.getConnection(url)) {
-    //         currentVersion = SQLUtils.getUserVersion(conn);
-    //         if (stepMap.containsKey(currentVersion)) {
-    //             for (var step : this.stepMap.values()) {
-    //                 currentVersion = step.run(conn);
-    //             }
-    //             logger.info("Migration completed. Current database version: " + currentVersion);
-    //         } else {
-    //             // database version isn't recognized for migration
-    //             throw new MigrationException("Database verison " + currentVersion + " is not supported for migration");
-    //         }
-    //     } catch (SQLException e) {
-    //         throw new MigrationException("Error connecting to database", e);
-    //     }
+    private boolean backupDatabase(File dbFile, int backupVersions) {
+        backupVersions = Math.max(backupVersions, 1);
 
-    //     return currentVersion;
-    // }
+        File backupDirectory = dbFile.getAbsoluteFile().getParentFile();
+        String backupPrefix = dbFile.getName() + ".backup.";
+        File newestBackup = new File(backupDirectory, backupPrefix + "1");
+
+        try {
+            File[] existingBackups =
+                    backupDirectory.listFiles(
+                            file -> file.isFile() && file.getName().startsWith(backupPrefix));
+            if (existingBackups != null) {
+                for (File existingBackup : existingBackups) {
+                    try {
+                        int version =
+                                Integer.parseInt(existingBackup.getName().substring(backupPrefix.length()));
+                        if (version > backupVersions) {
+                            Files.deleteIfExists(existingBackup.toPath());
+                        }
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }
+
+            File oldestBackup = new File(backupDirectory, backupPrefix + backupVersions);
+            Files.deleteIfExists(oldestBackup.toPath());
+            for (int version = backupVersions - 1; version >= 1; version--) {
+                File source = new File(backupDirectory, backupPrefix + version);
+                File destination = new File(backupDirectory, backupPrefix + (version + 1));
+                if (source.exists()) {
+                    Files.move(source.toPath(), destination.toPath());
+                }
+            }
+            Files.move(dbFile.toPath(), newestBackup.toPath());
+            logger.info("Backed up failed database to " + newestBackup.getAbsolutePath());
+            return true;
+        } catch (IOException e) {
+            logger.error("Failed to back up database " + dbFile.getAbsolutePath(), e);
+            return false;
+        }
+    }
 }
-
 
 
 @FunctionalInterface
