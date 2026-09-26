@@ -43,7 +43,7 @@ public class MigrationManager {
      * more `CREATE TABLE` SQL statements that define the structure of the
      * oldest database that is supported. This is needed so that
      * `MigrationManager` can create an empty database if one isn't present.
-     * 
+     *
      * <p> Add migration steps using the {@link #addStep(int, MigrationFunction)}
      * or {@link #addStep(int, String)} methods after creating the manager.
      *
