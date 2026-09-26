@@ -73,7 +73,7 @@ public class ConfigManager {
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
-            Path rootFolder = PathManager.getInstance().getRootFolder();
+            Path rootFolder = PathManager.getInstance().getConfigDir();
             switch (m_saveStrat) {
                 case SQL -> INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
                 case LEGACY ->
@@ -184,7 +184,7 @@ public class ConfigManager {
     }
 
     private static Path getRootFolder() {
-        return PathManager.getInstance().getRootFolder();
+        return PathManager.getInstance().getConfigDir();
     }
 
     public static Path getImageMetadataPath() {
