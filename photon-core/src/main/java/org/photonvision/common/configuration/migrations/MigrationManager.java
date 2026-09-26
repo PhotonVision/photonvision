@@ -235,7 +235,7 @@ public class MigrationManager {
 
 @FunctionalInterface
 interface MigrationFunction {
-    Boolean apply(Connection conn) throws MigrationException;
+    void apply(Connection conn) throws MigrationException;
 }
 
 class MigrationStep {
@@ -295,7 +295,6 @@ class MigrationStep {
             } catch (SQLException e) {
                 throw new MigrationException("SQL statement failed:" + sql, e);
             }
-            return true;
         };
     }
 

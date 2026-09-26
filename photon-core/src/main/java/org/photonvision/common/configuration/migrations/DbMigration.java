@@ -219,7 +219,5 @@ public class DbMigration {
                 configJson.close();
             }
         }
-
-        return true;
     };
 }
