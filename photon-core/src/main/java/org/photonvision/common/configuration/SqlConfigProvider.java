@@ -215,8 +215,11 @@ public class SqlConfigProvider extends ConfigProvider {
      * upgraded JSON is written back to the database so the stored data self-upgrades.
      */
     private Field loadField(Connection conn) {
-        // This stays as the old config string, as that's how we'll try and find it in the database
-        String configString = getOneConfigFile(conn, "apriltagFieldLayout");
+        String configString = getOneConfigFile(conn, GlobalKeys.FIELD_CONFIG_FILE);
+        if (configString.isBlank()) {
+            // Fall back to the legacy key used by databases written before the Field migration
+            configString = getOneConfigFile(conn, "apriltagFieldLayout");
+        }
         if (configString.isBlank()) {
             logger.debug("No " + Field.class.getSimpleName() + " in database");
             return fieldDefault();

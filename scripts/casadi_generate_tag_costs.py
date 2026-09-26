@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 import casadi as ca
 from casadi import CodeGenerator

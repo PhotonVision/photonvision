@@ -19,7 +19,7 @@ from dataclasses import dataclass
 
 from wpimath import Pose3d
 
-from .targeting.photonTrackedTarget import PhotonTrackedTarget
+from .targeting.photon_tracked_target import PhotonTrackedTarget
 
 
 @dataclass

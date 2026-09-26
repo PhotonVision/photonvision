@@ -7,7 +7,7 @@ import numpy as np
 from wpimath import Rotation3d, Transform3d, Translation3d
 
 from ..targeting import PnpResult, TargetCorner
-from .rotTrlTransform3d import RotTrlTransform3d
+from .rot_trl_transform3d import RotTrlTransform3d
 
 NWU_TO_EDN = Rotation3d(np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]]))
 EDN_TO_NWU = Rotation3d(np.array([[0, 0, 1], [-1, 0, 0], [0, -1, 0]]))
@@ -214,7 +214,7 @@ class OpenCVHelp:
 
         for tries in range(2):
             # calc rvecs/tvecs and associated reprojection error from image points
-            retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
+            _, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
                 objectMat,
                 imagePoints,
                 cameraMatrix,
@@ -296,7 +296,7 @@ class OpenCVHelp:
 
         objectMat = np.array(OpenCVHelp.translationToTVec(modelTrls))
 
-        retval, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
+        _, rvecs, tvecs, reprojectionError = cv.solvePnPGeneric(
             objectMat, imagePoints, cameraMatrix, distCoeffs, flags=cv.SOLVEPNP_SQPNP
         )
 
