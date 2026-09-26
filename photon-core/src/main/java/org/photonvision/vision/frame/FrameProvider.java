@@ -64,8 +64,11 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */
     public abstract void requestFrameThresholdType(FrameThresholdType type);
 
-    /** Allow providers to capture grayscale input when the pipeline does not need color. */
-    public void requestGrayscaleInput(boolean grayscaleInput) {}
+    /**
+     * Ask the camera for luminance-only input because the pipeline has no use for color. Providers
+     * capture grayscale where the camera format allows it and keep color input otherwise.
+     */
+    public abstract void requestGrayscaleInput(boolean grayscaleInput);
 
     /** Ask the camera to rotate frames it outputs */
     public abstract void requestFrameRotation(ImageRotationMode rotationMode);

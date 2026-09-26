@@ -122,9 +122,8 @@ public class VisionRunner implements AutoCloseable {
 
         frameSupplier.requestFrameThresholdType(wantedProcessType);
         var settings = pipeline.getSettings();
-        frameSupplier.requestGrayscaleInput(
-                settings instanceof AprilTagPipelineSettings
-                        && Boolean.getBoolean("photonvision.grayscaleAprilTagCapture"));
+        // AprilTag detection only uses luminance, so never pay to capture color for it
+        frameSupplier.requestGrayscaleInput(settings instanceof AprilTagPipelineSettings);
         if (settings instanceof AdvancedPipelineSettings advanced) {
             var hsvParams =
                     new HSVPipe.HSVParams(

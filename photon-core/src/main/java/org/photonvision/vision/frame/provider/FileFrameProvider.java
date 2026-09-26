@@ -119,6 +119,11 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
     }
 
     @Override
+    public void requestGrayscaleInput(boolean grayscaleInput) {
+        // Files are loaded once in color; the GREYSCALE processed image is still produced per frame
+    }
+
+    @Override
     public String getName() {
         return "FileFrameProvider" + thisIndex + " - " + path.getFileName();
     }

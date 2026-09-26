@@ -34,8 +34,10 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
+import org.photonvision.vision.frame.provider.USBFrameProvider.CapturePlan;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
+import org.wpilib.util.PixelFormat;
 
 class GrayscaleCaptureTest {
     @BeforeAll
@@ -51,7 +53,8 @@ class GrayscaleCaptureTest {
         source.release();
         var expected = Imgcodecs.imdecode(bytes, Imgcodecs.IMREAD_GRAYSCALE);
         var encoded = new CVMat(bytes);
-        try (var decoded = USBFrameProvider.decodeMjpegGrayscale(encoded)) {
+        try (var decoded =
+                USBFrameProvider.decodeMjpegGrayscale(encoded, PixelFormat.MJPEG, 1600, 1304)) {
             assertTrue(encoded.isReleased());
             assertEquals(new Size(1600, 1304), decoded.getMat().size());
             assertEquals(CvType.CV_8UC1, decoded.getMat().type());
@@ -65,10 +68,43 @@ class GrayscaleCaptureTest {
     @Test
     void invalidJpegReleasesCompressedStorageAndReturnsEmptyImage() {
         var encoded = new CVMat(new MatOfByte((byte) 1, (byte) 2, (byte) 3));
-        try (var decoded = USBFrameProvider.decodeMjpegGrayscale(encoded)) {
+        try (var decoded = USBFrameProvider.decodeMjpegGrayscale(encoded, PixelFormat.MJPEG, 3, 1)) {
             assertTrue(encoded.isReleased());
             assertTrue(decoded.getMat().empty());
         }
+    }
+
+    @Test
+    void frameLeftFromPreviousFormatIsDroppedWithoutDecoding() {
+        // A YUYV frame is wrapped as a 2-channel image, which imdecode would reject with an exception
+        var yuyv = new CVMat(new Mat(6, 8, CvType.CV_8UC2, new Scalar(90, 128)));
+        try (var decoded = USBFrameProvider.decodeMjpegGrayscale(yuyv, PixelFormat.YUYV, 8, 6)) {
+            assertTrue(yuyv.isReleased());
+            assertTrue(decoded.getMat().empty());
+        }
+    }
+
+    @Test
+    void frameFromPreviousResolutionIsScaledToCurrentMode() {
+        var source = new Mat(12, 16, CvType.CV_8UC3, new Scalar(40, 40, 40));
+        var bytes = new MatOfByte();
+        assertTrue(Imgcodecs.imencode(".jpg", source, bytes));
+        source.release();
+        var encoded = new CVMat(bytes);
+        try (var decoded = USBFrameProvider.decodeMjpegGrayscale(encoded, PixelFormat.MJPEG, 8, 6)) {
+            assertEquals(new Size(8, 6), decoded.getMat().size());
+            assertEquals(CvType.CV_8UC1, decoded.getMat().type());
+        }
+    }
+
+    @Test
+    void capturePlanUsesCheapestLuminanceSourceOnlyWhenGrayscaleIsRequested() {
+        for (var format : PixelFormat.values()) {
+            assertEquals(CapturePlan.BGR, CapturePlan.choose(false, format), format.name());
+            var expected = format == PixelFormat.MJPEG ? CapturePlan.MJPEG_TO_GRAY : CapturePlan.GRAY;
+            assertEquals(expected, CapturePlan.choose(true, format), format.name());
+        }
+        assertEquals(PixelFormat.UNKNOWN, CapturePlan.MJPEG_TO_GRAY.requestFormat);
     }
 
     @Test
@@ -91,8 +127,10 @@ class GrayscaleCaptureTest {
                 assertEquals(0, Core.norm(expected, frame.processedImage.getMat(), Core.NORM_INF));
                 assertNotEquals(
                         frame.colorImage.getMat().nativeObj, frame.processedImage.getMat().nativeObj);
-                // Streaming converts and resizes its input in place; that must not change the
-                // detector image's dimensions, channel count, or pixels.
+                // Drawing writes into the input image in place, and streaming converts and resizes it;
+                // none of that may change the detector image's dimensions, channel count, or pixels.
+                frame.colorImage.getMat().setTo(new Scalar(0));
+                assertEquals(0, Core.norm(expected, frame.processedImage.getMat(), Core.NORM_INF));
                 Imgproc.cvtColor(
                         frame.colorImage.getMat(), frame.colorImage.getMat(), Imgproc.COLOR_GRAY2BGR);
                 Imgproc.resize(frame.colorImage.getMat(), frame.colorImage.getMat(), new Size(1, 1));
@@ -117,6 +155,9 @@ class GrayscaleCaptureTest {
         CapturedFrame getInputMat() {
             return input;
         }
+
+        @Override
+        public void requestGrayscaleInput(boolean grayscaleInput) {}
 
         @Override
         public String getName() {

@@ -73,15 +73,8 @@ public abstract class CpuImageProcessor extends FrameProvider {
                 var hsvResult = m_hsvPipe.run(input.colorImage.getMat());
                 outputMat = new CVMat(hsvResult.output);
             } else if (m_processType == FrameThresholdType.GREYSCALE) {
-                var inputMat = input.colorImage.getMat();
-                if (inputMat.channels() == 1) {
-                    // Keep separate headers so resizing/converting either stream cannot replace the
-                    // other image. Both images stay alive for the lifetime of this Frame.
-                    outputMat = new CVMat(inputMat.submat(0, inputMat.rows(), 0, inputMat.cols()));
-                } else {
-                    var result = m_grayPipe.run(inputMat);
-                    outputMat = new CVMat(result.output);
-                }
+                var result = m_grayPipe.run(input.colorImage.getMat());
+                outputMat = new CVMat(result.output);
             } else {
                 outputMat = new CVMat();
             }

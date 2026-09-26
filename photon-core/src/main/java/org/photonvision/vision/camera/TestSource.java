@@ -64,6 +64,11 @@ public class TestSource extends VisionSource {
             }
 
             @Override
+            public void requestGrayscaleInput(boolean grayscaleInput) {
+                throw new UnsupportedOperationException("Unimplemented method 'requestGrayscaleInput'");
+            }
+
+            @Override
             public void requestFrameRotation(ImageRotationMode rotationMode) {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'requestFrameRotation'");

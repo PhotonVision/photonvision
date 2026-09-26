@@ -63,6 +63,8 @@ public class VisionRunnerTest {
     private static class RecordingFrameProvider extends FrameProvider {
         boolean copyInput;
         boolean copyOutput;
+        // Null until requested, so tests can tell "never set" apart from "set to false"
+        Boolean grayscaleInput;
 
         @Override
         protected boolean checkCameraConnected() {
@@ -76,6 +78,11 @@ public class VisionRunnerTest {
 
         @Override
         public void requestFrameThresholdType(FrameThresholdType type) {}
+
+        @Override
+        public void requestGrayscaleInput(boolean grayscaleInput) {
+            this.grayscaleInput = grayscaleInput;
+        }
 
         @Override
         public void requestFrameRotation(ImageRotationMode rotationMode) {}
@@ -164,6 +171,22 @@ public class VisionRunnerTest {
 
             assertEquals(expectedCopyInput, provider.copyInput);
             assertEquals(expectedCopyOutput, provider.copyOutput);
+        }
+    }
+
+    @CartesianTest
+    public void testOnlyAprilTagRequestsGrayscaleInput(
+            @Enum PipelineUnderTest pipelineUnderTest,
+            @Values(booleans = {true, false}) boolean inputShouldShow) {
+        try (var pipeline = pipelineUnderTest.create()) {
+            var provider = new RecordingFrameProvider();
+            pipeline.getSettings().inputShouldShow = inputShouldShow;
+
+            VisionRunner.configureFrameProviderForPipeline(provider, pipeline);
+
+            // Every pipeline sets it explicitly, so switching away from AprilTag turns it back off.
+            // AprilTag asks for grayscale even when the input stream is shown.
+            assertEquals(pipelineUnderTest == PipelineUnderTest.APRILTAG, provider.grayscaleInput);
         }
     }
 }

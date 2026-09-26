@@ -288,9 +288,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         List<VideoMode> videoModesList = new ArrayList<>();
         try {
             for (VideoMode videoMode : camera.enumerateVideoModes()) {
-                // Filter grey modes
-                if (videoMode.pixelFormat == PixelFormat.GRAY
-                        || videoMode.pixelFormat == PixelFormat.UNKNOWN) {
+                if (videoMode.pixelFormat == PixelFormat.UNKNOWN) {
                     continue;
                 }
 
@@ -310,22 +308,37 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             videoModesList = List.of();
         }
 
-        // Sort by resolution
-        var sortedList =
-                videoModesList.stream()
-                        .distinct() // remove redundant video mode entries
-                        .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
-                        .collect(Collectors.toList());
-        // The ordering is usually more logical when done like this. It typically puts higher FPSes
-        // closer to the bottom.
-        Collections.reverse(sortedList);
-        videoModes = sortedList;
+        videoModes = orderVideoModes(videoModesList);
 
         // If after all that we still have no video modes, not much we can do besides
         // throw up our hands
         if (videoModes.isEmpty()) {
             logger.info("Camera " + camera.getPath() + " has no video modes supported by PhotonVision");
         }
+    }
+
+    /**
+     * Sort modes by resolution. GRAY modes were once hidden, so they go after every other mode; that
+     * way listing them does not shift the saved index of any mode offered before.
+     */
+    static List<VideoMode> orderVideoModes(List<VideoMode> modes) {
+        var byIsGray =
+                modes.stream().collect(Collectors.partitioningBy(m -> m.pixelFormat == PixelFormat.GRAY));
+        var ordered = sortByResolution(byIsGray.get(false));
+        ordered.addAll(sortByResolution(byIsGray.get(true)));
+        return ordered;
+    }
+
+    private static List<VideoMode> sortByResolution(List<VideoMode> modes) {
+        var sortedList =
+                modes.stream()
+                        .distinct() // remove redundant video mode entries
+                        .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
+                        .collect(Collectors.toCollection(ArrayList::new));
+        // The ordering is usually more logical when done like this. It typically puts higher FPSes
+        // closer to the bottom.
+        Collections.reverse(sortedList);
+        return sortedList;
     }
 
     @Override

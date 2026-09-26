@@ -24,6 +24,10 @@ import org.photonvision.vision.pipe.CVPipe;
 public class GrayscalePipe extends CVPipe<Mat, Mat, GrayscalePipe.GrayscaleParams> {
     @Override
     protected Mat process(Mat in) {
+        // Grayscale capture is already one channel. Copy it so the processed image never shares
+        // pixels with the input image, which is drawn on and streamed.
+        if (in.channels() == 1) return in.clone();
+
         var outputMat = new Mat();
         // We can save a copy here by sending the output of cvtcolor to outputMat directly
         // rather than copying. Free performance!

@@ -108,6 +108,12 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     }
 
     @Override
+    public void requestGrayscaleInput(boolean grayscaleInput) {
+        // The GPU already produces the GREYSCALE processed frame, and requestFrameCopies decides
+        // whether a color frame is copied out at all.
+    }
+
+    @Override
     public void requestFrameRotation(ImageRotationMode rotationMode) {
         this.settables.setRotation(rotationMode);
     }
