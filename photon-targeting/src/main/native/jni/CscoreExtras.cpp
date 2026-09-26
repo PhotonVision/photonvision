@@ -27,6 +27,9 @@
 
 // from wpilib, licensed under the wpilib BSD license
 using namespace wpi::util::java;
+static JException videoEx;
+static const JExceptionInit exceptions[] = {
+    {"edu/wpi/first/cscore/VideoException", &videoEx}};
 static void ReportError(JNIEnv* env, CS_Status status) {
   if (status == CS_OK) {
     return;
@@ -70,10 +73,7 @@ static void ReportError(JNIEnv* env, CS_Status status) {
       break;
     }
   }
-  static JException videoEx(env, "org/wpilib/vision/camera/VideoException");
-  if (videoEx) {
-    videoEx.Throw(env, msg);
-  }
+  videoEx.Throw(env, msg);
 }
 static inline bool CheckStatus(JNIEnv* env, CS_Status status) {
   if (status != CS_OK) {

@@ -95,25 +95,18 @@ public class USBFrameProvider extends CpuImageProcessor {
             frame.setInfo(
                     cameraMode.width,
                     cameraMode.height,
-                    0,
+                    grayscaleInput ? 0 : cameraMode.width * 3,
                     // UNKNOWN preserves MJPEG bytes so we can decode directly to luminance.
                     decodeMjpeg ? PixelFormat.UNKNOWN : grayscaleInput ? PixelFormat.GRAY : PixelFormat.BGR);
 
             // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is nS since
             // Hal::initialize was called
-            long captureTimeNs;
-            try {
-                captureTimeNs =
-                        CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                                cvSink.getHandle(),
-                                frame.getNativeObj(),
-                                CSCORE_DEFAULT_FRAME_TIMEOUT,
-                                m_blockForFrames ? 0 : lastTime);
-            } catch (RuntimeException e) {
-                frame.close();
-                logger.error("Error grabbing image", e);
-                return new CapturedFrame(new CVMat(), settables.getFrameStaticProperties(), 0);
-            }
+            long captureTimeNs =
+                    CscoreExtras.grabRawSinkFrameTimeoutLastTime(
+                            cvSink.getHandle(),
+                            frame.getNativeObj(),
+                            CSCORE_DEFAULT_FRAME_TIMEOUT,
+                            m_blockForFrames ? 0 : lastTime);
             lastTime = captureTimeNs;
 
             CVMat ret;
