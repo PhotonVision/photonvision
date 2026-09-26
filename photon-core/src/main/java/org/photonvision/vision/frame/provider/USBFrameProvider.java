@@ -103,10 +103,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             // Hal::initialize was called
             long captureTimeNs =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                            cvSink.getHandle(),
-                            frame.getNativeObj(),
-                            CSCORE_DEFAULT_FRAME_TIMEOUT,
-                            m_blockForFrames ? 0 : lastTime);
+                            cvSink.getHandle(), frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
             lastTime = captureTimeNs;
 
             CVMat ret;

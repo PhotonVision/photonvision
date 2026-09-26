@@ -47,7 +47,6 @@ public class CscoreExtras {
      */
     public static native long wrapRawFrame(long rawFramePtr);
 
-    /** Read the actual format after a native grab, which does not update Java's cached metadata. */
     public static native int getPixelFormatNative(long rawFramePtr);
 
     private static native int getTimestampSourceNative(long rawFramePtr);
