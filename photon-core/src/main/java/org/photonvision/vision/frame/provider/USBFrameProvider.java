@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.frame.provider;
 
+import org.opencv.core.CvException;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -51,8 +52,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         /** Color input, for pipelines that use color. */
         BGR(PixelFormat.BGR),
         /**
-         * Luminance only. CSCore takes it straight from YUYV/UYVY and passes GRAY through. It returns
-         * BGR sources unconverted, and the GREYSCALE processing step converts those.
+         * Luminance only. CSCore converts YUYV, UYVY, and RGB565 to GRAY and passes GRAY through. It
+         * returns BGR and BGRA sources as BGR, which the GREYSCALE processing step converts.
          */
         GRAY(PixelFormat.GRAY),
         /**
@@ -145,18 +146,24 @@ public class USBFrameProvider extends CpuImageProcessor {
     /**
      * Decode a compressed capture straight to luminance, scaled to the camera mode the same way
      * CSCore scales converted images. Always releases the capture. Returns an empty image when the
-     * capture is not MJPEG, such as one frame left in the sink from the previous mode.
+     * capture is not MJPEG, such as one frame left in the sink from the previous mode, or cannot be
+     * decoded.
      */
     static CVMat decodeMjpegGrayscale(
             CVMat captured, PixelFormat capturedFormat, int width, int height) {
+        Mat gray = null;
         try {
             if (capturedFormat != PixelFormat.MJPEG || captured.getMat().empty()) return new CVMat();
 
-            var gray = Imgcodecs.imdecode(captured.getMat(), Imgcodecs.IMREAD_GRAYSCALE);
+            gray = Imgcodecs.imdecode(captured.getMat(), Imgcodecs.IMREAD_GRAYSCALE);
             if (!gray.empty() && (gray.cols() != width || gray.rows() != height)) {
                 Imgproc.resize(gray, gray, new Size(width, height));
             }
             return new CVMat(gray);
+        } catch (CvException e) {
+            // A corrupt header can pass JPEG parsing yet fail OpenCV's image size limits
+            if (gray != null) gray.release();
+            return new CVMat();
         } finally {
             captured.release();
         }

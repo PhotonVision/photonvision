@@ -19,6 +19,7 @@ package jni;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.ByteBuffer;
@@ -34,14 +35,32 @@ import org.photonvision.jni.LibraryLoader;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.util.RawFrame;
 import org.wpilib.vision.camera.CvSink;
+import org.wpilib.vision.camera.VideoException;
 import org.wpilib.vision.camera.raw.RawSource;
 
 /** Exercises the actual CSCore capture and JNI wrapper without requiring a USB camera. */
-class CscoreExtrasMjpegTest {
+class CscoreCaptureTest {
     @BeforeAll
     static void loadNatives() {
         assertTrue(LibraryLoader.loadWpiLibraries());
         assertTrue(LibraryLoader.loadTargeting());
+    }
+
+    @Test
+    void grabErrorRaisesVideoExceptionInsteadOfCrashing() {
+        int closedSink;
+        try (var sink = new CvSink("closed-sink")) {
+            closedSink = sink.getHandle();
+        }
+        try (var frame = new RawFrame()) {
+            var error =
+                    assertThrows(
+                            VideoException.class,
+                            () ->
+                                    CscoreExtras.grabRawSinkFrameTimeoutLastTime(
+                                            closedSink, frame.getNativeObj(), 0.01, 0));
+            assertEquals("invalid handle", error.getMessage());
+        }
     }
 
     @Test

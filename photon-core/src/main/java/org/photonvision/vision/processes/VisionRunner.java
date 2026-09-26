@@ -36,7 +36,6 @@ import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
-import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.ArucoPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -122,8 +121,6 @@ public class VisionRunner implements AutoCloseable {
 
         frameSupplier.requestFrameThresholdType(wantedProcessType);
         var settings = pipeline.getSettings();
-        // AprilTag detection only uses luminance, so never pay to capture color for it
-        frameSupplier.requestGrayscaleInput(settings instanceof AprilTagPipelineSettings);
         if (settings instanceof AdvancedPipelineSettings advanced) {
             var hsvParams =
                     new HSVPipe.HSVParams(
@@ -143,6 +140,9 @@ public class VisionRunner implements AutoCloseable {
         if (settings instanceof ArucoPipelineSettings ar) {
             needsColor = ar.debugThreshold;
         }
+
+        frameSupplier.requestGrayscaleInput(
+                wantedProcessType == FrameThresholdType.GREYSCALE && !needsColor);
 
         frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
         frameSupplier.requestFrameCopies(

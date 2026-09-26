@@ -175,7 +175,7 @@ public class VisionRunnerTest {
     }
 
     @CartesianTest
-    public void testOnlyAprilTagRequestsGrayscaleInput(
+    public void testLuminanceOnlyPipelinesRequestGrayscaleInput(
             @Enum PipelineUnderTest pipelineUnderTest,
             @Values(booleans = {true, false}) boolean inputShouldShow) {
         try (var pipeline = pipelineUnderTest.create()) {
@@ -184,9 +184,13 @@ public class VisionRunnerTest {
 
             VisionRunner.configureFrameProviderForPipeline(provider, pipeline);
 
-            // Every pipeline sets it explicitly, so switching away from AprilTag turns it back off.
-            // AprilTag asks for grayscale even when the input stream is shown.
-            assertEquals(pipelineUnderTest == PipelineUnderTest.APRILTAG, provider.grayscaleInput);
+            // Every pipeline sets it explicitly, so switching to a color pipeline turns it back off.
+            // Fiducial pipelines ask for grayscale even when the input stream is shown; Aruco's
+            // threshold debug view draws in color, so it keeps color input.
+            boolean expected =
+                    pipelineUnderTest == PipelineUnderTest.APRILTAG
+                            || pipelineUnderTest == PipelineUnderTest.ARUCO;
+            assertEquals(expected, provider.grayscaleInput);
         }
     }
 }

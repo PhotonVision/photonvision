@@ -21,8 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.ByteBuffer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -38,6 +43,10 @@ import org.photonvision.vision.frame.provider.USBFrameProvider.CapturePlan;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.wpilib.util.PixelFormat;
+import org.wpilib.util.RawFrame;
+import org.wpilib.vision.camera.CameraServerJNI;
+import org.wpilib.vision.camera.CvSink;
+import org.wpilib.vision.camera.raw.RawSource;
 
 class GrayscaleCaptureTest {
     @BeforeAll
@@ -75,6 +84,34 @@ class GrayscaleCaptureTest {
     }
 
     @Test
+    void jpegWhoseHeaderFailsOpenCvSizeLimitsIsDroppedInsteadOfThrowing() {
+        var source = new Mat(12, 16, CvType.CV_8UC3, new Scalar(40, 40, 40));
+        var bytes = new MatOfByte();
+        assertTrue(Imgcodecs.imencode(".jpg", source, bytes));
+        source.release();
+        byte[] jpeg = bytes.toArray();
+        bytes.release();
+        // A corrupt SOF0 can claim a size libjpeg accepts but OpenCV's size limits reject by throwing
+        int sof = indexOfMarker(jpeg, (byte) 0xC0);
+        for (int offset : new int[] {5, 7}) { // big-endian height, then width: 65000 each
+            jpeg[sof + offset] = (byte) 0xFD;
+            jpeg[sof + offset + 1] = (byte) 0xE8;
+        }
+        var encoded = new CVMat(new MatOfByte(jpeg));
+        try (var decoded = USBFrameProvider.decodeMjpegGrayscale(encoded, PixelFormat.MJPEG, 16, 12)) {
+            assertTrue(encoded.isReleased());
+            assertTrue(decoded.getMat().empty());
+        }
+    }
+
+    private static int indexOfMarker(byte[] jpeg, byte marker) {
+        for (int i = 0; i + 1 < jpeg.length; i++) {
+            if (jpeg[i] == (byte) 0xFF && jpeg[i + 1] == marker) return i;
+        }
+        throw new AssertionError("JPEG has no marker 0xFF" + Integer.toHexString(marker & 0xFF));
+    }
+
+    @Test
     void frameLeftFromPreviousFormatIsDroppedWithoutDecoding() {
         // A YUYV frame is wrapped as a 2-channel image, which imdecode would reject with an exception
         var yuyv = new CVMat(new Mat(6, 8, CvType.CV_8UC2, new Scalar(90, 128)));
@@ -105,6 +142,73 @@ class GrayscaleCaptureTest {
             assertEquals(expected, CapturePlan.choose(true, format), format.name());
         }
         assertEquals(PixelFormat.UNKNOWN, CapturePlan.MJPEG_TO_GRAY.requestFormat);
+    }
+
+    /**
+     * USB cameras can report any of these, and the GRAY plan asks CSCore for GRAY from each. CSCore
+     * returns GRAY or BGR, both of which the GREYSCALE processing step accepts. Y16 is left out:
+     * CSCore throws an uncaught OpenCV exception converting it to any format, GRAY or BGR.
+     */
+    @ParameterizedTest
+    @EnumSource(
+            value = PixelFormat.class,
+            names = {"YUYV", "UYVY", "RGB565", "BGR", "GRAY", "BGRA"})
+    void cscoreServesGrayOrBgrFromEveryUncompressedFormat(PixelFormat sourceFormat)
+            throws InterruptedException {
+        int width = 64;
+        int height = 48;
+        int stride = width * bytesPerPixel(sourceFormat);
+        var data = ByteBuffer.allocateDirect(stride * height);
+        while (data.hasRemaining()) data.put((byte) 100);
+        data.flip();
+
+        try (var source =
+                        new RawSource("gray-source-" + sourceFormat, sourceFormat, width, height, 30);
+                var sink = new CvSink("gray-sink-" + sourceFormat);
+                var captured = new RawFrame()) {
+            source.setConnected(true);
+            sink.setSource(source);
+            sink.setEnabled(true);
+
+            // A grab waits for a frame newer than the source's current one, so keep publishing
+            var publisher = Executors.newSingleThreadScheduledExecutor();
+            publisher.scheduleAtFixedRate(
+                    () -> source.putFrame(data, width, height, stride, sourceFormat),
+                    0,
+                    5,
+                    TimeUnit.MILLISECONDS);
+            long timestamp;
+            try {
+                // The same raw grab USBFrameProvider makes, with the GRAY plan's request
+                captured.setInfo(width, height, 0, PixelFormat.GRAY);
+                timestamp =
+                        CameraServerJNI.grabRawSinkFrameTimeout(
+                                sink.getHandle(), captured, captured.getNativeObj(), 1.0);
+            } finally {
+                publisher.shutdownNow();
+                assertTrue(publisher.awaitTermination(1, TimeUnit.SECONDS));
+            }
+
+            assertTrue(timestamp > 0, "No frame from " + sourceFormat + ": " + sink.getError());
+            var expected =
+                    switch (sourceFormat) {
+                        case BGR, BGRA -> PixelFormat.BGR;
+                        default -> PixelFormat.GRAY;
+                    };
+            assertEquals(expected, captured.getPixelFormat(), sourceFormat.name());
+            assertEquals(width, captured.getWidth());
+            assertEquals(height, captured.getHeight());
+        }
+    }
+
+    private static int bytesPerPixel(PixelFormat format) {
+        return switch (format) {
+            case GRAY -> 1;
+            case YUYV, UYVY, RGB565 -> 2;
+            case BGR -> 3;
+            case BGRA -> 4;
+            default -> throw new IllegalArgumentException("Compressed format " + format);
+        };
     }
 
     @Test
