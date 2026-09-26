@@ -151,7 +151,8 @@ public class TargetCalculationsTest {
                         List.of(),
                         new Size(),
                         0,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
 
         // Since we create this translation using the given yaw/pitch, we should see the same angles
         // calculated
