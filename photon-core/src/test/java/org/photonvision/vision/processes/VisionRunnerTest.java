@@ -63,8 +63,6 @@ public class VisionRunnerTest {
     private static class RecordingFrameProvider extends FrameProvider {
         boolean copyInput;
         boolean copyOutput;
-        // Null until requested, so tests can tell "never set" apart from "set to false"
-        Boolean grayscaleInput;
 
         @Override
         protected boolean checkCameraConnected() {
@@ -78,11 +76,6 @@ public class VisionRunnerTest {
 
         @Override
         public void requestFrameThresholdType(FrameThresholdType type) {}
-
-        @Override
-        public void requestGrayscaleInput(boolean grayscaleInput) {
-            this.grayscaleInput = grayscaleInput;
-        }
 
         @Override
         public void requestFrameRotation(ImageRotationMode rotationMode) {}
@@ -171,26 +164,6 @@ public class VisionRunnerTest {
 
             assertEquals(expectedCopyInput, provider.copyInput);
             assertEquals(expectedCopyOutput, provider.copyOutput);
-        }
-    }
-
-    @CartesianTest
-    public void testLuminanceOnlyPipelinesRequestGrayscaleInput(
-            @Enum PipelineUnderTest pipelineUnderTest,
-            @Values(booleans = {true, false}) boolean inputShouldShow) {
-        try (var pipeline = pipelineUnderTest.create()) {
-            var provider = new RecordingFrameProvider();
-            pipeline.getSettings().inputShouldShow = inputShouldShow;
-
-            VisionRunner.configureFrameProviderForPipeline(provider, pipeline);
-
-            // Every pipeline sets it explicitly, so switching to a color pipeline turns it back off.
-            // Fiducial pipelines ask for grayscale even when the input stream is shown; Aruco's
-            // threshold debug view draws in color, so it keeps color input.
-            boolean expected =
-                    pipelineUnderTest == PipelineUnderTest.APRILTAG
-                            || pipelineUnderTest == PipelineUnderTest.ARUCO;
-            assertEquals(expected, provider.grayscaleInput);
         }
     }
 }

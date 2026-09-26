@@ -70,15 +70,9 @@ static void ReportError(JNIEnv* env, CS_Status status) {
       break;
     }
   }
-  // Resolved on first use: this library's only JNI_OnLoad is in
-  // TimeSyncClientJNI.cpp. Throwing through an unresolved class would crash the
-  // JVM instead of raising an exception.
   static JException videoEx(env, "org/wpilib/vision/camera/VideoException");
   if (videoEx) {
     videoEx.Throw(env, msg);
-  } else {
-    // Clear FindClass's NoClassDefFoundError; callers treat 0 as an error
-    env->ExceptionClear();
   }
 }
 static inline bool CheckStatus(JNIEnv* env, CS_Status status) {

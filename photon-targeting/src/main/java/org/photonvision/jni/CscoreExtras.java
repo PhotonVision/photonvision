@@ -17,7 +17,6 @@
 
 package org.photonvision.jni;
 
-import org.wpilib.util.PixelFormat;
 import org.wpilib.util.RawFrame;
 import org.wpilib.util.TimestampSource;
 
@@ -48,12 +47,8 @@ public class CscoreExtras {
      */
     public static native long wrapRawFrame(long rawFramePtr);
 
-    private static native int getPixelFormatNative(long rawFramePtr);
-
     /** Read the actual format after a native grab, which does not update Java's cached metadata. */
-    public static PixelFormat getPixelFormat(RawFrame frame) {
-        return PixelFormat.getFromInt(getPixelFormatNative(frame.getNativeObj()));
-    }
+    public static native int getPixelFormatNative(long rawFramePtr);
 
     private static native int getTimestampSourceNative(long rawFramePtr);
 

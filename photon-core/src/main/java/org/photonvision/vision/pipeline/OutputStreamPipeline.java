@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
-import org.opencv.core.Mat;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
@@ -139,16 +138,25 @@ public class OutputStreamPipeline implements Releasable {
         var contextImage = inputAndOutputFrame.contextColorImage;
         if (contextImage != null && !contextImage.getMat().empty()) {
             sumPipeNanosElapsed += resizeImagePipe.run(contextImage.getMat()).nanosElapsed;
-            sumPipeNanosElapsed += toBgr(contextImage.getMat());
+            if (contextImage.getMat().channels() == 1) {
+                sumPipeNanosElapsed += outputMatPipe.run(contextImage.getMat()).nanosElapsed;
+            }
         }
 
-        // Grayscale input (AprilTag capture) is expanded after resizing, at preview size
-        if (!inEmpty) sumPipeNanosElapsed += toBgr(inMat);
+        // Expand grayscale input at preview size before drawing colored overlays.
+        if (!inEmpty && inMat.channels() == 1) {
+            sumPipeNanosElapsed += outputMatPipe.run(inMat).nanosElapsed;
+        }
 
         // Only attempt drawing on a non-empty frame
         if (!outEmpty) {
             // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
-            sumPipeNanosElapsed += pipeProfileNanos[2] = toBgr(outMat);
+            if (outMat.channels() == 1) {
+                var outputMatPipeResult = outputMatPipe.run(outMat);
+                sumPipeNanosElapsed += pipeProfileNanos[2] = outputMatPipeResult.nanosElapsed;
+            } else {
+                pipeProfileNanos[2] = 0;
+            }
 
             // Draw 2D Crosshair on output
             var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
@@ -240,11 +248,6 @@ public class OutputStreamPipeline implements Releasable {
                 fps, // Unused but here just in case
                 targetsToDraw,
                 inputAndOutputFrame);
-    }
-
-    /** Expand a single-channel image to BGR in place so it can be drawn on in color and streamed. */
-    private long toBgr(Mat mat) {
-        return mat.channels() == 1 ? outputMatPipe.run(mat).nanosElapsed : 0;
     }
 
     @Override

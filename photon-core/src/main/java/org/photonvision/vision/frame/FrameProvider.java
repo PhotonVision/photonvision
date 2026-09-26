@@ -65,7 +65,7 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     public abstract void requestFrameThresholdType(FrameThresholdType type);
 
     /** Ask the camera for grayscale where the camera format allows it. */
-    public abstract void requestGrayscaleInput(boolean grayscaleInput);
+    public void requestGrayscaleInput(boolean grayscaleInput) {}
 
     /** Ask the camera to rotate frames it outputs */
     public abstract void requestFrameRotation(ImageRotationMode rotationMode);
