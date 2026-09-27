@@ -132,7 +132,7 @@ public class MigrationManager {
             try {
                 return applyMigrations(url, newDb);
             } catch (MigrationException e) {
-                logger.error("Couldn't migrate the existing database", e);
+                logger.error("Couldn't migrate the existing database: " + e.getMessage());
                 if (!backupDatabase(dbFile, 3)) {
                     try {
                         Files.deleteIfExists(dbFile.toPath());
@@ -167,7 +167,7 @@ public class MigrationManager {
                 throw new MigrationException("Database version " + currentVersion + " is not supported for migration");
             }
         } catch (SQLException e) {
-            throw new MigrationException("Error connecting to database", e);
+            throw new MigrationException("Error connecting to database: " + url, e);
         }
     }
 
