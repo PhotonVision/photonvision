@@ -34,8 +34,8 @@ public class DbMigration {
 
     public static final MigrationManager getMigration() {
         return new MigrationManager(2, schema02)
-            .addStep(2701, update2026CameraConfig)
-            .addStep(2702, sql2702);
+            .addStep(202701, update2026CameraConfig)
+            .addStep(202702, sql202702);
     }
 
     private static final String schema02 =
@@ -53,14 +53,14 @@ public class DbMigration {
         );
         """;
 
-    private static final String sql2702 =
+    private static final String sql202702 =
         """
         ALTER TABLE cameras DROP COLUMN drivermode_json;
         ALTER TABLE cameras DROP COLUMN pipeline_jsons;
         ALTER TABLE cameras DROP COLUMN otherpaths_json;
         """;
 
-    private static final String schema04 =
+    private static final String schema202703 =
         """
         CREATE TABLE IF NOT EXISTS new_global (
             filename TEXT PRIMARY KEY,
