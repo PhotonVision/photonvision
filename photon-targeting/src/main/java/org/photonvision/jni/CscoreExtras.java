@@ -39,8 +39,7 @@ public class CscoreExtras {
             int sink, long framePtr, double timeout, long lastFrameTime);
 
     /**
-     * Wrap the data owned by a RawFrame in a cv::Mat. MJPEG frames are exposed as a one-row
-     * compressed byte buffer for decoding. The RawFrame must outlive the returned Mat.
+     * Wrap the data owned by a RawFrame in a cv::Mat
      *
      * @param rawFramePtr
      * @return pointer to a cv::Mat

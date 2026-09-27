@@ -96,7 +96,6 @@ public class USBFrameProvider extends CpuImageProcessor {
                     cameraMode.width,
                     cameraMode.height,
                     grayscaleInput ? 0 : cameraMode.width * 3,
-                    // UNKNOWN preserves MJPEG bytes so we can decode directly to luminance.
                     decodeMjpeg ? PixelFormat.UNKNOWN : grayscaleInput ? PixelFormat.GRAY : PixelFormat.BGR);
 
             // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is nS since
@@ -122,7 +121,6 @@ public class USBFrameProvider extends CpuImageProcessor {
                 if (decodeMjpeg) {
                     Mat gray = null;
                     try {
-                        // A frame from the previous camera mode may still be in the sink.
                         if (PixelFormat.getFromInt(CscoreExtras.getPixelFormatNative(frame.getNativeObj()))
                                         == PixelFormat.MJPEG
                                 && !mat.empty()) {

@@ -143,7 +143,6 @@ public class OutputStreamPipeline implements Releasable {
             }
         }
 
-        // Expand grayscale input at preview size before drawing colored overlays.
         if (!inEmpty && inMat.channels() == 1) {
             sumPipeNanosElapsed += outputMatPipe.run(inMat).nanosElapsed;
         }
