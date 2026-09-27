@@ -37,14 +37,17 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.opencv.CVMat;
@@ -67,6 +70,14 @@ public class SQLConfigTest {
     public static void init() {
         LoadJNI.loadLibraries();
         CVMat.enablePrint(false);
+
+        var logLevel = LogLevel.DEBUG;
+        Logger.setLevel(LogGroup.Camera, logLevel);
+        Logger.setLevel(LogGroup.WebServer, logLevel);
+        Logger.setLevel(LogGroup.VisionModule, logLevel);
+        Logger.setLevel(LogGroup.Data, logLevel);
+        Logger.setLevel(LogGroup.Config, logLevel);
+        Logger.setLevel(LogGroup.General, logLevel);
     }
 
     @AfterAll
@@ -77,7 +88,7 @@ public class SQLConfigTest {
 
     @Test
     @Order(1)
-    public void testMigration() {
+    public void testNewDatabase() {
         SqlConfigProvider cfgLoader = new SqlConfigProvider(tmpDir);
         cfgLoader.load();
 
@@ -89,6 +100,29 @@ public class SQLConfigTest {
 
     @Test
     @Order(2)
+    public void testNewDatabaseFromDefault() throws IOException {
+        var defaultDir = tmpDir.resolve("conf.d");
+        defaultDir.toFile().mkdirs();
+        FileUtils.copyFile(
+                TestUtils.getConfigDirectoriesPath(false)
+                        .resolve("2026.3.4-windows/photon.sqlite")
+                        .toFile(),
+                defaultDir.resolve("photon2026.3.4-windows.sqlite").toFile());
+
+        var configDir = tmpDir.resolve("photonvision_config");
+        configDir.toFile().mkdirs();
+
+        SqlConfigProvider cfgLoader = new SqlConfigProvider(configDir);
+        cfgLoader.load();
+
+        assertEquals(
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
+                "Database isn't at the correct version");
+    }
+
+    @Test
+    @Order(3)
     public void testLoad() {
         var cfgLoader = new SqlConfigProvider(tmpDir);
 
@@ -110,7 +144,7 @@ public class SQLConfigTest {
         cfgLoader.saveToDisk();
 
         cfgLoader.load();
-        System.out.println(cfgLoader.getConfig());
+        // System.out.println(cfgLoader.getConfig()); // was this left in on purpose?
 
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
@@ -144,7 +178,7 @@ public class SQLConfigTest {
 
         assertDoesNotThrow(cfgManager::load);
 
-        System.out.println(cfgManager.getConfig());
+        // System.out.println(cfgManager.getConfig());  // was this left in on purpose?
         common2025p3p1Assertions(cfgManager.getConfig());
 
         // And we now see two models
