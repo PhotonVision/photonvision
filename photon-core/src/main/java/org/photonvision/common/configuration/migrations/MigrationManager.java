@@ -153,10 +153,14 @@ public class MigrationManager {
         try (Connection conn = DriverManager.getConnection(url)) {
             currentVersion = SQLUtils.getUserVersion(conn);
             if (newDb || stepMap.containsKey(currentVersion)) {
-                for (var step : this.stepMap.values()) {
-                    currentVersion = step.run(conn);
+                if (currentVersion == getVersion()) {
+                logger.info("Database is already up-to-date. Current database version: " + currentVersion);
+                } else {
+                    for (var step : this.stepMap.values()) {
+                        currentVersion = step.run(conn);
+                    }
+                    logger.info("Migration completed. Current database version: " + currentVersion);
                 }
-                logger.info("Migration completed. Current database version: " + currentVersion);
                 return currentVersion;
             } else {
                 // database version isn't recognized for migration
@@ -170,11 +174,13 @@ public class MigrationManager {
     private boolean copyDefaultDatabase(File dbFile, File configDir) {
         // Check for a conf.d directory in the same directory as the database.
         if (!configDir.exists() || !configDir.isDirectory()) {
+            logger.debug("Config defaults directory not found at: " + configDir.getAbsolutePath());
             return false;
         }
 
         var sqliteFiles = configDir.listFiles(file -> file.isFile() && file.getName().endsWith(".sqlite"));
         if (sqliteFiles == null || sqliteFiles.length == 0) {
+            logger.debug("No SQLite files found in config defaults directory: " + configDir.getAbsolutePath());
             return false;
         }
 
