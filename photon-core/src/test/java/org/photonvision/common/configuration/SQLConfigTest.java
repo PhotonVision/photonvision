@@ -32,6 +32,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -123,6 +124,40 @@ public class SQLConfigTest {
 
     @Test
     @Order(3)
+    public void testFailureRecovery() throws IOException, SQLException {
+        var originalDatabase = tmpDir.resolve("photon.sqlite");
+        FileUtils.copyFile(
+                TestUtils.getConfigDirectoriesPath(false)
+                        .resolve("2026.3.4-windows/photon.sqlite")
+                        .toFile(),
+                originalDatabase.toFile());
+        try (Connection conn =
+                DriverManager.getConnection("jdbc:sqlite:" + originalDatabase.toAbsolutePath())) {
+            Statement stmt = conn.createStatement();
+            stmt.execute("PRAGMA user_version = 0;"); // Force a failure by setting an unsupported version
+        }
+        ;
+        var databaseBeforeRecovery = tmpDir.resolve("photon.sqlite.before-recovery");
+        Files.copy(originalDatabase, databaseBeforeRecovery);
+
+        var cfgLoader = new SqlConfigProvider(tmpDir);
+        cfgLoader.load();
+
+        var backupDatabase = tmpDir.resolve("photon.sqlite.backup.1");
+        assertTrue(Files.exists(backupDatabase), "Failed database backup was not created");
+        assertEquals(
+                -1L,
+                Files.mismatch(databaseBeforeRecovery, backupDatabase),
+                "Database backup does not match the database with the unsupported schema version");
+
+        assertEquals(
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
+                "Database isn't at the correct version");
+    }
+
+    @Test
+    @Order(4)
     public void testLoad() {
         var cfgLoader = new SqlConfigProvider(tmpDir);
 
