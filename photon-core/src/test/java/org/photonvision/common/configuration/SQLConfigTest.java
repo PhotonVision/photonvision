@@ -39,7 +39,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.hardware.Platform;
@@ -57,6 +59,7 @@ import org.wpilib.fields.Field;
 import org.wpilib.fields.Fields;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
+@TestMethodOrder(OrderAnnotation.class)
 public class SQLConfigTest {
     @TempDir private Path tmpDir;
 
