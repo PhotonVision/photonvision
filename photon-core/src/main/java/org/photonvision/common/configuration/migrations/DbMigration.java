@@ -27,6 +27,7 @@ import java.util.Map;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.raspi.LibCameraJNI;
 
 import io.avaje.json.JsonException;
 
@@ -143,9 +144,14 @@ public class DbMigration {
                 var cameraInfo = configJson.getMap(String.format("matchedCameraInfo.%s", cameraType));
                 if ("PVCSICameraInfo".equals(cameraType)) {
                     String path = (String) cameraInfo.get("path");
-                    var cameraPaths = getLibcameraCameraPaths();
+                    List<String> cameraPaths = List.of();
+                    try {
+                        cameraPaths = List.of(LibCameraJNI.getCameraNames());
+                    } catch (UnsatisfiedLinkError e) {
+                        logger.warn("Failed to load libcamera JNI library");
+                    }
                     if (cameraPaths.isEmpty()) {
-                        logger.warn("No detected CSI camera paths available.");
+                        logger.warn("No detected CSI camera paths available");
                     } else if (!cameraPaths.contains(path)) {
                         var updatedPath =
                                 path.replaceFirst(
@@ -244,44 +250,5 @@ public class DbMigration {
             }
         }
     };
-
-    /**
-     * Required by update2026CameraConfig()
-     */
-    private static List<String> libcameraCameraPaths;
-
-    /**
-     * Required by update2026CameraConfig()
-     */
-    private static synchronized List<String> getLibcameraCameraPaths() {
-        if (libcameraCameraPaths != null) {
-            return libcameraCameraPaths;
-        }
-
-        String output = null;
-        var shell = new ShellExec(true, true);
-        try {
-            int exitCode = shell.executeBashCommand("rpicam-hello --list-cameras");
-            output = shell.getOutput();
-        } catch (IOException e) {
-            logger.warn("Failed to execute rpicam-hello --list-cameras");
-        }
-
-        if (output == null || output.isBlank()) {
-            return List.of();
-        }
-
-        libcameraCameraPaths = output.lines()
-                .filter(line -> line.matches("\\s*\\d+\\s*:.*"))
-                .map(
-                        line -> {
-                            int start = line.lastIndexOf('(');
-                            int end = line.lastIndexOf(')');
-                            return start >= 0 && end > start ? line.substring(start + 1, end) : "";
-                        })
-                .filter(path -> !path.isBlank())
-                .toList();
-            return libcameraCameraPaths;
-    }
 
 }
