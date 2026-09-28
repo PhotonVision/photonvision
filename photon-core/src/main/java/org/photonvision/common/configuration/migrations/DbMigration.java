@@ -251,10 +251,10 @@ public class DbMigration {
      * Required by update2026CameraConfig()
      */
     private static synchronized List<String> getLibcameraCameraPaths() {
-        if (libcameraCameraPaths != null) { 
+        if (libcameraCameraPaths != null) {
             return libcameraCameraPaths;
         }
-        
+
         String output = null;
         var shell = new ShellExec(true, true);
         try {
