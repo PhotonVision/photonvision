@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.ShellExec;
 
 import io.avaje.json.JsonException;
 
@@ -140,6 +141,33 @@ public class DbMigration {
                                 cameraType, configJson.getString("nickname")));
                 String type = String.format("PVCameraInfo.%s", cameraType);
                 var cameraInfo = configJson.getMap(String.format("matchedCameraInfo.%s", cameraType));
+                if ("PVCSICameraInfo".equals(cameraType)) {
+                    String path = (String) cameraInfo.get("path");
+                    var cameraPaths = getLibcameraCameraPaths();
+                    if (!cameraPaths.contains(path)) {
+                        var updatedPath =
+                                path.replaceFirst(
+                                        "(?<=pcie@)([0-9a-fA-F]{6})(?=/|$)", "1000$1");
+                        if (cameraPaths.contains(updatedPath)) {
+                            cameraInfo.put("path", updatedPath);
+                            logger.debug(
+                                    "Updated legacy libcamera path "
+                                            + path
+                                            + " to "
+                                            + updatedPath);
+                        } else {
+                            logger.warn(
+                                    "Legacy libcamera path "
+                                            + path
+                                            + " not found in detected camera paths.");
+                        }
+                    } else {
+                        logger.debug(
+                                "Legacy libcamera path "
+                                        + path
+                                        + " found in detected camera paths.");
+                    }
+                }
                 matchedCameraInfo.put("type", type);
                 matchedCameraInfo.putAll(cameraInfo);
                 matchedCameraInfo.remove(cameraType);
@@ -195,13 +223,6 @@ public class DbMigration {
                 }
             }
 
-            // for debugging, remove before merge
-            // try {
-            //     logger.debug("Migrated config_json:\n" + configJson.export(true));
-            // } catch (IOException | JsonException e) {
-            //     logger.error("Error serializing configJson.", e);
-            // }
-
             // update camera in database
             var sqlString =
                     "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES (?, ?, ?, ?);";
@@ -220,4 +241,44 @@ public class DbMigration {
             }
         }
     };
+
+    /**
+     * Required by update2026CameraConfig()
+     */
+    private static List<String> libcameraCameraPaths;
+
+    /**
+     * Required by update2026CameraConfig()
+     */
+    private static synchronized List<String> getLibcameraCameraPaths() {
+        if (libcameraCameraPaths != null) { 
+            return libcameraCameraPaths;
+        }
+        
+        String output = null;
+        var shell = new ShellExec(true, true);
+        try {
+            int exitCode = shell.executeBashCommand("rpicam-hello --list-cameras");
+            output = shell.getOutput();
+        } catch (IOException e) {
+            logger.warn("Failed to execute rpicam-hello --list-cameras");
+        }
+
+        if (output == null || output.isBlank()) {
+            return List.of();
+        }
+
+        libcameraCameraPaths = output.lines()
+                .filter(line -> line.matches("\\s*\\d+\\s*:.*"))
+                .map(
+                        line -> {
+                            int start = line.lastIndexOf('(');
+                            int end = line.lastIndexOf(')');
+                            return start >= 0 && end > start ? line.substring(start + 1, end) : "";
+                        })
+                .filter(path -> !path.isBlank())
+                .toList();
+            return libcameraCameraPaths;
+    }
+
 }
