@@ -144,7 +144,9 @@ public class DbMigration {
                 if ("PVCSICameraInfo".equals(cameraType)) {
                     String path = (String) cameraInfo.get("path");
                     var cameraPaths = getLibcameraCameraPaths();
-                    if (!cameraPaths.contains(path)) {
+                    if (cameraPaths.isEmpty()) {
+                        logger.warn("No detected CSI camera paths available.");
+                    } else if (!cameraPaths.contains(path)) {
                         var updatedPath =
                                 path.replaceFirst(
                                         "(?<=pcie@)([0-9a-fA-F]{6})(?=/|$)", "1000$1");
@@ -159,7 +161,8 @@ public class DbMigration {
                             logger.warn(
                                     "Legacy libcamera path "
                                             + path
-                                            + " not found in detected camera paths.");
+                                            + " not found in detected camera paths:"
+                                            + cameraPaths);
                         }
                     } else {
                         logger.debug(
