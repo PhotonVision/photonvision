@@ -17,6 +17,9 @@
 
 package org.photonvision.common.configuration;
 
+import static org.photonvision.common.configuration.migrations.DbMigration.Columns;
+import static org.photonvision.common.configuration.migrations.DbMigration.Tables;
+
 import io.avaje.json.JsonException;
 import io.avaje.jsonb.Jsonb;
 import java.io.File;
@@ -28,8 +31,6 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.DatabaseSchema.Columns;
-import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.configuration.migrations.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;

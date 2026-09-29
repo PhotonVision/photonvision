@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.photonvision.common.configuration.migrations.DbMigration.Columns;
+import static org.photonvision.common.configuration.migrations.DbMigration.Tables;
 
 import io.avaje.json.JsonDataException;
 import io.avaje.jsonb.Jsonb;
@@ -289,9 +291,7 @@ public class SQLConfigTest {
                         conn.prepareStatement(
                                 String.format(
                                         "REPLACE INTO %s (%s, %s) VALUES (?,?)",
-                                        DatabaseSchema.Tables.GLOBAL,
-                                        DatabaseSchema.Columns.GLB_FILENAME,
-                                        DatabaseSchema.Columns.GLB_CONTENTS))) {
+                                        Tables.GLOBAL, Columns.GLB_FILENAME, Columns.GLB_CONTENTS))) {
             ps.setString(1, key);
             ps.setString(2, contents);
             ps.executeUpdate();

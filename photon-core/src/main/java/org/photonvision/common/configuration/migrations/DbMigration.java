@@ -26,13 +26,28 @@ import java.util.Map;
 
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.ShellExec;
 import org.photonvision.raspi.LibCameraJNI;
 
 import io.avaje.json.JsonException;
 
 public class DbMigration {
     private static final Logger logger = new Logger(DbMigration.class, LogGroup.Config);
+
+    public static final class Tables {
+        public static final String GLOBAL = "global";
+        public static final String CAMERAS = "cameras";
+    }
+
+    public static final class Columns {
+        public static final String GLB_FILENAME = "filename";
+        public static final String GLB_CONTENTS = "contents";
+
+        public static final String CAM_UNIQUE_NAME = "unique_name";
+        public static final String CAM_CONFIG_JSON = "config_json";
+        public static final String CAM_DRIVERMODE_JSON = "drivermode_json";
+        public static final String CAM_PIPELINE_JSONS = "pipeline_jsons";
+        public static final String CAM_OTHERPATHS_JSON = "otherpaths_json";
+    }
 
     public static final MigrationManager getMigration() {
         return new MigrationManager(2, schema02)
