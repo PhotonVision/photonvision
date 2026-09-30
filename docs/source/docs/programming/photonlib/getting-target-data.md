@@ -205,6 +205,10 @@ All of the data above (**except skew**) is available when using AprilTags.
 - Transform3d `getBestCameraToTarget()`/`GetBestCameraToTarget()`/`getBestCameraToTarget()`: Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag space (X forward, Y left, Z up) with the lowest reprojection error.
 - Transform3d `getAlternateCameraToTarget()`/`GetAlternateCameraToTarget()`/`getAlternateCameraToTarget()`: Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag space (X forward, Y left, Z up) with the highest reprojection error.
 
+:::{note}
+These transforms carry their translations in **meters** and their rotations in **radians**, CCW-positive. The 3d transforms map camera space (X = forward, Y = left, Z = up) to object space. See WPILib's [coordinate system documentation](https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html) for the conventions in full.
+:::
+
 ```{eval-rst}
 .. tab-set-code::
    .. code-block:: java

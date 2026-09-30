@@ -31,6 +31,12 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 
 Another necessary argument for creating a `PhotonPoseEstimator` is the `Transform3d` representing the robot-relative location and orientation of the camera. A `Transform3d` contains a `Translation3d` and a `Rotation3d`. The `Translation3d` is created in meters and the `Rotation3d` is created with radians. For more information on the coordinate system, please see the {ref}`Coordinate Systems <docs/apriltag-pipelines/coordinate-systems:Coordinate Systems>` documentation.
 
+:::{note}
+A word on units, since the three examples below do not spell them out the same way. Translations are in **meters**. Rotations are in **radians** in Java and C++, while the Python example makes that explicit with `Rotation3d.fromDegrees`. Angles are CCW-positive, and the robot origin is the center of rotation at floor level, so a camera mounted half a meter above the floor sits at `Z = 0.5`.
+
+WPILib covers these conventions, and the field coordinate system they refer to, in the [coordinate system documentation](https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html).
+:::
+
 ```{eval-rst}
 .. tab-set-code::
     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
