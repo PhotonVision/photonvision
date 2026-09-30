@@ -87,7 +87,7 @@ public class DbMigration {
             SELECT 1 FROM sqlite_master WHERE type='table' AND name='global'
         );
         DROP TABLE IF EXISTS global;
-        ALTER TABLE new_global RENAME global;
+        ALTER TABLE new_global RENAME TO global;
 
         CREATE TABLE IF NOT EXISTS new_cameras (
             unique_name TEXT PRIMARY KEY,
