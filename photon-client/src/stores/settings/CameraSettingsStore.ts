@@ -21,6 +21,9 @@ interface CameraSettingsStore {
   cameras: { [key: string]: UiCameraConfiguration };
 }
 
+// Module-level handle for the calibration snapshot loop; there is only one store instance.
+let calibrationSnapshotInterval: number | null = null;
+
 export const useCameraSettingsStore = defineStore("cameraSettings", {
   state: (): CameraSettingsStore => ({
     cameras: { [PlaceholderCameraSettings.uniqueName]: PlaceholderCameraSettings }
@@ -430,11 +433,11 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * @param cameraUniqueName camera to snapshot (captured when the loop starts)
      */
     startCalibrationSnapshotLoop(intervalMs = 500, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
-      // store the interval id on the store instance (avoid changing state shape)
-      if ((this as any)._calibrationSnapshotInterval !== null) return;
+      // No-op if already running. Call stopCalibrationSnapshotLoop() to stop.
+      if (calibrationSnapshotInterval !== null) return;
       // take one immediately then schedule
       this.takeCalibrationSnapshot(cameraUniqueName);
-      (this as any)._calibrationSnapshotInterval = window.setInterval(() => {
+      calibrationSnapshotInterval = window.setInterval(() => {
         this.takeCalibrationSnapshot(cameraUniqueName);
       }, intervalMs);
     },
@@ -443,9 +446,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Stop a running calibration snapshot loop started with startCalibrationSnapshotLoop().
      */
     stopCalibrationSnapshotLoop() {
-      if ((this as any)._calibrationSnapshotInterval === null) return;
-      clearInterval((this as any)._calibrationSnapshotInterval);
-      (this as any)._calibrationSnapshotInterval = null;
+      if (calibrationSnapshotInterval === null) return;
+      clearInterval(calibrationSnapshotInterval);
+      calibrationSnapshotInterval = null;
     },
     /**
      * Save a snapshot of the input frame of the camera.
