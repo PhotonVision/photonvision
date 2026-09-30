@@ -53,15 +53,16 @@ import org.photonvision.jni.TimeSyncClient;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.targeting.PhotonPipelineMetadata;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.wpilib.backend.NetworkTablesTelemetryBackend;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.NetworkTablesJNI;
 import org.wpilib.simulation.AlertSim;
 import org.wpilib.simulation.SimHooks;
-import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.system.DataLogManager;
 import org.wpilib.system.Timer;
+import org.wpilib.telemetry.TelemetryRegistry;
 import org.wpilib.util.runtime.RuntimeLoader;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -79,18 +80,20 @@ class PhotonCameraTest {
     public void setup() {
         assertNull(inst);
 
-        HAL.initialize(500, 0);
+        HAL.initialize();
 
         inst = NetworkTableInstance.create();
         assertTrue(inst.isValid());
         inst.stopClient();
         inst.stopServer();
         inst.startLocal();
-        SmartDashboard.setNetworkTableInstance(inst);
+        TelemetryRegistry.registerBackend("", new NetworkTablesTelemetryBackend(inst, "/Telemetry"));
     }
 
     @AfterEach
     public void teardown() {
+        TelemetryRegistry.reset();
+
         inst.close();
         inst = null;
 
@@ -137,9 +140,9 @@ class PhotonCameraTest {
                                 + " received at "
                                 + res.getTimestampSeconds()
                                 + " now: "
-                                + NetworkTablesJNI.now() / 1e6
+                                + NetworkTablesJNI.now() / 1e9
                                 + " time since last pong: "
-                                + res.metadata.timeSinceLastPong / 1e6);
+                                + res.metadata.timeSinceLastPong / 1e9);
             }
         }
         HAL.shutdown();
@@ -275,10 +278,11 @@ class PhotonCameraTest {
             }
 
             var result1 = new PhotonPipelineResult();
-            result1.metadata.captureTimestampMicros = seq * 100;
-            result1.metadata.publishTimestampMicros = seq * 150;
+            result1.metadata.captureTimestampNanos = seq * 100000;
+            result1.metadata.publishTimestampNanos = seq * 150000;
             result1.metadata.sequenceID = seq;
             if (tspClient != null) {
+                // PingMetadata reports nanoseconds -- so does the metadata
                 result1.metadata.timeSinceLastPong = tspClient.getPingMetadata().timeSinceLastPong();
             } else {
                 result1.metadata.timeSinceLastPong = Long.MAX_VALUE;
@@ -343,7 +347,7 @@ class PhotonCameraTest {
             PhotonPipelineResult noPongResult =
                     new PhotonPipelineResult(
                             new PhotonPipelineMetadata(
-                                    1, 2, 3, 10 * 1000000 // 10 seconds -> us since last pong
+                                    1, 2, 3, 10L * 1000000000 // 10 seconds -> ns since last pong
                                     ),
                             List.of(),
                             Optional.empty());

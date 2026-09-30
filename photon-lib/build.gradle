@@ -18,6 +18,18 @@ apply from: "${rootDir}/shared/config.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
 
 nativeUtils {
+    nativeDependencyContainer {
+        mrclib_sconly(getNativeDependencyTypeClass('WPISharedMavenDependency')) {
+            groupId = "org.wpilib.mrclib"
+            artifactId = "mrclib-cpp"
+            headerClassifier = "headers"
+            ext = "zip"
+            version = mrclibVersion
+            skipAtRuntimePlatforms.add(nativeUtils.wpi.platforms.systemcore)
+            targetPlatforms.add(nativeUtils.wpi.platforms.systemcore)
+            noDebugSplit = true
+        }
+    }
     exportsConfigs {
         "${nativeName}" {}
     }
@@ -52,7 +64,10 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            nativeUtils.useRequiredLibrary(it, "telemetry_shared")
+            nativeUtils.useRequiredLibrary(it, "tunables_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
@@ -86,14 +101,20 @@ model {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                     lib project: ':photon-targeting', library: 'photontargetingJNI', linkage: 'shared'
                 }
+                if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
+                    nativeUtils.useRequiredLibrary(it, "mrclib_sconly")
+                }
             }
 
             nativeUtils.useRequiredLibrary(it, "datalog_shared")
+            nativeUtils.useRequiredLibrary(it, "telemetry_shared")
+            nativeUtils.useRequiredLibrary(it, "tunables_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "catch2_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
@@ -372,5 +393,8 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("datalog")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("fields")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("telemetry")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("tunables")
 nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)

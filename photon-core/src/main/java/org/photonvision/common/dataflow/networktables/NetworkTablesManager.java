@@ -36,8 +36,7 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
-import org.wpilib.driverstation.Alert;
-import org.wpilib.driverstation.Alert.Level;
+import org.wpilib.fields.Field;
 import org.wpilib.networktables.LogMessage;
 import org.wpilib.networktables.MultiSubscriber;
 import org.wpilib.networktables.NetworkTable;
@@ -45,8 +44,8 @@ import org.wpilib.networktables.NetworkTableEvent;
 import org.wpilib.networktables.NetworkTableEvent.Kind;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.StringSubscriber;
-import org.wpilib.smartdashboard.SmartDashboard;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.util.Alert;
+import org.wpilib.util.Alert.Level;
 import org.wpilib.vision.camera.CameraServerJNI;
 
 public class NetworkTablesManager {
@@ -57,7 +56,7 @@ public class NetworkTablesManager {
     private final String kRootTableName = "/photonvision";
     // The coprocessors table should only be used for operations/data related to MAC address
     public final String kCoprocTableName = "coprocessors";
-    private final String kFieldLayoutName = "apriltag_field_layout";
+    private final String kFieldLayoutName = "field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
     public final NetworkTable kCoprocTable = kRootTable.getSubTable(kCoprocTableName);
 
@@ -67,9 +66,9 @@ public class NetworkTablesManager {
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
-    private final Alert conflictAlert = new Alert("PhotonAlerts", "", Level.MEDIUM);
+    private final Alert conflictAlert = new Alert("PhotonAlerts", "conflict", "", Level.MEDIUM);
 
-    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", Level.MEDIUM);
+    private final Alert mismatchAlert = new Alert("PhotonAlerts", "mismatch", "", Level.MEDIUM);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
@@ -120,7 +119,6 @@ public class NetworkTablesManager {
         if (mismatchAlert != null) {
             mismatchAlert.set(on);
             mismatchAlert.setText(message);
-            SmartDashboard.updateValues();
         }
     }
 
@@ -193,11 +191,11 @@ public class NetworkTablesManager {
     }
 
     private void onFieldLayoutChanged(NetworkTableEvent event) {
-        var atfl_json = event.valueData.value.getString();
+        var field_json = event.valueData.value.getString();
         try {
             System.out.println("Got new field layout!");
-            var atfl = Jsonb.instance().type(AprilTagFieldLayout.class).fromJson(atfl_json);
-            ConfigManager.getInstance().getConfig().setApriltagFieldLayout(atfl);
+            var field = Jsonb.instance().type(Field.class).fromJson(field_json);
+            ConfigManager.getInstance().getConfig().setFieldLayout(field);
             ConfigManager.getInstance().requestSave();
             DataChangeService.getInstance()
                     .publishEvent(
@@ -205,8 +203,8 @@ public class NetworkTablesManager {
                                     "fullsettings",
                                     UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (IllegalStateException | JsonException e) {
-            logger.error("Error deserializing atfl!");
-            logger.error(atfl_json);
+            logger.error("Error deserializing field layout!");
+            logger.error(field_json);
         }
     }
 
@@ -329,7 +327,6 @@ public class NetworkTablesManager {
             conflictAlert.setText("Camera name conflict detected: " + conflictingCameras + "!");
         }
         conflictAlert.set(conflictingHostname || !conflictingCameras.isEmpty());
-        SmartDashboard.updateValues();
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras.toString();
     }
@@ -346,6 +343,10 @@ public class NetworkTablesManager {
         broadcastVersion();
     }
 
+    /**
+     * @return The offset, in nanoseconds, which when added to the local wpi::nt::Now timebase yields
+     *     the Time Sync Server's timebase
+     */
     public long getOffset() {
         return m_timeSync.getOffset();
     }
@@ -356,13 +357,14 @@ public class NetworkTablesManager {
         String hostname = config.shouldManage ? config.hostname : CameraServerJNI.getHostname();
         logger.debug("Starting NT Client with hostname: " + hostname);
         ntInstance.startClient(hostname);
+        // Determine if ntServerAddress is a team number or an IP/hostname.
+        // setServerTeam silently ignores non-numeric strings (AddTeamServer returns
+        // without adding a server), so we must check explicitly.
         try {
-            int t = Integer.parseInt(config.ntServerAddress);
-            if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
-            ntInstance.setServerTeam(t);
+            int team = Integer.parseInt(config.ntServerAddress);
+            ntInstance.setServerTeam(config.ntServerAddress);
         } catch (NumberFormatException e) {
-            if (!m_isRetryingConnection)
-                logger.info("Starting NT Client, server IP is \"" + config.ntServerAddress + "\"");
+            // ntServerAddress is not a valid number (e.g., IP address or hostname).
             ntInstance.setServer(config.ntServerAddress);
         }
         ntInstance.startDSClient();

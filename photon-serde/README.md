@@ -52,14 +52,14 @@ Dynamic decoding is facilitated by publishing schemas to the `.schema` table in 
 | /.schema/photonstruct:TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6           | kRaw |  photonstructschema |
 | /.schema/photonstruct:MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee   | kRaw |  photonstructschema |
 | /.schema/photonstruct:PnpResult:ae4d655c0a3104d88df4f5db144c1e86              | kRaw |  photonstructschema |
-| /.schema/photonstruct:PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e | kRaw |  photonstructschema |
+| /.schema/photonstruct:PhotonPipelineMetadata:5231116d7f87ff560e6aa5263d0eee02 | kRaw |  photonstructschema |
 | /.schema/proto:geometry3d.proto                                               | kRaw  |  proto:FileDescriptorProto |
 | /.schema/proto:photon.proto    | kRaw | proto:FileDescriptorProto |
 
 The struct definition for PhotonPipelineResult we retrieved from the struct schema database shown above (via the command `python.exe scripts/catnt.py --echo /.schema/photonstruct:PhotonPipelineResult:ed36092eb95e9fc254ebac897e2a74df`) is:
 
 ```
-PhotonPipelineMetadata:626e70461cbdb274fb43ead09c255f4e metadata;
+PhotonPipelineMetadata:5231116d7f87ff560e6aa5263d0eee02 metadata;
 PhotonTrackedTarget:4387ab389a8a78b7beb4492f145831b4[?] targets;
 MultiTargetPNPResult:af2056aaab740eeb889a926071cae6ee? multitagResult;
 ```

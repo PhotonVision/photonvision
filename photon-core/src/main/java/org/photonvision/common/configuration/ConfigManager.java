@@ -328,8 +328,8 @@ public class ConfigManager {
         return m_provider.saveUploadedNetworkConfig(uploadPath);
     }
 
-    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
-        return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
+    public boolean saveUploadedFieldLayout(Path uploadPath) {
+        return m_provider.saveUploadedFieldLayout(uploadPath);
     }
 
     public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {

@@ -47,9 +47,9 @@ import org.wpilib.util.struct.Struct;
 public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMetadata> {
 
     @Override
-    public final String getInterfaceUUID() { return "ac0a45f686457856fb30af77699ea356"; }
+    public final String getInterfaceUUID() { return "5231116d7f87ff560e6aa5263d0eee02"; }
     @Override
-    public final String getSchema() { return "int64 sequenceID;int64 captureTimestampMicros;int64 publishTimestampMicros;int64 timeSinceLastPong;"; }
+    public final String getSchema() { return "int64 sequenceID;int64 captureTimestampNanos;int64 publishTimestampNanos;int64 timeSinceLastPong;"; }
     @Override
     public final String getTypeName() { return "PhotonPipelineMetadata"; }
 
@@ -63,11 +63,11 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
         // field sequenceID is of intrinsic type int64
         packet.encode(value.sequenceID);
 
-        // field captureTimestampMicros is of intrinsic type int64
-        packet.encode(value.captureTimestampMicros);
+        // field captureTimestampNanos is of intrinsic type int64
+        packet.encode(value.captureTimestampNanos);
 
-        // field publishTimestampMicros is of intrinsic type int64
-        packet.encode(value.publishTimestampMicros);
+        // field publishTimestampNanos is of intrinsic type int64
+        packet.encode(value.publishTimestampNanos);
 
         // field timeSinceLastPong is of intrinsic type int64
         packet.encode(value.timeSinceLastPong);
@@ -80,11 +80,11 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
         // sequenceID is of intrinsic type int64
         ret.sequenceID = packet.decodeLong();
 
-        // captureTimestampMicros is of intrinsic type int64
-        ret.captureTimestampMicros = packet.decodeLong();
+        // captureTimestampNanos is of intrinsic type int64
+        ret.captureTimestampNanos = packet.decodeLong();
 
-        // publishTimestampMicros is of intrinsic type int64
-        ret.publishTimestampMicros = packet.decodeLong();
+        // publishTimestampNanos is of intrinsic type int64
+        ret.publishTimestampNanos = packet.decodeLong();
 
         // timeSinceLastPong is of intrinsic type int64
         ret.timeSinceLastPong = packet.decodeLong();

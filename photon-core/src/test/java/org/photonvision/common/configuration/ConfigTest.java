@@ -38,6 +38,7 @@ import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
+import org.wpilib.fields.Field;
 
 public class ConfigTest {
     private static ConfigManager configMgr;
@@ -160,5 +161,41 @@ public class ConfigTest {
         AprilTagPipelineSettings settings =
                 (AprilTagPipelineSettings) Jsonb.instance().type(CVPipelineSettings.class).fromJson(json);
         assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);
+    }
+
+    @Test
+    public void testMigrateOldFieldLayout() {
+        // exact serialization format produced by the old AprilTagFieldLayout
+        var json =
+                "{\"field\":{\"length\":16.541,\"width\":8.211},\"tags\":[{\"ID\":1,\"pose\":{\"translation\":{\"x\":15.079471999999997,\"y\":0.24587199999999998,\"z\":1.355852},\"rotation\":{\"quaternion\":{\"W\":0.5000000000000001,\"X\":0.0,\"Y\":0.0,\"Z\":0.8660254037844386}}}},{\"ID\":2,\"pose\":{\"translation\":{\"x\":16.185134,\"y\":0.883666,\"z\":1.355852},\"rotation\":{\"quaternion\":{\"W\":0.5000000000000001,\"X\":0.0,\"Y\":0.0,\"Z\":0.8660254037844386}}}}]}";
+
+        var migrated = FieldLayoutMigration.migrateFieldLayoutJson(json);
+        assertTrue(!migrated.equals(json), "Legacy JSON should have been migrated");
+
+        Field field = Jsonb.instance().type(Field.class).fromJson(migrated);
+        assertEquals(16.541, field.getFieldLength(), 1e-6);
+        assertEquals(8.211, field.getFieldWidth(), 1e-6);
+        assertEquals(2, field.getTags().size());
+        assertTrue(field.getTagPose(1).isPresent());
+        assertEquals(15.079471999999997, field.getTagPose(1).get().getX(), 1e-6);
+        assertEquals(0.24587199999999998, field.getTagPose(1).get().getY(), 1e-6);
+        assertEquals(1.355852, field.getTagPose(1).get().getZ(), 1e-6);
+        assertTrue(field.getTagPose(2).isPresent());
+        assertEquals(16.185134, field.getTagPose(2).get().getX(), 1e-6);
+    }
+
+    @Test
+    public void testMigrateNewFieldLayoutUnchanged() {
+        var json =
+                "{\"name\":\"2024 FRC Crescendo\",\"season\":\"2024\",\"game\":\"Crescendo\",\"field-dimensions\":{\"length\":16.541,\"width\":8.211},\"program\":\"frc\",\"field-tags\":[]}";
+
+        assertEquals(json, FieldLayoutMigration.migrateFieldLayoutJson(json));
+    }
+
+    @Test
+    public void testMigrateGarbageUnchanged() {
+        var json = "this is not json";
+
+        assertEquals(json, FieldLayoutMigration.migrateFieldLayoutJson(json));
     }
 }

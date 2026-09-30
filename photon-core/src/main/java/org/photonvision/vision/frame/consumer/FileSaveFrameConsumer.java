@@ -69,7 +69,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
 
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
 
-        NetworkTable fmsTable = NetworkTablesManager.getInstance().getNTInst().getTable("FMSInfo");
+        NetworkTable fmsTable =
+                NetworkTablesManager.getInstance().getNTInst().getTable("DriverStation");
         this.ntEventName = fmsTable.getStringTopic("EventName").subscribe("UNKNOWN");
         this.ntMatchNum = fmsTable.getIntegerTopic("MatchNumber").subscribe(0);
         this.ntMatchType = fmsTable.getIntegerTopic("MatchType").subscribe(0);

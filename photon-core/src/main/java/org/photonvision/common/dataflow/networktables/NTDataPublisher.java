@@ -26,7 +26,6 @@ import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
@@ -197,19 +196,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                             List.of(),
                             result.inputAndOutputFrame);
         else acceptedResult = result;
-        var now = NetworkTablesJNI.now();
-        var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
-
-        var offset = NetworkTablesManager.getInstance().getOffset();
+        var offsetNanos = NetworkTablesManager.getInstance().getOffset();
 
         // Transform the metadata timestamps from the local wpi::nt::Now timebase to the Time Sync
-        // Server's
-        // timebase
+        // Server's timebase. Timestamps are published in nanoseconds.
         var simplified =
                 new PhotonPipelineResult(
                         acceptedResult.sequenceID,
-                        captureMicros + offset,
-                        now + offset,
+                        result.getImageCaptureTimestampNanos() + offsetNanos,
+                        NetworkTablesJNI.now() + offsetNanos,
                         NetworkTablesManager.getInstance().getTimeSinceLastPong(),
                         TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
                         acceptedResult.multiTagResult);

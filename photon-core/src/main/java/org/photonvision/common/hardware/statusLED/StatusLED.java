@@ -21,4 +21,7 @@ import org.photonvision.common.hardware.PhotonStatus;
 
 public interface StatusLED extends AutoCloseable {
     public void setStatus(PhotonStatus status);
+
+    @Override
+    public void close();
 }

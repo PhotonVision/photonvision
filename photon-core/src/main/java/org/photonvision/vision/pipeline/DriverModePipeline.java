@@ -25,7 +25,7 @@ import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
 import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 public class DriverModePipeline
         extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {

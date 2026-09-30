@@ -75,33 +75,31 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
-// NOTE: these discriminant values must match what avaje-jsonb actually serializes on the
-// backend, which is the fully-qualified nested class name (e.g. "PVCameraInfo.PVUsbCameraInfo"),
-// not the bare simple name. See PVCameraInfo.java's generated JSON adapter.
+export const PVUsbCamera = "PVCameraInfo.PVUsbCameraInfo";
+export const PVCSICamera = "PVCameraInfo.PVCSICameraInfo";
+export const PVFileCamera = "PVCameraInfo.PVFileCameraInfo";
+export const PVDuplicateCamera = "PVCameraInfo.PVDuplicateCameraInfo";
+
 interface PVCameraInfoBase {
-  type:
-    | "PVCameraInfo.PVUsbCameraInfo"
-    | "PVCameraInfo.PVCSICameraInfo"
-    | "PVCameraInfo.PVFileCameraInfo"
-    | "PVCameraInfo.PVDuplicateCameraInfo";
+  type: typeof PVUsbCamera | typeof PVCSICamera | typeof PVFileCamera | typeof PVDuplicateCamera;
   path: string;
   name: string;
   uniquePath: string;
 }
 
 export interface PVUsbCameraInfo extends PVCameraInfoBase {
-  type: "PVCameraInfo.PVUsbCameraInfo";
+  type: typeof PVUsbCamera;
   dev: number;
   otherPaths: string[];
   vendorId: number;
   productId: number;
 }
 export interface PVCSICameraInfo extends PVCameraInfoBase {
-  type: "PVCameraInfo.PVCSICameraInfo";
+  type: typeof PVCSICamera;
   baseName: string;
 }
 export interface PVFileCameraInfo extends PVCameraInfoBase {
-  type: "PVCameraInfo.PVFileCameraInfo";
+  type: typeof PVFileCamera;
 }
 
 export interface PVDuplicateCameraInfo extends PVCameraInfoBase {
@@ -439,7 +437,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   minWhiteBalanceTemp: 2000,
   maxWhiteBalanceTemp: 10000,
   matchedCameraInfo: {
-    type: "PVCameraInfo.PVFileCameraInfo",
+    type: PVFileCamera,
     name: "Foobar",
     path: "/dev/foobar",
     uniquePath: "/dev/foobar2"

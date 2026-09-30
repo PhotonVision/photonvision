@@ -145,7 +145,8 @@ public class Main implements Callable<Integer> {
                             List.of(),
                             new Size(),
                             1,
-                            CameraLensModel.LENSMODEL_OPENCV));
+                            CameraLensModel.LENSMODEL_OPENCV,
+                            null));
 
             logger.info("Added test camera calibration for WPI2026 " + camConf2026.calibrations);
 
@@ -250,7 +251,7 @@ public class Main implements Callable<Integer> {
         }
         logger.info("WPILib and photon-targeting JNI libraries loaded.");
 
-        if (!HAL.initialize(500, 0)) {
+        if (!HAL.initialize()) {
             logger.error("Failed to initialize the HAL! Giving up :(");
             return 1;
         }
@@ -271,9 +272,7 @@ public class Main implements Callable<Integer> {
             logger.warn("Platform does not support Rubik based machine learning!");
         }
 
-        if (Platform.isWindows() || Platform.isLinux()) {
-            tryLoadJNI(JNITypes.MRCAL);
-        }
+        tryLoadJNI(JNITypes.MRCAL);
 
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);

@@ -52,7 +52,7 @@ import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.linalg.Vector;
 import org.wpilib.math.numbers.*;
 import org.wpilib.math.util.Nat;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 /**
  * Calibration and performance values for this camera.

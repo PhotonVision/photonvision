@@ -33,7 +33,7 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 public class FindBoardCornersPipe
         extends CVPipe<
@@ -417,6 +417,19 @@ public class FindBoardCornersPipe
             imagePoints.release();
             if (ids != null) ids.release();
             // If we can't find a calibration board, give up
+            return null;
+        }
+
+        // enforce preconditions
+        if (imagePoints.total() != objectPoints.total()
+                || (ids != null && imagePoints.total() != ids.total())) {
+            logger.error(
+                    "Output image points, object points, and corner ids must all be the same size. Got image points of size "
+                            + imagePoints.size()
+                            + ", object points of size "
+                            + objectPoints.size()
+                            + ", and corner ids of size "
+                            + ids.size());
             return null;
         }
 

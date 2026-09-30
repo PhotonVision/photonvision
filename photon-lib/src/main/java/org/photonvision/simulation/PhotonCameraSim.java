@@ -47,14 +47,14 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Transform3d;
-import org.wpilib.math.util.Pair;
 import org.wpilib.system.RobotController;
+import org.wpilib.util.Pair;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.util.WPIUtilJNI;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
 import org.wpilib.vision.camera.CvSource;
 import org.wpilib.vision.camera.OpenCvLoader;
 import org.wpilib.vision.camera.VideoSource.ConnectionStrategy;
@@ -76,6 +76,7 @@ public class PhotonCameraSim implements AutoCloseable {
     /** This simulated camera's {@link SimCameraProperties} */
     public final SimCameraProperties prop;
 
+    /** The next time, in nanoseconds, this camera should publish a frame to NT */
     private long nextNTEntryTime = WPIUtilJNI.now();
 
     private double maxSightRangeMeters = Double.MAX_VALUE;
@@ -83,7 +84,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private double minTargetAreaPercent;
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
-    private final AprilTagFieldLayout tagLayout;
+    private final Field tagLayout;
 
     // video stream simulation
     private final CvSource videoSimRaw;
@@ -131,7 +132,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param prop Properties of this camera such as FOV and FPS
      */
     public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop) {
-        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+        this(camera, prop, Field.loadField(Fields.DEFAULT_FIELD));
     }
 
     /**
@@ -142,10 +143,9 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param tagLayout The {@link AprilTagFieldLayout} used to solve for tag positions.
+     * @param tagLayout The {@link Field} used to solve for tag positions.
      */
-    public PhotonCameraSim(
-            PhotonCamera camera, SimCameraProperties prop, AprilTagFieldLayout tagLayout) {
+    public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop, Field tagLayout) {
         this.cam = camera;
         this.prop = prop;
         this.tagLayout = tagLayout;
@@ -180,7 +180,7 @@ public class PhotonCameraSim implements AutoCloseable {
             SimCameraProperties prop,
             double minTargetAreaPercent,
             double maxSightRangeMeters) {
-        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+        this(camera, prop, Field.loadField(Fields.DEFAULT_FIELD));
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
     }
@@ -203,8 +203,8 @@ public class PhotonCameraSim implements AutoCloseable {
             SimCameraProperties prop,
             double minTargetAreaPercent,
             double maxSightRangeMeters,
-            AprilTagFieldLayout tagLayout) {
-        this(camera, prop);
+            Field tagLayout) {
+        this(camera, prop, tagLayout);
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
     }
@@ -305,10 +305,10 @@ public class PhotonCameraSim implements AutoCloseable {
     /**
      * Determine if this camera should process a new frame based on performance metrics and the time
      * since the last update. This returns an Optional which is either empty if no update should occur
-     * or a Long of the timestamp in microseconds of when the frame which should be received by NT. If
+     * or a Long of the timestamp in nanoseconds of when the frame which should be received by NT. If
      * a timestamp is returned, the last frame update time becomes that timestamp.
      *
-     * @return Optional long which is empty while blocked or the NT entry timestamp in microseconds if
+     * @return Optional long which is empty while blocked or the NT entry timestamp in nanoseconds if
      *     ready
      */
     public Optional<Long> consumeNextEntryTime() {
@@ -319,7 +319,7 @@ public class PhotonCameraSim implements AutoCloseable {
         // prepare next latest update
         while (now >= nextNTEntryTime) {
             timestamp = nextNTEntryTime;
-            long frameTime = (long) (prop.estMsUntilNextFrame() * 1e3);
+            long frameTime = (long) (prop.estMsUntilNextFrame() * 1e6);
             nextNTEntryTime += frameTime;
 
             // if frame time is very small, avoid blocking
@@ -584,7 +584,7 @@ public class PhotonCameraSim implements AutoCloseable {
                 }
             }
             videoSimRaw.putFrame(videoSimFrameRaw);
-        } else videoSimRaw.setConnectionStrategy(ConnectionStrategy.kForceClose);
+        } else videoSimRaw.setConnectionStrategy(ConnectionStrategy.FORCE_CLOSE);
         // draw/annotate target detection outline on processed view
         if (videoSimProcEnabled) {
             Imgproc.cvtColor(videoSimFrameRaw, videoSimFrameProcessed, Imgproc.COLOR_GRAY2BGR);
@@ -620,16 +620,19 @@ public class PhotonCameraSim implements AutoCloseable {
                 }
             }
             videoSimProcessed.putFrame(videoSimFrameProcessed);
-        } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
+        } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.FORCE_CLOSE);
 
         // calculate multitag results
         Optional<MultiTargetPNPResult> multitagResult = Optional.empty();
-        // TODO: Implement ATFL subscribing in backend
-        // var tagLayout = cam.getAprilTagFieldLayout();
+        // TODO: Implement field subscribing in backend
+        // var tagLayout = cam.getFieldLayout();
         var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
         if (visibleLayoutTags.size() > 1) {
             List<Short> usedIDs =
-                    visibleLayoutTags.stream().map(t -> (short) t.ID).sorted().collect(Collectors.toList());
+                    visibleLayoutTags.stream()
+                            .map(t -> (short) t.getID())
+                            .sorted()
+                            .collect(Collectors.toList());
             var pnpResult =
                     VisionEstimation.estimateCamPosePNP(
                             prop.getIntrinsics(),
@@ -649,14 +652,15 @@ public class PhotonCameraSim implements AutoCloseable {
         }
 
         // put this simulated data to NT
-        var now = RobotController.getMonotonicTime();
+        // metadata timestamps are in nanoseconds per the packet format's convention
+        long nowNanos = RobotController.getMonotonicTime();
         var ret =
                 new PhotonPipelineResult(
                         heartbeatCounter,
-                        now - (long) (latencyMillis * 1000),
-                        now,
+                        nowNanos - (long) (latencyMillis * 1e6),
+                        nowNanos,
                         // Pretend like we heard a pong recently
-                        1000L + (long) ((Math.random() - 0.5) * 50),
+                        1_000_000L + (long) ((Math.random() - 0.5) * 50_000),
                         detectableTgts,
                         multitagResult);
         return ret;
@@ -678,7 +682,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * precise latency simulation.
      *
      * @param result The pipeline result to submit
-     * @param receiveTimestamp The (sim) timestamp when this result was read by NT in microseconds
+     * @param receiveTimestamp The (sim) timestamp when this result was read by NT in nanoseconds
      */
     public void submitProcessedFrame(PhotonPipelineResult result, long receiveTimestamp) {
         ts.latencyMillisEntry.set(result.metadata.getLatencyMillis(), receiveTimestamp);

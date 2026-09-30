@@ -30,11 +30,6 @@
 #include <utility>
 #include <vector>
 
-#include <Eigen/Core>
-#include <opencv2/calib3d.hpp>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/core/types.hpp>
-#include <wpi/hal/UsageReporting.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
@@ -42,6 +37,7 @@
 #include <wpi/units/angle.hpp>
 #include <wpi/units/math.hpp>
 #include <wpi/units/time.hpp>
+#include <wpi/util/UsageReporting.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/estimation/TargetModel.h"
@@ -49,28 +45,16 @@
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 
-#define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
-#include <opencv2/core/eigen.hpp>
 namespace photon {
 
-namespace detail {
-cv::Point3d ToPoint3d(const wpi::math::Translation3d& translation);
-std::optional<std::array<cv::Point3d, 4>> CalcTagCorners(
-    int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags);
-wpi::math::Pose3d ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec);
-cv::Point3d TagCornerToObjectPoint(wpi::units::meter_t cornerX,
-                                   wpi::units::meter_t cornerY,
-                                   wpi::math::Pose3d tagPose);
-}  // namespace detail
-
-PhotonPoseEstimator::PhotonPoseEstimator(
-    wpi::apriltag::AprilTagFieldLayout tags,
-    wpi::math::Transform3d robotToCamera)
+PhotonPoseEstimator::PhotonPoseEstimator(wpi::fields::Field tags,
+                                         wpi::math::Transform3d robotToCamera)
     : aprilTags(tags),
       m_robotToCamera(robotToCamera),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
-  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
+  wpi::util::ReportUsage("PhotonVision/PhotonPoseEstimator",
+                         std::to_string(InstanceCount));
   InstanceCount++;
 }
 
@@ -243,55 +227,6 @@ PhotonPoseEstimator::EstimateClosestToReferencePose(
                             CLOSEST_TO_REFERENCE_POSE};
 }
 
-std::optional<std::array<cv::Point3d, 4>> detail::CalcTagCorners(
-    int tagID, const wpi::apriltag::AprilTagFieldLayout& aprilTags) {
-  if (auto tagPose = aprilTags.GetTagPose(tagID); tagPose.has_value()) {
-    return std::array{TagCornerToObjectPoint(-3.25_in, -3.25_in, *tagPose),
-                      TagCornerToObjectPoint(+3.25_in, -3.25_in, *tagPose),
-                      TagCornerToObjectPoint(+3.25_in, +3.25_in, *tagPose),
-                      TagCornerToObjectPoint(-3.25_in, +3.25_in, *tagPose)};
-  } else {
-    return std::nullopt;
-  }
-}
-
-cv::Point3d detail::ToPoint3d(const wpi::math::Translation3d& translation) {
-  return cv::Point3d(-translation.Y().value(), -translation.Z().value(),
-                     +translation.X().value());
-}
-
-cv::Point3d detail::TagCornerToObjectPoint(wpi::units::meter_t cornerX,
-                                           wpi::units::meter_t cornerY,
-                                           wpi::math::Pose3d tagPose) {
-  wpi::math::Translation3d cornerTrans =
-      tagPose.Translation() + wpi::math::Translation3d(0.0_m, cornerX, cornerY)
-                                  .RotateBy(tagPose.Rotation());
-  return ToPoint3d(cornerTrans);
-}
-
-wpi::math::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
-  using namespace wpi::math;
-  using namespace wpi::units;
-
-  cv::Mat R;
-  cv::Rodrigues(rvec, R);  // R is 3x3
-
-  R = R.t();                  // rotation of inverse
-  cv::Mat tvecI = -R * tvec;  // translation of inverse
-
-  Eigen::Matrix<double, 3, 1> tv;
-  tv[0] = +tvecI.at<double>(2, 0);
-  tv[1] = -tvecI.at<double>(0, 0);
-  tv[2] = -tvecI.at<double>(1, 0);
-  Eigen::Matrix<double, 3, 1> rv;
-  rv[0] = +rvec.at<double>(2, 0);
-  rv[1] = -rvec.at<double>(0, 0);
-  rv[2] = +rvec.at<double>(1, 0);
-
-  return Pose3d(Translation3d(meter_t{tv[0]}, meter_t{tv[1]}, meter_t{tv[2]}),
-                Rotation3d(rv));
-}
-
 std::optional<EstimatedRobotPose>
 PhotonPoseEstimator::EstimateCoprocMultiTagPose(
     PhotonPipelineResult cameraResult) {
@@ -316,51 +251,20 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::EstimateRioMultiTagPose(
     return std::nullopt;
   }
 
-  const auto targets = cameraResult.GetTargets();
-
-  // List of corners mapped from 3d space (meters) to the 2d camera screen
-  // (pixels).
-  std::vector<cv::Point3f> objectPoints;
-  std::vector<cv::Point2f> imagePoints;
-
-  // Add all target corners to main list of corners
-  for (auto target : targets) {
-    int id = target.GetFiducialId();
-    if (auto const tagCorners = detail::CalcTagCorners(id, aprilTags);
-        tagCorners.has_value()) {
-      auto const targetCorners = target.GetDetectedCorners();
-      for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
-        imagePoints.emplace_back(targetCorners[cornerIdx].x,
-                                 targetCorners[cornerIdx].y);
-        objectPoints.emplace_back((*tagCorners)[cornerIdx]);
-      }
-    }
-  }
-
-  // We should only do multi-tag if at least 2 tags (* 4 corners/tag)
-  if (imagePoints.size() < 8) {
+  std::vector<PhotonTrackedTarget> targets{cameraResult.GetTargets().begin(),
+                                           cameraResult.GetTargets().end()};
+  const auto pnpResult = VisionEstimation::EstimateCamPosePNP(
+      cameraMatrix, distCoeffs, targets, aprilTags, photon::kAprilTag36h11);
+  if (!pnpResult) {
     return std::nullopt;
   }
 
-  // Output mats for results
-  cv::Mat const rvec(3, 1, cv::DataType<double>::type);
-  cv::Mat const tvec(3, 1, cv::DataType<double>::type);
+  const wpi::math::Pose3d fieldToRobot =
+      wpi::math::Pose3d() + pnpResult->best + m_robotToCamera.Inverse();
 
-  {
-    cv::Mat cameraMatCV(cameraMatrix.rows(), cameraMatrix.cols(), CV_64F);
-    cv::eigen2cv(cameraMatrix, cameraMatCV);
-    cv::Mat distCoeffsMatCV(distCoeffs.rows(), distCoeffs.cols(), CV_64F);
-    cv::eigen2cv(distCoeffs, distCoeffsMatCV);
-
-    cv::solvePnP(objectPoints, imagePoints, cameraMatCV, distCoeffsMatCV, rvec,
-                 tvec, false, cv::SOLVEPNP_SQPNP);
-  }
-
-  const wpi::math::Pose3d pose = detail::ToPose3d(tvec, rvec);
-
-  return photon::EstimatedRobotPose(
-      pose.TransformBy(m_robotToCamera.Inverse()), cameraResult.GetTimestamp(),
-      cameraResult.GetTargets(), MULTI_TAG_PNP_ON_RIO);
+  return photon::EstimatedRobotPose(fieldToRobot, cameraResult.GetTimestamp(),
+                                    cameraResult.GetTargets(),
+                                    MULTI_TAG_PNP_ON_RIO);
 }
 
 std::optional<EstimatedRobotPose>

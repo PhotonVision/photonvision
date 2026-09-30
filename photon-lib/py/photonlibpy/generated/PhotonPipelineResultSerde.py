@@ -35,8 +35,8 @@ from ..packet import Packet
 
 class PhotonPipelineResultSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "4b2ff16a964b5e2bf04be0c1454d91c4"
-    MESSAGE_FORMAT = "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"
+    MESSAGE_VERSION = "fd353b11f3a818e9c5b457c7dc5a8f5c"
+    MESSAGE_FORMAT = "PhotonPipelineMetadata:5231116d7f87ff560e6aa5263d0eee02 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"
 
     @staticmethod
     def pack(value: "targeting.PhotonPipelineResult") -> "Packet":
