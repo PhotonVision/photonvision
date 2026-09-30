@@ -39,11 +39,11 @@ public class DbMigration {
     }
 
     public static final class Columns {
-        public static final String GLB_FILENAME = "config_name";
+        public static final String GLB_CONFIG_NAME = "config_name";
         public static final String GLB_CONTENTS = "contents";
 
         public static final String CAM_UNIQUE_NAME = "unique_name";
-        public static final String CAM_CONFIG_JSON = "contents";
+        public static final String CAM_CONTENTS = "contents";
     }
 
     public static final MigrationManager getMigration() {
@@ -66,13 +66,6 @@ public class DbMigration {
             otherpaths_json TEXT NOT NULL DEFAULT '[]'
         );
         """;
-
-    // private static final String sql202702 =
-    //     """
-    //     ALTER TABLE cameras DROP COLUMN drivermode_json;
-    //     ALTER TABLE cameras DROP COLUMN pipeline_jsons;
-    //     ALTER TABLE cameras DROP COLUMN otherpaths_json;
-    //     """;
 
     private static final String schema202702 =
         """
@@ -102,7 +95,6 @@ public class DbMigration {
         DROP TABLE IF EXISTS cameras;
         ALTER TABLE new_cameras RENAME TO cameras;
         """;
-
 
     private static MigrationFunction update2026CameraConfig = (conn) -> {
         // Fetch all camera data first, then close the result set before making modifications

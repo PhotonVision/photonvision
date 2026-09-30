@@ -288,7 +288,7 @@ public class SqlConfigProvider extends ConfigProvider {
                     conn.prepareStatement(
                             String.format(
                                     "SELECT %s FROM %s WHERE %s = \"%s\"",
-                                    Columns.GLB_CONTENTS, Tables.GLOBAL, Columns.GLB_FILENAME, filename));
+                                    Columns.GLB_CONTENTS, Tables.GLOBAL, Columns.GLB_CONFIG_NAME, filename));
 
             var result = query.executeQuery();
 
@@ -327,7 +327,7 @@ public class SqlConfigProvider extends ConfigProvider {
             var sqlString =
                     String.format(
                             "REPLACE INTO %s (%s, %s) VALUES (?, ?);",
-                            Tables.CAMERAS, Columns.CAM_UNIQUE_NAME, Columns.CAM_CONFIG_JSON);
+                            Tables.CAMERAS, Columns.CAM_UNIQUE_NAME, Columns.CAM_CONTENTS);
 
             for (var c : config.getCameraConfigurations().entrySet()) {
                 PreparedStatement statement = conn.prepareStatement(sqlString);
@@ -387,7 +387,7 @@ public class SqlConfigProvider extends ConfigProvider {
             var sqlString =
                     String.format(
                             "REPLACE INTO %s (%s, %s) VALUES (?,?);",
-                            Tables.GLOBAL, Columns.GLB_FILENAME, Columns.GLB_CONTENTS);
+                            Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS);
 
             if (!skipSavingHWSet) {
                 statement1 = conn.prepareStatement(sqlString);
@@ -478,7 +478,7 @@ public class SqlConfigProvider extends ConfigProvider {
             var sqlString =
                     String.format(
                             "REPLACE INTO %s (%s, %s) VALUES (?,?);",
-                            Tables.GLOBAL, Columns.GLB_FILENAME, Columns.GLB_CONTENTS);
+                            Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS);
 
             statement1 = conn.prepareStatement(sqlString);
             addFile(statement1, fname, contents);
@@ -544,7 +544,7 @@ public class SqlConfigProvider extends ConfigProvider {
                     conn.prepareStatement(
                             String.format(
                                     "SELECT %s, %s FROM %s",
-                                    Columns.CAM_UNIQUE_NAME, Columns.CAM_CONFIG_JSON, Tables.CAMERAS));
+                                    Columns.CAM_UNIQUE_NAME, Columns.CAM_CONTENTS, Tables.CAMERAS));
 
             var result = query.executeQuery();
 
@@ -554,7 +554,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 try {
                     uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
 
-                    var configJson = result.getString(Columns.CAM_CONFIG_JSON);
+                    var configJson = result.getString(Columns.CAM_CONTENTS);
 
                     CameraConfiguration config =
                             Jsonb.instance().type(CameraConfiguration.class).fromJson(configJson);

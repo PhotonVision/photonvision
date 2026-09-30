@@ -291,7 +291,7 @@ public class SQLConfigTest {
                         conn.prepareStatement(
                                 String.format(
                                         "REPLACE INTO %s (%s, %s) VALUES (?,?)",
-                                        Tables.GLOBAL, Columns.GLB_FILENAME, Columns.GLB_CONTENTS))) {
+                                        Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS))) {
             ps.setString(1, key);
             ps.setString(2, contents);
             ps.executeUpdate();
