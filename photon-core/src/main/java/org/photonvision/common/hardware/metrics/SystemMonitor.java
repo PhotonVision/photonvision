@@ -234,7 +234,7 @@ public class SystemMonitor {
                 String.format("CPU Throttle: %s, ", metrics.cpuThr().isBlank() ? "N/A" : metrics.cpuThr()));
         sb.append(
                 String.format(
-                        "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                        "Data sent: %.0f Kbps, Data received: %.0f Kbps",
                         metrics.sentBitRate() / 1000, metrics.recvBitRate() / 1000));
         logger.debug(sb.toString());
     }
@@ -476,7 +476,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Returns a NetworkTraffic instance containing the average sent and recieved network traffic
+     * Returns a NetworkTraffic instance containing the average sent and received network traffic
      * since the last time this was called.
      *
      * @return NetworkTraffic instance with data in bits/second. The traffic values will be -1 if the
@@ -538,7 +538,7 @@ public class SystemMonitor {
                         () -> {
                             var nt = getNetworkTraffic();
                             return String.format(
-                                    "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                                    "Data sent: %.0f Kbps, Data received: %.0f Kbps",
                                     nt.sentBitRate() / 1000, nt.recvBitRate() / 1000);
                         });
 

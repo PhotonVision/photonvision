@@ -27,33 +27,15 @@
 ##                        --> DO NOT MODIFY <--
 ###############################################################################
 
-from typing import TYPE_CHECKING
-
 {% if test %}
+from photonlibpy import targeting
 from photonlibpy.packet import Packet
-from photonlibpy.targeting import *  # noqa
+
 from . import *
 {% else %}
+from .. import targeting
 from ..packet import Packet
-from ..targeting import *  # noqa
 {% endif %}
-
-
-if TYPE_CHECKING:
-{%- set ns = namespace(types=[]) -%}
-{%- for field in fields|unique(attribute="type")-%}
-    {%- set _ = ns.types.append(field.type) -%}
-{%- endfor -%}
-{% set _ = ns.types.append(name) -%}
-{%- for type in ns.types|sort%}
-{%- if not type | is_shimmed and not type | is_intrinsic %}
-{%- if type | is_test %}
-    from .{{ type }} import {{ type }}  # noqa
-{%- else %}
-    from ..targeting import {{ type }}  # noqa
-{% endif -%}
-{%- endif %}
-{%- endfor%}
 
 
 class {{ name }}Serde:
@@ -62,7 +44,7 @@ class {{ name }}Serde:
     MESSAGE_FORMAT = "{{ message_fmt }}"
 
     @staticmethod
-    def pack(value: "{{ name }}") -> "Packet":
+    def pack(value: "{{ name | type_ref }}") -> "Packet":
         ret = Packet()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
@@ -90,13 +72,13 @@ class {{ name }}Serde:
 {%- else %}
         {%- if field.optional == True %}
         # {{ field.name }} is optional! it better not be a VLA too
-        ret.encodeOptional(value.{{ field.name }}, {{ field.type }}.photonStruct)
+        ret.encodeOptional(value.{{ field.name }}, {{ field.type | type_ref }}.photonStruct)
         {%- elif field.vla == True %}
         # {{ field.name }} is a custom VLA!
-        ret.encodeList(value.{{ field.name }}, {{ field.type }}.photonStruct)
+        ret.encodeList(value.{{ field.name }}, {{ field.type | type_ref }}.photonStruct)
         {%- else %}
         # {{ field.name }} is of non-intrinsic type {{ field.type }}
-        ret.encodeBytes({{ field.type }}.photonStruct.pack(value.{{field.name}}).getData())
+        ret.encodeBytes({{ field.type | type_ref }}.photonStruct.pack(value.{{field.name}}).getData())
         {%- endif %}
 {%- endif %}
 {%- if not loop.last %}
@@ -105,8 +87,8 @@ class {{ name }}Serde:
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "{{ name }}":
-        ret = {{ name }}()
+    def unpack(packet: "Packet") -> "{{ name | type_ref }}":
+        ret = {{ name | type_ref }}()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
         {%- if field.optional == True %}
@@ -132,13 +114,13 @@ class {{ name }}Serde:
 {%- else %}
         {%- if field.optional == True %}
         # {{ field.name }} is optional! it better not be a VLA too
-        ret.{{ field.name }} = packet.decodeOptional({{ field.type }}.photonStruct)
+        ret.{{ field.name }} = packet.decodeOptional({{ field.type | type_ref }}.photonStruct)
         {%- elif field.vla == True %}
         # {{ field.name }} is a custom VLA!
-        ret.{{ field.name }} = packet.decodeList({{ field.type }}.photonStruct)
+        ret.{{ field.name }} = packet.decodeList({{ field.type | type_ref }}.photonStruct)
         {%- else %}
         # {{ field.name }} is of non-intrinsic type {{ field.type }}
-        ret.{{field.name}} = {{ field.type }}.photonStruct.unpack(packet)
+        ret.{{field.name}} = {{ field.type | type_ref }}.photonStruct.unpack(packet)
         {%- endif %}
 {%- endif %}
 {%- if not loop.last %}
@@ -149,4 +131,4 @@ class {{ name }}Serde:
 
 
 # Hack ourselves into the base class
-{{ name }}.photonStruct = {{ name }}Serde(){{'\n'}}
+{{ name | type_ref }}.photonStruct = {{ name }}Serde(){{'\n'}}

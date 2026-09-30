@@ -1,6 +1,6 @@
 # Controlling LEDs
 
-You can control the vision LEDs of supported hardware via PhotonLib using the `setLED()` method on a `PhotonCamera` instance. In Java and C++, an `VisionLEDMode` enum class is provided to choose values from. These values include, `kOff`, `kOn`, `kBlink`, and `kDefault`. `kDefault` uses the default LED value from the selected pipeline.
+You can control the vision LEDs of supported hardware via PhotonLib using `setLED()`/`SetLED()`/`setLEDMode()` (Java, C++, and Python respectively) on a `PhotonCamera` instance. An `VisionLEDMode` enum is provided in all three languages. These values include `kOff`, `kOn`, `kBlink`, and `kDefault`. `kDefault` uses the default LED value from the selected pipeline.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -16,5 +16,8 @@ You can control the vision LEDs of supported hardware via PhotonLib using the `s
 
    .. code-block:: python
 
-        # Coming Soon!
+      # Blink the LEDs.
+      from photonlibpy.photonCamera import VisionLEDMode
+
+      camera.setLEDMode(VisionLEDMode.kBlink)
 ```

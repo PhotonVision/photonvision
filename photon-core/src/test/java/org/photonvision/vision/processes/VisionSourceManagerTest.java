@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.wpilib.vision.camera.UsbCameraInfo;
@@ -141,10 +140,7 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera1);
 
-        System.out.println(
-                Jsonb.instance()
-                        .type(PhotonConfiguration.class)
-                        .toJson(ConfigManager.getInstance().getConfig()));
+        System.out.println(ConfigManager.getInstance().getConfig());
 
         // And make assertions about the current matching state
         assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
@@ -273,10 +269,7 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera3);
 
-        System.out.println(
-                Jsonb.instance()
-                        .type(PhotonConfiguration.class)
-                        .toJson(ConfigManager.getInstance().getConfig()));
+        System.out.println(ConfigManager.getInstance().getConfig());
 
         // And make assertions about the current matching state
         assertEquals(3, vsm.getVsmState().allConnectedCameras.size());

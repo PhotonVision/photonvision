@@ -316,7 +316,7 @@ public class Packet {
      * @return A decoded byte from the packet.
      */
     public byte decodeByte() {
-        if (packetData.length < readPos) {
+        if (packetData.length < readPos + 1) {
             return '\0';
         }
         return packetData[readPos++];
@@ -328,7 +328,7 @@ public class Packet {
      * @return A decoded short from the packet
      */
     public short decodeShort() {
-        if (packetData.length < readPos + 1) {
+        if (packetData.length < readPos + 2) {
             return 0;
         }
         return (short) ((0xff & packetData[readPos++]) | (0xff & packetData[readPos++]) << 8);
@@ -340,7 +340,7 @@ public class Packet {
      * @return A decoded int from the packet.
      */
     public int decodeInt() {
-        if (packetData.length < readPos + 3) {
+        if (packetData.length < readPos + 4) {
             return 0;
         }
         return (0xff & packetData[readPos++])
@@ -350,7 +350,7 @@ public class Packet {
     }
 
     public long decodeLong() {
-        if (packetData.length < (readPos + 7)) {
+        if (packetData.length < (readPos + 8)) {
             return 0;
         }
         long data =
@@ -372,7 +372,7 @@ public class Packet {
      * @return A decoded float from the packet.
      */
     public float decodeFloat() {
-        if (packetData.length < (readPos + 3)) {
+        if (packetData.length < (readPos + 4)) {
             return 0;
         }
 
@@ -390,7 +390,7 @@ public class Packet {
      * @return A decoded double from the packet.
      */
     public double decodeDouble() {
-        if (packetData.length < (readPos + 7)) {
+        if (packetData.length < (readPos + 8)) {
             return 0;
         }
         long data =
@@ -412,7 +412,7 @@ public class Packet {
      * @return A decoded boolean from the packet.
      */
     public boolean decodeBoolean() {
-        if (packetData.length < readPos) {
+        if (packetData.length < readPos + 1) {
             return false;
         }
         return packetData[readPos++] == 1;

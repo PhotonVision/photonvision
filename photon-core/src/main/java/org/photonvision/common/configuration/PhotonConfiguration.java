@@ -17,7 +17,6 @@
 
 package org.photonvision.common.configuration;
 
-import io.avaje.jsonb.Json;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -25,13 +24,11 @@ import java.util.Map;
 import org.photonvision.vision.processes.VisionSource;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
-@Json
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
 
-    @Json.Property("atfl")
     private AprilTagFieldLayout aprilTagFieldLayout;
 
     private NeuralNetworkModelsSettings neuralNetworkProperties;
@@ -52,7 +49,6 @@ public class PhotonConfiguration {
                 new HashMap<>());
     }
 
-    @Json.Creator
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,

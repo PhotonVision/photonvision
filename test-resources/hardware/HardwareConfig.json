@@ -1,8 +1,13 @@
 {
   "deviceName": "PhotonVision",
   "ledPins" : [2, 13],
-  "statusRGBPins" : [-1, -1, -1],
   "ledsCanDim" : true,
+  "statusLEDConfig" : {
+    "type": "RGB",
+    "redPin": -1,
+    "greenPin": -1,
+    "bluePin": -1
+  },
   "getGPIOCommand": "cat /tmp/GPIO{p}",
   "setGPIOCommand": "echo {s} > /tmp/GPIO{p}",
   "setPWMCommand": "echo {v} > /tmp/GPIO{p}",

@@ -58,7 +58,7 @@ public class TimeSyncManager {
         m_client = new TimeSyncClient("127.0.0.1", 5810, 1.0);
     }
 
-    // Since we're spinning off tasks in a new thread, be careful and start it seperately
+    // Since we're spinning off tasks in a new thread, be careful and start it separately
     public void start() {
         TimedTaskManager.getInstance().addTask("TimeSyncManager::tick", this::tick, 1000);
     }

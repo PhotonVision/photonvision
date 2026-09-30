@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,12 @@ public class SQLConfigTest {
     public static void init() {
         LoadJNI.loadLibraries();
         CVMat.enablePrint(false);
+    }
+
+    @AfterAll
+    public static void cleanup() {
+        // Reset the NNM singleton
+        NeuralNetworkModelManager.getInstance(true);
     }
 
     @Test

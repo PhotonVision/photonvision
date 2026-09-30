@@ -298,6 +298,11 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                     continue;
                 }
 
+                if (configuration.cameraQuirks.hasQuirk(CameraQuirk.MJPEGOnly)
+                        && videoMode.pixelFormat != PixelFormat.MJPEG) {
+                    continue;
+                }
+
                 videoModesList.add(videoMode);
             }
         } catch (Exception e) {

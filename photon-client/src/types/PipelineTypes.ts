@@ -133,6 +133,10 @@ export interface PipelineSettings {
   crosshair: boolean;
 
   blockForFrames: boolean;
+
+  staticCropEnabled: boolean;
+  staticCropX: WebsocketNumberPair | [number, number];
+  staticCropY: WebsocketNumberPair | [number, number];
 }
 export type ConfigurablePipelineSettings = Partial<
   Omit<
@@ -152,6 +156,13 @@ export type ConfigurablePipelineSettings = Partial<
     | "cornerDetectionStrategy"
   >
 >;
+// Upper crop bound meaning "wherever the frame ends". The crop is clamped to the frame edge, so a
+// sentinel larger than any frame keeps the default crop region -- the whole frame -- independent of the
+// resolution the camera happens to be running at. This has to be Java's Integer.MAX_VALUE, since the
+// backend reads these bounds as ints: a larger value (Number.MAX_SAFE_INTEGER, say) is truncated to
+// its low 32 bits, which turns the sentinel into -1 and the crop into a one-pixel sliver.
+export const FrameEdgeCropBound = 2147483647;
+
 // Omitted settings are changed for all pipeline types
 export const DefaultPipelineSettings: Omit<
   PipelineSettings,
@@ -200,7 +211,10 @@ export const DefaultPipelineSettings: Omit<
   cameraMinExposureRaw: 1,
   cameraMaxExposureRaw: 2,
   crosshair: true,
-  blockForFrames: true
+  blockForFrames: true,
+  staticCropEnabled: false,
+  staticCropX: { first: 0, second: FrameEdgeCropBound },
+  staticCropY: { first: 0, second: FrameEdgeCropBound }
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {

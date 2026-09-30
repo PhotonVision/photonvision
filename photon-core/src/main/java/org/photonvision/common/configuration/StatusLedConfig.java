@@ -17,32 +17,22 @@
 
 package org.photonvision.common.configuration;
 
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import io.avaje.jsonb.Json;
+import org.photonvision.common.hardware.statusLED.GreenYellowStatusLED;
+import org.photonvision.common.hardware.statusLED.RGBStatusLED;
+import org.photonvision.common.hardware.statusLED.StatusLED;
 
-@Json
-public class HardwareSettings {
-    public int ledBrightnessPercentage = 100;
+@Json(typeProperty = "type")
+@Json.SubTypes({
+    @Json.SubType(type = RGBStatusLED.Config.class, name = "RGB"),
+    @Json.SubType(type = GreenYellowStatusLED.Config.class, name = "GreenYellow"),
+})
+public interface StatusLedConfig {
+    public StatusLED create(NativeDeviceFactoryInterface deviceFactory);
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ledBrightnessPercentage;
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        HardwareSettings other = (HardwareSettings) obj;
-        if (ledBrightnessPercentage != other.ledBrightnessPercentage) return false;
-        return true;
-    }
+    public int[] pins();
 
     @Override
-    public String toString() {
-        return "HardwareSettings [ledBrightnessPercentage=" + ledBrightnessPercentage + "]";
-    }
+    public String toString();
 }

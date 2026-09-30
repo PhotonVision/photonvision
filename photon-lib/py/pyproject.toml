@@ -1,2 +1,44 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "photonlibpy"
+dynamic = ["version"]
+description = "Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors."
+requires-python = ">=3.11"
+dependencies = [
+    "numpy~=2.3",
+    "wpilib==2027.0.0a6.post1",
+    "robotpy-wpimath==2027.0.0a6.post1",
+    "robotpy-apriltag==2027.0.0a6.post1",
+    "robotpy-cscore==2027.0.0a6.post1",
+    "pyntcore==2027.0.0a6.post1",
+    "opencv-python;platform_machine!='roborio'",
+]
+authors = [{ name = "Photonvision Development Team" }]
+license = "MIT"
+
+readme = { text = "A Pure-python implementation of PhotonLib", content-type = "text/markdown" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+Homepage = "https://photonvision.org"
+
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = '^v(?P<version>.*)$'
+
+[tool.hatch.version.raw-options]
+search_parent_directories = true
+
+[tool.hatch.build.hooks.vcs]
+version-file = "photonlibpy/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["photonlibpy"]
+
 [tool.mypy]
-exclude = ["build","setup.py"]
+exclude = ["build"]

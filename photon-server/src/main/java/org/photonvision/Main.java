@@ -296,14 +296,15 @@ public class Main implements Callable<Integer> {
         logger.debug("Loading NetworkManager...");
         NetworkManager.getInstance().reinitialize();
 
+        var conf = ConfigManager.getInstance().getConfig();
+
         logger.debug("Loading NetworkTablesManager...");
-        NetworkTablesManager.getInstance()
-                .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+        NetworkTablesManager.getInstance().setConfig(conf.getNetworkConfig());
         NetworkTablesManager.getInstance().registerTimedTasks();
 
         logger.debug("Loading HardwareManager...");
         // Force load the hardware manager
-        HardwareManager.getInstance();
+        HardwareManager.initialize(conf.getHardwareConfig(), conf.getHardwareSettings());
 
         if (smoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");

@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
+import org.photonvision.common.configuration.StatusLedConfig;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
@@ -59,14 +60,6 @@ public class HardwareManager {
     private final Optional<NTDataChangeListener> ledModeListener;
 
     public final Optional<VisionLED> visionLED;
-
-    public static HardwareManager getInstance() {
-        if (instance == null) {
-            var conf = ConfigManager.getInstance().getConfig();
-            instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
-        }
-        return instance;
-    }
 
     private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
@@ -100,15 +93,7 @@ public class HardwareManager {
                     }
                 };
 
-        statusLED =
-                hardwareConfig.statusLEDPins.isEmpty()
-                        ? Optional.empty()
-                        : Optional.of(
-                                StatusLED.ofType(
-                                        hardwareConfig.statusLEDType,
-                                        lazyDeviceFactory,
-                                        hardwareConfig.statusLEDPins,
-                                        hardwareConfig.statusLEDActiveHigh));
+        statusLED = hardwareConfig.statusLEDConfig.map(it -> it.create(lazyDeviceFactory.get()));
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
@@ -144,6 +129,25 @@ public class HardwareManager {
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
+    public static HardwareManager getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("HardwareManager not initialized! Call initialize() first.");
+        }
+        return instance;
+    }
+
+    public static void initialize(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+        if (instance == null) {
+            if (hardwareConfig == null || hardwareSettings == null) {
+                throw new IllegalArgumentException(
+                        "HardwareConfig and HardwareSettings must not be null when initializing HardwareManager.");
+            }
+            instance = new HardwareManager(hardwareConfig, hardwareSettings);
+        } else {
+            instance.logger.warn("HardwareManager already initialized!");
+        }
+    }
+
     public static NativeDeviceFactoryInterface configureCustomGPIO(HardwareConfig hardwareConfig) {
         // Create a new adapter and device factory using the commands from hardwareConfig
         CustomAdapter adapter =
@@ -164,7 +168,8 @@ public class HardwareManager {
                 pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
             }
         }
-        for (int pin : hardwareConfig.statusLEDPins) {
+        for (int pin :
+                hardwareConfig.statusLEDConfig.map(StatusLedConfig::pins).orElseGet(() -> new int[0])) {
             pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
         }
 
