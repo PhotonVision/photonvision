@@ -407,7 +407,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                       (confirmDeleteDialog = {
                         show: true,
                         nickname: module.nickname,
-                        cameraUniqueName: module.uniqueName
+                        cameraUniqueName: module.uniqueName,
+                        isDuplicate: module.matchedCameraInfo?.type === 'PVCameraInfo.PVDuplicateCameraInfo'
                       })
                   "
                 >
