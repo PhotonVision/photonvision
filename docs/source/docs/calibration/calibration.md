@@ -111,6 +111,16 @@ Calibration images can also be extracted from the downloaded JSON file using [th
 python3 /path/to/calibrationUtils.py path/to/photon_calibration.json /path/to/output/folder
 ```
 
+The script needs Python 3.11 and three packages that are not part of the standard library:
+
+```bash
+pip install mrcal numpy robotpy-wpimath
+```
+
+:::{note}
+If you also want the `mrcal-*` command line tools used further down this page, install mrcal from its [official instructions](https://mrcal.secretsauce.net/install.html) instead of only pulling the Python package, so that you get the full install. The `wpimath` module comes from `robotpy-wpimath`; `pip install wpilib` brings it in along with the rest of the WPILib Python bindings.
+:::
+
 ```{image} images/unpacked-json.png
 :alt: Captured calibration images
 :width: 600
