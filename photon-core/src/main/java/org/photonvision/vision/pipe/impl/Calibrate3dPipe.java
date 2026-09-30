@@ -36,6 +36,7 @@ import org.photonvision.mrcal.MrCalJNI.MrCalObservation;
 import org.photonvision.mrcal.MrCalJNI.MrCalResult;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients.OptimizationInputs;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -213,7 +214,8 @@ public class Calibrate3dPipe
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
                 params.squareSize,
-                CameraLensModel.LENSMODEL_OPENCV);
+                CameraLensModel.LENSMODEL_OPENCV,
+                null);
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
@@ -275,17 +277,18 @@ public class Calibrate3dPipe
         // ones our code used to produce. To preserve consistency, continue to redo this math
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
-        for (var o : observationCorners) {
+        for (var observation : observationCorners) {
             var rvec = new Mat();
             var tvec = new Mat();
 
             Calib3d.solvePnP(
-                    o.objectPoints,
-                    o.imagePoints,
+                    observation.objectPoints,
+                    observation.imagePoints,
                     cameraMatrixMat.getAsMatOfDouble(),
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
+
             rvecs.add(rvec);
             tvecs.add(tvec);
         }
@@ -312,7 +315,10 @@ public class Calibrate3dPipe
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
                 params.squareSize,
-                CameraLensModel.LENSMODEL_OPENCV);
+                CameraLensModel.LENSMODEL_OPENCV,
+                // If we only saved rvecs/tvecs (in our BoardObservations), it will break mrcal uncertainty
+                // calculation -- mrcal needs the optimization state vector at the solution. So save both
+                new OptimizationInputs(result.optimizedPoses));
     }
 
     private List<BoardObservation> createObservations(
@@ -393,15 +399,15 @@ public class Calibrate3dPipe
             // Calculate reprojection error for each point
             var reprojectionError = new ArrayList<Point>();
             var projectedPoints = projectedMat.toList();
-            for (int j = 0; j < projectedPoints.size(); j++) {
+            for (int pointIdx = 0; pointIdx < projectedPoints.size(); pointIdx++) {
                 // Outliers are not part of the calibration, so don't calculate error for them
-                if (!cornersUsed.get(snapshotId)[j]) {
+                if (!cornersUsed.get(snapshotId)[pointIdx]) {
                     continue;
                 }
 
                 // error = (measured - expected)
-                var measured = projectedPoints.get(j);
-                var expected = iPoints.get(j);
+                var measured = projectedPoints.get(pointIdx);
+                var expected = iPoints.get(pointIdx);
 
                 // Sanity check -- negative corners make no sense here
                 if (!(measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0)) {
