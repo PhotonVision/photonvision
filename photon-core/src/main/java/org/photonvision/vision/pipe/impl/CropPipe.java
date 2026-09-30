@@ -17,9 +17,7 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import org.opencv.core.Mat;
 import org.opencv.core.Rect;
-import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
@@ -27,9 +25,11 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 
 /**
- * The crop rectangle is rebuilt on every {@link #setParams} call (the settings object is mutated in
- * place elsewhere, so it must not be cached against), and clamped into each input image as it is
- * processed. The output is a view into the input.
+ * Crops an image to a requested rectangle. The params carry the rectangle with its origin already
+ * aligned to the AprilTag detector's tile grid -- alignment runs when the params are constructed,
+ * reading the settings at that moment, so a params object must be rebuilt (and re-handed to {@link
+ * #setParams}) when settings mutate in place. Each input image clamps the rectangle into its own
+ * bounds as it is processed. The output is a view into the input, or null when the crop is a no-op.
  */
 public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     /**
@@ -41,28 +41,47 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     /** Smallest crop handed downstream, in pixels per axis, prevents downstream crashes. */
     private static final int MIN_CROP_DIMENSION = 16;
 
-    /** The rectangle derived from the current params, before clamping to an image. */
-    private Rect cropRect = null;
-
-    public static record CropPipeParams(AdvancedPipelineSettings settings) {}
-
-    @Override
-    public void setParams(CropPipeParams newParams) {
-        this.cropRect = cropRectFromSettings(newParams.settings());
-        super.setParams(newParams);
-    }
-
     /**
-     * The crop rectangle that applies to an image of the given size: the configured region clamped
-     * into the image.
-     *
-     * @param imageCols The image's width, in pixels.
-     * @param imageRows The image's height, in pixels.
-     * @return The clamped rectangle, or null when cropping is disabled, the region is degenerate, or
-     *     it covers the whole image (all of which make cropping a no-op).
+     * @param rect The region to crop to, in frame coordinates, with its origin aligned to the
+     *     AprilTag detector's tile grid; null means no crop. The stored value is the aligned region
+     *     the pipe crops to, not necessarily the rect passed in.
+     * @param settings The pipeline settings the crop serves; read at construction, so a params object
+     *     does not follow later in-place mutation of the settings.
      */
-    public Rect effectiveCrop(int imageCols, int imageRows) {
-        return clampCropToImage(cropRect, imageCols, imageRows);
+    public static record CropPipeParams(Rect rect, AdvancedPipelineSettings settings) {
+        public CropPipeParams {
+            rect = alignToTagTiles(rect, settings);
+        }
+
+        public CropPipeParams(AdvancedPipelineSettings settings) {
+            // A pixel bound is never negative. Dropping the sign rather than trusting it keeps a garbage
+            // bound (a value that overflowed on its way in, say) from being read as a sliver of a crop
+            // one pixel from the origin.
+            int xLow =
+                    Math.max(0, Math.min(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
+            int xHigh =
+                    Math.max(0, Math.max(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
+            int yLow =
+                    Math.max(0, Math.min(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
+            int yHigh =
+                    Math.max(0, Math.max(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
+
+            int width = xHigh - xLow;
+            int height = yHigh - yLow;
+
+            Rect cropRegion;
+            if (width <= 0 || height <= 0) {
+                cropRegion = null;
+            } else {
+                cropRegion = new Rect(xLow, yLow, width, height);
+            }
+
+            if (!settings.staticCropEnabled) {
+                cropRegion = null;
+            }
+
+            this(cropRegion, settings);
+        }
     }
 
     @Override
@@ -71,16 +90,13 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
             return null;
         }
 
-        Rect effective = effectiveCrop(in.getMat().cols(), in.getMat().rows());
+        Rect effective = clampCropToImage(params.rect(), in.getMat().cols(), in.getMat().rows());
         if (effective == null) {
             return null;
         }
 
         return new CVMat(in.getMat().submat(effective));
     }
-
-    /** How much the cropped-away area is dimmed in the input stream's context image. */
-    private static final double CONTEXT_DIM_FACTOR = 0.35;
 
     // Cropping calibrated frame static properties derives fresh calibration coefficients that hold
     // native memory, and neither the source properties nor the crop rectangle changes frame to
@@ -98,7 +114,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
      * @return The cropped properties. Owned by this pipe: released when the crop changes, so callers
      *     must not hold them across frames.
      */
-    private FrameStaticProperties croppedProperties(FrameStaticProperties source, Rect cropRect) {
+    public FrameStaticProperties croppedProperties(FrameStaticProperties source, Rect cropRect) {
         if (source != cachedSourceProperties || !cropRect.equals(cachedCropRect)) {
             releaseCachedProperties();
             cachedCroppedProperties = source.crop(cropRect);
@@ -110,8 +126,10 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
 
     /**
      * Discard the cached cropped properties, releasing the derived calibration coefficients they own.
+     * Call when the crop becomes a no-op, so the cache does not hold native memory alive until a crop
+     * happens to come along again.
      */
-    private void releaseCachedProperties() {
+    public void releaseCachedProperties() {
         if (cachedCroppedProperties != null
                 && cachedCroppedProperties.cameraCalibration != null
                 // Only release coefficients the crop derived -- never the ones borrowed from the
@@ -127,112 +145,34 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
         cachedCroppedProperties = null;
     }
 
-    public Frame cropFrame(Frame frame) {
-        return cropFrame(frame, false);
-    }
-
-    public Frame cropFrame(Frame frame, boolean keepContext) {
-        var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
-        Rect effectiveCrop = effectiveCrop(reference.getMat().cols(), reference.getMat().rows());
-        if (effectiveCrop == null) {
-            // Cropping is a no-op, so the cached cropped properties can never be reused; don't hold
-            // their native calibration memory alive until a crop happens to come along again.
-            releaseCachedProperties();
-            return frame;
+    private static Rect alignToTagTiles(Rect rect, AdvancedPipelineSettings settings) {
+        if (rect == null || !(settings instanceof AprilTagPipelineSettings tagSettings)) {
+            return rect;
         }
 
-        CVMat contextImage = null;
-        if (keepContext && !frame.colorImage.getMat().empty()) {
-            Mat dimmed = new Mat();
-            frame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
-            frame.colorImage.getMat().submat(effectiveCrop).copyTo(dimmed.submat(effectiveCrop));
-            contextImage = new CVMat(dimmed);
-        }
-
-        boolean cropped = cropInPlace(frame.colorImage);
-        cropped |= cropInPlace(frame.processedImage);
-        if (!cropped) {
-            if (contextImage != null) contextImage.release();
-            return frame;
-        }
-
-        var croppedFrame =
-                new Frame(
-                        frame.sequenceID,
-                        frame.colorImage,
-                        frame.processedImage,
-                        frame.type,
-                        frame.timestampNanos,
-                        frame.frameStaticProperties != null
-                                ? croppedProperties(frame.frameStaticProperties, effectiveCrop)
-                                : null);
-        croppedFrame.contextColorImage = contextImage;
-        return croppedFrame;
-    }
-
-    private boolean cropInPlace(CVMat image) {
-        var result = run(image);
-        if (result.output == null) {
-            return false;
-        }
-
-        Mat cropped = result.output.getMat().clone();
-        result.output.release();
-        cropped.copyTo(image.getMat());
-        cropped.release();
-        return true;
-    }
-
-    /**
-     * Build the static crop rectangle from pipeline settings. The ranges are stored as [min, max]
-     * pixel couples.
-     *
-     * @param settings The pipeline settings describing the crop.
-     * @return The crop rectangle, or null if cropping is disabled or the configured region is
-     *     degenerate.
-     */
-    public static Rect cropRectFromSettings(AdvancedPipelineSettings settings) {
-        if (!settings.staticCropEnabled) {
-            return null;
-        }
-
-        // A pixel bound is never negative. Dropping the sign rather than trusting it keeps a garbage
-        // bound (a value that overflowed on its way in, say) from being read as a sliver of a crop
-        // one pixel from the origin.
-        int xLow =
-                Math.max(0, Math.min(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
-        int xHigh =
-                Math.max(0, Math.max(settings.staticCropX.getFirst(), settings.staticCropX.getSecond()));
-        int yLow =
-                Math.max(0, Math.min(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
-        int yHigh =
-                Math.max(0, Math.max(settings.staticCropY.getFirst(), settings.staticCropY.getSecond()));
-
-        int width = xHigh - xLow;
-        int height = yHigh - yLow;
+        // An ML bounding box padded past the frame edge can carry a negative origin; pull it to 0
+        // (shrinking the region by the overhang, as clamping would) before aligning.
+        int xLow = Math.max(0, rect.x);
+        int yLow = Math.max(0, rect.y);
+        int width = rect.width - (xLow - rect.x);
+        int height = rect.height - (yLow - rect.y);
 
         if (width <= 0 || height <= 0) {
             return null;
         }
 
-        if (settings instanceof AprilTagPipelineSettings tagSettings) {
-            // Grow the region up to the tile boundary below it rather than moving it, so the crop still
-            // covers everything that was asked for.
-            int tile = APRILTAG_TILE_SIZE * tagSettings.decimate;
-            // Snap the crop origin outward to the nearest tile boundary below it. If the low bound
-            // is already at 0 (touching the left/top edge), keep it at 0 rather than moving it
-            // to a value computed from the high bound (which could overflow past the image and
-            // produce negative widths).
-            int alignedX = xLow - (xLow % tile);
-            int alignedY = yLow - (yLow % tile);
+        int tile = APRILTAG_TILE_SIZE * tagSettings.decimate;
+        // Snap the crop origin outward to the nearest tile boundary below it. If the low bound
+        // is already at 0 (touching the left/top edge), keep it at 0 rather than moving it
+        // to a value computed from the high bound (which could overflow past the image and
+        // produce negative widths).
+        int alignedX = xLow - (xLow % tile);
+        int alignedY = yLow - (yLow % tile);
 
-            width += xLow - alignedX;
-            height += yLow - alignedY;
-            xLow = alignedX;
-            yLow = alignedY;
-        }
+        width += xLow - alignedX;
+        height += yLow - alignedY;
 
-        return new Rect(xLow, yLow, width, height);
+        return new Rect(alignedX, alignedY, width, height);
     }
 
     /**
