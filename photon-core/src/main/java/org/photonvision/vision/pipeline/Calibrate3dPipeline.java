@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -41,8 +42,8 @@ import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
-import org.wpilib.math.util.Pair;
 import org.wpilib.math.util.Units;
+import org.wpilib.util.Pair;
 
 public class Calibrate3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
@@ -190,7 +191,7 @@ public class Calibrate3dPipeline
     }
 
     public void broadcastState() {
-        var state =
+        Map<String, Object> state =
                 SerializationUtils.objectToHashMap(
                         new UICalibrationData(
                                 foundCornersList.size(),
@@ -209,7 +210,8 @@ public class Calibrate3dPipeline
 
     public boolean removeSnapshot(int index) {
         try {
-            foundCornersList.remove(index);
+            var observation = foundCornersList.remove(index);
+            observation.release();
             return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.error("Could not remove snapshot at index " + index, e);
@@ -223,7 +225,12 @@ public class Calibrate3dPipeline
 
     @Override
     public void release() {
-        // we never actually need to give resources up since pipelinemanager only makes
-        // one of us
+        foundCornersList.forEach(it -> it.release());
+        foundCornersList.clear();
+
+        findBoardCornersPipe.release();
+        calibrate3dPipe.release();
+        calculateFPSPipe.release();
+        super.release();
     }
 }

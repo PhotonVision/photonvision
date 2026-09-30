@@ -44,6 +44,9 @@ public class RotateImagePipe extends MutatingPipe<Mat, RotateImagePipe.RotateIma
         return null;
     }
 
+    @Override
+    public void release() {}
+
     public static record RotateImageParams(ImageRotationMode rotation) {
         public static RotateImageParams DEFAULT = new RotateImageParams(ImageRotationMode.DEG_0);
 

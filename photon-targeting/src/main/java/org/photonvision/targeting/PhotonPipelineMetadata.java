@@ -22,24 +22,24 @@ import org.photonvision.struct.PhotonPipelineMetadataSerde;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
 
 public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPipelineMetadata> {
-    // Image capture and NT publish timestamp, in microseconds
+    // Image capture and NT publish timestamp, in nanoseconds
     // The timebase is wpi::nt::Now on the time sync server
-    public long captureTimestampMicros;
-    public long publishTimestampMicros;
+    public long captureTimestampNanos;
+    public long publishTimestampNanos;
 
     // Mirror of the heartbeat entry -- monotonically increasing
     public long sequenceID;
 
-    // Time from last Time Sync Pong received and the construction of this metadata, in uS
+    // Time from last Time Sync Pong received and the construction of this metadata, in nS
     public long timeSinceLastPong;
 
     public PhotonPipelineMetadata(
-            long captureTimestampMicros,
-            long publishTimestampMicros,
+            long captureTimestampNanos,
+            long publishTimestampNanos,
             long sequenceID,
             long timeSinceLastPong) {
-        this.captureTimestampMicros = captureTimestampMicros;
-        this.publishTimestampMicros = publishTimestampMicros;
+        this.captureTimestampNanos = captureTimestampNanos;
+        this.publishTimestampNanos = publishTimestampNanos;
         this.sequenceID = sequenceID;
         this.timeSinceLastPong = timeSinceLastPong;
     }
@@ -54,25 +54,25 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
      * @return The time in milliseconds
      */
     public double getLatencyMillis() {
-        return (publishTimestampMicros - captureTimestampMicros) / 1e3;
+        return (publishTimestampNanos - captureTimestampNanos) / 1e6;
     }
 
     /**
      * The time that this image was captured, in the coprocessor's time base.
      *
-     * @return The time in microseconds
+     * @return The time in nanoseconds
      */
-    public long getCaptureTimestampMicros() {
-        return captureTimestampMicros;
+    public long getCaptureTimestampNanos() {
+        return captureTimestampNanos;
     }
 
     /**
      * The time that this result was published to NT, in the coprocessor's time base.
      *
-     * @return The time in microseconds
+     * @return The time in nanoseconds
      */
-    public long getPublishTimestampMicros() {
-        return publishTimestampMicros;
+    public long getPublishTimestampNanos() {
+        return publishTimestampNanos;
     }
 
     /**
@@ -87,10 +87,10 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
 
     @Override
     public String toString() {
-        return "PhotonPipelineMetadata [captureTimestampMicros="
-                + captureTimestampMicros
-                + ", publishTimestampMicros="
-                + publishTimestampMicros
+        return "PhotonPipelineMetadata [captureTimestampNanos="
+                + captureTimestampNanos
+                + ", publishTimestampNanos="
+                + publishTimestampNanos
                 + ", sequenceID="
                 + sequenceID
                 + ", timeSinceLastPong="
@@ -102,8 +102,8 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (captureTimestampMicros ^ (captureTimestampMicros >>> 32));
-        result = prime * result + (int) (publishTimestampMicros ^ (publishTimestampMicros >>> 32));
+        result = prime * result + (int) (captureTimestampNanos ^ (captureTimestampNanos >>> 32));
+        result = prime * result + (int) (publishTimestampNanos ^ (publishTimestampNanos >>> 32));
         result = prime * result + (int) (sequenceID ^ (sequenceID >>> 32));
         result = prime * result + (int) (timeSinceLastPong ^ (timeSinceLastPong >>> 32));
         return result;
@@ -115,8 +115,8 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         PhotonPipelineMetadata other = (PhotonPipelineMetadata) obj;
-        if (captureTimestampMicros != other.captureTimestampMicros) return false;
-        if (publishTimestampMicros != other.publishTimestampMicros) return false;
+        if (captureTimestampNanos != other.captureTimestampNanos) return false;
+        if (publishTimestampNanos != other.publishTimestampNanos) return false;
         if (sequenceID != other.sequenceID) return false;
         if (timeSinceLastPong != other.timeSinceLastPong) return false;
         return true;

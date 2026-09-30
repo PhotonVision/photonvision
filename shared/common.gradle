@@ -30,7 +30,10 @@ dependencies {
     implementation "org.wpilib.ntcore:ntcore-java:$wpilibVersion"
     implementation "org.wpilib.hal:hal-java:$wpilibVersion"
     implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
+    implementation "org.wpilib.telemetry:telemetry-java:$wpilibVersion"
+    implementation "org.wpilib.tunables:tunables-java:$wpilibVersion"
     implementation "org.wpilib.apriltag:apriltag-java:$wpilibVersion"
+    implementation "org.wpilib.fields:fields-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
     implementation wpilibTools.deps.wpilibOpenCvJava(openCVversion)
 
@@ -43,7 +46,8 @@ dependencies {
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: quickbufVersion;
 
     implementation "commons-io:commons-io:2.11.0"
-    implementation "commons-cli:commons-cli:1.5.0"
+
+    implementation "info.picocli:picocli:4.7.7"
 
     testImplementation(platform('org.junit:junit-bom:5.11.4'))
     testImplementation 'org.junit.jupiter:junit-jupiter-api'

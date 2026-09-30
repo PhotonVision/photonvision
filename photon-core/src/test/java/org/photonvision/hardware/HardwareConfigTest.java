@@ -40,10 +40,10 @@ public class HardwareConfigTest {
             assertEquals(config.deviceName, "PhotonVision");
             // Ensure defaults are not null
             assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
-            NativeDeviceFactoryInterface deviceFactory = HardwareManager.configureCustomGPIO(config);
-            assertTrue(deviceFactory instanceof CustomDeviceFactory);
-            deviceFactory.close();
-
+            try (NativeDeviceFactoryInterface deviceFactory =
+                    HardwareManager.configureCustomGPIO(config)) {
+                assertTrue(deviceFactory instanceof CustomDeviceFactory);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

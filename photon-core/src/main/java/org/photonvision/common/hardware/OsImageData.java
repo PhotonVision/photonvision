@@ -23,13 +23,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.Optional;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 /**
- * Our blessed images inject the current version via the build process in
+ * Our blessed images inject the current version and metadata via the build process in
  * https://github.com/PhotonVision/photon-image-modifier
  *
  * <p>This class provides a convenient abstraction around this
@@ -37,7 +37,7 @@ import org.photonvision.common.logging.Logger;
 public class OsImageData {
     private static final Logger logger = new Logger(OsImageData.class, LogGroup.General);
 
-    private static File imageMetadataFile = Path.of("/opt/photonvision/image-version.json").toFile();
+    private static File imageMetadataFile = ConfigManager.getImageMetadataPath().toFile();
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 

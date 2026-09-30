@@ -19,9 +19,9 @@ package org.photonvision.vision.frame;
 
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
+import org.wpilib.networktables.NetworkTablesJNI;
 
 public class Frame implements Releasable {
     private static final Logger logger = new Logger(Frame.class, LogGroup.General);
@@ -35,6 +35,13 @@ public class Frame implements Releasable {
     public final FrameThresholdType type;
 
     public final FrameStaticProperties frameStaticProperties;
+
+    /**
+     * When the frame is statically cropped, the full (uncropped) color image with the cropped-away
+     * area dimmed, for the input stream to show the crop in context. Coordinates in this image are
+     * full-frame, not crop-relative -- nothing but display may consume it.
+     */
+    public CVMat contextColorImage = null;
 
     public Frame(
             long sequenceID,
@@ -66,7 +73,7 @@ public class Frame implements Releasable {
             CVMat processed,
             FrameThresholdType processType,
             FrameStaticProperties frameStaticProperties) {
-        this(sequenceID, color, processed, processType, MathUtils.wpiNanoTime(), frameStaticProperties);
+        this(sequenceID, color, processed, processType, NetworkTablesJNI.now(), frameStaticProperties);
     }
 
     public Frame() {
@@ -75,7 +82,7 @@ public class Frame implements Releasable {
                 new CVMat(),
                 new CVMat(),
                 FrameThresholdType.NONE,
-                MathUtils.wpiNanoTime(),
+                NetworkTablesJNI.now(),
                 new FrameStaticProperties(0, 0, 0, null));
     }
 
@@ -97,5 +104,9 @@ public class Frame implements Releasable {
 
         colorImage.release();
         processedImage.release();
+        if (contextColorImage != null) {
+            contextColorImage.release();
+            contextColorImage = null;
+        }
     }
 }

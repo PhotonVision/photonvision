@@ -51,8 +51,9 @@ public class FileVisionSource extends VisionSource {
         if (getCameraConfiguration().cameraQuirks == null)
             getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
-        settables =
-                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+        try (var frame = frameProvider.get()) {
+            settables = new FileSourceSettables(cameraConfiguration, frame.frameStaticProperties);
+        }
     }
 
     public FileVisionSource(String name, String imagePath, double fov) {
@@ -63,8 +64,9 @@ public class FileVisionSource extends VisionSource {
                         name,
                         name));
         frameProvider = new FileFrameProvider(imagePath, fov);
-        settables =
-                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+        try (var frame = frameProvider.get()) {
+            settables = new FileSourceSettables(cameraConfiguration, frame.frameStaticProperties);
+        }
     }
 
     @Override

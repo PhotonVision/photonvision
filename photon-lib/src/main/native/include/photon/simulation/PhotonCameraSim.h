@@ -31,9 +31,9 @@
 #include <photon/networktables/NTTopicSet.h>
 #include <photon/simulation/SimCameraProperties.h>
 #include <photon/simulation/VisionTargetSim.h>
-#include <wpi/apriltag/AprilTagFieldLayout.hpp>
-#include <wpi/apriltag/AprilTagFields.hpp>
 #include <wpi/cameraserver/CameraServer.hpp>
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/fields.hpp>
 #include <wpi/system/Timer.hpp>
 #include <wpi/units/math.hpp>
 #include <wpi/util/timestamp.h>
@@ -65,13 +65,11 @@ class PhotonCameraSim {
    *
    * @param camera The camera to be simulated
    * @param prop Properties of this camera such as FOV and FPS
-   * @param tagLayout The AprilTagFieldLayout used to solve for tag
-   * positions.
+   * @param tagLayout The Field used to solve for tag positions.
    */
   PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props,
-                  const wpi::apriltag::AprilTagFieldLayout& tagLayout =
-                      wpi::apriltag::AprilTagFieldLayout::LoadField(
-                          wpi::apriltag::AprilTagField::kDefaultField));
+                  const wpi::fields::Field& tagLayout = wpi::fields::GetField(
+                      wpi::fields::FieldId::DEFAULT_FIELD));
 
   /**
    * Constructs a handle for simulating PhotonCamera values. Processing
@@ -150,11 +148,11 @@ class PhotonCameraSim {
    * Determine if this camera should process a new frame based on performance
    * metrics and the time since the last update. This returns an Optional which
    * is either empty if no update should occur or a Long of the timestamp in
-   * microseconds of when the frame which should be received by NT. If a
+   * nanoseconds of when the frame which should be received by NT. If a
    * timestamp is returned, the last frame update time becomes that timestamp.
    *
    * @return Optional long which is empty while blocked or the NT entry
-   * timestamp in microseconds if ready
+   * timestamp in nanoseconds if ready
    */
   std::optional<uint64_t> ConsumeNextEntryTime();
 
@@ -251,7 +249,7 @@ class PhotonCameraSim {
   static constexpr double kDefaultMinAreaPx{100};
   double minTargetAreaPercent;
 
-  wpi::apriltag::AprilTagFieldLayout tagLayout;
+  wpi::fields::Field tagLayout;
 
   wpi::cs::CvSource videoSimRaw;
   cv::Mat videoSimFrameRaw{};

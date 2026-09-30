@@ -187,6 +187,12 @@ public class ConfigManager {
         return PathManager.getInstance().getRootFolder();
     }
 
+    public static Path getImageMetadataPath() {
+        // Every image PhotonVision provides places this file in /opt/photonvision/; hard-code that
+        // assumption
+        return Path.of("/opt/photonvision/image-metadata.json");
+    }
+
     ConfigManager(Path configDirectory, ConfigProvider provider) {
         this.configDirectoryFile = new File(configDirectory.toUri());
         m_provider = provider;
@@ -322,8 +328,8 @@ public class ConfigManager {
         return m_provider.saveUploadedNetworkConfig(uploadPath);
     }
 
-    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
-        return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
+    public boolean saveUploadedFieldLayout(Path uploadPath) {
+        return m_provider.saveUploadedFieldLayout(uploadPath);
     }
 
     public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {

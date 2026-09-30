@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PVCameraInfo } from "@/types/SettingTypes";
+import { PVUsbCamera, PVCSICamera, PVFileCamera, type PVCameraInfo } from "@/types/SettingTypes";
 
 function isEqual<T>(a: T, b: T): boolean {
   if (a === b) {
@@ -50,13 +50,13 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
         </tr>
         <tr>
           <td>Type:</td>
-          <td v-if="saved.type === 'PVUsbCameraInfo'" class="mb-3">USB Camera</td>
-          <td v-else-if="saved.type === 'PVCSICameraInfo'" class="mb-3">CSI Camera</td>
-          <td v-else-if="saved.type === 'PVFileCameraInfo'" class="mb-3">File Camera</td>
+          <td v-if="saved.type === PVUsbCamera" class="mb-3">USB Camera</td>
+          <td v-else-if="saved.type === PVCSICamera" class="mb-3">CSI Camera</td>
+          <td v-else-if="saved.type === PVFileCamera" class="mb-3">File Camera</td>
           <td v-else>Unidentified Camera Type</td>
-          <td v-if="current.type === 'PVUsbCameraInfo'" class="mb-3">USB Camera</td>
-          <td v-else-if="current.type === 'PVCSICameraInfo'" class="mb-3">CSI Camera</td>
-          <td v-else-if="current.type === 'PVFileCameraInfo'" class="mb-3">File Camera</td>
+          <td v-if="current.type === PVUsbCamera" class="mb-3">USB Camera</td>
+          <td v-else-if="current.type === PVCSICamera" class="mb-3">CSI Camera</td>
+          <td v-else-if="current.type === PVFileCamera" class="mb-3">File Camera</td>
           <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr

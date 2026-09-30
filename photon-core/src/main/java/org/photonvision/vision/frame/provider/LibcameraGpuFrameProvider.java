@@ -20,7 +20,6 @@ package org.photonvision.vision.frame.provider;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.csi.LibcameraGpuSettables;
 import org.photonvision.vision.frame.Frame;
@@ -29,6 +28,7 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
+import org.wpilib.networktables.NetworkTablesJNI;
 
 public class LibcameraGpuFrameProvider extends FrameProvider {
     private final LibcameraGpuSettables settables;
@@ -97,7 +97,7 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
                     colorMat,
                     processedMat,
                     type,
-                    MathUtils.wpiNanoTime() - latency,
+                    NetworkTablesJNI.now() - latency,
                     settables.getFrameStaticProperties().rotate(settables.getRotation()));
         }
     }

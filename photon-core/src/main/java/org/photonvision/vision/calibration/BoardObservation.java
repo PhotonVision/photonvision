@@ -48,6 +48,9 @@ public final class BoardObservation implements Cloneable {
     // Solver optimized board poses
     public Pose3d optimisedCameraToObject;
 
+    // Ids of each corner since ChArUco may produce partial observations
+    public int[] cornerIds;
+
     // If we should use this observation when re-calculating camera calibration
     public boolean[] cornersUsed;
 
@@ -60,6 +63,7 @@ public final class BoardObservation implements Cloneable {
             List<Point> locationInImageSpace,
             List<Point> reprojectionErrors,
             Pose3d optimisedCameraToObject,
+            int[] cornerIds,
             boolean[] cornersUsed,
             String snapshotName,
             Path snapshotDataLocation) {
@@ -67,6 +71,7 @@ public final class BoardObservation implements Cloneable {
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;
         this.optimisedCameraToObject = optimisedCameraToObject;
+        this.cornerIds = cornerIds;
         this.snapshotName = snapshotName;
         this.snapshotDataLocation = snapshotDataLocation;
 
@@ -88,6 +93,8 @@ public final class BoardObservation implements Cloneable {
                 + reprojectionErrors
                 + ", optimisedCameraToObject="
                 + optimisedCameraToObject
+                + ", cornerIds="
+                + cornerIds
                 + ", cornersUsed="
                 + cornersUsed
                 + ", snapshotName="

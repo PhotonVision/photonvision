@@ -126,7 +126,7 @@ compile_commands.json
 *.bin
 .gradle
 .gradle/*
-photonvision_config
+photonvision_config*
 bin*/
 build*/
 
@@ -161,5 +161,9 @@ photon-client/playwright/.auth/
 shell.nix
 flake.nix
 flake.lock
+
+# Auto Serde Tests
+photon-serde-tests/src/
+photon-serde-tests/py/
 
 /workspace

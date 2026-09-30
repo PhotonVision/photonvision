@@ -88,6 +88,9 @@ public class GroupContoursPipe
         return m_targets;
     }
 
+    @Override
+    public void release() {}
+
     public static record GroupContoursParams(
             ContourGroupingMode group, ContourIntersectionDirection intersection) {}
 }

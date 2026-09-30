@@ -34,8 +34,8 @@ namespace photon {
 
 struct PhotonPipelineMetadata_PhotonStruct {
   int64_t sequenceID;
-  int64_t captureTimestampMicros;
-  int64_t publishTimestampMicros;
+  int64_t captureTimestampNanos;
+  int64_t publishTimestampNanos;
   int64_t timeSinceLastPong;
 
   friend bool operator==(PhotonPipelineMetadata_PhotonStruct const&, PhotonPipelineMetadata_PhotonStruct const&) = default;

@@ -44,6 +44,25 @@ shadowJar {
         project.configurations.runtimeClasspath
     ]
     mergeServiceFiles()
+    // SQLite natives that we don't use
+    exclude 'org/sqlite/native/*/x86/**'
+    exclude 'org/sqlite/native/*/armv7/**'
+    exclude 'org/sqlite/native/Linux/arm/**'
+    exclude 'org/sqlite/native/Linux/armv6/**'
+    exclude 'org/sqlite/native/Linux/ppc64/**'
+    exclude 'org/sqlite/native/Linux-Android/**'
+    exclude 'org/sqlite/native/Linux-Musl/**'
+    exclude 'org/sqlite/native/FreeBSD/**'
+    // JNA natives that we don't use
+    exclude 'com/sun/jna/*bsd*/**'
+    exclude 'com/sun/jna/*ppc*/**'
+    exclude 'com/sun/jna/*-x86/**'
+    exclude 'com/sun/jna/linux-arm*/**' // Non-aarch64 platforms only
+    exclude 'com/sun/jna/linux-loongarch64/**'
+    exclude 'com/sun/jna/linux-mips64el/**'
+    exclude 'com/sun/jna/linux-riscv64/**'
+    exclude 'com/sun/jna/linux-s390x/**'
+    exclude 'com/sun/jna/sunos*/**'
 }
 
 node {
@@ -51,10 +70,11 @@ node {
     pnpmVersion = "11.0.9"
 }
 
-tasks.register('copyClientUIToResources', Copy) {
+tasks.register('copyClientUIToResources', Sync) {
     from "${projectDir}/../photon-client/dist/"
-    into "${projectDir}/src/main/resources/web/"
+    into "${buildDir}/ui/web/"
 }
+sourceSets.main.resources.srcDir "${buildDir}/ui/"
 
 tasks.register('buildClient', PnpmTask) {
     inputs.dir fileTree(dir: "${projectDir}/../photon-client", exclude: "dist/")

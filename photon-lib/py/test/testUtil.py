@@ -13,53 +13,53 @@ class PipelineTimestamps:
     def __init__(
         self,
         *,
-        captureTimestampMicros: int,
-        pipelineLatencyMicros=2_000,
-        receiveLatencyMicros=1_000,
+        captureTimestampNanos: int,
+        pipelineLatencyNanos=2e6,
+        receiveLatencyNanos=1e6,
     ):
-        if captureTimestampMicros < 0:
-            raise InvalidTestDataException("captureTimestampMicros cannot be negative")
-        if pipelineLatencyMicros <= 0:
-            raise InvalidTestDataException("pipelineLatencyMicros must be positive")
-        if receiveLatencyMicros < 0:
-            raise InvalidTestDataException("receiveLatencyMicros cannot be negative")
-        self._captureTimestampMicros = captureTimestampMicros
-        self._pipelineLatencyMicros = pipelineLatencyMicros
-        self._receiveLatencyMicros = receiveLatencyMicros
+        if captureTimestampNanos < 0:
+            raise InvalidTestDataException("captureTimestampNanos cannot be negative")
+        if pipelineLatencyNanos <= 0:
+            raise InvalidTestDataException("pipelineLatencyNanos must be positive")
+        if receiveLatencyNanos < 0:
+            raise InvalidTestDataException("receiveLatencyNanos cannot be negative")
+        self._captureTimestampNanos = captureTimestampNanos
+        self._pipelineLatencyNanos = pipelineLatencyNanos
+        self._receiveLatencyNanos = receiveLatencyNanos
         self._sequenceID = 0
 
     @property
-    def captureTimestampMicros(self) -> int:
-        return self._captureTimestampMicros
+    def captureTimestampNanos(self) -> int:
+        return self._captureTimestampNanos
 
-    @captureTimestampMicros.setter
-    def captureTimestampMicros(self, micros: int) -> None:
-        if micros < 0:
-            raise InvalidTestDataException("captureTimestampMicros cannot be negative")
-        if micros < self._captureTimestampMicros:
+    @captureTimestampNanos.setter
+    def captureTimestampNanos(self, nanos: int) -> None:
+        if nanos < 0:
+            raise InvalidTestDataException("captureTimestampNanos cannot be negative")
+        if nanos < self._captureTimestampNanos:
             raise InvalidTestDataException("time cannot go backwards")
-        self._captureTimestampMicros = micros
+        self._captureTimestampNanos = nanos
         self._sequenceID += 1
 
     @property
-    def pipelineLatencyMicros(self) -> int:
-        return self._pipelineLatencyMicros
+    def pipelineLatencyNanos(self) -> int:
+        return self._pipelineLatencyNanos
 
     def pipelineLatencySecs(self) -> float:
-        return self.pipelineLatencyMicros * 1e-6
+        return self.pipelineLatencyNanos * 1e-9
 
-    def incrementTimeMicros(self, micros: int) -> None:
-        self.captureTimestampMicros += micros
+    def incrementTimeNanos(self, nanos: int) -> None:
+        self.captureTimestampNanos += nanos
 
-    def publishTimestampMicros(self) -> int:
-        return self._captureTimestampMicros + self.pipelineLatencyMicros
+    def publishTimestampNanos(self) -> int:
+        return self._captureTimestampNanos + self.pipelineLatencyNanos
 
-    def receiveTimestampMicros(self) -> int:
-        return self.publishTimestampMicros() + self._receiveLatencyMicros
+    def receiveTimestampNanos(self) -> int:
+        return self.publishTimestampNanos() + self._receiveLatencyNanos
 
     def toPhotonPipelineMetadata(self) -> PhotonPipelineMetadata:
         return PhotonPipelineMetadata(
-            captureTimestampMicros=self.captureTimestampMicros,
-            publishTimestampMicros=self.publishTimestampMicros(),
+            captureTimestampNanos=self.captureTimestampNanos,
+            publishTimestampNanos=self.publishTimestampNanos(),
             sequenceID=self._sequenceID,
         )

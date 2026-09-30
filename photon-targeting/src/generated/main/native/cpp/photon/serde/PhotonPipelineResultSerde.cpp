@@ -26,6 +26,7 @@
 
 #include "photon/serde/PhotonPipelineResultSerde.h"
 
+
 namespace photon {
 
 using StructType = SerdeType<PhotonPipelineResult>;

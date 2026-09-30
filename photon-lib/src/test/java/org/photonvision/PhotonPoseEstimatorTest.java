@@ -50,6 +50,9 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
+import org.wpilib.fields.Fields;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Quaternion;
@@ -62,12 +65,9 @@ import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.util.Nat;
 import org.wpilib.math.util.Units;
 import org.wpilib.util.runtime.RuntimeLoader;
-import org.wpilib.vision.apriltag.AprilTag;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
 
 class PhotonPoseEstimatorTest {
-    static AprilTagFieldLayout aprilTags;
+    static Field aprilTags;
     @AutoClose final PhotonCameraInjector cameraOne = new PhotonCameraInjector();
 
     @BeforeAll
@@ -77,14 +77,14 @@ class PhotonPoseEstimatorTest {
         }
         RuntimeLoader.loadLibrary("photontargetingJNI");
 
-        HAL.initialize(1000, 0);
+        HAL.initialize();
 
-        List<AprilTag> tagList = new ArrayList<>(2);
-        tagList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
-        tagList.add(new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
+        List<FieldTag> tagList = new ArrayList<>(2);
+        tagList.add(new FieldTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
+        tagList.add(new FieldTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
         double fieldLength = Units.feetToMeters(54.0);
         double fieldWidth = Units.feetToMeters(27.0);
-        aprilTags = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
+        aprilTags = new Field("test", "test", "test", null, fieldLength, fieldWidth, "frc", tagList);
     }
 
     @AfterAll
@@ -97,8 +97,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        11 * 1000000,
-                        1100000,
+                        11_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -185,8 +185,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        4000000,
-                        1100000,
+                        4_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -275,8 +275,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        17000000,
-                        1100000,
+                        17_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -366,8 +366,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        1000000,
-                        1100000,
+                        1_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -446,8 +446,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        7000000,
-                        1100000,
+                        7_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -530,7 +530,9 @@ class PhotonPoseEstimatorTest {
     void pnpDistanceTrigSolve() {
         List<VisionTargetSim> simTargets =
                 aprilTags.getTags().stream()
-                        .map((AprilTag x) -> new VisionTargetSim(x.pose, TargetModel.kAprilTag36h11, x.ID))
+                        .map(
+                                (FieldTag x) ->
+                                        new VisionTargetSim(x.getPose(), TargetModel.kAprilTag36h11, x.getID()))
                         .toList();
         try (PhotonCameraSim cameraOneSim =
                 new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG())) {
@@ -569,7 +571,7 @@ class PhotonPoseEstimatorTest {
                     bestTarget.getFiducialId(), estimatedPose.get().targetsUsed.get(0).getFiducialId());
 
             /* Straight on */
-            Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, Rotation3d.kZero);
+            Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, Rotation3d.ZERO);
 
             estimator.setRobotToCameraTransform(straightOnTestTransform);
 
@@ -594,8 +596,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        20 * 1000000,
-                        1100000,
+                        20_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -710,8 +712,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        4_000_000,
-                        1_100_000,
+                        4_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -748,8 +750,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        17_000_000,
-                        1_100_000,
+                        17_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -790,8 +792,8 @@ class PhotonPoseEstimatorTest {
         camera.result =
                 new PhotonPipelineResult(
                         0,
-                        11 * 1_000_000,
-                        1_100_000,
+                        11_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -836,7 +838,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        PhotonPoseEstimator estimator = new PhotonPoseEstimator(aprilTags, Transform3d.kZero);
+        PhotonPoseEstimator estimator = new PhotonPoseEstimator(aprilTags, Transform3d.ZERO);
 
         Optional<EstimatedRobotPose> estimatedPose =
                 estimator.estimateCoprocMultiTagPose(camera.result);
@@ -930,11 +932,10 @@ class PhotonPoseEstimatorTest {
                 new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));
 
         PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo), kRobotToCam);
+                new PhotonPoseEstimator(Field.loadField(Fields.FRC_2024_CRESCENDO), kRobotToCam);
 
         var multiTagEstimate = estimator.estimateCoprocMultiTagPose(result);
-        estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.kZero);
+        estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.ZERO);
         Optional<EstimatedRobotPose> estimatedPose =
                 estimator.estimateConstrainedSolvepnpPose(
                         result, cameraMat, distortion, multiTagEstimate.get().estimatedPose, true, 0);

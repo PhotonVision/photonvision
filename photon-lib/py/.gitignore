@@ -2,4 +2,4 @@ photonlibpy.egg-info/
 dist/
 build/
 .eggs/
-photonlibpy/version.py
+photonlibpy/_version.py

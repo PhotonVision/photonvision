@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,11 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfInt;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.LoadJNI;
@@ -44,8 +48,10 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.wpilib.math.util.Units;
 
 public class Calibrate3dPipeTest {
@@ -61,6 +67,19 @@ public class Calibrate3dPipeTest {
         Logger.setLevel(LogGroup.Data, logLevel);
         Logger.setLevel(LogGroup.Config, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
+    }
+
+    @Test
+    public void rejectsMismatchedCharucoCornersAndIds() {
+        var detectedCorners = new Mat();
+        var ids = new MatOfInt();
+
+        try {
+            assertFalse(FindBoardCornersPipe.hasValidCharucoDetections(detectedCorners, ids));
+        } finally {
+            detectedCorners.release();
+            ids.release();
+        }
     }
 
     enum CalibrationDatasets {
@@ -127,7 +146,6 @@ public class Calibrate3dPipeTest {
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
             @Values(booleans = {true, false}) boolean useMrCal) {
-        // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
 
@@ -152,14 +170,46 @@ public class Calibrate3dPipeTest {
                     dataset.useOldPattern);
     }
 
-    public static void calibrateCommon(
+    /**
+     * Check that the uncertainty works and returns reasonable looking numbers for a good calibration
+     * dataset. Our other datasets are of questionable quality (not enough pictures, not enough
+     * angles, etc)
+     */
+    @Test
+    public void testCalibrationUncertaintyWithGoodData() throws IOException {
+        var dataset = CalibrationDatasets.CHARUCO_LIFECAM_1280;
+        String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
+        File charucoDir = Path.of(charucoBase, dataset.path).toFile();
+        var data =
+                calibrateCommon(
+                        dataset.size,
+                        charucoDir,
+                        dataset.boardSize,
+                        dataset.boardType,
+                        true,
+                        dataset.useOldPattern);
+
+        var uncertainty = data.estimateUncertainty();
+        assertNotNull(uncertainty);
+
+        // sanity check that minimum is low
+        var minUncertainty = uncertainty.stream().mapToDouble(p -> p.z).min();
+        assertTrue(minUncertainty.isPresent());
+        assertEquals(1.5, minUncertainty.getAsDouble(), 1.5);
+
+        // print mean uncertainty
+        var meanUncertainty = uncertainty.stream().mapToDouble(p -> p.z).average().orElse(Double.NaN);
+        System.out.println("Mean uncertainty: " + meanUncertainty);
+    }
+
+    public static CameraCalibrationCoefficients calibrateCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
             BoardType boardType,
             boolean useMrCal,
             boolean useOldPattern) {
-        calibrateCommon(
+        return calibrateCommon(
                 imgRes,
                 rootFolder,
                 boardDim,
@@ -173,7 +223,7 @@ public class Calibrate3dPipeTest {
                 useOldPattern);
     }
 
-    public static void calibrateCommon(
+    public static CameraCalibrationCoefficients calibrateCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
@@ -184,7 +234,7 @@ public class Calibrate3dPipeTest {
             double expectedYCenter,
             boolean useMrCal,
             boolean useOldPattern) {
-        calibrateCommon(
+        return calibrateCommon(
                 imgRes,
                 rootFolder,
                 boardDim,
@@ -198,7 +248,7 @@ public class Calibrate3dPipeTest {
                 useOldPattern);
     }
 
-    public static void calibrateCommon(
+    public static CameraCalibrationCoefficients calibrateCommon(
             Size imgRes,
             File rootFolder,
             Size boardDim,
@@ -216,48 +266,55 @@ public class Calibrate3dPipeTest {
 
         assertTrue(directoryListing.length >= 12);
 
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
-        calibration3dPipeline.getSettings().boardType = boardType;
-        calibration3dPipeline.getSettings().markerSize = markerSize;
-        calibration3dPipeline.getSettings().tagFamily = tagFamily;
-        calibration3dPipeline.getSettings().resolution = imgRes;
-        calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
-        calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
-        calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
-        calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
-        calibration3dPipeline.getSettings().useMrCal = useMrCal;
-        calibration3dPipeline.getSettings().useOldPattern = useOldPattern;
+        CameraCalibrationCoefficients cal;
+        try (Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline()) {
+            calibration3dPipeline.getSettings().boardType = boardType;
+            calibration3dPipeline.getSettings().markerSize = markerSize;
+            calibration3dPipeline.getSettings().tagFamily = tagFamily;
+            calibration3dPipeline.getSettings().resolution = imgRes;
+            calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
+            calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
+            calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
+            calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
+            calibration3dPipeline.getSettings().useMrCal = useMrCal;
+            calibration3dPipeline.getSettings().useOldPattern = useOldPattern;
 
-        for (var file : directoryListing) {
-            if (file.isFile()) {
-                calibration3dPipeline.takeSnapshot();
-                var frame =
-                        new Frame(
-                                0,
-                                new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                new CVMat(),
-                                FrameThresholdType.NONE,
-                                new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
-                var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
-
-                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(),
-                // file.getName(),
-                // 1);
-                output.release();
-                frame.release();
+            for (var file : directoryListing) {
+                if (file.isFile()) {
+                    calibration3dPipeline.takeSnapshot();
+                    var frame =
+                            new Frame(
+                                    0,
+                                    new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                    new CVMat(),
+                                    FrameThresholdType.NONE,
+                                    new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
+                    try (CVPipelineResult output =
+                            calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera)) {
+                        TestUtils.showImage(
+                                output.inputAndOutputFrame.processedImage.getMat(), file.getName(), 1);
+                    }
+                }
             }
+
+            assertTrue(
+                    calibration3dPipeline.foundCornersList.stream()
+                            .map(it -> it.imagePoints)
+                            .allMatch(it -> it.width() > 0 && it.height() > 0));
+
+            assertTrue(
+                    calibration3dPipeline.foundCornersList.stream()
+                            .allMatch(
+                                    it ->
+                                            it.imagePoints.width() == it.objectPoints.width()
+                                                    && it.imagePoints.height() == it.objectPoints.height()));
+
+            cal =
+                    calibration3dPipeline.tryCalibration(
+                            ConfigManager.getInstance()
+                                    .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
+            calibration3dPipeline.finishCalibration();
         }
-
-        assertTrue(
-                calibration3dPipeline.foundCornersList.stream()
-                        .map(it -> it.imagePoints)
-                        .allMatch(it -> it.width() > 0 && it.height() > 0));
-
-        var cal =
-                calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
-        calibration3dPipeline.finishCalibration();
 
         // visuallyDebugDistortion(directoryListing, imgRes, cal );
 
@@ -296,6 +353,8 @@ public class Calibrate3dPipeTest {
         // doesn't
         // work in CI
         System.out.println("CVMats left: " + CVMat.getMatCount() + " Start: " + startMatCount);
+
+        return cal;
     }
 
     /**

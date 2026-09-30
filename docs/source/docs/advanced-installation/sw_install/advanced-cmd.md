@@ -10,6 +10,26 @@ Assuming `java` has been installed, and the appropriate environment variables ha
 java -jar /path/to/photonvision/photonvision.jar
 ```
 
+## Disabling Networking
+
+PhotonVision normally manages the network configuration of the machine it runs on. On a coprocessor that is what makes the device reachable at `photonvision.local` and at a fixed IP, but it also rewrites the hostname and the static IP addresses of the host, which is usually not what you want when you are running the JAR on your own computer for development or testing.
+
+Pass `-n` (or `--disable-networking`) to leave the host network configuration alone:
+
+```bash
+java -jar /path/to/photonvision/photonvision.jar -n
+```
+
+With this flag set, PhotonVision skips network management entirely at startup and logs `Network management is disabled.` It does not change the hostname, it does not write static IP configuration, and it does not monitor the network interfaces. Since there is nothing left to configure, the networking controls in the web dashboard are disabled as well.
+
+:::{note}
+This does not turn the networking stack off. The web dashboard is still served on port 5800, so you can reach it at `http://localhost:5800`, and camera streams keep working.
+:::
+
+:::{note}
+Network management is also skipped automatically when PhotonVision is not running on Linux, when it is not running as `root`, or when `nmcli` is not installed.
+:::
+
 ## Updating a JAR File
 
 When you need to update your JAR file, run the following:

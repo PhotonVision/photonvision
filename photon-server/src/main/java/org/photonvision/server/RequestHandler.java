@@ -20,6 +20,7 @@ package org.photonvision.server;
 import io.avaje.json.JsonException;
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
 import java.io.*;
@@ -30,11 +31,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.Point3;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
@@ -283,7 +286,7 @@ public class RequestHandler {
         }
     }
 
-    public static void onAprilTagFieldLayoutRequest(Context ctx) {
+    public static void onFieldLayoutRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
         if (file == null) {
@@ -314,15 +317,15 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigManager.getInstance().saveUploadedAprilTagFieldLayout(tempFilePath.get().toPath())) {
+        if (ConfigManager.getInstance().saveUploadedFieldLayout(tempFilePath.get().toPath())) {
             ctx.status(200);
-            ctx.result("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
-            logger.info("Successfully saved the uploaded AprilTagFieldLayout, rebooting...");
+            ctx.result("Successfully saved the uploaded FieldLayout, rebooting...");
+            logger.info("Successfully saved the uploaded FieldLayout, rebooting...");
             restartProgram();
         } else {
             ctx.status(500);
-            ctx.result("There was an error while saving the uploaded AprilTagFieldLayout");
-            logger.error("There was an error while saving the uploaded AprilTagFieldLayout");
+            ctx.result("There was an error while saving the uploaded FieldLayout");
+            logger.error("There was an error while saving the uploaded FieldLayout");
         }
     }
 
@@ -396,7 +399,7 @@ public class RequestHandler {
 
     @Json
     record CameraSettingsRequest(
-            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
+            double fov, Map<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
@@ -404,7 +407,7 @@ public class RequestHandler {
                     Jsonb.instance().type(CameraSettingsRequest.class).fromJson(ctx.body());
             // Extract the settings from the request
             double fov = request.fov;
-            HashMap<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
+            Map<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
             String cameraUniqueName = request.cameraUniqueName;
 
             if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
@@ -1052,8 +1055,53 @@ public class RequestHandler {
             return;
         }
 
-        ctx.json(calList);
+        ctx.contentType("application/json");
+        ctx.result(Jsonb.instance().toJson(calList));
         ctx.status(200);
+    }
+
+    public static void onUncertaintyJsonRequest(Context ctx) {
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+        if (module == null) {
+            ctx.status(404);
+            return;
+        }
+
+        CameraCalibrationCoefficients calList =
+                module.getStateAsCameraConfig().calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.resolution.width - width) < 1e-4
+                                                && Math.abs(it.resolution.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        try {
+            ctx.json(calList.estimateUncertainty(), Types.listOf(Point3.class));
+            ctx.status(200);
+        } catch (Exception e) {
+            ctx.status(422)
+                    .result("Unable to estimate uncertainty for this calibration: " + e.getMessage());
+            logger.error(
+                    "Unable to estimate uncertainty for camera "
+                            + cameraUniqueName
+                            + " at "
+                            + width
+                            + "x"
+                            + height
+                            + ": "
+                            + e.getMessage(),
+                    e);
+        }
     }
 
     @Json
@@ -1162,15 +1210,15 @@ public class RequestHandler {
         }
 
         var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
-        ctx.contentType("application/zip");
+        ctx.contentType("application/json");
         ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        ctx.json(calList);
+        ctx.result(Jsonb.instance().toJson(calList));
 
         ctx.status(200);
     }
 
     public static void onImageSnapshotsRequest(Context ctx) {
-        var snapshots = new ArrayList<HashMap<String, Object>>();
+        var snapshots = new ArrayList<Map<String, Object>>();
         var cameraDirs = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
 
         if (cameraDirs != null) {
@@ -1203,24 +1251,24 @@ public class RequestHandler {
         }
 
         ctx.status(200);
-        ctx.json(snapshots);
+        ctx.contentType("application/json");
+        ctx.result(Jsonb.instance().toJson(snapshots));
     }
 
     public static void onCameraCalibImagesRequest(Context ctx) {
         try {
-            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots =
-                    new HashMap<>();
+            Map<String, Map<String, ArrayList<Map<String, Object>>>> snapshots = new HashMap<>();
 
             var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
             if (cameraDirs != null) {
-                var camData = new HashMap<String, ArrayList<HashMap<String, Object>>>();
+                var camData = new HashMap<String, ArrayList<Map<String, Object>>>();
                 for (var cameraDir : cameraDirs) {
                     var resolutionDirs = cameraDir.listFiles();
                     if (resolutionDirs == null) continue;
                     for (var resolutionDir : resolutionDirs) {
                         var calibImages = resolutionDir.listFiles();
                         if (calibImages == null) continue;
-                        var resolutionImages = new ArrayList<HashMap<String, Object>>();
+                        var resolutionImages = new ArrayList<Map<String, Object>>();
                         for (var calibImg : calibImages) {
                             var snapshotData = new HashMap<String, Object>();
 
@@ -1242,7 +1290,8 @@ public class RequestHandler {
                 }
             }
 
-            ctx.json(snapshots);
+            ctx.contentType("application/json");
+            ctx.result(Jsonb.instance().toJson(snapshots));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("An error occurred while getting calib data");

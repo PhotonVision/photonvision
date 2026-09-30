@@ -60,7 +60,7 @@ import org.wpilib.vision.camera.UsbCamera;
  *
  * <p>We now require user interaction for pretty much every operation this undertakes.
  */
-public class VisionSourceManager {
+public class VisionSourceManager implements AutoCloseable {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
 
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
@@ -126,8 +126,7 @@ public class VisionSourceManager {
         deserializedConfigs.values().stream()
                 .filter(it -> !it.deactivated)
                 .map(this::loadVisionSourceFromCamConfig)
-                .map(vmm::addSource)
-                .forEach(VisionModule::start);
+                .forEach(vmm::addSource);
 
         // 3. write down all disabled sources for later
         deserializedConfigs.entrySet().stream()
@@ -171,16 +170,7 @@ public class VisionSourceManager {
 
         // transform the camera info all the way to a VisionModule and then start it
         var created =
-                deactivatedConfig
-                        .map(this::loadVisionSourceFromCamConfig)
-                        .map(vmm::addSource)
-                        .map(
-                                it -> {
-                                    it.start();
-                                    it.saveAndBroadcastAll();
-                                    return it;
-                                })
-                        .isPresent();
+                deactivatedConfig.map(this::loadVisionSourceFromCamConfig).map(vmm::addSource).isPresent();
 
         if (!created) {
             // Couldn't create a VM for this config - restore state
@@ -220,9 +210,7 @@ public class VisionSourceManager {
         }
 
         var source = loadVisionSourceFromCamConfig(new CameraConfiguration(cameraInfo));
-        var module = vmm.addSource(source);
-
-        module.start();
+        vmm.addSource(source);
 
         // We have a new camera! Tell the world about it
         DataChangeService.getInstance()
@@ -259,9 +247,9 @@ public class VisionSourceManager {
                         .filter(module -> module.uniqueName().equals(uniqueName))
                         .findFirst()
                         .map(
-                                it -> {
-                                    vmm.removeModule(it);
-                                    return it.getCameraConfiguration();
+                                module -> {
+                                    module.getCameraConfiguration().deactivated = true;
+                                    return vmm.removeModule(module);
                                 });
 
         if (removedConfig.isEmpty()) {
@@ -519,5 +507,10 @@ public class VisionSourceManager {
 
     public List<VisionModule> getVisionModules() {
         return vmm.getModules();
+    }
+
+    @Override
+    public void close() {
+        vmm.close();
     }
 }

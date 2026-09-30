@@ -27,14 +27,17 @@ dependencies {
     wpilibNatives wpilibTools.deps.wpilib("ntcore")
     wpilibNatives wpilibTools.deps.wpilib("cscore")
     wpilibNatives wpilibTools.deps.wpilib("apriltag")
+    wpilibNatives wpilibTools.deps.wpilib("fields")
     wpilibNatives wpilibTools.deps.wpilib("hal")
+    wpilibNatives wpilibTools.deps.wpilib("telemetry")
+    wpilibNatives wpilibTools.deps.wpilib("tunables")
     wpilibNatives wpilibTools.deps.wpilibOpenCv(openCVversion)
 
     // These stay as implementation dependencies since they don't have native code that gets packaged
     implementation 'org.zeroturnaround:zt-zip:1.14'
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
     implementation 'com.diozero:diozero-core:1.4.1'
-    implementation 'com.github.oshi:oshi-core:6.9.1'
+    implementation 'com.github.oshi:oshi-core:7.4.0'
 
     // The JNI libraries use wpilibNatives, the java libraries use implementation
     if (jniPlatform == "linuxarm64") {

@@ -2,7 +2,13 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings, type PVCameraInfo } from "@/types/SettingTypes";
+import {
+  PlaceholderCameraSettings,
+  PVUsbCamera,
+  PVCSICamera,
+  PVFileCamera,
+  type PVCameraInfo
+} from "@/types/SettingTypes";
 import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
@@ -98,7 +104,7 @@ const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null)
 const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
     return {
-      type: "PVFileCameraInfo",
+      type: PVFileCamera,
       path: "",
       name: "",
       uniquePath: ""
@@ -106,7 +112,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   }
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => it.uniquePath === info.uniquePath) || {
-      type: "PVFileCameraInfo",
+      type: PVFileCamera,
       path: "",
       name: "",
       uniquePath: ""
@@ -336,9 +342,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4" class="pr-0">
         <v-card class="pr-0 rounded-12" color="surface">
           <v-card-title>
-            <span v-if="camera.type === 'PVUsbCameraInfo'">USB Camera:</span>
-            <span v-else-if="camera.type === 'PVCSICameraInfo'">CSI Camera:</span>
-            <span v-else-if="camera.type === 'PVFileCameraInfo'">File Camera:</span>
+            <span v-if="camera.type === PVUsbCamera">USB Camera:</span>
+            <span v-else-if="camera.type === PVCSICamera">CSI Camera:</span>
+            <span v-else-if="camera.type === PVFileCamera">File Camera:</span>
             <span v-else>Unknown Camera:</span>
             &nbsp;<span>{{ camera.name }}</span>
           </v-card-title>

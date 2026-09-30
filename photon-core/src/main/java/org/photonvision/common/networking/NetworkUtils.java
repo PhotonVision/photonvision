@@ -123,7 +123,7 @@ public class NetworkUtils {
                 }
 
             } catch (IOException e) {
-                logger.error("IO Exception occured when calling nmcli to get network interfaces!", e);
+                logger.error("IO Exception occurred when calling nmcli to get network interfaces!", e);
             } catch (InterruptedException e) {
                 logger.error("Interrupted while waiting for NetworkManager", e);
             }

@@ -67,5 +67,7 @@ public class TrackedTargetTest {
         // TODO change these hardcoded values
         assertEquals(12.0, trackedTarget.getYaw(), 0.05, "Yaw was incorrect");
         assertEquals(0, trackedTarget.getPitch(), 0.05, "Pitch was incorrect");
+
+        trackedTarget.close();
     }
 }
