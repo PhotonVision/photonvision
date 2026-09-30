@@ -18,11 +18,13 @@
 package org.photonvision.hardware;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.diozero.internal.provider.builtin.DefaultDeviceFactory;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.avaje.jsonb.Jsonb;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.VisionLED;
 import org.photonvision.common.util.TestUtils;
@@ -68,8 +71,9 @@ public class HardwareTest {
         @BeforeEach
         void setup() throws IOException {
             System.out.println("Loading Hardware configs...");
-            hardwareConfig =
-                    new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
+            try (var stream = new FileInputStream(TestUtils.getHardwareConfigJson())) {
+                hardwareConfig = Jsonb.instance().type(HardwareConfig.class).fromJson(stream);
+            }
             deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
         }
 
@@ -109,6 +113,14 @@ public class HardwareTest {
                 }
                 assertEquals(1, seenValues.size());
             }
+        }
+
+        @Test
+        public void testInvalidConfigInit() {
+            HardwareManager.initialize(hardwareConfig, new HardwareSettings());
+
+            // The status led config is invalid, so it should have been skipped
+            assertFalse(HardwareManager.getInstance().hasStatusLed());
         }
     }
 }

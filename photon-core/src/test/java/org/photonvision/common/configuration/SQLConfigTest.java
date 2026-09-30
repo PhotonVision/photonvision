@@ -19,22 +19,33 @@ package org.photonvision.common.configuration;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.avaje.json.JsonDataException;
+import io.avaje.jsonb.Jsonb;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -42,6 +53,8 @@ import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
 public class SQLConfigTest {
@@ -50,6 +63,13 @@ public class SQLConfigTest {
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
+        CVMat.enablePrint(false);
+    }
+
+    @AfterAll
+    public static void cleanup() {
+        // Reset the NNM singleton
+        NeuralNetworkModelManager.getInstance(true);
     }
 
     @Test
@@ -92,32 +112,6 @@ public class SQLConfigTest {
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
 
-    @Test
-    public void testLoad2024_3_1() throws IOException {
-        // Copy the 2024.3.1 config to a temp dir
-        FileUtils.copyDirectory(
-                TestUtils.getConfigDirectoriesPath(false)
-                        .resolve("photonvision_config_from_v2024.3.1")
-                        .toFile(),
-                tmpDir.resolve("photonvision_config_from_v2024.3.1").toFile());
-
-        var cfgLoader = new SqlConfigProvider(tmpDir.resolve("photonvision_config_from_v2024.3.1"));
-
-        assertDoesNotThrow(cfgLoader::load);
-
-        System.out.println(cfgLoader.getConfig());
-        for (var c : CameraQuirk.values()) {
-            assertDoesNotThrow(
-                    () ->
-                            cfgLoader
-                                    .config
-                                    .getCameraConfigurations()
-                                    .get("Microsoft_LifeCam_HD-3000")
-                                    .cameraQuirks
-                                    .hasQuirk(c));
-        }
-    }
-
     void common2025p3p1Assertions(PhotonConfiguration config) {
         // Make sure we got 8 cameras
         assertEquals(8, config.getCameraConfigurations().size());
@@ -134,7 +128,7 @@ public class SQLConfigTest {
     }
 
     @Test
-    public void testLoadNewNNMM() throws JsonProcessingException, IOException {
+    public void testLoadNewNNMM() throws JsonDataException, IOException {
         var folder = tmpDir.resolve("2025.3.1-old-nnmm");
         FileUtils.copyDirectory(
                 TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
@@ -165,7 +159,7 @@ public class SQLConfigTest {
         common2025p3p1Assertions(reloadedProvider.getConfig());
 
         // And make sure NNPM has all 5 models
-        assertEquals(5, reloadedProvider.getConfig().neuralNetworkPropertyManager().getModels().length);
+        assertEquals(5, reloadedProvider.getConfig().getNeuralNetworkProperties().getModels().length);
 
         ConfigManager.INSTANCE = null;
     }
@@ -209,5 +203,111 @@ public class SQLConfigTest {
         }
 
         ConfigManager.INSTANCE = null;
+    }
+
+    private static Field testField(String name) {
+        // Note: a null tag list round-trips as an empty list through JSON, so use List.of()
+        return new Field(name, "2026", "UnitTestGame", null, 12.0, 6.0, "FRC", List.of());
+    }
+
+    private static void writeGlobalKey(Path dir, String key, String contents) throws SQLException {
+        var url = "jdbc:sqlite:" + dir.resolve("photon.sqlite").toAbsolutePath();
+        try (Connection conn = DriverManager.getConnection(url);
+                PreparedStatement ps =
+                        conn.prepareStatement(
+                                String.format(
+                                        "REPLACE INTO %s (%s, %s) VALUES (?,?)",
+                                        DatabaseSchema.Tables.GLOBAL,
+                                        DatabaseSchema.Columns.GLB_FILENAME,
+                                        DatabaseSchema.Columns.GLB_CONTENTS))) {
+            ps.setString(1, key);
+            ps.setString(2, contents);
+            ps.executeUpdate();
+        }
+    }
+
+    @Test
+    public void testFieldLayoutNewKeyRoundTrip() throws IOException {
+        var folder = tmpDir.resolve("field-new-key");
+        var provider = new SqlConfigProvider(folder);
+        provider.load();
+
+        var field = testField("NewKeyRoundTrip");
+        var upload = folder.resolve("field-upload.json");
+        Files.writeString(upload, Jsonb.instance().type(Field.class).toJson(field));
+        assertTrue(provider.saveUploadedFieldLayout(upload));
+
+        var reloaded = new SqlConfigProvider(folder);
+        reloaded.load();
+        assertEquals(field, reloaded.getConfig().getFieldLayout());
+    }
+
+    @Test
+    public void testFieldLayoutLegacyKeyFallback() throws SQLException {
+        var folder = tmpDir.resolve("field-legacy-key");
+        var provider = new SqlConfigProvider(folder);
+        provider.load();
+
+        var field = testField("LegacyKeyFallback");
+        writeGlobalKey(folder, "apriltagFieldLayout", Jsonb.instance().type(Field.class).toJson(field));
+
+        var reloaded = new SqlConfigProvider(folder);
+        reloaded.load();
+        assertEquals(field, reloaded.getConfig().getFieldLayout());
+    }
+
+    @Test
+    public void testFieldLayoutNewKeyPreferred() throws SQLException {
+        var folder = tmpDir.resolve("field-both-keys");
+        var provider = new SqlConfigProvider(folder);
+        provider.load();
+
+        var newKeyField = testField("NewKeyWins");
+        var legacyField = testField("LegacyKeyLoses");
+        writeGlobalKey(
+                folder,
+                SqlConfigProvider.GlobalKeys.FIELD_CONFIG_FILE,
+                Jsonb.instance().type(Field.class).toJson(newKeyField));
+        writeGlobalKey(
+                folder, "apriltagFieldLayout", Jsonb.instance().type(Field.class).toJson(legacyField));
+
+        var reloaded = new SqlConfigProvider(folder);
+        reloaded.load();
+        assertEquals(newKeyField, reloaded.getConfig().getFieldLayout());
+    }
+
+    @Test
+    public void testFieldLayoutDefaultsWhenAbsent() throws UncheckedIOException {
+        var provider = new SqlConfigProvider(tmpDir.resolve("field-absent"));
+        provider.load();
+
+        assertEquals(Field.loadField(Fields.DEFAULT_FIELD), provider.getConfig().getFieldLayout());
+    }
+
+    @Test
+    public void testV2026p3p4WindowsPaths() throws JsonDataException, IOException {
+        assumeTrue(
+                Platform.isWindows(), "This test is only relevant on Windows, skipping on other platforms");
+
+        var configName = "2026.3.4-windows";
+        var folder = tmpDir.resolve(configName);
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve(configName).toFile(), folder.toFile());
+
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+
+        cfgManager.load();
+
+        // Make sure we have calibrated 1280x720, and the board observation paths matches
+        var camCfg =
+                cfgManager
+                        .getConfig()
+                        .getCameraConfigurations()
+                        .get("1414304b-6812-487a-ab5c-89ee70704fae");
+        assertEquals(1280, camCfg.calibrations.get(0).resolution.width);
+        assertEquals(720, camCfg.calibrations.get(0).resolution.height);
+        assertEquals(
+                "C:\\Users\\matth\\Documents\\GitHub\\photonvision\\test\\photonvision_config\\calibration\\1414304b-6812-487a-ab5c-89ee70704fae\\imgs\\1280x720\\img0.png",
+                camCfg.calibrations.get(0).observations.get(0).snapshotDataLocation.toString());
     }
 }

@@ -17,40 +17,42 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.avaje.jsonb.Json;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.photonvision.common.hardware.statusLED.RGBStatusLED;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Json
 public class HardwareConfig {
-    public final String deviceName;
+    public String deviceName;
 
     // LED control
-    public final ArrayList<Integer> ledPins;
-    public final boolean ledsCanDim;
-    public final ArrayList<Integer> ledBrightnessRange;
-    public final int ledPWMFrequency;
-    public final ArrayList<Integer> statusRGBPins;
-    public final boolean statusRGBActiveHigh;
+    public List<Integer> ledPins;
+    public boolean ledsCanDim;
+    public List<Integer> ledBrightnessRange;
+    public int ledPWMFrequency;
+
+    public Optional<StatusLedConfig> statusLEDConfig;
 
     // Custom GPIO
-    public final String getGPIOCommand;
-    public final String setGPIOCommand;
-    public final String setPWMCommand;
-    public final String setPWMFrequencyCommand;
-    public final String releaseGPIOCommand;
+    public String getGPIOCommand;
+    public String setGPIOCommand;
+    public String setPWMCommand;
+    public String setPWMFrequencyCommand;
+    public String releaseGPIOCommand;
 
     // Device stuff
-    public final String restartHardwareCommand;
-    public final double vendorFOV; // -1 for unmanaged
+    public String restartHardwareCommand;
+    public double vendorFOV; // -1 for unmanaged
 
     public HardwareConfig(
             String deviceName,
-            ArrayList<Integer> ledPins,
+            List<Integer> ledPins,
             boolean ledsCanDim,
-            ArrayList<Integer> ledBrightnessRange,
+            List<Integer> ledBrightnessRange,
             int ledPwmFrequency,
-            ArrayList<Integer> statusRGBPins,
-            boolean statusRGBActiveHigh,
+            Optional<StatusLedConfig> statusLEDConfig,
             String getGPIOCommand,
             String setGPIOCommand,
             String setPWMCommand,
@@ -63,8 +65,7 @@ public class HardwareConfig {
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
         this.ledPWMFrequency = ledPwmFrequency;
-        this.statusRGBPins = statusRGBPins;
-        this.statusRGBActiveHigh = statusRGBActiveHigh;
+        this.statusLEDConfig = statusLEDConfig;
         this.getGPIOCommand = getGPIOCommand;
         this.setGPIOCommand = setGPIOCommand;
         this.setPWMCommand = setPWMCommand;
@@ -80,8 +81,7 @@ public class HardwareConfig {
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
         ledPWMFrequency = 0;
-        statusRGBPins = new ArrayList<>();
-        statusRGBActiveHigh = false;
+        statusLEDConfig = Optional.empty();
         getGPIOCommand = "";
         setGPIOCommand = "";
         setPWMCommand = "";
@@ -89,6 +89,36 @@ public class HardwareConfig {
         releaseGPIOCommand = "";
         restartHardwareCommand = "";
         vendorFOV = -1;
+    }
+
+    // MIGRATION: 2026
+    @Json.Property("statusRGBPins")
+    void importStatusRGBPins(List<Integer> statusRGBPins) {
+        if (statusRGBPins.size() < 3) {
+            // Missing pins are unsupported
+            return;
+        }
+        if (statusLEDConfig.isEmpty()) {
+            statusLEDConfig = Optional.of(new RGBStatusLED.Config());
+        }
+        if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
+            var config = (RGBStatusLED.Config) statusLEDConfig.get();
+            config.redPin = statusRGBPins.get(0);
+            config.greenPin = statusRGBPins.get(1);
+            config.bluePin = statusRGBPins.get(2);
+        }
+    }
+
+    // MIGRATION: 2026
+    @Json.Property("statusRGBActiveHigh")
+    void importStatusRGBActiveHigh(boolean statusRGBActiveHigh) {
+        if (statusLEDConfig.isEmpty()) {
+            statusLEDConfig = Optional.of(new RGBStatusLED.Config());
+        }
+        if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
+            var config = (RGBStatusLED.Config) statusLEDConfig.get();
+            config.activeHigh = statusRGBActiveHigh;
+        }
     }
 
     /**
@@ -121,10 +151,8 @@ public class HardwareConfig {
                 + ledBrightnessRange
                 + ", ledPWMFrequency="
                 + ledPWMFrequency
-                + ", statusRGBPins="
-                + statusRGBPins
-                + ", statusRGBActiveHigh"
-                + statusRGBActiveHigh
+                + ", statusLEDConfig="
+                + statusLEDConfig
                 + ", getGPIOCommand="
                 + getGPIOCommand
                 + ", setGPIOCommand="

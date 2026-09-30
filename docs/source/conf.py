@@ -11,6 +11,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import subprocess
 
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
@@ -22,7 +23,6 @@ copyright = "2024, PhotonVision"
 author = "Banks Troutman, Matt Morley"
 
 # -- Git configuration -----------------------------------------------------
-import subprocess
 
 try:
     # Use closest tag
@@ -181,4 +181,4 @@ if token:
     linkcheck_auth = [(R"https://github.com/.+", token)]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
-myst_enable_extensions = ["colon_fence", "substitution"]
+myst_enable_extensions = ["colon_fence", "substitution", "attrs_inline"]

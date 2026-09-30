@@ -17,57 +17,51 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.api.DeviceAlreadyOpenedException;
 import com.diozero.api.DeviceMode;
+import com.diozero.api.NoSuchDeviceException;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
 import com.diozero.sbc.DeviceFactoryHelper;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
+import org.photonvision.common.configuration.StatusLedConfig;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
 import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
+import org.photonvision.common.hardware.statusLED.StatusLED;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 import org.wpilib.networktables.IntegerPublisher;
 import org.wpilib.networktables.IntegerSubscriber;
 
-public class HardwareManager {
+public class HardwareManager implements AutoCloseable {
     private static HardwareManager instance;
 
     private final ShellExec shellExec = new ShellExec(true, false);
-    private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
+    private static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private final StatusLED statusLED;
+    private final Optional<StatusLED> statusLED;
 
-    @SuppressWarnings("FieldCanBeLocal")
     private final IntegerSubscriber ledModeRequest;
 
     private final IntegerPublisher ledModeState;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private final NTDataChangeListener ledModeListener;
+    private final Optional<NTDataChangeListener> ledModeListener;
 
-    public final VisionLED visionLED; // May be null if no LED is specified
-
-    public static HardwareManager getInstance() {
-        if (instance == null) {
-            var conf = ConfigManager.getInstance().getConfig();
-            instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
-        }
-        return instance;
-    }
+    public final Optional<VisionLED> visionLED;
 
     private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
@@ -101,44 +95,71 @@ public class HardwareManager {
                     }
                 };
 
-        statusLED =
-                hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(
-                                lazyDeviceFactory.get(),
-                                hardwareConfig.statusRGBPins,
-                                hardwareConfig.statusRGBActiveHigh)
-                        : null;
+        Optional<StatusLED> tempStatusLED = Optional.empty();
+        try {
+            tempStatusLED = hardwareConfig.statusLEDConfig.map(it -> it.create(lazyDeviceFactory.get()));
+        } catch (DeviceAlreadyOpenedException | NoSuchDeviceException e) {
+            logger.error("Status LED initialization failed, skipping", e);
+        }
+        statusLED = tempStatusLED;
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
-        visionLED =
-                hardwareConfig.ledPins.isEmpty()
-                        ? null
-                        : new VisionLED(
-                                lazyDeviceFactory.get(),
-                                hardwareConfig.ledPins,
-                                hardwareConfig.ledsCanDim,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                hardwareConfig.ledPWMFrequency,
-                                ledModeState::set);
+        Optional<VisionLED> tempVisionLED = Optional.empty();
+        try {
+            tempVisionLED =
+                    hardwareConfig.ledPins.isEmpty()
+                            ? Optional.empty()
+                            : Optional.of(
+                                    new VisionLED(
+                                            lazyDeviceFactory.get(),
+                                            hardwareConfig.ledPins,
+                                            hardwareConfig.ledsCanDim,
+                                            hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
+                                            hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                            hardwareConfig.ledPWMFrequency,
+                                            ledModeState::set));
+        } catch (DeviceAlreadyOpenedException | NoSuchDeviceException e) {
+            logger.error("Vision LED initialization failed, skipping", e);
+        }
+        visionLED = tempVisionLED;
 
         ledModeListener =
-                visionLED == null
-                        ? null
-                        : new NTDataChangeListener(
-                                NetworkTablesManager.getInstance().kRootTable.getInstance(),
-                                ledModeRequest,
-                                visionLED::onLedModeChange);
+                visionLED.map(
+                        visionLED ->
+                                new NTDataChangeListener(
+                                        NetworkTablesManager.getInstance().kRootTable.getInstance(),
+                                        ledModeRequest,
+                                        visionLED::onLedModeChange));
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
-        if (visionLED != null) {
-            visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
-            visionLED.blink(85, 4); // bootup blink
-        }
+        visionLED.ifPresent(
+                visionLED -> {
+                    visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
+                    visionLED.blink(85, 4); // bootup blink
+                });
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+    }
+
+    public static HardwareManager getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("HardwareManager not initialized! Call initialize() first.");
+        }
+        return instance;
+    }
+
+    public static void initialize(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+        if (instance != null) {
+            logger.warn("HardwareManager already initialized, replacing!");
+            instance.close();
+        }
+        if (hardwareConfig == null || hardwareSettings == null) {
+            throw new IllegalArgumentException(
+                    "HardwareConfig and HardwareSettings must not be null when initializing HardwareManager.");
+        }
+        instance = new HardwareManager(hardwareConfig, hardwareSettings);
     }
 
     public static NativeDeviceFactoryInterface configureCustomGPIO(HardwareConfig hardwareConfig) {
@@ -161,7 +182,8 @@ public class HardwareManager {
                 pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
             }
         }
-        for (int pin : hardwareConfig.statusRGBPins) {
+        for (int pin :
+                hardwareConfig.statusLEDConfig.map(StatusLedConfig::pins).orElseGet(() -> new int[0])) {
             pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
         }
 
@@ -171,7 +193,7 @@ public class HardwareManager {
     public void setBrightnessPercent(int percent) {
         if (percent != hardwareSettings.ledBrightnessPercentage) {
             hardwareSettings.ledBrightnessPercentage = percent;
-            if (visionLED != null) visionLED.setBrightness(percent);
+            visionLED.ifPresent(visionLED -> visionLED.setBrightness(percent));
             ConfigManager.getInstance().requestSave();
             logger.info("Setting led brightness to " + percent + "%");
         }
@@ -179,7 +201,7 @@ public class HardwareManager {
 
     private void onJvmExit() {
         logger.info("Shutting down LEDs...");
-        if (visionLED != null) visionLED.setState(false);
+        visionLED.ifPresent(visionLED -> visionLED.setState(false));
 
         ConfigManager.getInstance().onJvmExit();
     }
@@ -220,16 +242,16 @@ public class HardwareManager {
         updateStatus();
     }
 
-    public void setError(PhotonStatus status) {
-        if (status == null || !status.isError()) {
+    public void setError(Optional<PhotonStatus> status) {
+        if (status.isEmpty() || !status.get().isError()) {
             updateStatus();
-        } else if (statusLED != null) {
-            statusLED.setStatus(status);
+        } else {
+            statusLED.ifPresent(statusLED -> statusLED.setStatus(status.get()));
         }
     }
 
     private void updateStatus() {
-        if (statusLED == null) {
+        if (statusLED.isEmpty()) {
             return;
         }
         PhotonStatus status;
@@ -247,6 +269,17 @@ public class HardwareManager {
                 status = PhotonStatus.NT_DISCONNECTED_TARGETS_MISSING;
             }
         }
-        statusLED.setStatus(status);
+        statusLED.ifPresent(statusLED -> statusLED.setStatus(status));
+    }
+
+    public boolean hasStatusLed() {
+        return statusLED.isPresent();
+    }
+
+    public void close() {
+        ledModeRequest.close();
+        ledModeState.close();
+        visionLED.ifPresent(VisionLED::close);
+        statusLED.ifPresent(StatusLED::close);
     }
 }

@@ -38,8 +38,8 @@ public class UIInboundSubscriber extends DataChangeSubscriber {
     }
 
     @Override
-    public void onDataChangeEvent(DataChangeEvent<?> event) {
-        if (event instanceof IncomingWebSocketEvent incomingWSEvent) {
+    public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
+        if (event instanceof IncomingWebSocketEvent<T> incomingWSEvent) {
             if (incomingWSEvent.propertyName.equals("userConnected")
                     || incomingWSEvent.propertyName.equals("sendFullSettings")) {
                 // Send full settings

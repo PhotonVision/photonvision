@@ -33,14 +33,21 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.ArucoPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.wpilib.util.Alert;
+import org.wpilib.util.Alert.Level;
 
-/** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
+/**
+ * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer; it must be closed
+ * prior to the frame supplier closing
+ */
 @SuppressWarnings("rawtypes")
-public class VisionRunner {
+public class VisionRunner implements AutoCloseable {
     private final Logger logger;
     private final Thread visionProcessThread;
     private final FrameProvider frameSupplier;
@@ -50,6 +57,13 @@ public class VisionRunner {
     private final List<Runnable> runnableList = new ArrayList<Runnable>();
     private final QuirkyCamera cameraQuirks;
     private final Supplier<Integer> fpsLimitSupplier;
+    private final Supplier<Boolean> enabledSupplier;
+    private final Supplier<Boolean> inputStreamConsumedSupplier;
+
+    // Warns (on the driver station, via NetworkTables) while the raw stream is being watched with
+    // static cropping enabled: composing the uncropped preview costs extra processing per frame.
+    private final Alert croppedRawStreamAlert;
+    private boolean croppedRawStreamAlertShown = false;
 
     private long loopCount;
 
@@ -57,9 +71,14 @@ public class VisionRunner {
      * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
      * the consumer.
      *
-     * @param frameSupplier The supplier of the latest frame.
-     * @param pipelineSupplier The supplier of the current pipeline.
-     * @param pipelineResultConsumer The consumer of the latest result.
+     * @param frameSupplier
+     * @param pipelineSupplier
+     * @param pipelineResultConsumer
+     * @param cameraQuirks
+     * @param changeSubscriber The subscriber to setting changes for this VisionRunner, so it can
+     *     update its settings when they change.
+     * @param fpsLimitSupplier
+     * @param enabledSupplier
      */
     public VisionRunner(
             FrameProvider frameSupplier,
@@ -67,18 +86,68 @@ public class VisionRunner {
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
             VisionModuleChangeSubscriber changeSubscriber,
-            Supplier<Integer> fpsLimitSupplier) {
+            Supplier<Integer> fpsLimitSupplier,
+            Supplier<Boolean> enabledSupplier,
+            Supplier<Boolean> inputStreamConsumedSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
+        this.enabledSupplier = enabledSupplier;
+        this.inputStreamConsumedSupplier = inputStreamConsumedSupplier;
+
+        croppedRawStreamAlert =
+                new Alert(
+                        "PhotonAlerts",
+                        frameSupplier.getName(),
+                        "Raw stream open with static cropping enabled on "
+                                + frameSupplier.getName()
+                                + " -- extra processing is used to compose the uncropped preview",
+                        Level.MEDIUM);
+        croppedRawStreamAlert.set(false);
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
         logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
         changeSubscriber.processSettingChanges();
+    }
+
+    static boolean configureFrameProviderForPipeline(
+            FrameProvider frameSupplier, CVPipeline pipeline) {
+        boolean isCroppablePipeline = false;
+        var wantedProcessType = pipeline.getThresholdType();
+
+        frameSupplier.requestFrameThresholdType(wantedProcessType);
+        var settings = pipeline.getSettings();
+        if (settings instanceof AdvancedPipelineSettings advanced) {
+            var hsvParams =
+                    new HSVPipe.HSVParams(
+                            advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
+            frameSupplier.requestHsvSettings(hsvParams);
+
+            // setParams re-derives the crop rectangle, keeping it in step with the settings, which
+            // are mutated in place as the user adjusts them.
+            frameSupplier.setCropParams(advanced);
+            isCroppablePipeline = true;
+        }
+
+        // Use the pipeline threshold type to determine whether a color image is required,
+        // so we can request the correct frame copies for CSI cameras.
+        boolean needsColor = wantedProcessType == FrameThresholdType.NONE;
+
+        if (settings instanceof ArucoPipelineSettings ar) {
+            needsColor = ar.debugThreshold;
+        }
+
+        frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
+        frameSupplier.requestFrameCopies(
+                settings.inputShouldShow || needsColor,
+                settings.outputShouldShow || wantedProcessType != FrameThresholdType.NONE);
+        frameSupplier.requestBlockForFrames(settings.blockForFrames);
+
+        return isCroppablePipeline;
     }
 
     public void startProcess() {
@@ -93,6 +162,10 @@ public class VisionRunner {
         } catch (InterruptedException e) {
             logger.error("Exception killing process thread", e);
         }
+    }
+
+    public boolean isRunning() {
+        return visionProcessThread.isAlive();
     }
 
     public Future<Void> runSynchronously(Runnable runnable) {
@@ -128,6 +201,39 @@ public class VisionRunner {
         }
 
         return future;
+    }
+
+    /**
+     * Waits until the next time this VisionRunner should run its pipeline, based on current FPS limit
+     */
+    private void waitUntilNextTick(long start) {
+        int fpsLimit = fpsLimitSupplier.get();
+
+        if (fpsLimit > 0) {
+            long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
+
+            if (sleepTime > 0) {
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                }
+            }
+            return;
+        } else {
+            // Fall through to no limit
+            return;
+        }
+    }
+
+    /**
+     * Raise or clear the alert, only touching NetworkTables when the state actually changes.
+     *
+     * @param shown Whether the alert should be active.
+     */
+    private void updateCroppedRawStreamAlert(boolean shown) {
+        if (shown == croppedRawStreamAlertShown) return;
+        croppedRawStreamAlertShown = shown;
+        croppedRawStreamAlert.set(shown);
     }
 
     private void update() {
@@ -168,23 +274,20 @@ public class VisionRunner {
             // be doing
             // (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
-            var wantedProcessType = pipeline.getThresholdType();
+            boolean isCroppablePipeline = configureFrameProviderForPipeline(frameSupplier, pipeline);
 
-            frameSupplier.requestFrameThresholdType(wantedProcessType);
-            var settings = pipeline.getSettings();
-            if (settings instanceof AdvancedPipelineSettings advanced) {
-                var hsvParams =
-                        new HSVPipe.HSVParams(
-                                advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
-                // TODO who should deal with preventing this from happening _every single loop_?
-                frameSupplier.requestHsvSettings(hsvParams);
-            }
-            frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
-            frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
-            frameSupplier.requestBlockForFrames(settings.blockForFrames);
-
-            // Grab the new camera frame
+            // Grab the new camera frame, and statically crop it (a no-op when cropping is disabled).
+            // The frame is already rotated, so the crop applies in the rotated coordinate space.
             var frame = frameSupplier.get();
+            boolean keepContext = false;
+
+            if (isCroppablePipeline) {
+                // The dimmed full-frame context image exists only for the input stream's viewers --
+                // skip composing it when nothing is actually consuming that stream.
+                keepContext = pipeline.getSettings().inputShouldShow && inputStreamConsumedSupplier.get();
+                frame = frameSupplier.cropFrame(frame, keepContext);
+            }
+            updateCroppedRawStreamAlert(keepContext);
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
@@ -194,31 +297,44 @@ public class VisionRunner {
                 frame.release();
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
             } else if (pipeline == pipelineSupplier.get()) {
+                if (!enabledSupplier.get()) {
+                    // If we are skipping processing due to the camera being disabled, we still want to send a
+                    // result with the new frame and settings, just with a null pipeline result
+                    pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+                    frame.release();
+                    continue;
+                }
+
                 // If the pipeline has changed while we are getting our frame we should scrap
                 // that frame it may result in incorrect frame settings like hsv values
 
                 // There's no guarantee the processing type change will occur this tick, so
                 // pipelines should check themselves
+
+                // If we have an FPS limit, check if it's 0, in which case we skip processing and just send
+                // a blank frame, otherwise we sleep until the next tick
+                waitUntilNextTick(start);
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
-                    pipelineResultConsumer.accept(pipelineResult);
+                    try {
+                        pipelineResultConsumer.accept(pipelineResult);
+                    } catch (Exception ex) {
+                        logger.error("Exception on loop " + loopCount, ex);
+                        pipelineResult.release();
+                    }
                 } catch (Exception ex) {
-                    logger.error("Exception on loop " + loopCount, ex);
+                    logger.error("Pipeline exception on loop " + loopCount, ex);
+                    frame.release();
                 }
                 loopCount++;
             }
-            int fpsLimit = fpsLimitSupplier.get();
-            if (fpsLimit > 0) {
-                long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
+        }
+    }
 
-                if (sleepTime > 0) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                }
-            }
+    @Override
+    public void close() {
+        if (visionProcessThread.isAlive()) {
+            stopProcess();
         }
     }
 }

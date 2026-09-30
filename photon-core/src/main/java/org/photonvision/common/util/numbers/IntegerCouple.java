@@ -17,6 +17,9 @@
 
 package org.photonvision.common.util.numbers;
 
+import io.avaje.jsonb.Json;
+
+@Json
 public class IntegerCouple extends NumberCouple<Integer> {
     public IntegerCouple() {
         super(0, 0);

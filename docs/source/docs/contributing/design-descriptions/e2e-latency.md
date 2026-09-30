@@ -79,9 +79,9 @@ public class Robot extends TimedRobot {
                 camera.getAllUnreadResults();
             }
 
-            var t1 = Timer.getFPGATimestamp();
+            var t1 = Timer.getMonotonicTimestamp();
             light.set(true);
-            var t2 = Timer.getFPGATimestamp();
+            var t2 = Timer.getMonotonicTimestamp();
 
 
             for (int i = 0; i < 100; i++) {

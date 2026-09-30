@@ -10,7 +10,7 @@ import type {
   VsmState
 } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
-import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
+import type { Field, PipelineResult } from "@/types/PhotonTrackingTypes";
 
 export interface WebsocketLogMessage {
   logMessage: {
@@ -22,7 +22,7 @@ export interface WebsocketSettingsUpdate {
   general: Required<GeneralSettings>;
   lighting: Required<LightingSettings>;
   networkSettings: NetworkSettings;
-  atfl: AprilTagFieldLayout;
+  field: Field;
 }
 
 export interface WebsocketNumberPair {
@@ -30,21 +30,18 @@ export interface WebsocketNumberPair {
   second: number;
 }
 
-export type WebsocketVideoFormat = Record<
-  number,
-  {
-    fps: number;
-    height: number;
-    width: number;
-    pixelFormat: string;
-    index?: number;
-    diagonalFOV?: number;
-    horizontalFOV?: number;
-    verticalFOV?: number;
-    standardDeviation?: number;
-    mean?: number;
-  }
->;
+export type WebsocketVideoFormat = {
+  fps: number;
+  height: number;
+  width: number;
+  pixelFormat: string;
+  index?: number;
+  diagonalFOV?: number;
+  horizontalFOV?: number;
+  verticalFOV?: number;
+  standardDeviation?: number;
+  mean?: number;
+}[];
 
 // Companion to UICameraConfiguration in Java
 export interface WebsocketCameraSettingsUpdate {
@@ -68,6 +65,7 @@ export interface WebsocketCameraSettingsUpdate {
   maxWhiteBalanceTemp: number;
   matchedCameraInfo: PVCameraInfo;
   fpsLimit: number;
+  isEnabled: boolean;
   isConnected: boolean;
   hasConnected: boolean;
   mismatch: boolean;
@@ -89,8 +87,8 @@ export interface WebsocketCalibrationData {
   minCount: number;
   videoModeIndex: number;
   patternHeight: number;
-  squareSizeIn: number;
-  markerSizeIn: number;
+  squareSizeMm: number;
+  markerSizeMm: number;
 }
 
 export interface IncomingWebsocketData {

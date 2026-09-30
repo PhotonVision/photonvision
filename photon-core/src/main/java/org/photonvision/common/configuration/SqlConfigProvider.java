@@ -17,28 +17,31 @@
 
 package org.photonvision.common.configuration;
 
+import io.avaje.json.JsonException;
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
+import io.avaje.jsonb.Types;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
 /**
@@ -56,7 +59,7 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String NETWORK_CONFIG = "networkConfig";
         static final String HARDWARE_CONFIG = "hardwareConfig";
         static final String HARDWARE_SETTINGS = "hardwareSettings";
-        static final String ATFL_CONFIG_FILE = "apriltagFieldLayout";
+        static final String FIELD_CONFIG_FILE = "fieldLayout";
         static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
 
@@ -260,16 +263,16 @@ public class SqlConfigProvider extends ConfigProvider {
         T configObj;
         if (!configString.isBlank()) {
             try {
-                configObj = JacksonUtils.deserialize(configString, ref);
+                configObj = Jsonb.instance().type(ref).fromJson(configString);
                 logger.info("Loaded " + ref.getSimpleName() + " from database");
                 return configObj;
-            } catch (IOException e) {
+            } catch (IllegalStateException | JsonException e) {
                 logger.error("Could not deserialize " + ref.getSimpleName() + " from database!", e);
             }
         } else {
             logger.debug("No " + ref.getSimpleName() + " in database");
         }
-        // either the config entry is empty or Jackson threw an exception
+        // either the config entry is empty or Jsonb threw an exception
         try {
             configObj = factory.get();
             logger.info("Loaded default " + ref.getSimpleName());
@@ -280,17 +283,52 @@ public class SqlConfigProvider extends ConfigProvider {
         return null;
     }
 
-    private AprilTagFieldLayout atflDefault() {
-        AprilTagFieldLayout atfl;
+    private Field fieldDefault() {
+        Field field;
         try {
-            atfl = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-            logger.info("Loaded " + AprilTagFields.kDefaultField.toString() + " field");
+            field = Field.loadField(Fields.DEFAULT_FIELD);
+            logger.info("Loaded " + Fields.DEFAULT_FIELD.toString() + " field");
         } catch (UncheckedIOException e) {
             logger.error("Error loading WPILib field", e);
             logger.info("Creating an empty field");
-            atfl = new AprilTagFieldLayout(List.of(), 1, 1);
+            field = new Field("", "", "", null, 0, 0, "", null);
         }
-        return atfl;
+        return field;
+    }
+
+    /**
+     * MIGRATION: 2026
+     *
+     * <p>Loads the stored AprilTag field layout, migrating any legacy {@code AprilTagFieldLayout}
+     * JSON to the newer {@link Field} format before deserializing. If a migration happened the
+     * upgraded JSON is written back to the database so the stored data self-upgrades.
+     */
+    private Field loadField(Connection conn) {
+        String configString = getOneConfigFile(conn, GlobalKeys.FIELD_CONFIG_FILE);
+        if (configString.isBlank()) {
+            // Fall back to the legacy key used by databases written before the Field migration
+            configString = getOneConfigFile(conn, "apriltagFieldLayout");
+        }
+        if (configString.isBlank()) {
+            logger.debug("No " + Field.class.getSimpleName() + " in database");
+            return fieldDefault();
+        }
+
+        try {
+            String migrated = FieldLayoutMigration.migrateFieldLayoutJson(configString);
+            if (!migrated.equals(configString)) {
+                logger.info("Migrated legacy AprilTagFieldLayout to Field format, persisting to database");
+                if (!saveOneFile(GlobalKeys.FIELD_CONFIG_FILE, migrated)) {
+                    logger.error("Could not persist migrated field layout to database!");
+                }
+            }
+            return Jsonb.instance().type(Field.class).fromJson(migrated);
+        } catch (RuntimeException e) {
+            logger.error("Could not deserialize " + Field.class.getSimpleName() + " from database!", e);
+        }
+
+        // either the config entry was corrupt or Jsonb threw an exception
+        return fieldDefault();
     }
 
     @Override
@@ -315,9 +353,7 @@ public class SqlConfigProvider extends ConfigProvider {
                             GlobalKeys.NEURAL_NETWORK_PROPERTIES,
                             NeuralNetworkModelsSettings.class,
                             NeuralNetworkModelsSettings::new);
-            var atfl =
-                    loadConfigOrDefault(
-                            conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, this::atflDefault);
+            var field = loadField(conn);
             var cams = loadCameraConfigs(conn);
 
             try {
@@ -328,7 +364,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
             this.config =
                     new PhotonConfiguration(
-                            hardwareConfig, hardwareSettings, networkConfig, atfl, nnProps, cams);
+                            hardwareConfig, hardwareSettings, networkConfig, field, nnProps, cams);
         }
     }
 
@@ -390,30 +426,16 @@ public class SqlConfigProvider extends ConfigProvider {
 
                 var config = c.getValue();
                 statement.setString(1, c.getKey());
-                statement.setString(2, JacksonUtils.serializeToString(config));
-                statement.setString(3, JacksonUtils.serializeToString(config.driveModeSettings));
+                statement.setString(2, Jsonb.instance().type(CameraConfiguration.class).toJson(config));
 
-                // Serializing a list of abstract classes sucks. Instead, make it into an array
-                // of strings, which we can later unpack back into individual settings
-                List<String> settings =
-                        config.pipelineSettings.stream()
-                                .map(
-                                        it -> {
-                                            try {
-                                                return JacksonUtils.serializeToString(it);
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                                return null;
-                                            }
-                                        })
-                                .filter(Objects::nonNull)
-                                .toList();
-                statement.setString(4, JacksonUtils.serializeToString(settings));
+                // MIGRATION: 2026
+                // We used to serialize pipelines separately, but don't anymore
+                statement.setString(3, "null");
+                statement.setString(4, "[]");
 
                 statement.executeUpdate();
             }
-
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IllegalStateException | JsonException e) {
             logger.error("Err saving cameras", e);
             try {
                 conn.rollback();
@@ -469,7 +491,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement1,
                         GlobalKeys.HARDWARE_SETTINGS,
-                        JacksonUtils.serializeToString(config.getHardwareSettings()));
+                        Jsonb.instance().type(HardwareSettings.class).toJson(config.getHardwareSettings()));
                 statement1.executeUpdate();
             }
 
@@ -478,7 +500,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement2,
                         GlobalKeys.NETWORK_CONFIG,
-                        JacksonUtils.serializeToString(config.getNetworkConfig()));
+                        Jsonb.instance().type(NetworkConfig.class).toJson(config.getNetworkConfig()));
                 statement2.executeUpdate();
                 statement2.close();
             }
@@ -488,7 +510,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement3,
                         GlobalKeys.HARDWARE_CONFIG,
-                        JacksonUtils.serializeToString(config.getHardwareConfig()));
+                        Jsonb.instance().type(HardwareConfig.class).toJson(config.getHardwareConfig()));
                 statement3.executeUpdate();
                 statement3.close();
             }
@@ -498,12 +520,14 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement3,
                         GlobalKeys.NEURAL_NETWORK_PROPERTIES,
-                        JacksonUtils.serializeToString(config.neuralNetworkPropertyManager()));
+                        Jsonb.instance()
+                                .type(NeuralNetworkModelsSettings.class)
+                                .toJson(config.getNeuralNetworkProperties()));
                 statement3.executeUpdate();
                 statement3.close();
             }
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IllegalStateException | JsonException e) {
             logger.error("Err saving global", e);
             try {
                 conn.rollback();
@@ -521,7 +545,23 @@ public class SqlConfigProvider extends ConfigProvider {
         }
     }
 
+    /**
+     * MIGRATION: 2026
+     *
+     * <p>When we migrate the field layout, we get the result as a string. Everything else has a path
+     * though, so we need this overload to maintain the prior behavior. To remove this migration,
+     * we'll want to delete this overload then make the other function accept a path again.
+     */
     private boolean saveOneFile(String fname, Path path) {
+        try {
+            return saveOneFile(fname, Files.readString(path));
+        } catch (IOException e) {
+            logger.error("Error while reading file to save to global: ", e);
+            return false;
+        }
+    }
+
+    private boolean saveOneFile(String fname, String contents) {
         Connection conn = null;
         PreparedStatement statement1 = null;
 
@@ -538,12 +578,12 @@ public class SqlConfigProvider extends ConfigProvider {
                             Tables.GLOBAL, Columns.GLB_FILENAME, Columns.GLB_CONTENTS);
 
             statement1 = conn.prepareStatement(sqlString);
-            addFile(statement1, fname, Files.readString(path));
+            addFile(statement1, fname, contents);
             statement1.executeUpdate();
 
             conn.commit();
             return true;
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             logger.error("Error while saving file to global: ", e);
             try {
                 conn.rollback();
@@ -580,9 +620,9 @@ public class SqlConfigProvider extends ConfigProvider {
     }
 
     @Override
-    public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
+    public boolean saveUploadedFieldLayout(Path uploadPath) {
         skipSavingAPRTG = true;
-        return saveOneFile(GlobalKeys.ATFL_CONFIG_FILE, uploadPath);
+        return saveOneFile(GlobalKeys.FIELD_CONFIG_FILE, uploadPath);
     }
 
     @Override
@@ -593,6 +633,12 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
+
+        // MIGRATION: 2026
+        // This is designed to always match for efficiency reasons, so that the whole camera config
+        // isn't scanned. The second capture group determines if the camera info is in the old or new
+        // format
+        final var cameraInfoPattern = Pattern.compile("\"(PV[\\w.]*CameraInfo)\"\\s*(:?)");
 
         // Query every single row of the cameras db
         PreparedStatement query = null;
@@ -614,57 +660,82 @@ public class SqlConfigProvider extends ConfigProvider {
             while (result.next()) {
                 String uniqueName = "";
                 try {
-                    List<String> dummyList = new ArrayList<>();
+                    JsonType<List<String>> strListJsonb = Jsonb.instance().type(Types.listOf(String.class));
 
                     uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
 
                     // A horrifying hack to keep backward compat with otherpaths
                     // We -really- need to delete this -stupid- otherpaths column. I hate it.
-                    var configStr = result.getString(Columns.CAM_CONFIG_JSON);
-                    CameraConfiguration config =
-                            JacksonUtils.deserialize(configStr, CameraConfiguration.class);
+                    // MIGRATION: 2024
+                    var configJson = result.getString(Columns.CAM_CONFIG_JSON);
 
+                    // MIGRATION: 2026
+                    var cameraInfoMatcher = cameraInfoPattern.matcher(configJson);
+                    if (cameraInfoMatcher.find() && cameraInfoMatcher.group(2).equals(":")) {
+                        logger.info("Legacy type-wrapper PVCameraInfo being migrated");
+                        configJson = PVCameraInfo.remapConfigJson(configJson, cameraInfoMatcher.group(1));
+                    }
+
+                    CameraConfiguration config =
+                            Jsonb.instance().type(CameraConfiguration.class).fromJson(configJson);
+
+                    // MIGRATION: 2024
                     if (config.matchedCameraInfo == null) {
                         logger.info("Legacy CameraConfiguration detected - upgrading");
 
                         // manually create the matchedCameraInfo ourselves. Need to upgrade:
                         // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
                         config.matchedCameraInfo =
-                                JacksonUtils.deserialize(configStr, LegacyCameraConfigStruct.class)
+                                Jsonb.instance()
+                                        .type(LegacyCameraConfigStruct.class)
+                                        .fromJson(configJson)
                                         .matchedCameraInfo;
 
                         // Except that otherPaths used to be its own column. so hack that in here as well
                         var otherPaths =
-                                JacksonUtils.deserialize(
-                                        result.getString(Columns.CAM_OTHERPATHS_JSON), String[].class);
+                                Jsonb.instance()
+                                        .type(String[].class)
+                                        .fromJson(result.getString(Columns.CAM_OTHERPATHS_JSON));
                         if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
                             usbInfo.otherPaths = otherPaths;
                         }
                     }
 
-                    var driverMode =
-                            JacksonUtils.deserialize(
-                                    result.getString(Columns.CAM_DRIVERMODE_JSON), DriverModePipelineSettings.class);
-                    List<?> pipelineSettings =
-                            JacksonUtils.deserialize(
-                                    result.getString(Columns.CAM_PIPELINE_JSONS), dummyList.getClass());
+                    // MIGRATION: 2026
+                    List<String> legacyPipelineSettings =
+                            strListJsonb.fromJson(result.getString(Columns.CAM_PIPELINE_JSONS));
 
-                    List<CVPipelineSettings> loadedSettings = new ArrayList<>();
-                    for (var setting : pipelineSettings) {
-                        if (setting instanceof String str) {
-                            try {
-                                loadedSettings.add(JacksonUtils.deserialize(str, CVPipelineSettings.class));
-                            } catch (IOException e) {
-                                logger.error(
-                                        "Could not deserialize pipeline setting for camera " + config.nickname, e);
-                            }
+                    for (var pipelineJson : legacyPipelineSettings) {
+                        logger.info("Importing pipeline JSON into camera settings");
+                        if (pipelineJson.startsWith("[")) {
+                            logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
+                            pipelineJson = CVPipelineSettings.remapSettingsJson(pipelineJson);
+                        }
+
+                        try {
+                            config.pipelineSettings.add(
+                                    Jsonb.instance().type(CVPipelineSettings.class).fromJson(pipelineJson));
+                        } catch (IllegalStateException | JsonException e) {
+                            logger.error(
+                                    "Could not deserialize pipeline setting for camera " + config.nickname, e);
                         }
                     }
 
-                    config.pipelineSettings = loadedSettings;
-                    config.driveModeSettings = driverMode;
+                    // MIGRATION: 2026
+                    if (config.driveModeSettings == null) {
+                        logger.info("Importing driver mode JSON into camera settings");
+                        var driverModeJson = result.getString(Columns.CAM_DRIVERMODE_JSON);
+                        if (driverModeJson.startsWith("[")) {
+                            logger.info("Legacy type-wrapper CVPipelineSettings being migrated");
+                            driverModeJson = CVPipelineSettings.remapSettingsJson(driverModeJson);
+                        }
+
+                        config.driveModeSettings =
+                                Jsonb.instance().type(DriverModePipelineSettings.class).fromJson(driverModeJson);
+                    }
+
                     loadedConfigurations.put(uniqueName, config);
-                } catch (IOException e) {
+                } catch (IllegalStateException | JsonException e) {
                     logger.error(
                             "Could not deserialize camera configuration " + uniqueName + " from database!", e);
                 }

@@ -57,6 +57,9 @@ public class NTTopicSet {
     public IntegerPublisher fpsLimitPublisher;
     public IntegerSubscriber fpsLimitSubscriber;
 
+    public BooleanPublisher enabledPublisher;
+    public BooleanSubscriber enabledSubscriber;
+
     public DoublePublisher latencyMillisEntry;
     public DoublePublisher fpsEntry;
     public BooleanPublisher hasTargetEntry;
@@ -109,6 +112,11 @@ public class NTTopicSet {
 
         fpsLimitSubscriber.getTopic().publish().setDefault(-1);
 
+        enabledPublisher = subTable.getBooleanTopic("enabled").publish();
+        enabledSubscriber = subTable.getBooleanTopic("enabledRequest").subscribe(true);
+
+        enabledSubscriber.getTopic().publish().setDefault(true);
+
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
         fpsEntry = subTable.getDoubleTopic("fps").publish();
         hasTargetEntry = subTable.getBooleanTopic("hasTarget").publish();
@@ -140,6 +148,9 @@ public class NTTopicSet {
 
         if (fpsLimitPublisher != null) fpsLimitPublisher.close();
         if (fpsLimitSubscriber != null) fpsLimitSubscriber.close();
+
+        if (enabledPublisher != null) enabledPublisher.close();
+        if (enabledSubscriber != null) enabledSubscriber.close();
 
         if (latencyMillisEntry != null) latencyMillisEntry.close();
         if (fpsEntry != null) fpsEntry.close();

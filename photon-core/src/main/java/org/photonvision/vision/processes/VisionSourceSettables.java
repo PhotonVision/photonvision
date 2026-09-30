@@ -17,7 +17,8 @@
 
 package org.photonvision.vision.processes;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
@@ -38,7 +39,7 @@ public abstract class VisionSourceSettables {
     }
 
     protected FrameStaticProperties frameStaticProperties = null;
-    protected HashMap<Integer, VideoMode> videoModes = new HashMap<>();
+    protected List<VideoMode> videoModes = new ArrayList<>();
 
     public CameraConfiguration getConfiguration() {
         return configuration;
@@ -99,12 +100,11 @@ public abstract class VisionSourceSettables {
 
     protected abstract void setVideoModeInternal(VideoMode videoMode);
 
-    @SuppressWarnings("unused")
     public void setVideoModeIndex(int index) {
         setVideoMode(videoModes.get(index));
     }
 
-    public abstract HashMap<Integer, VideoMode> getAllVideoModes();
+    public abstract List<VideoMode> getAllVideoModes();
 
     public double getFOV() {
         return configuration.FOV;
@@ -121,8 +121,8 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
-    public void removeCalibration(Size unrotatedImageSize) {
-        configuration.removeCalibration(unrotatedImageSize);
+    public void removeCalibration(Size resolution) {
+        configuration.removeCalibration(resolution);
         calculateFrameStaticProps();
     }
 
@@ -135,8 +135,8 @@ public abstract class VisionSourceSettables {
                         configuration.calibrations.stream()
                                 .filter(
                                         it ->
-                                                it.unrotatedImageSize.width == videoMode.width
-                                                        && it.unrotatedImageSize.height == videoMode.height)
+                                                it.resolution.width == videoMode.width
+                                                        && it.resolution.height == videoMode.height)
                                 .findFirst()
                                 .orElse(null));
     }

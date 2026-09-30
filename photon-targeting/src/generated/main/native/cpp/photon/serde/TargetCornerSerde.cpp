@@ -26,6 +26,7 @@
 
 #include "photon/serde/TargetCornerSerde.h"
 
+
 namespace photon {
 
 using StructType = SerdeType<TargetCorner>;

@@ -17,8 +17,6 @@
 
 package org.photonvision.common.util.numbers;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public abstract class NumberCouple<T extends Number> {
     protected T first;
     protected T second;
@@ -56,7 +54,6 @@ public abstract class NumberCouple<T extends Number> {
                 && couple.second.equals(second);
     }
 
-    @JsonIgnore
     public boolean isEmpty() {
         return first.intValue() == 0 && second.intValue() == 0;
     }

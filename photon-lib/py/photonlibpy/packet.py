@@ -16,15 +16,16 @@
 ###############################################################################
 
 import struct
-from typing import Generic, Optional, Protocol, TypeVar
+from collections.abc import Callable
+from typing import Generic, Protocol, TypeVar
 
 import wpilib
-from wpimath.geometry import Quaternion, Rotation3d, Transform3d, Translation3d
+from wpimath import Quaternion, Rotation3d, Transform3d, Translation3d
 
 T = TypeVar("T")
 
 
-class Serde(Generic[T], Protocol):
+class Serde(Protocol, Generic[T]):
     def pack(self, value: T) -> "Packet": ...
     def unpack(self, packet: "Packet") -> T: ...
 
@@ -57,17 +58,16 @@ class Packet:
     """
 
     def _getNextByteAsInt(self) -> int:
-        retVal = 0x00
-
         if not self.outOfBytes:
             try:
                 retVal = 0x00FF & self.packetData[self.readPos]
                 self.readPos += 1
+                return retVal
             except IndexError:
-                wpilib.reportError(Packet._NO_MORE_BYTES_MESSAGE, True)
+                wpilib.report_error(Packet._NO_MORE_BYTES_MESSAGE, True)
                 self.outOfBytes = True
 
-        return retVal
+        return 0x00
 
     def getData(self) -> bytes:
         """
@@ -201,9 +201,22 @@ class Packet:
             retList.append(serde.unpack(self))
         return retList
 
-    def decodeOptional(self, serde: Serde[T]) -> Optional[T]:
+    def decodeListShimmed(self, shim: Callable[[], T]) -> list[T]:
+        retList = []
+        arr_len = self.decode8()
+        for _ in range(arr_len):
+            retList.append(shim())
+        return retList
+
+    def decodeOptional(self, serde: Serde[T]) -> T | None:
         if self.decodeBoolean():
             return serde.unpack(self)
+        else:
+            return None
+
+    def decodeOptionalShimmed(self, shim: Callable[[], T]) -> T | None:
+        if self.decodeBoolean():
+            return shim()
         else:
             return None
 
@@ -256,22 +269,6 @@ class Packet:
         """
         self.encode8(1 if value else 0)
 
-    def encodeDoubleArray(self, values: list[float]):
-        """
-        Encodes an array of doubles and appends it to the packet.
-        """
-        self.encode8(len(values))
-        for value in values:
-            self.encodeDouble(value)
-
-    def encodeShortList(self, values: list[int]):
-        """
-        Encodes a list of shorts, with length prefixed as a single byte.
-        """
-        self.encode8(len(values))
-        for value in values:
-            self.encode16(value)
-
     def encodeTransform(self, transform: Transform3d):
         """
         Encodes a Transform3d (translation and rotation) and appends it to the packet.
@@ -282,11 +279,11 @@ class Packet:
         self.encodeDouble(transform.translation().z)
 
         # Encode Rotation3d as Quaternion (w, x, y, z)
-        quaternion = transform.rotation().getQuaternion()
-        self.encodeDouble(quaternion.W())
-        self.encodeDouble(quaternion.X())
-        self.encodeDouble(quaternion.Y())
-        self.encodeDouble(quaternion.Z())
+        quaternion = transform.rotation().get_quaternion()
+        self.encodeDouble(quaternion.w)
+        self.encodeDouble(quaternion.x)
+        self.encodeDouble(quaternion.y)
+        self.encodeDouble(quaternion.z)
 
     def encodeList(self, values: list[T], serde: Serde[T]):
         """
@@ -298,7 +295,15 @@ class Packet:
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
 
-    def encodeOptional(self, value: Optional[T], serde: Serde[T]):
+    def encodeListShimmed(self, values: list[T], shim: Callable[[T], None]):
+        """
+        Encodes a list of items using a specific serializer and appends it to the packet.
+        """
+        self.encode8(len(values))
+        for item in values:
+            shim(item)
+
+    def encodeOptional(self, value: T | None, serde: Serde[T]):
         """
         Encodes an optional value using a specific serializer.
         """
@@ -309,6 +314,16 @@ class Packet:
             packed = serde.pack(value)
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
+
+    def encodeOptionalShimmed(self, value: T | None, shim: Callable[[T], None]):
+        """
+        Encodes an optional value using a specific shimmed serializer.
+        """
+        if value is None:
+            self.encodeBoolean(False)
+        else:
+            self.encodeBoolean(True)
+            shim(value)
 
     def encodeBytes(self, value: bytes):
         self.packetData = self.packetData + value

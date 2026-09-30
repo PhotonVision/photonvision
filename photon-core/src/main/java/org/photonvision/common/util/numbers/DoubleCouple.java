@@ -17,8 +17,10 @@
 
 package org.photonvision.common.util.numbers;
 
+import io.avaje.jsonb.Json;
 import org.opencv.core.Point;
 
+@Json
 public class DoubleCouple extends NumberCouple<Double> {
     public DoubleCouple() {
         super(0.0, 0.0);

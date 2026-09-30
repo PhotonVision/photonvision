@@ -29,8 +29,8 @@ import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import org.wpilib.driverstation.DriverStation;
-import org.wpilib.hardware.hal.HAL;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.fields.Field;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation2d;
@@ -43,8 +43,8 @@ import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.math.numbers.N8;
-import org.wpilib.math.util.Pair;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.util.Pair;
+import org.wpilib.util.UsageReporting;
 
 /**
  * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
@@ -120,7 +120,7 @@ public class PhotonPoseEstimator {
     public static final record ConstrainedSolvepnpParams(
             boolean headingFree, double headingScaleFactor) {}
 
-    private AprilTagFieldLayout fieldTags;
+    private Field fieldTags;
     private TargetModel tagModel = TargetModel.kAprilTag36h11;
     private Transform3d robotToCamera;
     private final Set<Integer> reportedErrors = new HashSet<>();
@@ -131,8 +131,8 @@ public class PhotonPoseEstimator {
     /**
      * Create a new PhotonPoseEstimator.
      *
-     * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
-     *     with respect to the FIRST field using the <a href=
+     * @param fieldTags A WPILib {@link Field} linking AprilTag IDs to Pose3d objects with respect to
+     *     the FIRST field using the <a href=
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
      *     Coordinate System</a>. Note that setting the origin of this layout object will affect the
      *     results from this class.
@@ -141,33 +141,33 @@ public class PhotonPoseEstimator {
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
      *     Coordinate System</a>.
      */
-    public PhotonPoseEstimator(AprilTagFieldLayout fieldTags, Transform3d robotToCamera) {
+    public PhotonPoseEstimator(Field fieldTags, Transform3d robotToCamera) {
         this.fieldTags = fieldTags;
         this.robotToCamera = robotToCamera;
 
-        HAL.reportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
+        UsageReporting.reportUsage("PhotonVision/PhotonPoseEstimator", Integer.toString(InstanceCount));
         InstanceCount++;
     }
 
     /**
-     * Get the AprilTagFieldLayout being used by the PositionEstimator.
+     * Get the Field being used by the PositionEstimator.
      *
      * <p>Note: Setting the origin of this layout will affect the results from this class.
      *
-     * @return the AprilTagFieldLayout
+     * @return the Field
      */
-    public AprilTagFieldLayout getFieldTags() {
+    public Field getFieldTags() {
         return fieldTags;
     }
 
     /**
-     * Set the AprilTagFieldLayout being used by the PositionEstimator.
+     * Set the Field being used by the PositionEstimator.
      *
      * <p>Note: Setting the origin of this layout will affect the results from this class.
      *
-     * @param fieldTags the AprilTagFieldLayout
+     * @param fieldTags the Field
      */
-    public void setFieldTags(AprilTagFieldLayout fieldTags) {
+    public void setFieldTags(Field fieldTags) {
         this.fieldTags = fieldTags;
     }
 
@@ -328,7 +328,7 @@ public class PhotonPoseEstimator {
                 new EstimatedRobotPose(
                         new Pose3d(robotPose),
                         cameraResult.getTimestampSeconds(),
-                        cameraResult.getTargets(),
+                        List.of(bestTarget),
                         PoseStrategy.PNP_DISTANCE_TRIG_SOLVE));
     }
 
@@ -391,7 +391,7 @@ public class PhotonPoseEstimator {
                         headingBuffer.getSample(cameraResult.getTimestampSeconds()).get(),
                         headingScaleFactor);
         if (!pnpResult.isPresent()) return Optional.empty();
-        var best = Pose3d.kZero.plus(pnpResult.get().best); // field-to-robot
+        var best = Pose3d.ZERO.plus(pnpResult.get().best); // field-to-robot
 
         return Optional.of(
                 new EstimatedRobotPose(
@@ -418,7 +418,7 @@ public class PhotonPoseEstimator {
 
         var best_tf = cameraResult.getMultiTagResult().get().estimatedPose.best;
         var best =
-                Pose3d.kZero
+                Pose3d.ZERO
                         .plus(best_tf) // field-to-camera
                         .relativeTo(fieldTags.getOrigin())
                         .plus(robotToCamera.inverse()); // field-to-robot
@@ -453,7 +453,7 @@ public class PhotonPoseEstimator {
         if (!pnpResult.isPresent()) return Optional.empty();
 
         var best =
-                Pose3d.kZero
+                Pose3d.ZERO
                         .plus(pnpResult.get().best) // field-to-camera
                         .plus(robotToCamera.inverse()); // field-to-robot
 
@@ -511,7 +511,7 @@ public class PhotonPoseEstimator {
                                 .transformBy(lowestAmbiguityTarget.getBestCameraToTarget().inverse())
                                 .transformBy(robotToCamera.inverse()),
                         cameraResult.getTimestampSeconds(),
-                        cameraResult.getTargets(),
+                        List.of(lowestAmbiguityTarget),
                         PoseStrategy.LOWEST_AMBIGUITY));
     }
 
@@ -529,7 +529,8 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
         double smallestHeightDifference = 10e9;
-        EstimatedRobotPose closestHeightTarget = null;
+        Pose3d bestPose = null;
+        PhotonTrackedTarget bestTarget = null;
 
         for (PhotonTrackedTarget target : cameraResult.targets) {
             int targetFiducialId = target.getFiducialId();
@@ -563,33 +564,33 @@ public class PhotonPoseEstimator {
 
             if (alternateTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = alternateTransformDelta;
-                closestHeightTarget =
-                        new EstimatedRobotPose(
-                                targetPosition
-                                        .get()
-                                        .transformBy(target.getAlternateCameraToTarget().inverse())
-                                        .transformBy(robotToCamera.inverse()),
-                                cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
-                                PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+                bestPose =
+                        targetPosition
+                                .get()
+                                .transformBy(target.getAlternateCameraToTarget().inverse())
+                                .transformBy(robotToCamera.inverse());
+                bestTarget = target;
             }
 
             if (bestTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = bestTransformDelta;
-                closestHeightTarget =
-                        new EstimatedRobotPose(
-                                targetPosition
-                                        .get()
-                                        .transformBy(target.getBestCameraToTarget().inverse())
-                                        .transformBy(robotToCamera.inverse()),
-                                cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
-                                PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+                bestPose =
+                        targetPosition
+                                .get()
+                                .transformBy(target.getBestCameraToTarget().inverse())
+                                .transformBy(robotToCamera.inverse());
+                bestTarget = target;
             }
         }
 
         // Need to null check here in case none of the provided targets are fiducial.
-        return Optional.ofNullable(closestHeightTarget);
+        if (bestTarget == null) return Optional.empty();
+        return Optional.of(
+                new EstimatedRobotPose(
+                        bestPose,
+                        cameraResult.getTimestampSeconds(),
+                        List.of(bestTarget),
+                        PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT));
     }
 
     /**
@@ -607,14 +608,15 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
         if (referencePose == null) {
-            DriverStation.reportError(
+            DriverStationErrors.reportError(
                     "[PhotonPoseEstimator] Tried to use reference pose strategy without setting the reference!",
                     false);
             return Optional.empty();
         }
 
         double smallestPoseDelta = 10e9;
-        EstimatedRobotPose lowestDeltaPose = null;
+        Pose3d lowestDeltaPose = null;
+        PhotonTrackedTarget lowestDeltaTarget = null;
 
         for (PhotonTrackedTarget target : cameraResult.targets) {
             int targetFiducialId = target.getFiducialId();
@@ -647,24 +649,22 @@ public class PhotonPoseEstimator {
 
             if (altDifference < smallestPoseDelta) {
                 smallestPoseDelta = altDifference;
-                lowestDeltaPose =
-                        new EstimatedRobotPose(
-                                altTransformPosition,
-                                cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
-                                PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+                lowestDeltaPose = altTransformPosition;
+                lowestDeltaTarget = target;
             }
             if (bestDifference < smallestPoseDelta) {
                 smallestPoseDelta = bestDifference;
-                lowestDeltaPose =
-                        new EstimatedRobotPose(
-                                bestTransformPosition,
-                                cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
-                                PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+                lowestDeltaPose = bestTransformPosition;
+                lowestDeltaTarget = target;
             }
         }
-        return Optional.ofNullable(lowestDeltaPose);
+        if (lowestDeltaTarget == null) return Optional.empty();
+        return Optional.of(
+                new EstimatedRobotPose(
+                        lowestDeltaPose,
+                        cameraResult.getTimestampSeconds(),
+                        List.of(lowestDeltaTarget),
+                        PoseStrategy.CLOSEST_TO_REFERENCE_POSE));
     }
 
     /**
@@ -708,7 +708,7 @@ public class PhotonPoseEstimator {
                                         .transformBy(target.getBestCameraToTarget().inverse())
                                         .transformBy(robotToCamera.inverse()),
                                 cameraResult.getTimestampSeconds(),
-                                cameraResult.getTargets(),
+                                List.of(target),
                                 PoseStrategy.AVERAGE_BEST_TARGETS));
             }
 
@@ -730,6 +730,7 @@ public class PhotonPoseEstimator {
 
         if (estimatedRobotPoses.isEmpty()) return Optional.empty();
 
+        List<PhotonTrackedTarget> usedTargets = new ArrayList<>(estimatedRobotPoses.size());
         for (Pair<PhotonTrackedTarget, Pose3d> pair : estimatedRobotPoses) {
             // Total ambiguity is non-zero confirmed because if it was zero, that pose was
             // returned.
@@ -737,13 +738,14 @@ public class PhotonPoseEstimator {
             Pose3d estimatedPose = pair.getSecond();
             transform = transform.plus(estimatedPose.getTranslation().times(weight));
             rotation = rotation.rotateBy(estimatedPose.getRotation().times(weight));
+            usedTargets.add(pair.getFirst());
         }
 
         return Optional.of(
                 new EstimatedRobotPose(
                         new Pose3d(transform, rotation),
                         cameraResult.getTimestampSeconds(),
-                        cameraResult.getTargets(),
+                        usedTargets,
                         PoseStrategy.AVERAGE_BEST_TARGETS));
     }
 
@@ -758,7 +760,7 @@ public class PhotonPoseEstimator {
 
     private void reportFiducialPoseError(int fiducialId) {
         if (!reportedErrors.contains(fiducialId)) {
-            DriverStation.reportError(
+            DriverStationErrors.reportError(
                     "[PhotonPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId, false);
             reportedErrors.add(fiducialId);
         }

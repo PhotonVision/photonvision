@@ -32,9 +32,11 @@ VISION_TURN_kP = 0.01
 
 
 class MyRobot(wpilib.TimedRobot):
-    def robotInit(self) -> None:
+    def __init__(self) -> None:
         """Robot initialization function"""
-        self.controller = wpilib.XboxController(0)
+        super().__init__()
+
+        self.controller = wpilib.NiDsXboxController(0)
         self.swerve = drivetrain.Drivetrain()
         self.cam = PhotonCamera("YOUR CAMERA NAME")
 
@@ -67,6 +69,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.swerve.drive(xSpeed, ySpeed, rot, True, self.getPeriod())
 
-    def _simulationPeriodic(self) -> None:
+    def simulationPeriodic(self) -> None:
         self.swerve.simulationPeriodic()
-        return super()._simulationPeriodic()
+        return super().simulationPeriodic()

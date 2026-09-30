@@ -20,13 +20,14 @@ package org.photonvision.common.configuration;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.avaje.jsonb.JsonType;
+import io.avaje.jsonb.Jsonb;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
-import org.photonvision.common.util.file.JacksonUtils;
 
 public class NeuralNetworkPropertyManagerTest {
     @Test
@@ -42,10 +43,12 @@ public class NeuralNetworkPropertyManagerTest {
                         640,
                         Family.RKNN,
                         Version.YOLOV8));
-        String result = assertDoesNotThrow(() -> JacksonUtils.serializeToString(nnpm));
-        var deserializedNnpm =
-                assertDoesNotThrow(
-                        () -> JacksonUtils.deserialize(result, NeuralNetworkModelsSettings.class));
+        JsonType<NeuralNetworkModelsSettings> jsonb =
+                Jsonb.instance().type(NeuralNetworkModelsSettings.class);
+        String result = assertDoesNotThrow(() -> jsonb.toJson(nnpm));
+        System.out.println(result);
+        var deserializedNnpm = assertDoesNotThrow(() -> jsonb.fromJson(result));
+        assertEquals(nnpm.getModels().length, deserializedNnpm.getModels().length);
         assertEquals(nnpm.getModels()[0], deserializedNnpm.getModels()[0]);
     }
 }

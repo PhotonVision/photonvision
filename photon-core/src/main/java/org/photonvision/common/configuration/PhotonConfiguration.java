@@ -19,29 +19,31 @@ package org.photonvision.common.configuration;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 import org.photonvision.vision.processes.VisionSource;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.fields.Field;
 
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
-    private AprilTagFieldLayout atfl;
+
+    private Field fieldLayout;
+
     private NeuralNetworkModelsSettings neuralNetworkProperties;
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
+    private Map<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
-            AprilTagFieldLayout atfl,
+            Field field,
             NeuralNetworkModelsSettings neuralNetworkProperties) {
         this(
                 hardwareConfig,
                 hardwareSettings,
                 networkConfig,
-                atfl,
+                field,
                 neuralNetworkProperties,
                 new HashMap<>());
     }
@@ -50,15 +52,15 @@ public class PhotonConfiguration {
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
-            AprilTagFieldLayout atfl,
+            Field field,
             NeuralNetworkModelsSettings neuralNetworkProperties,
-            HashMap<String, CameraConfiguration> cameraConfigurations) {
+            Map<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
         this.neuralNetworkProperties = neuralNetworkProperties;
         this.cameraConfigurations = cameraConfigurations;
-        this.atfl = atfl;
+        this.fieldLayout = field;
     }
 
     public PhotonConfiguration() {
@@ -66,7 +68,7 @@ public class PhotonConfiguration {
                 new HardwareConfig(),
                 new HardwareSettings(),
                 new NetworkConfig(),
-                new AprilTagFieldLayout(List.of(), 0, 0),
+                new Field("", "", "", null, 0, 0, "", null),
                 new NeuralNetworkModelsSettings());
     }
 
@@ -82,16 +84,16 @@ public class PhotonConfiguration {
         return hardwareSettings;
     }
 
-    public AprilTagFieldLayout getApriltagFieldLayout() {
-        return atfl;
+    public Field getFieldLayout() {
+        return fieldLayout;
     }
 
-    public NeuralNetworkModelsSettings neuralNetworkPropertyManager() {
+    public NeuralNetworkModelsSettings getNeuralNetworkProperties() {
         return neuralNetworkProperties;
     }
 
-    public void setApriltagFieldLayout(AprilTagFieldLayout atfl) {
-        this.atfl = atfl;
+    public void setFieldLayout(Field field) {
+        this.fieldLayout = field;
     }
 
     public void setNetworkConfig(NetworkConfig networkConfig) {
@@ -102,7 +104,7 @@ public class PhotonConfiguration {
         this.neuralNetworkProperties = neuralNetworkProperties;
     }
 
-    public HashMap<String, CameraConfiguration> getCameraConfigurations() {
+    public Map<String, CameraConfiguration> getCameraConfigurations() {
         return cameraConfigurations;
     }
 
@@ -148,8 +150,8 @@ public class PhotonConfiguration {
                 + hardwareSettings
                 + "\n  networkConfig="
                 + networkConfig
-                + "\n  atfl="
-                + atfl
+                + "\n  fieldLayout="
+                + fieldLayout
                 + "\n  neuralNetworkProperties="
                 + neuralNetworkProperties
                 + "\n  cameraConfigurations={"

@@ -41,6 +41,7 @@ import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.*;
 import org.wpilib.math.system.plant.DCMotor;
+import org.wpilib.simulation.OnboardIMUSim;
 import org.wpilib.smartdashboard.SmartDashboard;
 
 public class SwerveDrive {
@@ -69,8 +70,7 @@ public class SwerveDrive {
     private ChassisSpeeds targetChassisSpeeds = new ChassisSpeeds();
 
     // ----- Simulation
-    // TODO(Jade) WPILib doesn't have onboard IMU sim yet
-    // private final ADXRS450_GyroSim gyroSim;
+    private final OnboardIMUSim gyroSim;
     private final SwerveDriveSim swerveDriveSim;
     private double totalCurrentDraw = 0;
 
@@ -91,7 +91,7 @@ public class SwerveDrive {
                         visionStdDevs);
 
         // ----- Simulation
-        // gyroSim = new ADXRS450_GyroSim(gyro);
+        gyroSim = new OnboardIMUSim(gyro);
         swerveDriveSim =
                 new SwerveDriveSim(
                         kDriveFF,
@@ -188,8 +188,8 @@ public class SwerveDrive {
             for (int i = 0; i < swerveMods.length; i++) {
                 swerveMods[i].simulationUpdate(0, 0, 0, 0, 0, 0);
             }
-            // gyroSim.setAngle(-pose.getRotation().getDegrees());
-            // gyroSim.setRate(0);
+            gyroSim.setYaw(-pose.getRotation().getDegrees());
+            gyroSim.setRate(0);
         }
 
         poseEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose);
@@ -312,8 +312,8 @@ public class SwerveDrive {
                     drivePos, driveRate, driveCurrents[i], steerPos, steerRate, steerCurrents[i]);
         }
 
-        // gyroSim.setRate(-swerveDriveSim.getOmegaRadsPerSec());
-        // gyroSim.setAngle(-swerveDriveSim.getPose().getRotation().getDegrees());
+        gyroSim.setRate(-swerveDriveSim.getOmegaRadsPerSec());
+        gyroSim.setYaw(-swerveDriveSim.getPose().getRotation().getDegrees());
     }
 
     /**

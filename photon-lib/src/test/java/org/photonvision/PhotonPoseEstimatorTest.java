@@ -25,6 +25,7 @@
 package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -48,6 +49,9 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
+import org.wpilib.fields.Fields;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Quaternion;
@@ -60,12 +64,9 @@ import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.util.Nat;
 import org.wpilib.math.util.Units;
 import org.wpilib.util.runtime.RuntimeLoader;
-import org.wpilib.vision.apriltag.AprilTag;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
 
 class PhotonPoseEstimatorTest {
-    static AprilTagFieldLayout aprilTags;
+    static Field aprilTags;
     @AutoClose final PhotonCameraInjector cameraOne = new PhotonCameraInjector();
 
     @BeforeAll
@@ -75,14 +76,14 @@ class PhotonPoseEstimatorTest {
         }
         RuntimeLoader.loadLibrary("photontargetingJNI");
 
-        HAL.initialize(1000, 0);
+        HAL.initialize();
 
-        List<AprilTag> tagList = new ArrayList<>(2);
-        tagList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
-        tagList.add(new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
+        List<FieldTag> tagList = new ArrayList<>(2);
+        tagList.add(new FieldTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
+        tagList.add(new FieldTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
         double fieldLength = Units.feetToMeters(54.0);
         double fieldWidth = Units.feetToMeters(27.0);
-        aprilTags = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
+        aprilTags = new Field("test", "test", "test", null, fieldLength, fieldWidth, "frc", tagList);
     }
 
     @AfterAll
@@ -95,8 +96,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        11 * 1000000,
-                        1100000,
+                        11_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -173,6 +174,9 @@ class PhotonPoseEstimatorTest {
         assertEquals(1, pose.getX(), .01);
         assertEquals(3, pose.getY(), .01);
         assertEquals(2, pose.getZ(), .01);
+        // Only the chosen (lowest-ambiguity) target should be reported as used.
+        assertEquals(1, estimatedPose.get().targetsUsed.size());
+        assertEquals(1, estimatedPose.get().targetsUsed.get(0).getFiducialId());
     }
 
     @Test
@@ -180,8 +184,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        4000000,
-                        1100000,
+                        4_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -260,6 +264,9 @@ class PhotonPoseEstimatorTest {
         assertEquals(4, pose.getX(), .01);
         assertEquals(4, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
+        // Only the chosen target should be reported as used.
+        assertEquals(1, estimatedPose.get().targetsUsed.size());
+        assertEquals(1, estimatedPose.get().targetsUsed.get(0).getFiducialId());
     }
 
     @Test
@@ -267,8 +274,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        17000000,
-                        1100000,
+                        17_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -348,6 +355,9 @@ class PhotonPoseEstimatorTest {
         assertEquals(1, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(.9, pose.getZ(), .01);
+        // Only the chosen target should be reported as used.
+        assertEquals(1, estimatedPose.get().targetsUsed.size());
+        assertEquals(0, estimatedPose.get().targetsUsed.get(0).getFiducialId());
     }
 
     @Test
@@ -355,8 +365,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        1000000,
-                        1100000,
+                        1_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -435,8 +445,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        7000000,
-                        1100000,
+                        7_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -510,13 +520,18 @@ class PhotonPoseEstimatorTest {
         assertEquals(.9, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(1, pose.getZ(), .01);
+        // Only the chosen target should be reported as used.
+        assertEquals(1, estimatedPose.get().targetsUsed.size());
+        assertEquals(0, estimatedPose.get().targetsUsed.get(0).getFiducialId());
     }
 
     @Test
     void pnpDistanceTrigSolve() {
         List<VisionTargetSim> simTargets =
                 aprilTags.getTags().stream()
-                        .map((AprilTag x) -> new VisionTargetSim(x.pose, TargetModel.kAprilTag36h11, x.ID))
+                        .map(
+                                (FieldTag x) ->
+                                        new VisionTargetSim(x.getPose(), TargetModel.kAprilTag36h11, x.getID()))
                         .toList();
         try (PhotonCameraSim cameraOneSim =
                 new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG())) {
@@ -549,9 +564,13 @@ class PhotonPoseEstimatorTest {
             assertEquals(realPose.getX(), pose.getX(), .01);
             assertEquals(realPose.getY(), pose.getY(), .01);
             assertEquals(0.0, pose.getZ(), .01);
+            // PNP_DISTANCE_TRIG_SOLVE uses only the best target.
+            assertEquals(1, estimatedPose.get().targetsUsed.size());
+            assertEquals(
+                    bestTarget.getFiducialId(), estimatedPose.get().targetsUsed.get(0).getFiducialId());
 
             /* Straight on */
-            Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, Rotation3d.kZero);
+            Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, Rotation3d.ZERO);
 
             estimator.setRobotToCameraTransform(straightOnTestTransform);
 
@@ -576,8 +595,8 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
-                        20 * 1000000,
-                        1100000,
+                        20_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -642,7 +661,30 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))))); // 3 3 3 ambig .4
+                                                new TargetCorner(7, 8))), // 3 3 3 ambig .4
+                                // Non-fiducial target: must be skipped by the contributor loop and
+                                // therefore must not appear in targetsUsed.
+                                new PhotonTrackedTarget(
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        -1,
+                                        -1,
+                                        -1,
+                                        new Transform3d(),
+                                        new Transform3d(),
+                                        0.5,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))));
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
@@ -656,6 +698,91 @@ class PhotonPoseEstimatorTest {
         assertEquals(2.15, pose.getX(), .01);
         assertEquals(2.15, pose.getY(), .01);
         assertEquals(2.15, pose.getZ(), .01);
+        // Only the three fiducial targets contributed; the non-fiducial fourth target is excluded.
+        assertEquals(3, estimatedPose.get().targetsUsed.size());
+        for (PhotonTrackedTarget t : estimatedPose.get().targetsUsed) {
+            assertTrue(t.getFiducialId() != -1);
+        }
+    }
+
+    @Test
+    void closestToCameraHeightReturnsEmptyForNoFiducialTargets() {
+        // A single non-fiducial target (fid = -1) should yield no estimate.
+        cameraOne.result =
+                new PhotonPipelineResult(
+                        0,
+                        4_000_000_000L,
+                        1_100_000_000,
+                        1024,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        -1,
+                                        -1,
+                                        -1,
+                                        new Transform3d(),
+                                        new Transform3d(),
+                                        0.5,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))));
+
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
+                        aprilTags, new Transform3d(new Translation3d(0, 0, 4), new Rotation3d()));
+
+        assertFalse(estimator.estimateClosestToCameraHeightPose(cameraOne.result).isPresent());
+    }
+
+    @Test
+    void closestToReferencePoseReturnsEmptyForNoFiducialTargets() {
+        cameraOne.result =
+                new PhotonPipelineResult(
+                        0,
+                        17_000_000_000L,
+                        1_100_000_000,
+                        1024,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        -1,
+                                        -1,
+                                        -1,
+                                        new Transform3d(),
+                                        new Transform3d(),
+                                        0.5,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))));
+
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
+                        aprilTags, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+
+        assertFalse(
+                estimator
+                        .estimateClosestToReferencePose(cameraOne.result, new Pose3d(1, 1, 1, new Rotation3d()))
+                        .isPresent());
     }
 
     @Test
@@ -664,8 +791,8 @@ class PhotonPoseEstimatorTest {
         camera.result =
                 new PhotonPipelineResult(
                         0,
-                        11 * 1_000_000,
-                        1_100_000,
+                        11_000_000_000L,
+                        1_100_000_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -710,7 +837,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        PhotonPoseEstimator estimator = new PhotonPoseEstimator(aprilTags, Transform3d.kZero);
+        PhotonPoseEstimator estimator = new PhotonPoseEstimator(aprilTags, Transform3d.ZERO);
 
         Optional<EstimatedRobotPose> estimatedPose =
                 estimator.estimateCoprocMultiTagPose(camera.result);
@@ -725,6 +852,9 @@ class PhotonPoseEstimatorTest {
         assertEquals(1, pose.getX(), 1e-9);
         assertEquals(3, pose.getY(), 1e-9);
         assertEquals(2, pose.getZ(), 1e-9);
+        // LOWEST_AMBIGUITY fallback should report only the single chosen target.
+        assertEquals(1, estimatedPose.get().targetsUsed.size());
+        assertEquals(1, estimatedPose.get().targetsUsed.get(0).getFiducialId());
     }
 
     @Test
@@ -801,11 +931,10 @@ class PhotonPoseEstimatorTest {
                 new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));
 
         PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo), kRobotToCam);
+                new PhotonPoseEstimator(Field.loadField(Fields.FRC_2024_CRESCENDO), kRobotToCam);
 
         var multiTagEstimate = estimator.estimateCoprocMultiTagPose(result);
-        estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.kZero);
+        estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.ZERO);
         Optional<EstimatedRobotPose> estimatedPose =
                 estimator.estimateConstrainedSolvepnpPose(
                         result, cameraMat, distortion, multiTagEstimate.get().estimatedPose, true, 0);

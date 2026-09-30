@@ -34,15 +34,15 @@ import java.util.Optional;
 import java.util.Set;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.interpolation.TimeInterpolatableBuffer;
 import org.wpilib.smartdashboard.Field2d;
-import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.system.Timer;
-import org.wpilib.vision.apriltag.AprilTag;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.telemetry.Telemetry;
 
 /**
  * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
@@ -65,6 +65,8 @@ public class VisionSystemSim {
 
     private final Field2d dbgField;
 
+    private final String tableName;
+
     private final Transform3d kEmptyTrf = new Transform3d();
 
     /**
@@ -78,8 +80,7 @@ public class VisionSystemSim {
      */
     public VisionSystemSim(String visionSystemName) {
         dbgField = new Field2d();
-        String tableName = "VisionSystemSim-" + visionSystemName;
-        SmartDashboard.putData(tableName + "/Sim Field", dbgField);
+        tableName = "VisionSystemSim-" + visionSystemName;
     }
 
     /** Get one of the simulated cameras. */
@@ -106,7 +107,7 @@ public class VisionSystemSim {
             camTrfMap.put(cameraSim, TimeInterpolatableBuffer.createBuffer(kBufferLengthSeconds));
             camTrfMap
                     .get(cameraSim)
-                    .addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
+                    .addSample(Timer.getMonotonicTimestamp(), new Pose3d().plus(robotToCamera));
         }
     }
 
@@ -137,7 +138,7 @@ public class VisionSystemSim {
      * @return The transform of this camera, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim) {
-        return getRobotToCamera(cameraSim, Timer.getFPGATimestamp());
+        return getRobotToCamera(cameraSim, Timer.getMonotonicTimestamp());
     }
 
     /**
@@ -164,7 +165,7 @@ public class VisionSystemSim {
      * @return The pose of this camera, or an empty optional if it is invalid
      */
     public Optional<Pose3d> getCameraPose(PhotonCameraSim cameraSim) {
-        return getCameraPose(cameraSim, Timer.getFPGATimestamp());
+        return getCameraPose(cameraSim, Timer.getMonotonicTimestamp());
     }
 
     /**
@@ -191,7 +192,7 @@ public class VisionSystemSim {
     public boolean adjustCamera(PhotonCameraSim cameraSim, Transform3d robotToCamera) {
         var trfBuffer = camTrfMap.get(cameraSim);
         if (trfBuffer == null) return false;
-        trfBuffer.addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
+        trfBuffer.addSample(Timer.getMonotonicTimestamp(), new Pose3d().plus(robotToCamera));
         return true;
     }
 
@@ -207,7 +208,7 @@ public class VisionSystemSim {
      * @return If the cameraSim was valid and transforms were reset
      */
     public boolean resetCameraTransforms(PhotonCameraSim cameraSim) {
-        double now = Timer.getFPGATimestamp();
+        double now = Timer.getMonotonicTimestamp();
         var trfBuffer = camTrfMap.get(cameraSim);
         if (trfBuffer == null) return false;
         var lastTrf = new Transform3d(new Pose3d(), trfBuffer.getSample(now).orElse(new Pose3d()));
@@ -263,14 +264,14 @@ public class VisionSystemSim {
      *
      * @param tagLayout The field tag layout to get Apriltag poses and IDs from
      */
-    public void addAprilTags(AprilTagFieldLayout tagLayout) {
-        for (AprilTag tag : tagLayout.getTags()) {
+    public void addAprilTags(Field tagLayout) {
+        for (FieldTag tag : tagLayout.getTags()) {
             addVisionTargets(
                     "apriltag",
                     new VisionTargetSim(
-                            tagLayout.getTagPose(tag.ID).get(), // preserve alliance rotation
+                            tagLayout.getTagPose(tag.getID()).get(), // preserve alliance rotation
                             TargetModel.kAprilTag36h11,
-                            tag.ID));
+                            tag.getID()));
         }
     }
 
@@ -339,7 +340,7 @@ public class VisionSystemSim {
      * @return The latest robot pose
      */
     public Pose3d getRobotPose() {
-        return getRobotPose(Timer.getFPGATimestamp());
+        return getRobotPose(Timer.getMonotonicTimestamp());
     }
 
     /**
@@ -368,7 +369,7 @@ public class VisionSystemSim {
      */
     public void resetRobotPose(Pose3d robotPose) {
         robotPoseBuffer.clear();
-        robotPoseBuffer.addSample(Timer.getFPGATimestamp(), robotPose);
+        robotPoseBuffer.addSample(Timer.getMonotonicTimestamp(), robotPose);
     }
 
     public Field2d getDebugField() {
@@ -400,10 +401,14 @@ public class VisionSystemSim {
                                 .getObject(entry.getKey())
                                 .setPoses(entry.getValue().stream().map(t -> t.getPose().toPose2d()).toList()));
 
-        if (robotPoseMeters == null) return;
+        if (robotPoseMeters == null) {
+            // publish the field state to telemetry
+            Telemetry.log(tableName + "/Sim Field", dbgField);
+            return;
+        }
 
         // save "real" robot poses over time
-        double now = Timer.getFPGATimestamp();
+        double now = Timer.getMonotonicTimestamp();
         robotPoseBuffer.addSample(now, robotPoseMeters);
         dbgField.setRobotPose(robotPoseMeters.toPose2d());
 
@@ -423,7 +428,7 @@ public class VisionSystemSim {
             // this result's processing latency in milliseconds
             double latencyMillis = camSim.prop.estLatencyMs();
             // the image capture timestamp in seconds of this result
-            double timestampCapture = timestampNT / 1e6 - latencyMillis / 1e3;
+            double timestampCapture = timestampNT / 1e9 - latencyMillis / 1e3;
 
             // use camera pose from the image capture timestamp
             Pose3d lateRobotPose = getRobotPose(timestampCapture);
@@ -443,5 +448,8 @@ public class VisionSystemSim {
         }
         if (processed) dbgField.getObject("visibleTargetPoses").setPoses(visTgtPoses2d);
         if (!cameraPoses2d.isEmpty()) dbgField.getObject("cameras").setPoses(cameraPoses2d);
+
+        // publish the field state to telemetry
+        Telemetry.log(tableName + "/Sim Field", dbgField);
     }
 }

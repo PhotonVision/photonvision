@@ -46,9 +46,9 @@ public class PhotonPipelineResultProto
     public PhotonPipelineResult unpack(ProtobufPhotonPipelineResult msg) {
         return new PhotonPipelineResult(
                 msg.getSequenceId(),
-                msg.getCaptureTimestampMicros(),
-                msg.getNtPublishTimestampMicros(),
-                msg.getTimeSinceLastPongMicros(),
+                msg.getCaptureTimestampNanos(),
+                msg.getNtPublishTimestampNanos(),
+                msg.getTimeSinceLastPongNanos(),
                 PhotonTrackedTarget.proto.unpack(msg.getTargets()),
                 msg.hasMultiTargetResult()
                         ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
@@ -67,8 +67,8 @@ public class PhotonPipelineResultProto
         }
 
         msg.setSequenceId(value.metadata.getSequenceID());
-        msg.setCaptureTimestampMicros(value.metadata.getCaptureTimestampMicros());
-        msg.setNtPublishTimestampMicros(value.metadata.getPublishTimestampMicros());
-        msg.setTimeSinceLastPongMicros(value.metadata.timeSinceLastPong);
+        msg.setCaptureTimestampNanos(value.metadata.getCaptureTimestampNanos());
+        msg.setNtPublishTimestampNanos(value.metadata.getPublishTimestampNanos());
+        msg.setTimeSinceLastPongNanos(value.metadata.timeSinceLastPong);
     }
 }

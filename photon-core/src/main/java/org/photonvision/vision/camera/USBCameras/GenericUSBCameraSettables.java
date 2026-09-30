@@ -20,7 +20,6 @@ package org.photonvision.vision.camera.USBCameras;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -286,17 +285,21 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     private void cacheVideoModes() {
-        videoModes = new HashMap<>();
         List<VideoMode> videoModesList = new ArrayList<>();
         try {
             for (VideoMode videoMode : camera.enumerateVideoModes()) {
                 // Filter grey modes
-                if (videoMode.pixelFormat == PixelFormat.kGray
-                        || videoMode.pixelFormat == PixelFormat.kUnknown) {
+                if (videoMode.pixelFormat == PixelFormat.GRAY
+                        || videoMode.pixelFormat == PixelFormat.UNKNOWN) {
                     continue;
                 }
 
                 if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100) && videoMode.fps > 100) {
+                    continue;
+                }
+
+                if (configuration.cameraQuirks.hasQuirk(CameraQuirk.MJPEGOnly)
+                        && videoMode.pixelFormat != PixelFormat.MJPEG) {
                     continue;
                 }
 
@@ -316,10 +319,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // The ordering is usually more logical when done like this. It typically puts higher FPSes
         // closer to the bottom.
         Collections.reverse(sortedList);
-
-        for (int i = 0; i < sortedList.size(); i++) {
-            videoModes.put(i, sortedList.get(i));
-        }
+        videoModes = sortedList;
 
         // If after all that we still have no video modes, not much we can do besides
         // throw up our hands
@@ -329,11 +329,11 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     @Override
-    public HashMap<Integer, VideoMode> getAllVideoModes() {
+    public List<VideoMode> getAllVideoModes() {
         if (!cameraPropertiesCached) {
             // Device hasn't connected at least once, best I can do is given up
             logger.warn("Device hasn't connected, cannot enumerate video modes");
-            return new HashMap<>();
+            return new ArrayList<>();
         }
 
         return videoModes;
@@ -348,7 +348,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
      */
     protected void softSet(String property, int value) {
         VideoProperty prop = camera.getProperty(property);
-        if (prop.getKind() == VideoProperty.Kind.kNone) {
+        if (prop.getKind() == VideoProperty.Kind.NONE) {
             logger.debug("No property " + property + " for " + camera.getName() + " , skipping.");
         } else {
             try {
@@ -371,7 +371,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         boolean found = false;
         for (var option : options) {
             retProp = camera.getProperty(option);
-            if (retProp.getKind() != VideoProperty.Kind.kNone) {
+            if (retProp.getKind() != VideoProperty.Kind.NONE) {
                 // got em
                 found = true;
                 break;

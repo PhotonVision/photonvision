@@ -17,9 +17,11 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import io.avaje.jsonb.Json;
 import java.util.List;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 
+@Json
 public class UIGeneralSettings {
     public UIGeneralSettings(
             String version,

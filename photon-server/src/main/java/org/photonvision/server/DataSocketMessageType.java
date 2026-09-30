@@ -21,7 +21,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings("unused")
 public enum DataSocketMessageType {
     SMT_DRIVERMODE("driverMode"),
     SMT_CHANGECAMERANAME("changeCameraName"),

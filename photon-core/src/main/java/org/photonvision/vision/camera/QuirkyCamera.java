@@ -17,13 +17,13 @@
 
 package org.photonvision.vision.camera;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.avaje.jsonb.Json;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@Json
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
@@ -87,7 +87,14 @@ public class QuirkyCamera {
                             CameraQuirk.ArduOV9782Controls),
                     // Innomaker OV9281
                     new QuirkyCamera(
-                            0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls));
+                            0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls),
+                    // Thrifty OV9281
+                    new QuirkyCamera(
+                            0x1BCF,
+                            0x28C5,
+                            CameraQuirk.ThriftyOV9281Controls,
+                            CameraQuirk.Gain,
+                            CameraQuirk.MJPEGOnly));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =
@@ -98,19 +105,14 @@ public class QuirkyCamera {
                     CameraQuirk.Gain,
                     CameraQuirk.AwbRedBlueGain); // PiCam (using libcamera GPU Driver on raspberry pi)
 
-    @JsonProperty("baseName")
     public final String baseName;
 
-    @JsonProperty("usbVid")
     public final int usbVid;
 
-    @JsonProperty("usbPid")
     public final int usbPid;
 
-    @JsonProperty("displayName")
     public final String displayName;
 
-    @JsonProperty("quirks")
     public final Map<CameraQuirk, Boolean> quirks;
 
     /**
@@ -165,13 +167,12 @@ public class QuirkyCamera {
         }
     }
 
-    @JsonCreator
     public QuirkyCamera(
-            @JsonProperty("baseName") String baseName,
-            @JsonProperty("usbVid") int usbVid,
-            @JsonProperty("usbPid") int usbPid,
-            @JsonProperty("displayName") String displayName,
-            @JsonProperty("quirks") Map<CameraQuirk, Boolean> quirks) {
+            String baseName,
+            int usbVid,
+            int usbPid,
+            String displayName,
+            Map<CameraQuirk, Boolean> quirks) {
         this.baseName = baseName;
         this.usbPid = usbPid;
         this.usbVid = usbVid;

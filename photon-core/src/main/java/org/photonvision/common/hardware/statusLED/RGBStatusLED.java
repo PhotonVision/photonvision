@@ -1,0 +1,121 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package org.photonvision.common.hardware.statusLED;
+
+import com.diozero.devices.LED;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import org.photonvision.common.configuration.StatusLedConfig;
+import org.photonvision.common.hardware.PhotonStatus;
+import org.photonvision.common.util.TimedTaskManager;
+
+/** Basic RGB LED with individual control over each pin */
+public class RGBStatusLED implements StatusLED {
+    public static class Config implements StatusLedConfig {
+        public int redPin = -1;
+        public int greenPin = -1;
+        public int bluePin = -1;
+        public boolean activeHigh = false;
+
+        @Override
+        public StatusLED create(NativeDeviceFactoryInterface deviceFactory) {
+            return new RGBStatusLED(deviceFactory, redPin, greenPin, bluePin, activeHigh);
+        }
+
+        @Override
+        public int[] pins() {
+            return new int[] {redPin, greenPin, bluePin};
+        }
+
+        @Override
+        public String toString() {
+            return "RGBStatusLED.Config[redPin="
+                    + redPin
+                    + ", greenPin="
+                    + greenPin
+                    + ", bluePin="
+                    + bluePin
+                    + ", activeHigh="
+                    + activeHigh
+                    + "]";
+        }
+    }
+
+    public final LED redLED;
+    public final LED greenLED;
+    public final LED blueLED;
+    protected int blinkCounter;
+
+    protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
+
+    public RGBStatusLED(
+            NativeDeviceFactoryInterface deviceFactory,
+            int redPin,
+            int greenPin,
+            int bluePin,
+            boolean activeHigh) {
+        // Outputs are active-low for a common-anode RGB LED
+        redLED = new LED(deviceFactory, redPin, activeHigh, false);
+        greenLED = new LED(deviceFactory, greenPin, activeHigh, false);
+        blueLED = new LED(deviceFactory, bluePin, activeHigh, false);
+
+        TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
+    }
+
+    protected void setRGB(boolean r, boolean g, boolean b) {
+        redLED.setOn(r);
+        greenLED.setOn(g);
+        blueLED.setOn(b);
+    }
+
+    @Override
+    public void setStatus(PhotonStatus status) {
+        this.status = status;
+    }
+
+    protected void updateLED() {
+        boolean blink = blinkCounter > 0;
+
+        switch (status) {
+            case NT_CONNECTED_TARGETS_VISIBLE ->
+                    // Blue
+                    setRGB(false, false, true);
+            case NT_CONNECTED_TARGETS_MISSING ->
+                    // Blinking Green
+                    setRGB(false, blink, false);
+            case NT_DISCONNECTED_TARGETS_VISIBLE ->
+                    // Blinking Blue
+                    setRGB(false, false, blink);
+            case NT_DISCONNECTED_TARGETS_MISSING ->
+                    // Blinking Yellow
+                    setRGB(blink, blink, false);
+            case GENERIC_ERROR ->
+                    // Blinking Red
+                    setRGB(blink, false, false);
+        }
+
+        blinkCounter++;
+        blinkCounter %= 3;
+    }
+
+    @Override
+    public void close() {
+        redLED.close();
+        greenLED.close();
+        blueLED.close();
+    }
+}

@@ -17,11 +17,11 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.avaje.jsonb.Json;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.processes.PipelineManager;
 
-@JsonTypeName("DriverModePipelineSettings")
+@Json
 public class DriverModePipelineSettings extends CVPipelineSettings {
     public DoubleCouple offsetPoint = new DoubleCouple();
     public boolean crosshair = true;

@@ -17,8 +17,10 @@
 
 package org.photonvision.server;
 
+import io.avaje.jsonb.javalin.JavalinJsonb;
 import io.javalin.Javalin;
 import io.javalin.plugin.bundled.CorsPlugin;
+import io.javalin.plugin.bundled.CorsPluginConfig.CorsRule;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.StringJoiner;
@@ -41,7 +43,7 @@ public class Server {
         }
 
         @Override
-        public void onDataChangeEvent(DataChangeEvent<?> event) {
+        public <T> void onDataChangeEvent(DataChangeEvent<T> event) {
             if (event.propertyName.equals("restartServer")) {
                 Server.restart();
             }
@@ -60,14 +62,7 @@ public class Server {
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
-                            javalinConfig.registerPlugin(
-                                    new CorsPlugin(
-                                            cors -> {
-                                                cors.addRule(
-                                                        it -> {
-                                                            it.anyHost();
-                                                        });
-                                            }));
+                            javalinConfig.registerPlugin(new CorsPlugin(cors -> cors.addRule(CorsRule::anyHost)));
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -103,6 +98,7 @@ public class Server {
                                                                     return "Got WebSockets binary message from host: " + host;
                                                                 }));
                                     });
+                            javalinConfig.jsonMapper(new JavalinJsonb());
                         });
 
         /* Web Socket Events for Data Exchange */
@@ -125,12 +121,13 @@ public class Server {
         app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
         app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
         app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
-        app.post("/api/settings/aprilTagFieldLayout", RequestHandler::onAprilTagFieldLayoutRequest);
+        app.post("/api/settings/fieldLayout", RequestHandler::onFieldLayoutRequest);
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
         app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
         app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
+        app.get("/api/settings/camera/getUncertainty", RequestHandler::onUncertaintyJsonRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);

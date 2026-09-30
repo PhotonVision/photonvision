@@ -17,11 +17,18 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import io.avaje.jsonb.Json;
 import java.util.List;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.networking.NetworkUtils.NMDeviceInfo;
 
+@Json
 public class UINetConfig extends NetworkConfig {
+    // Constructor for JSON to allow all properties to be set directly
+    public UINetConfig() {
+        this.canManage = this.deviceCanManageNetwork();
+    }
+
     public UINetConfig(
             NetworkConfig config, List<NMDeviceInfo> networkInterfaceNames, boolean networkingDisabled) {
         super(config);
@@ -32,5 +39,7 @@ public class UINetConfig extends NetworkConfig {
 
     public List<NMDeviceInfo> networkInterfaceNames;
     public boolean networkingDisabled;
+
+    @Json.Ignore(serialize = true)
     public boolean canManage;
 }

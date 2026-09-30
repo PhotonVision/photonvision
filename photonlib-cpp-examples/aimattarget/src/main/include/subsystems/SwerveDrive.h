@@ -26,7 +26,7 @@
 
 #include <frc/ADXRS450_Gyro.h>
 #include <frc/SPI.h>
-#include <frc/simulation/ADXRS450_GyroSim.h>
+#include <frc/simulation/OnboardIMUSim.h>
 #include <wpi/math/estimator/SwerveDrivePoseEstimator.hpp>
 #include <wpi/math/kinematics/wpi/math/kinematics/SwerveDriveKinematics.hpppp>
 
@@ -75,7 +75,7 @@ class SwerveDrive {
   wpi::math::SwerveDrivePoseEstimator<4> poseEstimator;
   wpi::math::ChassisSpeeds targetChassisSpeeds{};
 
-  wpi::sim::ADXRS450_GyroSim gyroSim;
+  wpi::sim::OnboardIMUSim gyroSim;
   SwerveDriveSim swerveDriveSim;
   wpi::units::ampere_t totalCurrentDraw{0};
 };

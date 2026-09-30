@@ -40,7 +40,7 @@ public abstract class ConfigProvider {
 
     public abstract boolean saveUploadedNetworkConfig(Path uploadPath);
 
-    public abstract boolean saveUploadedAprilTagFieldLayout(Path uploadPath);
+    public abstract boolean saveUploadedFieldLayout(Path uploadPath);
 
     public abstract boolean saveUploadedNeuralNetworkProperties(Path uploadPath);
 }

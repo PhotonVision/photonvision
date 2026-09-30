@@ -41,7 +41,7 @@ public class ObjectDetectionPipeline
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
 
-    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
+    public static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public ObjectDetectionPipeline() {
         super(PROCESSING_TYPE);
@@ -57,8 +57,7 @@ public class ObjectDetectionPipeline
     protected void setPipeParamsImpl() {
         Optional<Model> selectedModel =
                 settings.model != null
-                        ? NeuralNetworkModelManager.getInstance()
-                                .getModel(settings.model.modelPath().toString())
+                        ? NeuralNetworkModelManager.getInstance().getModel(settings.model.modelPath())
                         : Optional.empty();
 
         // If the desired model couldn't be found, log an error and try to use the default model
@@ -134,7 +133,11 @@ public class ObjectDetectionPipeline
 
     @Override
     public void release() {
+        calculateFPSPipe.release();
         objectDetectorPipe.release();
+        sortContoursPipe.release();
+        collect2dTargetsPipe.release();
+        filterContoursPipe.release();
         super.release();
     }
 }

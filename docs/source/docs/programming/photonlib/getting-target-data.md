@@ -9,22 +9,30 @@
 The `PhotonCamera` class has two constructors: one that takes a `NetworkTable` and another that takes in the name of the network table that PhotonVision is broadcasting information over. For ease of use, it is recommended to use the latter. The name of the NetworkTable (for the string constructor) should be the same as the camera's nickname (from the PhotonVision UI).
 
 ```{eval-rst}
-.. tab-set-code::
+.. tab-set::
+    :sync-group: code
 
+    .. tab-item:: Java
+       :sync: java
 
-     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/aimattarget/Robot.java
-        :language: java
-        :lines: 51-52
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/aimattarget/Robot.java
+          :language: java
+          :lines: 51-52
 
-     .. rli:: https://github.com/PhotonVision/photonvision/raw/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-cpp-examples/src/main/cpp/examples/aimattarget/include/Robot.h
-        :language: c++
-        :lines: 42-43
+    .. tab-item:: C++
+       :sync: c++
 
-     .. code-block:: python
+       .. rli:: https://github.com/PhotonVision/photonvision/raw/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-cpp-examples/src/main/cpp/examples/aimattarget/include/Robot.h
+          :language: c++
+          :lines: 42-43
 
-         # Change this to match the name of your camera as shown in the web ui
-         self.camera = PhotonCamera("your_camera_name_here")
+    .. tab-item:: Python
+       :sync: python
 
+       .. code-block:: python
+
+          # Change this to match the name of your camera as shown in the web ui
+          self.camera = PhotonCamera("your_camera_name_here")
 ```
 
 :::{warning}
@@ -37,26 +45,33 @@ Teams must have unique names for all of their cameras regardless of which coproc
 
 A `PhotonPipelineResult` is a container that contains all information about currently detected targets from a `PhotonCamera`. You can retrieve the latest pipeline result using the PhotonCamera instance.
 
-Use the `getLatestResult()`/`GetLatestResult()` (Java and C++ respectively) to obtain the latest pipeline result. An advantage of using this method is that it returns a container with information that is guaranteed to be from the same timestamp. This is important if you are using this data for latency compensation or in an estimator.
+Use `getLatestResult()`/`GetLatestResult()`/`getLatestResult()` (Java, C++, and Python respectively) to obtain the latest pipeline result. An advantage of using this method is that it returns a container with information that is guaranteed to be from the same timestamp. This is important if you are using this data for latency compensation or in an estimator.
 
 ```{eval-rst}
-.. tab-set-code::
+.. tab-set::
+    :sync-group: code
 
+    .. tab-item:: Java
+       :sync: java
 
-     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/aimattarget/Robot.java
-        :language: java
-        :lines: 79-80
+       .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-java-examples/src/main/java/org/photonlib/examples/aimattarget/Robot.java
+          :language: java
+          :lines: 79-80
 
-     .. rli:: https://github.com/PhotonVision/photonvision/raw/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-cpp-examples/src/main/cpp/examples/aimattarget/cpp/Robot.cpp
-         :language: c++
-         :lines: 35-36
+    .. tab-item:: C++
+       :sync: c++
 
-     .. code-block:: python
+       .. rli:: https://github.com/PhotonVision/photonvision/raw/a3bcd3ac4f88acd4665371abc3073bdbe5effea8/photonlib-cpp-examples/src/main/cpp/examples/aimattarget/cpp/Robot.cpp
+          :language: c++
+          :lines: 35-36
 
-         # Query the latest result from PhotonVision
-         result = self.camera.getLatestResult()
+    .. tab-item:: Python
+       :sync: python
 
+       .. code-block:: python
 
+          # Query the latest result from PhotonVision
+          result = self.camera.getLatestResult()
 ```
 
 :::{note}
@@ -65,7 +80,7 @@ Unlike other vision software solutions, using the latest result guarantees that 
 
 ## Checking for Existence of Targets
 
-Each pipeline result has a `hasTargets()`/`HasTargets()` (Java and C++ respectively) method to inform the user as to whether the result contains any targets.
+Each pipeline result has a `hasTargets()`/`HasTargets()`/`hasTargets()` (Java, C++, and Python respectively) method to inform the user as to whether the result contains any targets.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -81,12 +96,12 @@ Each pipeline result has a `hasTargets()`/`HasTargets()` (Java and C++ respectiv
 
    .. code-block:: python
 
-     # Check if the latest result has any targets.
+      # Check if the latest result has any targets.
       hasTargets = result.hasTargets()
 ```
 
 :::{warning}
-In Java/C++, You must _always_ check if the result has a target via `hasTargets()`/`HasTargets()` before getting targets or else you may get a null pointer exception. Further, you must use the same result in every subsequent call in that loop.
+In Java/C++, You must _always_ check if the result has a target via `hasTargets()`/`HasTargets()` before getting targets or else you may get a null pointer exception. Further, you must use the same result in every subsequent call in that loop. Python's `getBestTarget()` returns `None` when there are no targets.
 :::
 
 ## Getting a List of Targets
@@ -95,7 +110,7 @@ In Java/C++, You must _always_ check if the result has a target via `hasTargets(
 
 A tracked target contains information about each target from a pipeline result. This information includes yaw, pitch, area, and robot relative pose.
 
-You can get a list of tracked targets using the `getTargets()`/`GetTargets()` (Java and C++ respectively) method from a pipeline result.
+You can get a list of tracked targets using the `getTargets()`/`GetTargets()`/`getTargets()` (Java, C++, and Python respectively) method from a pipeline result.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -117,7 +132,7 @@ You can get a list of tracked targets using the `getTargets()`/`GetTargets()` (J
 
 ## Getting the Best Target
 
-You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Contour Grouping and Sorting>` using `getBestTarget()`/`GetBestTarget()` (Java and C++ respectively) method from the pipeline result.
+You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Contour Grouping and Sorting>` using `getBestTarget()`/`GetBestTarget()`/`getBestTarget()` (Java, C++, and Python respectively) from the pipeline result.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -131,21 +146,20 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
       // Get the current best target.
       photonlib::PhotonTrackedTarget target = result.GetBestTarget();
 
-
    .. code-block:: python
 
-      # Coming Soon!
-
+      # Get the current best target. Returns None if there are no targets.
+      target = result.getBestTarget()
 ```
 
 ## Getting Data From A Target
 
-- double `getYaw()`/`GetYaw()`: The yaw of the target in degrees (positive left).
-- double `getPitch()`/`GetPitch()`: The pitch of the target in degrees (positive up).
-- double `getArea()`/`GetArea()`: The area (how much of the camera feed the bounding box takes up) as a percent (0-100).
-- double `getSkew()`/`GetSkew()`: The skew of the target in degrees (counter-clockwise positive).
-- double\[\] `getCorners()`/`GetCorners()`: The 4 corners of the minimum bounding box rectangle.
-- Transform2d `getCameraToTarget()`/`GetCameraToTarget()`: The camera to target transform. See [2d transform documentation here](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/geometry/transformations.html#transform2d-and-twist2d).
+- double `getYaw()`/`GetYaw()`/`getYaw()`: The yaw of the target in degrees (positive left).
+- double `getPitch()`/`GetPitch()`/`getPitch()`: The pitch of the target in degrees (positive up).
+- double `getArea()`/`GetArea()`/`getArea()`: The area (how much of the camera feed the bounding box takes up) as a percent (0-100).
+- double `getSkew()`/`GetSkew()`/`getSkew()`: The skew of the target in degrees (counter-clockwise positive).
+- double\[\] `getCorners()`/`GetCorners()`/`getMinAreaRectCorners()`: The 4 corners of the minimum bounding box rectangle.
+- Transform2d `getCameraToTarget()`/`GetCameraToTarget()`: The camera to target transform (Java/C++). In Python use `getBestCameraToTarget()` for the 3d transform. See [2d transform documentation here](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/geometry/transformations.html#transform2d-and-twist2d).
 
 ```{eval-rst}
 .. tab-set-code::
@@ -176,8 +190,8 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
       pitch = target.getPitch()
       area = target.getArea()
       skew = target.getSkew()
-      pose = target.getCameraToTarget()
-      corners = target.getDetectedCorners()
+      pose = target.getBestCameraToTarget()
+      corners = target.getMinAreaRectCorners()
 ```
 
 ## Getting AprilTag Data From A Target
@@ -186,10 +200,10 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
 All of the data above (**except skew**) is available when using AprilTags.
 :::
 
-- int `getFiducialId()`/`GetFiducialId()`: The ID of the detected fiducial marker.
-- double `getPoseAmbiguity()`/`GetPoseAmbiguity()`: How ambiguous the pose of the target is (see below).
-- Transform3d `getBestCameraToTarget()`/`GetBestCameraToTarget()`: Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag space (X forward, Y left, Z up) with the lowest reprojection error.
-- Transform3d `getAlternateCameraToTarget()`/`GetAlternateCameraToTarget()`: Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag space (X forward, Y left, Z up) with the highest reprojection error.
+- int `getFiducialId()`/`GetFiducialId()`/`getFiducialId()`: The ID of the detected fiducial marker.
+- double `getPoseAmbiguity()`/`GetPoseAmbiguity()`/`getPoseAmbiguity()`: How ambiguous the pose of the target is (see below).
+- Transform3d `getBestCameraToTarget()`/`GetBestCameraToTarget()`/`getBestCameraToTarget()`: Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag space (X forward, Y left, Z up) with the lowest reprojection error.
+- Transform3d `getAlternateCameraToTarget()`/`GetAlternateCameraToTarget()`/`getAlternateCameraToTarget()`: Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag space (X forward, Y left, Z up) with the highest reprojection error.
 
 ```{eval-rst}
 .. tab-set-code::

@@ -6,10 +6,21 @@ nativeUtils.withCrossSystemCore()
 // Configure WPI dependencies.
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
-    wpimathVersion = wpimathVersion
-    opencvYear = 'frc'+openCVYear
     opencvVersion = openCVversion
-    niLibVersion = "2026.1.0"
+}
+
+// native-utils hard-codes mrclib_shared into its aggregate deps; strip it out
+def nativeDepContainer = nativeUtils.nativeDependencyContainer
+[
+    'wpilib_shared',
+    'wpilib_static',
+    'wpilib_jni',
+    'driver_shared',
+    'driver_static'
+].each { name ->
+    nativeDepContainer.named(name).configure {
+        it.dependencies.set(it.dependencies.get().findAll { it != 'mrclib_shared' })
+    }
 }
 
 // Configure warnings and errors
