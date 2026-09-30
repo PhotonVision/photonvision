@@ -1,5 +1,251 @@
 # Simulation Support in PhotonLib in Python
 
-## What Is Supported?
+## What Is Simulated?
 
-Nothing Yet
+Simulation is a powerful tool for validating robot code without access to a physical robot. Read more about [simulation in WPILib](https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/robot-simulation/introduction.html).
+
+In Python, PhotonLib can simulate cameras on the field and generate target data approximating what would be seen in reality. This simulation attempts to include the following:
+
+- Camera Properties
+  - Field of Vision
+  - Lens distortion
+  - Image noise
+  - Framerate
+  - Latency
+- Target Data
+  - Detected / minimum-area-rectangle corners
+  - Center yaw/pitch
+  - Contour image area percentage
+  - Fiducial ID
+  - Fiducial ambiguity
+  - Fiducial solvePNP transform estimation
+- Camera Raw/Processed Streams (grayscale)
+
+:::{note}
+Simulation does NOT include the following:
+
+- Full physical camera/world simulation (targets are automatically thresholded)
+- Image Thresholding Process (camera gain, brightness, etc)
+- Pipeline switching
+- Snapshots
+:::
+
+This scope was chosen to balance fidelity of the simulation with the ease of setup, in a way that would best benefit most teams.
+
+```{image} diagrams/SimArchitecture.drawio.svg
+:alt: A diagram comparing the architecture of a real PhotonVision process to a simulated
+:  one.
+```
+
+## Drivetrain Simulation Prerequisite
+
+A prerequisite for simulating vision frames is knowing where the camera is on the field-- to utilize PhotonVision simulation, you'll need to supply the simulated robot pose periodically. This requires drivetrain simulation for your robot project if you want to generate camera frames as your robot moves around the field.
+
+The [PhotonLib Java Examples](https://github.com/PhotonVision/photonvision/blob/2a6fa1b6ac81f239c59d724da5339f608897c510/photonlib-java-examples/README.md) walk through this for a differential drivetrain and a swerve drive. The Python API below mirrors it step for step, using the same `camelCase` method names as Java.
+
+:::{important}
+The simulated drivetrain pose must be separate from the drivetrain estimated pose if a pose estimator is utilized.
+:::
+
+## Vision System Simulation
+
+A `VisionSystemSim` represents the simulated world for one or more cameras, and contains the vision targets they can see. It is constructed with a unique label:
+
+```python
+# A vision system sim labelled as "main" in NetworkTables
+visionSim = VisionSystemSim("main")
+```
+
+PhotonLib will use this label to put a `Field2d` widget on NetworkTables at `/VisionSystemSim-[label]/Sim Field`. This label does not need to match any camera name or pipeline name in PhotonVision.
+
+Vision targets require a `TargetModel` from `photonlibpy.estimation`, which describes the shape of the target. For AprilTags, PhotonLib provides `TargetModel.AprilTag16h5()` for the tags used in 2023, and `TargetModel.AprilTag36h11()` for the tags used starting in 2024. For other target shapes, convenience constructors exist for spheres, cuboids, and planar rectangles. For example, a planar rectangle can be created with:
+
+```python
+# A 0.5 x 0.25 meter rectangular target
+targetModel = TargetModel.createPlanar(width=0.5, height=0.25)
+```
+
+These `TargetModel` are paired with a target pose to create a `VisionTargetSim`. A `VisionTargetSim` is added to the `VisionSystemSim` to become visible to all of its cameras.
+
+```python
+# The pose of where the target is on the field.
+# Its rotation determines where "forward" or the target x-axis points.
+# Let's say this target is flat against the far wall center, facing the blue driver stations.
+targetPose = Pose3d(16, 4, 2, Rotation3d(0, 0, math.pi))
+# The given target model at the given pose
+visionTarget = VisionTargetSim(targetPose, targetModel)
+
+# Add this vision target to the vision system simulation to make it visible
+visionSim.addVisionTargets([visionTarget])
+```
+
+:::{note}
+The pose of a `VisionTargetSim` object can be updated with `setPose()` to simulate moving targets. Note, however, that this will break latency simulation for that target.
+:::
+
+If you would rather pull in a whole tag layout, `addAprilTags()` accepts a WPILib field layout and adds every tag in it under the `"apriltag"` type:
+
+```python
+# from robotpy_fields import FieldId, get_field
+
+# The layout of AprilTags which we want to add to the vision system
+tagLayout = get_field(FieldId.DEFAULT_FIELD)
+
+visionSim.addAprilTags(tagLayout)
+```
+
+:::{note}
+The poses of the AprilTags from this layout depend on its current alliance origin (e.g. blue or red). If this origin is changed later, the targets will have to be cleared from the `VisionSystemSim` and re-added.
+:::
+
+## Camera Simulation
+
+Now that we have a simulation world with vision targets, we can add simulated cameras to view it.
+
+Before adding a simulated camera, we need to define its properties. This is done with the `SimCameraProperties` class:
+
+```python
+# The simulated camera properties
+cameraProp = SimCameraProperties()
+```
+
+By default, this will create a 960 x 720 resolution camera with a 90 degree diagonal FOV(field-of-view) and no noise, distortion, or latency. If we want to change these properties, we can do so:
+
+```python
+# A 640 x 480 camera with a 100 degree diagonal FOV.
+cameraProp.setCalibrationFromFOV(640, 480, Rotation2d.from_degrees(100))
+# Approximate detection noise with average and standard deviation error in pixels.
+cameraProp.setCalibError(0.25, 0.08)
+# Set the camera image capture framerate (Note: this is limited by robot loop rate).
+cameraProp.setFPS(20)
+# The average and standard deviation in milliseconds of image data latency.
+cameraProp.setAvgLatency(35)
+cameraProp.setLatencyStdDev(5)
+```
+
+PhotonLib also ships presets for common cameras and resolutions, which you can use as a starting point:
+
+```python
+# A simulated Raspberry Pi 4 running a Lifecam at 640x480
+cameraProp = SimCameraProperties.PI4_LIFECAM_640_480()
+# Or an OV9281 at 1280x720, as found on many coprocessors
+cameraProp = SimCameraProperties.OV9281_1280_720()
+```
+
+These properties are used in a `PhotonCameraSim`, which handles generating captured frames of the field from the simulated camera's perspective, and calculating the target data which is sent to the `PhotonCamera` being simulated.
+
+```python
+# The PhotonCamera used in the real robot code.
+camera = PhotonCamera("cameraName")
+
+# The simulation of this camera. Its values used in real robot code will be updated.
+cameraSim = PhotonCameraSim(camera, cameraProp)
+```
+
+The `PhotonCameraSim` can now be added to the `VisionSystemSim`. We have to define a robot-to-camera transform, which describes where the camera is relative to the robot pose (this can be measured in CAD or by hand).
+
+```python
+# Our camera is mounted 0.1 meters forward and 0.5 meters up from the robot pose,
+# (Robot pose is considered the center of rotation at the floor level, or Z = 0)
+robotToCameraTrl = Translation3d(0.1, 0, 0.5)
+# and pitched 15 degrees up.
+robotToCameraRot = Rotation3d(0, math.radians(-15), 0)
+robotToCamera = Transform3d(robotToCameraTrl, robotToCameraRot)
+
+# Add this camera to the vision system simulation with the given robot-to-camera transform.
+visionSim.addCamera(cameraSim, robotToCamera)
+```
+
+:::{important}
+You may add multiple cameras to one `VisionSystemSim`, but not one camera to multiple `VisionSystemSim`. All targets in the `VisionSystemSim` will be visible to all its cameras.
+:::
+
+If the camera is mounted on a mobile mechanism (like a turret) this transform can be updated in a periodic loop.
+
+```python
+# The turret the camera is mounted on is rotated 5 degrees
+turretRotation = Rotation3d(0, 0, math.radians(5))
+robotToCamera = Transform3d(
+    robotToCameraTrl.rotateBy(turretRotation),
+    robotToCameraRot.rotateBy(turretRotation),
+)
+visionSim.adjustCamera(cameraSim, robotToCamera)
+```
+
+## Low-Resource Vision Simulation with Photonvision
+
+By default, PhotonCameraSim renders two simulated camera streams using OpenCV:
+
+- Raw stream - The unprocessed camera view
+- Processed stream - The camera view with vision processing overlays
+
+These streams are nice if you want to actually view the simulated images, but they can be computationally expensive. This may cause lag and reduced simulation performance on lower-powered computers.
+
+The following configuration disables both streams while still allowing tag detection and pose simulation to work. It's not perfect, but it's much better performance-wise than the default configuration.
+
+```python
+cameraSim.enableRawStream(False)        # disables raw image stream
+cameraSim.enableProcessedStream(False)  # disables processed image stream
+```
+
+**Use Case**
+
+This configuration is ideal for Chromebooks or low-spec machines where rendering the simulated camera images causes lag, but vision data is still desired for testing.
+
+**What Still Works**
+
+- AprilTag detection
+- Pose estimation
+- NetworkTables data publishing
+- Robot positioning and targeting
+
+**What's Disabled**
+
+- Visual camera stream rendering
+- Real-time visual debugging of camera output
+
+## Updating The Simulation World
+
+To update the `VisionSystemSim`, we simply have to pass in the simulated robot pose periodically (once per loop):
+
+```python
+# Update with the simulated drivetrain pose. This should be called every loop in simulation.
+visionSim.update(robotPose)
+```
+
+Targets and cameras can be added and removed, and camera properties can be changed at any time. A `PhotonCameraSim` stores its properties on the `prop` attribute, so they can still be changed after the camera was constructed:
+
+```python
+cameraSim.prop.setCalibrationFromFOV(1280, 720, Rotation2d.from_degrees(70))
+```
+
+## Visualizing Results
+
+Each `VisionSystemSim` has its own built-in `Field2d` for displaying object poses in the simulation world such as the robot, simulated cameras, and actual/measured target poses.
+
+```python
+# Get the built-in Field2d used by this VisionSystemSim
+visionSim.getDebugField()
+```
+
+```{figure} images/SimExampleField.png
+_A_ `VisionSystemSim`_'s internal_ `Field2d` _customized with target images and colors_
+```
+
+A `PhotonCameraSim` can also draw and publish generated camera frames to a MJPEG stream similar to an actual PhotonVision process.
+
+```python
+# Enable the raw and processed streams. These are enabled by default.
+cameraSim.enableRawStream(True)
+cameraSim.enableProcessedStream(True)
+
+# Enable drawing a wireframe visualization of the field to the camera streams.
+# This is extremely resource-intensive and is disabled by default.
+cameraSim.enableDrawWireframe(True)
+```
+
+These streams follow the port order mentioned in {ref}`docs/quick-start/networking:Camera Stream Ports`. For example, a single simulated camera will have its raw stream at `localhost:1181` and processed stream at `localhost:1182`, which can also be found in the CameraServer tab of Shuffleboard like a normal camera stream.
+
+```{figure} images/SimExampleFrame.png
+_A frame from the processed stream of a simulated camera viewing some 2023 AprilTags with the field wireframe enabled_
+```
