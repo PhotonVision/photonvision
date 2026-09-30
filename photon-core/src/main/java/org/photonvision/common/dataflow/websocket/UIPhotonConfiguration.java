@@ -49,9 +49,11 @@ public class UIPhotonConfiguration {
 
     private static final Jsonb json = Jsonb.builder().build();
 
+    // OutgoingDashboardEvent is a quickbuf protobuf object
     public static OutgoingDashboardEvent programStateToProto(PhotonConfiguration c) {
         try {
-            String jsonStr = json.type(UIPhotonConfiguration.class).toJson(programStateToUi(c));
+            var jsonStr = json.type(UIPhotonConfiguration.class).toJsonBytes(programStateToUi(c));
+            System.out.println(json.type(UIPhotonConfiguration.class).toJson(programStateToUi(c)));
             return OutgoingDashboardEvent.parseFrom(JsonSource.newInstance(jsonStr));
         } catch (IOException e) {
             e.printStackTrace();

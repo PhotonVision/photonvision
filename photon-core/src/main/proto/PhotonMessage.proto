@@ -81,19 +81,232 @@ message VisionSourceManagerState {
 message MutatePipelineSettings {
 }
 
-message PhotonSettings {
+message NumberPair {
+    double first = 1;
+    double second = 2;
 }
+
+message Point2D {
+    double x = 1;
+    double y = 2;
+}
+
+message CameraPipelineSettings {
+    int32 pipelineIndex = 1;
+    int32 pipelineType = 2;
+    int32 inputImageRotationMode = 3;
+    string pipelineNickname = 4;
+    bool cameraAutoExposure = 5;
+    double cameraExposureRaw = 6;
+    double cameraMinExposureRaw = 7;
+    double cameraMaxExposureRaw = 8;
+    int32 cameraBrightness = 9;
+    int32 cameraGain = 10;
+    int32 cameraRedGain = 11;
+    int32 cameraBlueGain = 12;
+    int32 cameraVideoModeIndex = 13;
+    int32 streamingFrameDivisor = 14;
+    bool ledMode = 15;
+    bool inputShouldShow = 16;
+    bool outputShouldShow = 17;
+    bool cameraAutoWhiteBalance = 18;
+    double cameraWhiteBalanceTemp = 19;
+    bool blockForFrames = 20;
+
+    NumberPair hsvHue = 21;
+    NumberPair hsvSaturation = 22;
+    NumberPair hsvValue = 23;
+    bool hueInverted = 24;
+    bool outputShouldDraw = 25;
+    int32 outputMaximumTargets = 26;
+    bool staticCropEnabled = 27;
+    NumberPair staticCropX = 28;
+    NumberPair staticCropY = 29;
+    NumberPair contourArea = 30;
+    NumberPair contourRatio = 31;
+    NumberPair contourFullness = 32;
+    int32 contourSpecklePercentage = 33;
+    int32 contourSortMode = 34;
+    int32 contourTargetOffsetPointEdge = 35;
+    int32 contourTargetOrientation = 36;
+    int32 offsetRobotOffsetMode = 37;
+    Point2D offsetSinglePoint = 38;
+    Point2D offsetDualPointA = 39;
+    double offsetDualPointAArea = 40;
+    Point2D offsetDualPointB = 41;
+    double offsetDualPointBArea = 42;
+    int32 contourGroupingMode = 43;
+    int32 contourIntersection = 44;
+    bool solvePNPEnabled = 45;
+    int32 targetModel = 46;
+    int32 cornerDetectionStrategy = 47;
+    bool cornerDetectionUseConvexHulls = 48;
+    bool cornerDetectionExactSideCount = 49;
+    int32 cornerDetectionSideCount = 50;
+    double cornerDetectionAccuracyPercentage = 51;
+
+    int32 tagFamily = 52;
+    int32 decimate = 53;
+    double blur = 54;
+    int32 threads = 55;
+    bool debug = 56;
+    bool refineEdges = 57;
+    int32 numIterations = 58;
+    int32 hammingDist = 59;
+    int32 decisionMargin = 60;
+    bool doMultiTarget = 61;
+    bool doSingleTargetAlways = 62;
+
+    bool debugThreshold = 63;
+    bool useCornerRefinement = 64;
+    int32 refineNumIterations = 65;
+    double refineMinErrorPx = 66;
+    bool useAruco3 = 67;
+    double aruco3MinMarkerSideRatio = 68;
+    int32 aruco3MinCanonicalImgSide = 69;
+
+    double confidence = 70;
+    double nms = 71;
+    ModelProperties model = 72;
+
+    double contourFilterRangeX = 73;
+    double contourFilterRangeY = 74;
+    bool crosshair = 75;
+    NumberPair offsetPoint = 76;
+}
+
+message VideoFormatInfo {
+    int32 index = 1;
+    int32 width = 2;
+    int32 height = 3;
+    int32 fps = 4;
+    string pixelFormat = 5;
+    optional double diagonalFOV = 6;
+    optional double horizontalFOV = 7;
+    optional double verticalFOV = 8;
+    optional double mean = 9;
+    optional double standardDeviation = 10;
+}
+
+message CameraQuirks {
+    string baseName = 1;
+    int32 usbVid = 2;
+    int32 usbPid = 3;
+    string displayName = 4;
+    map<string, bool> quirks = 5;
+}
+
+message MatchedCameraInfo {
+    string type = 1;
+    string path = 2;
+    string name = 3;
+    string uniquePath = 4;
+    string baseName = 5;
+    int32 dev = 6;
+    int32 vendorId = 7;
+    int32 productId = 8;
+    repeated string otherPaths = 9;
+}
+
+message NetworkInterfaceInfo {
+    string connName = 1;
+    string devName = 2;
+}
+
+message NetworkSettings {
+    string ntServerAddress = 1;
+    int32 connectionType = 2;
+    string staticIp = 3;
+    string hostname = 4;
+    bool runNTServer = 5;
+    bool shouldManage = 6;
+    bool shouldPublishProto = 7;
+    string networkManagerIface = 8;
+    string setStaticCommand = 9;
+    string setDHCPcommand = 10;
+    repeated NetworkInterfaceInfo networkInterfaceNames = 11;
+    bool networkingDisabled = 12;
+    bool canManage = 13;
+}
+
+message LightingSettings {
+    int32 brightness = 1;
+    bool supported = 2;
+}
+
+message ModelProperties {
+    string modelPath = 1;
+    string nickname = 2;
+    repeated string labels = 3;
+    int32 resolutionWidth = 4;
+    int32 resolutionHeight = 5;
+    string family = 6;
+    string version = 7;
+}
+
+message GeneralSettings {
+    optional string version = 1;
+    optional string imageVersion = 2;
+    optional string gpuAcceleration = 3;
+    bool mrCalWorking = 4;
+    repeated ModelProperties availableModels = 5;
+    repeated string supportedBackends = 6;
+    optional string hardwareModel = 7;
+    optional string hardwarePlatform = 8;
+    optional string wpilibArch = 9;
+    bool conflictingHostname = 10;
+    string conflictingCameras = 11;
+}
+
+message FieldDimensions {
+    double length = 1;
+    double width = 2;
+}
+
+message FieldTag {
+    int32 id = 1;
+    optional wpi.proto.ProtobufTransform3d pose = 2;
+}
+
+message Field {
+    FieldDimensions fieldDimensions = 1;
+    repeated FieldTag fieldTags = 2;
+}
+
+message PhotonSettings {
+    NetworkSettings networkSettings = 1;
+    LightingSettings lighting = 2;
+    GeneralSettings general = 3;
+    Field field = 4;
+}
+
 message CameraSettings {
-    string nickname = 1;
-    string uniqueName = 2;
+    string cameraPath = 1;
+    bool deactivated = 2;
+    string nickname = 3;
+    string uniqueName = 4;
 
-    int32 inputStreamPort = 3;
-    int32 outputStreamPort = 4;
-
-    bool isEnabled = 5;
-    bool isConnected = 6;
-    bool hasConnected = 7;
-    bool mismatch = 8;
+    double fov = 5;
+    CameraPipelineSettings currentPipelineSettings = 6;
+    int32 currentPipelineIndex = 7;
+    repeated string pipelineNicknames = 8;
+    repeated VideoFormatInfo videoFormatList = 9;
+    int32 outputStreamPort = 10;
+    int32 inputStreamPort = 11;
+    repeated CameraCalibrationCoefficients calibrations = 12;
+    bool isFovConfigurable = 13;
+    CameraQuirks cameraQuirks = 14;
+    bool isCSICamera = 15;
+    double minExposureRaw = 16;
+    double maxExposureRaw = 17;
+    double minWhiteBalanceTemp = 18;
+    double maxWhiteBalanceTemp = 19;
+    MatchedCameraInfo matchedCameraInfo = 20;
+    bool mismatch = 21;
+    int32 fpsLimit = 22;
+    bool isEnabled = 23;
+    bool isConnected = 24;
+    bool hasConnected = 25;
 }
 
 // Things backend wants to send to dashboards

@@ -82,18 +82,230 @@ export interface VisionSourceManagerState {
 export interface MutatePipelineSettings {
 }
 
+export interface NumberPair {
+  first: number;
+  second: number;
+}
+
+export interface Point2D {
+  x: number;
+  y: number;
+}
+
+export interface CameraPipelineSettings {
+  pipelineIndex: number;
+  pipelineType: number;
+  inputImageRotationMode: number;
+  pipelineNickname: string;
+  cameraAutoExposure: boolean;
+  cameraExposureRaw: number;
+  cameraMinExposureRaw: number;
+  cameraMaxExposureRaw: number;
+  cameraBrightness: number;
+  cameraGain: number;
+  cameraRedGain: number;
+  cameraBlueGain: number;
+  cameraVideoModeIndex: number;
+  streamingFrameDivisor: number;
+  ledMode: boolean;
+  inputShouldShow: boolean;
+  outputShouldShow: boolean;
+  cameraAutoWhiteBalance: boolean;
+  cameraWhiteBalanceTemp: number;
+  blockForFrames: boolean;
+  hsvHue: NumberPair | undefined;
+  hsvSaturation: NumberPair | undefined;
+  hsvValue: NumberPair | undefined;
+  hueInverted: boolean;
+  outputShouldDraw: boolean;
+  outputMaximumTargets: number;
+  staticCropEnabled: boolean;
+  staticCropX: NumberPair | undefined;
+  staticCropY: NumberPair | undefined;
+  contourArea: NumberPair | undefined;
+  contourRatio: NumberPair | undefined;
+  contourFullness: NumberPair | undefined;
+  contourSpecklePercentage: number;
+  contourSortMode: number;
+  contourTargetOffsetPointEdge: number;
+  contourTargetOrientation: number;
+  offsetRobotOffsetMode: number;
+  offsetSinglePoint: Point2D | undefined;
+  offsetDualPointA: Point2D | undefined;
+  offsetDualPointAArea: number;
+  offsetDualPointB: Point2D | undefined;
+  offsetDualPointBArea: number;
+  contourGroupingMode: number;
+  contourIntersection: number;
+  solvePNPEnabled: boolean;
+  targetModel: number;
+  cornerDetectionStrategy: number;
+  cornerDetectionUseConvexHulls: boolean;
+  cornerDetectionExactSideCount: boolean;
+  cornerDetectionSideCount: number;
+  cornerDetectionAccuracyPercentage: number;
+  tagFamily: number;
+  decimate: number;
+  blur: number;
+  threads: number;
+  debug: boolean;
+  refineEdges: boolean;
+  numIterations: number;
+  hammingDist: number;
+  decisionMargin: number;
+  doMultiTarget: boolean;
+  doSingleTargetAlways: boolean;
+  debugThreshold: boolean;
+  useCornerRefinement: boolean;
+  refineNumIterations: number;
+  refineMinErrorPx: number;
+  useAruco3: boolean;
+  aruco3MinMarkerSideRatio: number;
+  aruco3MinCanonicalImgSide: number;
+  confidence: number;
+  nms: number;
+  model: ModelProperties | undefined;
+  contourFilterRangeX: number;
+  contourFilterRangeY: number;
+  crosshair: boolean;
+  offsetPoint: NumberPair | undefined;
+}
+
+export interface VideoFormatInfo {
+  index: number;
+  width: number;
+  height: number;
+  fps: number;
+  pixelFormat: string;
+  diagonalFOV?: number | undefined;
+  horizontalFOV?: number | undefined;
+  verticalFOV?: number | undefined;
+  mean?: number | undefined;
+  standardDeviation?: number | undefined;
+}
+
+export interface CameraQuirks {
+  baseName: string;
+  usbVid: number;
+  usbPid: number;
+  displayName: string;
+  quirks: { [key: string]: boolean };
+}
+
+export interface CameraQuirks_QuirksEntry {
+  key: string;
+  value: boolean;
+}
+
+export interface MatchedCameraInfo {
+  type: string;
+  path: string;
+  name: string;
+  uniquePath: string;
+  baseName: string;
+  dev: number;
+  vendorId: number;
+  productId: number;
+  otherPaths: string[];
+}
+
+export interface NetworkInterfaceInfo {
+  connName: string;
+  devName: string;
+}
+
+export interface NetworkSettings {
+  ntServerAddress: string;
+  connectionType: number;
+  staticIp: string;
+  hostname: string;
+  runNTServer: boolean;
+  shouldManage: boolean;
+  shouldPublishProto: boolean;
+  networkManagerIface: string;
+  setStaticCommand: string;
+  setDHCPcommand: string;
+  networkInterfaceNames: NetworkInterfaceInfo[];
+  networkingDisabled: boolean;
+}
+
+export interface LightingSettings {
+  brightness: number;
+  supported: boolean;
+}
+
+export interface ModelProperties {
+  modelPath: string;
+  nickname: string;
+  labels: string[];
+  resolutionWidth: number;
+  resolutionHeight: number;
+  family: string;
+  version: string;
+}
+
+export interface GeneralSettings {
+  version?: string | undefined;
+  imageVersion?: string | undefined;
+  gpuAcceleration?: string | undefined;
+  mrCalWorking: boolean;
+  availableModels: ModelProperties[];
+  supportedBackends: string[];
+  hardwareModel?: string | undefined;
+  hardwarePlatform?: string | undefined;
+  wpilibArch?: string | undefined;
+  conflictingHostname: boolean;
+  conflictingCameras: string;
+}
+
+export interface FieldDimensions {
+  length: number;
+  width: number;
+}
+
+export interface FieldTag {
+  id: number;
+  pose?: ProtobufTransform3d | undefined;
+}
+
+export interface Field {
+  fieldDimensions: FieldDimensions | undefined;
+  fieldTags: FieldTag[];
+}
+
 export interface PhotonSettings {
+  networkSettings: NetworkSettings | undefined;
+  lighting: LightingSettings | undefined;
+  general: GeneralSettings | undefined;
+  field: Field | undefined;
 }
 
 export interface CameraSettings {
+  cameraPath: string;
+  deactivated: boolean;
   nickname: string;
   uniqueName: string;
-  inputStreamPort: number;
+  fov: number;
+  currentPipelineSettings: CameraPipelineSettings | undefined;
+  currentPipelineIndex: number;
+  pipelineNicknames: string[];
+  videoFormatList: VideoFormatInfo[];
   outputStreamPort: number;
+  inputStreamPort: number;
+  calibrations: CameraCalibrationCoefficients[];
+  isFovConfigurable: boolean;
+  cameraQuirks: CameraQuirks | undefined;
+  isCSICamera: boolean;
+  minExposureRaw: number;
+  maxExposureRaw: number;
+  minWhiteBalanceTemp: number;
+  maxWhiteBalanceTemp: number;
+  matchedCameraInfo: MatchedCameraInfo | undefined;
+  mismatch: boolean;
+  fpsLimit: number;
   isEnabled: boolean;
   isConnected: boolean;
   hasConnected: boolean;
-  mismatch: boolean;
 }
 
 /** Things backend wants to send to dashboards */
@@ -1267,12 +1479,3376 @@ export const MutatePipelineSettings: MessageFns<MutatePipelineSettings> = {
   },
 };
 
+function createBaseNumberPair(): NumberPair {
+  return { first: 0, second: 0 };
+}
+
+export const NumberPair: MessageFns<NumberPair> = {
+  encode(message: NumberPair, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.first !== 0) {
+      writer.uint32(9).double(message.first);
+    }
+    if (message.second !== 0) {
+      writer.uint32(17).double(message.second);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): NumberPair {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseNumberPair();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 9) {
+              break;
+            }
+
+            message.first = reader.double();
+            continue;
+          }
+          case 2: {
+            if (tag !== 17) {
+              break;
+            }
+
+            message.second = reader.double();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): NumberPair {
+    return {
+      first: isSet(object.first) ? globalThis.Number(object.first) : 0,
+      second: isSet(object.second) ? globalThis.Number(object.second) : 0,
+    };
+  },
+
+  toJSON(message: NumberPair): unknown {
+    const obj: any = {};
+    if (message.first !== 0) {
+      obj.first = message.first;
+    }
+    if (message.second !== 0) {
+      obj.second = message.second;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<NumberPair>, I>>(base?: I): NumberPair {
+    return NumberPair.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<NumberPair>, I>>(object: I): NumberPair {
+    const message = createBaseNumberPair();
+    message.first = object.first ?? 0;
+    message.second = object.second ?? 0;
+    return message;
+  },
+};
+
+function createBasePoint2D(): Point2D {
+  return { x: 0, y: 0 };
+}
+
+export const Point2D: MessageFns<Point2D> = {
+  encode(message: Point2D, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.x !== 0) {
+      writer.uint32(9).double(message.x);
+    }
+    if (message.y !== 0) {
+      writer.uint32(17).double(message.y);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Point2D {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBasePoint2D();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 9) {
+              break;
+            }
+
+            message.x = reader.double();
+            continue;
+          }
+          case 2: {
+            if (tag !== 17) {
+              break;
+            }
+
+            message.y = reader.double();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): Point2D {
+    return {
+      x: isSet(object.x) ? globalThis.Number(object.x) : 0,
+      y: isSet(object.y) ? globalThis.Number(object.y) : 0,
+    };
+  },
+
+  toJSON(message: Point2D): unknown {
+    const obj: any = {};
+    if (message.x !== 0) {
+      obj.x = message.x;
+    }
+    if (message.y !== 0) {
+      obj.y = message.y;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Point2D>, I>>(base?: I): Point2D {
+    return Point2D.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Point2D>, I>>(object: I): Point2D {
+    const message = createBasePoint2D();
+    message.x = object.x ?? 0;
+    message.y = object.y ?? 0;
+    return message;
+  },
+};
+
+function createBaseCameraPipelineSettings(): CameraPipelineSettings {
+  return {
+    pipelineIndex: 0,
+    pipelineType: 0,
+    inputImageRotationMode: 0,
+    pipelineNickname: "",
+    cameraAutoExposure: false,
+    cameraExposureRaw: 0,
+    cameraMinExposureRaw: 0,
+    cameraMaxExposureRaw: 0,
+    cameraBrightness: 0,
+    cameraGain: 0,
+    cameraRedGain: 0,
+    cameraBlueGain: 0,
+    cameraVideoModeIndex: 0,
+    streamingFrameDivisor: 0,
+    ledMode: false,
+    inputShouldShow: false,
+    outputShouldShow: false,
+    cameraAutoWhiteBalance: false,
+    cameraWhiteBalanceTemp: 0,
+    blockForFrames: false,
+    hsvHue: undefined,
+    hsvSaturation: undefined,
+    hsvValue: undefined,
+    hueInverted: false,
+    outputShouldDraw: false,
+    outputMaximumTargets: 0,
+    staticCropEnabled: false,
+    staticCropX: undefined,
+    staticCropY: undefined,
+    contourArea: undefined,
+    contourRatio: undefined,
+    contourFullness: undefined,
+    contourSpecklePercentage: 0,
+    contourSortMode: 0,
+    contourTargetOffsetPointEdge: 0,
+    contourTargetOrientation: 0,
+    offsetRobotOffsetMode: 0,
+    offsetSinglePoint: undefined,
+    offsetDualPointA: undefined,
+    offsetDualPointAArea: 0,
+    offsetDualPointB: undefined,
+    offsetDualPointBArea: 0,
+    contourGroupingMode: 0,
+    contourIntersection: 0,
+    solvePNPEnabled: false,
+    targetModel: 0,
+    cornerDetectionStrategy: 0,
+    cornerDetectionUseConvexHulls: false,
+    cornerDetectionExactSideCount: false,
+    cornerDetectionSideCount: 0,
+    cornerDetectionAccuracyPercentage: 0,
+    tagFamily: 0,
+    decimate: 0,
+    blur: 0,
+    threads: 0,
+    debug: false,
+    refineEdges: false,
+    numIterations: 0,
+    hammingDist: 0,
+    decisionMargin: 0,
+    doMultiTarget: false,
+    doSingleTargetAlways: false,
+    debugThreshold: false,
+    useCornerRefinement: false,
+    refineNumIterations: 0,
+    refineMinErrorPx: 0,
+    useAruco3: false,
+    aruco3MinMarkerSideRatio: 0,
+    aruco3MinCanonicalImgSide: 0,
+    confidence: 0,
+    nms: 0,
+    model: undefined,
+    contourFilterRangeX: 0,
+    contourFilterRangeY: 0,
+    crosshair: false,
+    offsetPoint: undefined,
+  };
+}
+
+export const CameraPipelineSettings: MessageFns<CameraPipelineSettings> = {
+  encode(message: CameraPipelineSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.pipelineIndex !== 0) {
+      writer.uint32(8).int32(message.pipelineIndex);
+    }
+    if (message.pipelineType !== 0) {
+      writer.uint32(16).int32(message.pipelineType);
+    }
+    if (message.inputImageRotationMode !== 0) {
+      writer.uint32(24).int32(message.inputImageRotationMode);
+    }
+    if (message.pipelineNickname !== "") {
+      writer.uint32(34).string(message.pipelineNickname);
+    }
+    if (message.cameraAutoExposure !== false) {
+      writer.uint32(40).bool(message.cameraAutoExposure);
+    }
+    if (message.cameraExposureRaw !== 0) {
+      writer.uint32(49).double(message.cameraExposureRaw);
+    }
+    if (message.cameraMinExposureRaw !== 0) {
+      writer.uint32(57).double(message.cameraMinExposureRaw);
+    }
+    if (message.cameraMaxExposureRaw !== 0) {
+      writer.uint32(65).double(message.cameraMaxExposureRaw);
+    }
+    if (message.cameraBrightness !== 0) {
+      writer.uint32(72).int32(message.cameraBrightness);
+    }
+    if (message.cameraGain !== 0) {
+      writer.uint32(80).int32(message.cameraGain);
+    }
+    if (message.cameraRedGain !== 0) {
+      writer.uint32(88).int32(message.cameraRedGain);
+    }
+    if (message.cameraBlueGain !== 0) {
+      writer.uint32(96).int32(message.cameraBlueGain);
+    }
+    if (message.cameraVideoModeIndex !== 0) {
+      writer.uint32(104).int32(message.cameraVideoModeIndex);
+    }
+    if (message.streamingFrameDivisor !== 0) {
+      writer.uint32(112).int32(message.streamingFrameDivisor);
+    }
+    if (message.ledMode !== false) {
+      writer.uint32(120).bool(message.ledMode);
+    }
+    if (message.inputShouldShow !== false) {
+      writer.uint32(128).bool(message.inputShouldShow);
+    }
+    if (message.outputShouldShow !== false) {
+      writer.uint32(136).bool(message.outputShouldShow);
+    }
+    if (message.cameraAutoWhiteBalance !== false) {
+      writer.uint32(144).bool(message.cameraAutoWhiteBalance);
+    }
+    if (message.cameraWhiteBalanceTemp !== 0) {
+      writer.uint32(153).double(message.cameraWhiteBalanceTemp);
+    }
+    if (message.blockForFrames !== false) {
+      writer.uint32(160).bool(message.blockForFrames);
+    }
+    if (message.hsvHue !== undefined) {
+      NumberPair.encode(message.hsvHue, writer.uint32(170).fork()).join();
+    }
+    if (message.hsvSaturation !== undefined) {
+      NumberPair.encode(message.hsvSaturation, writer.uint32(178).fork()).join();
+    }
+    if (message.hsvValue !== undefined) {
+      NumberPair.encode(message.hsvValue, writer.uint32(186).fork()).join();
+    }
+    if (message.hueInverted !== false) {
+      writer.uint32(192).bool(message.hueInverted);
+    }
+    if (message.outputShouldDraw !== false) {
+      writer.uint32(200).bool(message.outputShouldDraw);
+    }
+    if (message.outputMaximumTargets !== 0) {
+      writer.uint32(208).int32(message.outputMaximumTargets);
+    }
+    if (message.staticCropEnabled !== false) {
+      writer.uint32(216).bool(message.staticCropEnabled);
+    }
+    if (message.staticCropX !== undefined) {
+      NumberPair.encode(message.staticCropX, writer.uint32(226).fork()).join();
+    }
+    if (message.staticCropY !== undefined) {
+      NumberPair.encode(message.staticCropY, writer.uint32(234).fork()).join();
+    }
+    if (message.contourArea !== undefined) {
+      NumberPair.encode(message.contourArea, writer.uint32(242).fork()).join();
+    }
+    if (message.contourRatio !== undefined) {
+      NumberPair.encode(message.contourRatio, writer.uint32(250).fork()).join();
+    }
+    if (message.contourFullness !== undefined) {
+      NumberPair.encode(message.contourFullness, writer.uint32(258).fork()).join();
+    }
+    if (message.contourSpecklePercentage !== 0) {
+      writer.uint32(264).int32(message.contourSpecklePercentage);
+    }
+    if (message.contourSortMode !== 0) {
+      writer.uint32(272).int32(message.contourSortMode);
+    }
+    if (message.contourTargetOffsetPointEdge !== 0) {
+      writer.uint32(280).int32(message.contourTargetOffsetPointEdge);
+    }
+    if (message.contourTargetOrientation !== 0) {
+      writer.uint32(288).int32(message.contourTargetOrientation);
+    }
+    if (message.offsetRobotOffsetMode !== 0) {
+      writer.uint32(296).int32(message.offsetRobotOffsetMode);
+    }
+    if (message.offsetSinglePoint !== undefined) {
+      Point2D.encode(message.offsetSinglePoint, writer.uint32(306).fork()).join();
+    }
+    if (message.offsetDualPointA !== undefined) {
+      Point2D.encode(message.offsetDualPointA, writer.uint32(314).fork()).join();
+    }
+    if (message.offsetDualPointAArea !== 0) {
+      writer.uint32(321).double(message.offsetDualPointAArea);
+    }
+    if (message.offsetDualPointB !== undefined) {
+      Point2D.encode(message.offsetDualPointB, writer.uint32(330).fork()).join();
+    }
+    if (message.offsetDualPointBArea !== 0) {
+      writer.uint32(337).double(message.offsetDualPointBArea);
+    }
+    if (message.contourGroupingMode !== 0) {
+      writer.uint32(344).int32(message.contourGroupingMode);
+    }
+    if (message.contourIntersection !== 0) {
+      writer.uint32(352).int32(message.contourIntersection);
+    }
+    if (message.solvePNPEnabled !== false) {
+      writer.uint32(360).bool(message.solvePNPEnabled);
+    }
+    if (message.targetModel !== 0) {
+      writer.uint32(368).int32(message.targetModel);
+    }
+    if (message.cornerDetectionStrategy !== 0) {
+      writer.uint32(376).int32(message.cornerDetectionStrategy);
+    }
+    if (message.cornerDetectionUseConvexHulls !== false) {
+      writer.uint32(384).bool(message.cornerDetectionUseConvexHulls);
+    }
+    if (message.cornerDetectionExactSideCount !== false) {
+      writer.uint32(392).bool(message.cornerDetectionExactSideCount);
+    }
+    if (message.cornerDetectionSideCount !== 0) {
+      writer.uint32(400).int32(message.cornerDetectionSideCount);
+    }
+    if (message.cornerDetectionAccuracyPercentage !== 0) {
+      writer.uint32(409).double(message.cornerDetectionAccuracyPercentage);
+    }
+    if (message.tagFamily !== 0) {
+      writer.uint32(416).int32(message.tagFamily);
+    }
+    if (message.decimate !== 0) {
+      writer.uint32(424).int32(message.decimate);
+    }
+    if (message.blur !== 0) {
+      writer.uint32(433).double(message.blur);
+    }
+    if (message.threads !== 0) {
+      writer.uint32(440).int32(message.threads);
+    }
+    if (message.debug !== false) {
+      writer.uint32(448).bool(message.debug);
+    }
+    if (message.refineEdges !== false) {
+      writer.uint32(456).bool(message.refineEdges);
+    }
+    if (message.numIterations !== 0) {
+      writer.uint32(464).int32(message.numIterations);
+    }
+    if (message.hammingDist !== 0) {
+      writer.uint32(472).int32(message.hammingDist);
+    }
+    if (message.decisionMargin !== 0) {
+      writer.uint32(480).int32(message.decisionMargin);
+    }
+    if (message.doMultiTarget !== false) {
+      writer.uint32(488).bool(message.doMultiTarget);
+    }
+    if (message.doSingleTargetAlways !== false) {
+      writer.uint32(496).bool(message.doSingleTargetAlways);
+    }
+    if (message.debugThreshold !== false) {
+      writer.uint32(504).bool(message.debugThreshold);
+    }
+    if (message.useCornerRefinement !== false) {
+      writer.uint32(512).bool(message.useCornerRefinement);
+    }
+    if (message.refineNumIterations !== 0) {
+      writer.uint32(520).int32(message.refineNumIterations);
+    }
+    if (message.refineMinErrorPx !== 0) {
+      writer.uint32(529).double(message.refineMinErrorPx);
+    }
+    if (message.useAruco3 !== false) {
+      writer.uint32(536).bool(message.useAruco3);
+    }
+    if (message.aruco3MinMarkerSideRatio !== 0) {
+      writer.uint32(545).double(message.aruco3MinMarkerSideRatio);
+    }
+    if (message.aruco3MinCanonicalImgSide !== 0) {
+      writer.uint32(552).int32(message.aruco3MinCanonicalImgSide);
+    }
+    if (message.confidence !== 0) {
+      writer.uint32(561).double(message.confidence);
+    }
+    if (message.nms !== 0) {
+      writer.uint32(569).double(message.nms);
+    }
+    if (message.model !== undefined) {
+      ModelProperties.encode(message.model, writer.uint32(578).fork()).join();
+    }
+    if (message.contourFilterRangeX !== 0) {
+      writer.uint32(585).double(message.contourFilterRangeX);
+    }
+    if (message.contourFilterRangeY !== 0) {
+      writer.uint32(593).double(message.contourFilterRangeY);
+    }
+    if (message.crosshair !== false) {
+      writer.uint32(600).bool(message.crosshair);
+    }
+    if (message.offsetPoint !== undefined) {
+      NumberPair.encode(message.offsetPoint, writer.uint32(610).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CameraPipelineSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseCameraPipelineSettings();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.pipelineIndex = reader.int32();
+            continue;
+          }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.pipelineType = reader.int32();
+            continue;
+          }
+          case 3: {
+            if (tag !== 24) {
+              break;
+            }
+
+            message.inputImageRotationMode = reader.int32();
+            continue;
+          }
+          case 4: {
+            if (tag !== 34) {
+              break;
+            }
+
+            message.pipelineNickname = reader.string();
+            continue;
+          }
+          case 5: {
+            if (tag !== 40) {
+              break;
+            }
+
+            message.cameraAutoExposure = reader.bool();
+            continue;
+          }
+          case 6: {
+            if (tag !== 49) {
+              break;
+            }
+
+            message.cameraExposureRaw = reader.double();
+            continue;
+          }
+          case 7: {
+            if (tag !== 57) {
+              break;
+            }
+
+            message.cameraMinExposureRaw = reader.double();
+            continue;
+          }
+          case 8: {
+            if (tag !== 65) {
+              break;
+            }
+
+            message.cameraMaxExposureRaw = reader.double();
+            continue;
+          }
+          case 9: {
+            if (tag !== 72) {
+              break;
+            }
+
+            message.cameraBrightness = reader.int32();
+            continue;
+          }
+          case 10: {
+            if (tag !== 80) {
+              break;
+            }
+
+            message.cameraGain = reader.int32();
+            continue;
+          }
+          case 11: {
+            if (tag !== 88) {
+              break;
+            }
+
+            message.cameraRedGain = reader.int32();
+            continue;
+          }
+          case 12: {
+            if (tag !== 96) {
+              break;
+            }
+
+            message.cameraBlueGain = reader.int32();
+            continue;
+          }
+          case 13: {
+            if (tag !== 104) {
+              break;
+            }
+
+            message.cameraVideoModeIndex = reader.int32();
+            continue;
+          }
+          case 14: {
+            if (tag !== 112) {
+              break;
+            }
+
+            message.streamingFrameDivisor = reader.int32();
+            continue;
+          }
+          case 15: {
+            if (tag !== 120) {
+              break;
+            }
+
+            message.ledMode = reader.bool();
+            continue;
+          }
+          case 16: {
+            if (tag !== 128) {
+              break;
+            }
+
+            message.inputShouldShow = reader.bool();
+            continue;
+          }
+          case 17: {
+            if (tag !== 136) {
+              break;
+            }
+
+            message.outputShouldShow = reader.bool();
+            continue;
+          }
+          case 18: {
+            if (tag !== 144) {
+              break;
+            }
+
+            message.cameraAutoWhiteBalance = reader.bool();
+            continue;
+          }
+          case 19: {
+            if (tag !== 153) {
+              break;
+            }
+
+            message.cameraWhiteBalanceTemp = reader.double();
+            continue;
+          }
+          case 20: {
+            if (tag !== 160) {
+              break;
+            }
+
+            message.blockForFrames = reader.bool();
+            continue;
+          }
+          case 21: {
+            if (tag !== 170) {
+              break;
+            }
+
+            message.hsvHue = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+          case 22: {
+            if (tag !== 178) {
+              break;
+            }
+
+            message.hsvSaturation = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+          case 23: {
+            if (tag !== 186) {
+              break;
+            }
+
+            message.hsvValue = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+          case 24: {
+            if (tag !== 192) {
+              break;
+            }
+
+            message.hueInverted = reader.bool();
+            continue;
+          }
+          case 25: {
+            if (tag !== 200) {
+              break;
+            }
+
+            message.outputShouldDraw = reader.bool();
+            continue;
+          }
+          case 26: {
+            if (tag !== 208) {
+              break;
+            }
+
+            message.outputMaximumTargets = reader.int32();
+            continue;
+          }
+          case 27: {
+            if (tag !== 216) {
+              break;
+            }
+
+            message.staticCropEnabled = reader.bool();
+            continue;
+          }
+          case 28: {
+            if (tag !== 226) {
+              break;
+            }
+
+            message.staticCropX = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+          case 29: {
+            if (tag !== 234) {
+              break;
+            }
+
+            message.staticCropY = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+          case 30: {
+            if (tag !== 242) {
+              break;
+            }
+
+            message.contourArea = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+          case 31: {
+            if (tag !== 250) {
+              break;
+            }
+
+            message.contourRatio = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+          case 32: {
+            if (tag !== 258) {
+              break;
+            }
+
+            message.contourFullness = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+          case 33: {
+            if (tag !== 264) {
+              break;
+            }
+
+            message.contourSpecklePercentage = reader.int32();
+            continue;
+          }
+          case 34: {
+            if (tag !== 272) {
+              break;
+            }
+
+            message.contourSortMode = reader.int32();
+            continue;
+          }
+          case 35: {
+            if (tag !== 280) {
+              break;
+            }
+
+            message.contourTargetOffsetPointEdge = reader.int32();
+            continue;
+          }
+          case 36: {
+            if (tag !== 288) {
+              break;
+            }
+
+            message.contourTargetOrientation = reader.int32();
+            continue;
+          }
+          case 37: {
+            if (tag !== 296) {
+              break;
+            }
+
+            message.offsetRobotOffsetMode = reader.int32();
+            continue;
+          }
+          case 38: {
+            if (tag !== 306) {
+              break;
+            }
+
+            message.offsetSinglePoint = Point2D.decode(reader, reader.uint32());
+            continue;
+          }
+          case 39: {
+            if (tag !== 314) {
+              break;
+            }
+
+            message.offsetDualPointA = Point2D.decode(reader, reader.uint32());
+            continue;
+          }
+          case 40: {
+            if (tag !== 321) {
+              break;
+            }
+
+            message.offsetDualPointAArea = reader.double();
+            continue;
+          }
+          case 41: {
+            if (tag !== 330) {
+              break;
+            }
+
+            message.offsetDualPointB = Point2D.decode(reader, reader.uint32());
+            continue;
+          }
+          case 42: {
+            if (tag !== 337) {
+              break;
+            }
+
+            message.offsetDualPointBArea = reader.double();
+            continue;
+          }
+          case 43: {
+            if (tag !== 344) {
+              break;
+            }
+
+            message.contourGroupingMode = reader.int32();
+            continue;
+          }
+          case 44: {
+            if (tag !== 352) {
+              break;
+            }
+
+            message.contourIntersection = reader.int32();
+            continue;
+          }
+          case 45: {
+            if (tag !== 360) {
+              break;
+            }
+
+            message.solvePNPEnabled = reader.bool();
+            continue;
+          }
+          case 46: {
+            if (tag !== 368) {
+              break;
+            }
+
+            message.targetModel = reader.int32();
+            continue;
+          }
+          case 47: {
+            if (tag !== 376) {
+              break;
+            }
+
+            message.cornerDetectionStrategy = reader.int32();
+            continue;
+          }
+          case 48: {
+            if (tag !== 384) {
+              break;
+            }
+
+            message.cornerDetectionUseConvexHulls = reader.bool();
+            continue;
+          }
+          case 49: {
+            if (tag !== 392) {
+              break;
+            }
+
+            message.cornerDetectionExactSideCount = reader.bool();
+            continue;
+          }
+          case 50: {
+            if (tag !== 400) {
+              break;
+            }
+
+            message.cornerDetectionSideCount = reader.int32();
+            continue;
+          }
+          case 51: {
+            if (tag !== 409) {
+              break;
+            }
+
+            message.cornerDetectionAccuracyPercentage = reader.double();
+            continue;
+          }
+          case 52: {
+            if (tag !== 416) {
+              break;
+            }
+
+            message.tagFamily = reader.int32();
+            continue;
+          }
+          case 53: {
+            if (tag !== 424) {
+              break;
+            }
+
+            message.decimate = reader.int32();
+            continue;
+          }
+          case 54: {
+            if (tag !== 433) {
+              break;
+            }
+
+            message.blur = reader.double();
+            continue;
+          }
+          case 55: {
+            if (tag !== 440) {
+              break;
+            }
+
+            message.threads = reader.int32();
+            continue;
+          }
+          case 56: {
+            if (tag !== 448) {
+              break;
+            }
+
+            message.debug = reader.bool();
+            continue;
+          }
+          case 57: {
+            if (tag !== 456) {
+              break;
+            }
+
+            message.refineEdges = reader.bool();
+            continue;
+          }
+          case 58: {
+            if (tag !== 464) {
+              break;
+            }
+
+            message.numIterations = reader.int32();
+            continue;
+          }
+          case 59: {
+            if (tag !== 472) {
+              break;
+            }
+
+            message.hammingDist = reader.int32();
+            continue;
+          }
+          case 60: {
+            if (tag !== 480) {
+              break;
+            }
+
+            message.decisionMargin = reader.int32();
+            continue;
+          }
+          case 61: {
+            if (tag !== 488) {
+              break;
+            }
+
+            message.doMultiTarget = reader.bool();
+            continue;
+          }
+          case 62: {
+            if (tag !== 496) {
+              break;
+            }
+
+            message.doSingleTargetAlways = reader.bool();
+            continue;
+          }
+          case 63: {
+            if (tag !== 504) {
+              break;
+            }
+
+            message.debugThreshold = reader.bool();
+            continue;
+          }
+          case 64: {
+            if (tag !== 512) {
+              break;
+            }
+
+            message.useCornerRefinement = reader.bool();
+            continue;
+          }
+          case 65: {
+            if (tag !== 520) {
+              break;
+            }
+
+            message.refineNumIterations = reader.int32();
+            continue;
+          }
+          case 66: {
+            if (tag !== 529) {
+              break;
+            }
+
+            message.refineMinErrorPx = reader.double();
+            continue;
+          }
+          case 67: {
+            if (tag !== 536) {
+              break;
+            }
+
+            message.useAruco3 = reader.bool();
+            continue;
+          }
+          case 68: {
+            if (tag !== 545) {
+              break;
+            }
+
+            message.aruco3MinMarkerSideRatio = reader.double();
+            continue;
+          }
+          case 69: {
+            if (tag !== 552) {
+              break;
+            }
+
+            message.aruco3MinCanonicalImgSide = reader.int32();
+            continue;
+          }
+          case 70: {
+            if (tag !== 561) {
+              break;
+            }
+
+            message.confidence = reader.double();
+            continue;
+          }
+          case 71: {
+            if (tag !== 569) {
+              break;
+            }
+
+            message.nms = reader.double();
+            continue;
+          }
+          case 72: {
+            if (tag !== 578) {
+              break;
+            }
+
+            message.model = ModelProperties.decode(reader, reader.uint32());
+            continue;
+          }
+          case 73: {
+            if (tag !== 585) {
+              break;
+            }
+
+            message.contourFilterRangeX = reader.double();
+            continue;
+          }
+          case 74: {
+            if (tag !== 593) {
+              break;
+            }
+
+            message.contourFilterRangeY = reader.double();
+            continue;
+          }
+          case 75: {
+            if (tag !== 600) {
+              break;
+            }
+
+            message.crosshair = reader.bool();
+            continue;
+          }
+          case 76: {
+            if (tag !== 610) {
+              break;
+            }
+
+            message.offsetPoint = NumberPair.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): CameraPipelineSettings {
+    return {
+      pipelineIndex: isSet(object.pipelineIndex) ? globalThis.Number(object.pipelineIndex) : 0,
+      pipelineType: isSet(object.pipelineType) ? globalThis.Number(object.pipelineType) : 0,
+      inputImageRotationMode: isSet(object.inputImageRotationMode)
+        ? globalThis.Number(object.inputImageRotationMode)
+        : 0,
+      pipelineNickname: isSet(object.pipelineNickname) ? globalThis.String(object.pipelineNickname) : "",
+      cameraAutoExposure: isSet(object.cameraAutoExposure) ? globalThis.Boolean(object.cameraAutoExposure) : false,
+      cameraExposureRaw: isSet(object.cameraExposureRaw) ? globalThis.Number(object.cameraExposureRaw) : 0,
+      cameraMinExposureRaw: isSet(object.cameraMinExposureRaw) ? globalThis.Number(object.cameraMinExposureRaw) : 0,
+      cameraMaxExposureRaw: isSet(object.cameraMaxExposureRaw) ? globalThis.Number(object.cameraMaxExposureRaw) : 0,
+      cameraBrightness: isSet(object.cameraBrightness) ? globalThis.Number(object.cameraBrightness) : 0,
+      cameraGain: isSet(object.cameraGain) ? globalThis.Number(object.cameraGain) : 0,
+      cameraRedGain: isSet(object.cameraRedGain) ? globalThis.Number(object.cameraRedGain) : 0,
+      cameraBlueGain: isSet(object.cameraBlueGain) ? globalThis.Number(object.cameraBlueGain) : 0,
+      cameraVideoModeIndex: isSet(object.cameraVideoModeIndex) ? globalThis.Number(object.cameraVideoModeIndex) : 0,
+      streamingFrameDivisor: isSet(object.streamingFrameDivisor) ? globalThis.Number(object.streamingFrameDivisor) : 0,
+      ledMode: isSet(object.ledMode) ? globalThis.Boolean(object.ledMode) : false,
+      inputShouldShow: isSet(object.inputShouldShow) ? globalThis.Boolean(object.inputShouldShow) : false,
+      outputShouldShow: isSet(object.outputShouldShow) ? globalThis.Boolean(object.outputShouldShow) : false,
+      cameraAutoWhiteBalance: isSet(object.cameraAutoWhiteBalance)
+        ? globalThis.Boolean(object.cameraAutoWhiteBalance)
+        : false,
+      cameraWhiteBalanceTemp: isSet(object.cameraWhiteBalanceTemp)
+        ? globalThis.Number(object.cameraWhiteBalanceTemp)
+        : 0,
+      blockForFrames: isSet(object.blockForFrames) ? globalThis.Boolean(object.blockForFrames) : false,
+      hsvHue: isSet(object.hsvHue) ? NumberPair.fromJSON(object.hsvHue) : undefined,
+      hsvSaturation: isSet(object.hsvSaturation) ? NumberPair.fromJSON(object.hsvSaturation) : undefined,
+      hsvValue: isSet(object.hsvValue) ? NumberPair.fromJSON(object.hsvValue) : undefined,
+      hueInverted: isSet(object.hueInverted) ? globalThis.Boolean(object.hueInverted) : false,
+      outputShouldDraw: isSet(object.outputShouldDraw) ? globalThis.Boolean(object.outputShouldDraw) : false,
+      outputMaximumTargets: isSet(object.outputMaximumTargets) ? globalThis.Number(object.outputMaximumTargets) : 0,
+      staticCropEnabled: isSet(object.staticCropEnabled) ? globalThis.Boolean(object.staticCropEnabled) : false,
+      staticCropX: isSet(object.staticCropX) ? NumberPair.fromJSON(object.staticCropX) : undefined,
+      staticCropY: isSet(object.staticCropY) ? NumberPair.fromJSON(object.staticCropY) : undefined,
+      contourArea: isSet(object.contourArea) ? NumberPair.fromJSON(object.contourArea) : undefined,
+      contourRatio: isSet(object.contourRatio) ? NumberPair.fromJSON(object.contourRatio) : undefined,
+      contourFullness: isSet(object.contourFullness) ? NumberPair.fromJSON(object.contourFullness) : undefined,
+      contourSpecklePercentage: isSet(object.contourSpecklePercentage)
+        ? globalThis.Number(object.contourSpecklePercentage)
+        : 0,
+      contourSortMode: isSet(object.contourSortMode) ? globalThis.Number(object.contourSortMode) : 0,
+      contourTargetOffsetPointEdge: isSet(object.contourTargetOffsetPointEdge)
+        ? globalThis.Number(object.contourTargetOffsetPointEdge)
+        : 0,
+      contourTargetOrientation: isSet(object.contourTargetOrientation)
+        ? globalThis.Number(object.contourTargetOrientation)
+        : 0,
+      offsetRobotOffsetMode: isSet(object.offsetRobotOffsetMode) ? globalThis.Number(object.offsetRobotOffsetMode) : 0,
+      offsetSinglePoint: isSet(object.offsetSinglePoint) ? Point2D.fromJSON(object.offsetSinglePoint) : undefined,
+      offsetDualPointA: isSet(object.offsetDualPointA) ? Point2D.fromJSON(object.offsetDualPointA) : undefined,
+      offsetDualPointAArea: isSet(object.offsetDualPointAArea) ? globalThis.Number(object.offsetDualPointAArea) : 0,
+      offsetDualPointB: isSet(object.offsetDualPointB) ? Point2D.fromJSON(object.offsetDualPointB) : undefined,
+      offsetDualPointBArea: isSet(object.offsetDualPointBArea) ? globalThis.Number(object.offsetDualPointBArea) : 0,
+      contourGroupingMode: isSet(object.contourGroupingMode) ? globalThis.Number(object.contourGroupingMode) : 0,
+      contourIntersection: isSet(object.contourIntersection) ? globalThis.Number(object.contourIntersection) : 0,
+      solvePNPEnabled: isSet(object.solvePNPEnabled) ? globalThis.Boolean(object.solvePNPEnabled) : false,
+      targetModel: isSet(object.targetModel) ? globalThis.Number(object.targetModel) : 0,
+      cornerDetectionStrategy: isSet(object.cornerDetectionStrategy)
+        ? globalThis.Number(object.cornerDetectionStrategy)
+        : 0,
+      cornerDetectionUseConvexHulls: isSet(object.cornerDetectionUseConvexHulls)
+        ? globalThis.Boolean(object.cornerDetectionUseConvexHulls)
+        : false,
+      cornerDetectionExactSideCount: isSet(object.cornerDetectionExactSideCount)
+        ? globalThis.Boolean(object.cornerDetectionExactSideCount)
+        : false,
+      cornerDetectionSideCount: isSet(object.cornerDetectionSideCount)
+        ? globalThis.Number(object.cornerDetectionSideCount)
+        : 0,
+      cornerDetectionAccuracyPercentage: isSet(object.cornerDetectionAccuracyPercentage)
+        ? globalThis.Number(object.cornerDetectionAccuracyPercentage)
+        : 0,
+      tagFamily: isSet(object.tagFamily) ? globalThis.Number(object.tagFamily) : 0,
+      decimate: isSet(object.decimate) ? globalThis.Number(object.decimate) : 0,
+      blur: isSet(object.blur) ? globalThis.Number(object.blur) : 0,
+      threads: isSet(object.threads) ? globalThis.Number(object.threads) : 0,
+      debug: isSet(object.debug) ? globalThis.Boolean(object.debug) : false,
+      refineEdges: isSet(object.refineEdges) ? globalThis.Boolean(object.refineEdges) : false,
+      numIterations: isSet(object.numIterations) ? globalThis.Number(object.numIterations) : 0,
+      hammingDist: isSet(object.hammingDist) ? globalThis.Number(object.hammingDist) : 0,
+      decisionMargin: isSet(object.decisionMargin) ? globalThis.Number(object.decisionMargin) : 0,
+      doMultiTarget: isSet(object.doMultiTarget) ? globalThis.Boolean(object.doMultiTarget) : false,
+      doSingleTargetAlways: isSet(object.doSingleTargetAlways)
+        ? globalThis.Boolean(object.doSingleTargetAlways)
+        : false,
+      debugThreshold: isSet(object.debugThreshold) ? globalThis.Boolean(object.debugThreshold) : false,
+      useCornerRefinement: isSet(object.useCornerRefinement) ? globalThis.Boolean(object.useCornerRefinement) : false,
+      refineNumIterations: isSet(object.refineNumIterations) ? globalThis.Number(object.refineNumIterations) : 0,
+      refineMinErrorPx: isSet(object.refineMinErrorPx) ? globalThis.Number(object.refineMinErrorPx) : 0,
+      useAruco3: isSet(object.useAruco3) ? globalThis.Boolean(object.useAruco3) : false,
+      aruco3MinMarkerSideRatio: isSet(object.aruco3MinMarkerSideRatio)
+        ? globalThis.Number(object.aruco3MinMarkerSideRatio)
+        : 0,
+      aruco3MinCanonicalImgSide: isSet(object.aruco3MinCanonicalImgSide)
+        ? globalThis.Number(object.aruco3MinCanonicalImgSide)
+        : 0,
+      confidence: isSet(object.confidence) ? globalThis.Number(object.confidence) : 0,
+      nms: isSet(object.nms) ? globalThis.Number(object.nms) : 0,
+      model: isSet(object.model) ? ModelProperties.fromJSON(object.model) : undefined,
+      contourFilterRangeX: isSet(object.contourFilterRangeX) ? globalThis.Number(object.contourFilterRangeX) : 0,
+      contourFilterRangeY: isSet(object.contourFilterRangeY) ? globalThis.Number(object.contourFilterRangeY) : 0,
+      crosshair: isSet(object.crosshair) ? globalThis.Boolean(object.crosshair) : false,
+      offsetPoint: isSet(object.offsetPoint) ? NumberPair.fromJSON(object.offsetPoint) : undefined,
+    };
+  },
+
+  toJSON(message: CameraPipelineSettings): unknown {
+    const obj: any = {};
+    if (message.pipelineIndex !== 0) {
+      obj.pipelineIndex = Math.round(message.pipelineIndex);
+    }
+    if (message.pipelineType !== 0) {
+      obj.pipelineType = Math.round(message.pipelineType);
+    }
+    if (message.inputImageRotationMode !== 0) {
+      obj.inputImageRotationMode = Math.round(message.inputImageRotationMode);
+    }
+    if (message.pipelineNickname !== "") {
+      obj.pipelineNickname = message.pipelineNickname;
+    }
+    if (message.cameraAutoExposure !== false) {
+      obj.cameraAutoExposure = message.cameraAutoExposure;
+    }
+    if (message.cameraExposureRaw !== 0) {
+      obj.cameraExposureRaw = message.cameraExposureRaw;
+    }
+    if (message.cameraMinExposureRaw !== 0) {
+      obj.cameraMinExposureRaw = message.cameraMinExposureRaw;
+    }
+    if (message.cameraMaxExposureRaw !== 0) {
+      obj.cameraMaxExposureRaw = message.cameraMaxExposureRaw;
+    }
+    if (message.cameraBrightness !== 0) {
+      obj.cameraBrightness = Math.round(message.cameraBrightness);
+    }
+    if (message.cameraGain !== 0) {
+      obj.cameraGain = Math.round(message.cameraGain);
+    }
+    if (message.cameraRedGain !== 0) {
+      obj.cameraRedGain = Math.round(message.cameraRedGain);
+    }
+    if (message.cameraBlueGain !== 0) {
+      obj.cameraBlueGain = Math.round(message.cameraBlueGain);
+    }
+    if (message.cameraVideoModeIndex !== 0) {
+      obj.cameraVideoModeIndex = Math.round(message.cameraVideoModeIndex);
+    }
+    if (message.streamingFrameDivisor !== 0) {
+      obj.streamingFrameDivisor = Math.round(message.streamingFrameDivisor);
+    }
+    if (message.ledMode !== false) {
+      obj.ledMode = message.ledMode;
+    }
+    if (message.inputShouldShow !== false) {
+      obj.inputShouldShow = message.inputShouldShow;
+    }
+    if (message.outputShouldShow !== false) {
+      obj.outputShouldShow = message.outputShouldShow;
+    }
+    if (message.cameraAutoWhiteBalance !== false) {
+      obj.cameraAutoWhiteBalance = message.cameraAutoWhiteBalance;
+    }
+    if (message.cameraWhiteBalanceTemp !== 0) {
+      obj.cameraWhiteBalanceTemp = message.cameraWhiteBalanceTemp;
+    }
+    if (message.blockForFrames !== false) {
+      obj.blockForFrames = message.blockForFrames;
+    }
+    if (message.hsvHue !== undefined) {
+      obj.hsvHue = NumberPair.toJSON(message.hsvHue);
+    }
+    if (message.hsvSaturation !== undefined) {
+      obj.hsvSaturation = NumberPair.toJSON(message.hsvSaturation);
+    }
+    if (message.hsvValue !== undefined) {
+      obj.hsvValue = NumberPair.toJSON(message.hsvValue);
+    }
+    if (message.hueInverted !== false) {
+      obj.hueInverted = message.hueInverted;
+    }
+    if (message.outputShouldDraw !== false) {
+      obj.outputShouldDraw = message.outputShouldDraw;
+    }
+    if (message.outputMaximumTargets !== 0) {
+      obj.outputMaximumTargets = Math.round(message.outputMaximumTargets);
+    }
+    if (message.staticCropEnabled !== false) {
+      obj.staticCropEnabled = message.staticCropEnabled;
+    }
+    if (message.staticCropX !== undefined) {
+      obj.staticCropX = NumberPair.toJSON(message.staticCropX);
+    }
+    if (message.staticCropY !== undefined) {
+      obj.staticCropY = NumberPair.toJSON(message.staticCropY);
+    }
+    if (message.contourArea !== undefined) {
+      obj.contourArea = NumberPair.toJSON(message.contourArea);
+    }
+    if (message.contourRatio !== undefined) {
+      obj.contourRatio = NumberPair.toJSON(message.contourRatio);
+    }
+    if (message.contourFullness !== undefined) {
+      obj.contourFullness = NumberPair.toJSON(message.contourFullness);
+    }
+    if (message.contourSpecklePercentage !== 0) {
+      obj.contourSpecklePercentage = Math.round(message.contourSpecklePercentage);
+    }
+    if (message.contourSortMode !== 0) {
+      obj.contourSortMode = Math.round(message.contourSortMode);
+    }
+    if (message.contourTargetOffsetPointEdge !== 0) {
+      obj.contourTargetOffsetPointEdge = Math.round(message.contourTargetOffsetPointEdge);
+    }
+    if (message.contourTargetOrientation !== 0) {
+      obj.contourTargetOrientation = Math.round(message.contourTargetOrientation);
+    }
+    if (message.offsetRobotOffsetMode !== 0) {
+      obj.offsetRobotOffsetMode = Math.round(message.offsetRobotOffsetMode);
+    }
+    if (message.offsetSinglePoint !== undefined) {
+      obj.offsetSinglePoint = Point2D.toJSON(message.offsetSinglePoint);
+    }
+    if (message.offsetDualPointA !== undefined) {
+      obj.offsetDualPointA = Point2D.toJSON(message.offsetDualPointA);
+    }
+    if (message.offsetDualPointAArea !== 0) {
+      obj.offsetDualPointAArea = message.offsetDualPointAArea;
+    }
+    if (message.offsetDualPointB !== undefined) {
+      obj.offsetDualPointB = Point2D.toJSON(message.offsetDualPointB);
+    }
+    if (message.offsetDualPointBArea !== 0) {
+      obj.offsetDualPointBArea = message.offsetDualPointBArea;
+    }
+    if (message.contourGroupingMode !== 0) {
+      obj.contourGroupingMode = Math.round(message.contourGroupingMode);
+    }
+    if (message.contourIntersection !== 0) {
+      obj.contourIntersection = Math.round(message.contourIntersection);
+    }
+    if (message.solvePNPEnabled !== false) {
+      obj.solvePNPEnabled = message.solvePNPEnabled;
+    }
+    if (message.targetModel !== 0) {
+      obj.targetModel = Math.round(message.targetModel);
+    }
+    if (message.cornerDetectionStrategy !== 0) {
+      obj.cornerDetectionStrategy = Math.round(message.cornerDetectionStrategy);
+    }
+    if (message.cornerDetectionUseConvexHulls !== false) {
+      obj.cornerDetectionUseConvexHulls = message.cornerDetectionUseConvexHulls;
+    }
+    if (message.cornerDetectionExactSideCount !== false) {
+      obj.cornerDetectionExactSideCount = message.cornerDetectionExactSideCount;
+    }
+    if (message.cornerDetectionSideCount !== 0) {
+      obj.cornerDetectionSideCount = Math.round(message.cornerDetectionSideCount);
+    }
+    if (message.cornerDetectionAccuracyPercentage !== 0) {
+      obj.cornerDetectionAccuracyPercentage = message.cornerDetectionAccuracyPercentage;
+    }
+    if (message.tagFamily !== 0) {
+      obj.tagFamily = Math.round(message.tagFamily);
+    }
+    if (message.decimate !== 0) {
+      obj.decimate = Math.round(message.decimate);
+    }
+    if (message.blur !== 0) {
+      obj.blur = message.blur;
+    }
+    if (message.threads !== 0) {
+      obj.threads = Math.round(message.threads);
+    }
+    if (message.debug !== false) {
+      obj.debug = message.debug;
+    }
+    if (message.refineEdges !== false) {
+      obj.refineEdges = message.refineEdges;
+    }
+    if (message.numIterations !== 0) {
+      obj.numIterations = Math.round(message.numIterations);
+    }
+    if (message.hammingDist !== 0) {
+      obj.hammingDist = Math.round(message.hammingDist);
+    }
+    if (message.decisionMargin !== 0) {
+      obj.decisionMargin = Math.round(message.decisionMargin);
+    }
+    if (message.doMultiTarget !== false) {
+      obj.doMultiTarget = message.doMultiTarget;
+    }
+    if (message.doSingleTargetAlways !== false) {
+      obj.doSingleTargetAlways = message.doSingleTargetAlways;
+    }
+    if (message.debugThreshold !== false) {
+      obj.debugThreshold = message.debugThreshold;
+    }
+    if (message.useCornerRefinement !== false) {
+      obj.useCornerRefinement = message.useCornerRefinement;
+    }
+    if (message.refineNumIterations !== 0) {
+      obj.refineNumIterations = Math.round(message.refineNumIterations);
+    }
+    if (message.refineMinErrorPx !== 0) {
+      obj.refineMinErrorPx = message.refineMinErrorPx;
+    }
+    if (message.useAruco3 !== false) {
+      obj.useAruco3 = message.useAruco3;
+    }
+    if (message.aruco3MinMarkerSideRatio !== 0) {
+      obj.aruco3MinMarkerSideRatio = message.aruco3MinMarkerSideRatio;
+    }
+    if (message.aruco3MinCanonicalImgSide !== 0) {
+      obj.aruco3MinCanonicalImgSide = Math.round(message.aruco3MinCanonicalImgSide);
+    }
+    if (message.confidence !== 0) {
+      obj.confidence = message.confidence;
+    }
+    if (message.nms !== 0) {
+      obj.nms = message.nms;
+    }
+    if (message.model !== undefined) {
+      obj.model = ModelProperties.toJSON(message.model);
+    }
+    if (message.contourFilterRangeX !== 0) {
+      obj.contourFilterRangeX = message.contourFilterRangeX;
+    }
+    if (message.contourFilterRangeY !== 0) {
+      obj.contourFilterRangeY = message.contourFilterRangeY;
+    }
+    if (message.crosshair !== false) {
+      obj.crosshair = message.crosshair;
+    }
+    if (message.offsetPoint !== undefined) {
+      obj.offsetPoint = NumberPair.toJSON(message.offsetPoint);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CameraPipelineSettings>, I>>(base?: I): CameraPipelineSettings {
+    return CameraPipelineSettings.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CameraPipelineSettings>, I>>(object: I): CameraPipelineSettings {
+    const message = createBaseCameraPipelineSettings();
+    message.pipelineIndex = object.pipelineIndex ?? 0;
+    message.pipelineType = object.pipelineType ?? 0;
+    message.inputImageRotationMode = object.inputImageRotationMode ?? 0;
+    message.pipelineNickname = object.pipelineNickname ?? "";
+    message.cameraAutoExposure = object.cameraAutoExposure ?? false;
+    message.cameraExposureRaw = object.cameraExposureRaw ?? 0;
+    message.cameraMinExposureRaw = object.cameraMinExposureRaw ?? 0;
+    message.cameraMaxExposureRaw = object.cameraMaxExposureRaw ?? 0;
+    message.cameraBrightness = object.cameraBrightness ?? 0;
+    message.cameraGain = object.cameraGain ?? 0;
+    message.cameraRedGain = object.cameraRedGain ?? 0;
+    message.cameraBlueGain = object.cameraBlueGain ?? 0;
+    message.cameraVideoModeIndex = object.cameraVideoModeIndex ?? 0;
+    message.streamingFrameDivisor = object.streamingFrameDivisor ?? 0;
+    message.ledMode = object.ledMode ?? false;
+    message.inputShouldShow = object.inputShouldShow ?? false;
+    message.outputShouldShow = object.outputShouldShow ?? false;
+    message.cameraAutoWhiteBalance = object.cameraAutoWhiteBalance ?? false;
+    message.cameraWhiteBalanceTemp = object.cameraWhiteBalanceTemp ?? 0;
+    message.blockForFrames = object.blockForFrames ?? false;
+    message.hsvHue = (object.hsvHue !== undefined && object.hsvHue !== null)
+      ? NumberPair.fromPartial(object.hsvHue)
+      : undefined;
+    message.hsvSaturation = (object.hsvSaturation !== undefined && object.hsvSaturation !== null)
+      ? NumberPair.fromPartial(object.hsvSaturation)
+      : undefined;
+    message.hsvValue = (object.hsvValue !== undefined && object.hsvValue !== null)
+      ? NumberPair.fromPartial(object.hsvValue)
+      : undefined;
+    message.hueInverted = object.hueInverted ?? false;
+    message.outputShouldDraw = object.outputShouldDraw ?? false;
+    message.outputMaximumTargets = object.outputMaximumTargets ?? 0;
+    message.staticCropEnabled = object.staticCropEnabled ?? false;
+    message.staticCropX = (object.staticCropX !== undefined && object.staticCropX !== null)
+      ? NumberPair.fromPartial(object.staticCropX)
+      : undefined;
+    message.staticCropY = (object.staticCropY !== undefined && object.staticCropY !== null)
+      ? NumberPair.fromPartial(object.staticCropY)
+      : undefined;
+    message.contourArea = (object.contourArea !== undefined && object.contourArea !== null)
+      ? NumberPair.fromPartial(object.contourArea)
+      : undefined;
+    message.contourRatio = (object.contourRatio !== undefined && object.contourRatio !== null)
+      ? NumberPair.fromPartial(object.contourRatio)
+      : undefined;
+    message.contourFullness = (object.contourFullness !== undefined && object.contourFullness !== null)
+      ? NumberPair.fromPartial(object.contourFullness)
+      : undefined;
+    message.contourSpecklePercentage = object.contourSpecklePercentage ?? 0;
+    message.contourSortMode = object.contourSortMode ?? 0;
+    message.contourTargetOffsetPointEdge = object.contourTargetOffsetPointEdge ?? 0;
+    message.contourTargetOrientation = object.contourTargetOrientation ?? 0;
+    message.offsetRobotOffsetMode = object.offsetRobotOffsetMode ?? 0;
+    message.offsetSinglePoint = (object.offsetSinglePoint !== undefined && object.offsetSinglePoint !== null)
+      ? Point2D.fromPartial(object.offsetSinglePoint)
+      : undefined;
+    message.offsetDualPointA = (object.offsetDualPointA !== undefined && object.offsetDualPointA !== null)
+      ? Point2D.fromPartial(object.offsetDualPointA)
+      : undefined;
+    message.offsetDualPointAArea = object.offsetDualPointAArea ?? 0;
+    message.offsetDualPointB = (object.offsetDualPointB !== undefined && object.offsetDualPointB !== null)
+      ? Point2D.fromPartial(object.offsetDualPointB)
+      : undefined;
+    message.offsetDualPointBArea = object.offsetDualPointBArea ?? 0;
+    message.contourGroupingMode = object.contourGroupingMode ?? 0;
+    message.contourIntersection = object.contourIntersection ?? 0;
+    message.solvePNPEnabled = object.solvePNPEnabled ?? false;
+    message.targetModel = object.targetModel ?? 0;
+    message.cornerDetectionStrategy = object.cornerDetectionStrategy ?? 0;
+    message.cornerDetectionUseConvexHulls = object.cornerDetectionUseConvexHulls ?? false;
+    message.cornerDetectionExactSideCount = object.cornerDetectionExactSideCount ?? false;
+    message.cornerDetectionSideCount = object.cornerDetectionSideCount ?? 0;
+    message.cornerDetectionAccuracyPercentage = object.cornerDetectionAccuracyPercentage ?? 0;
+    message.tagFamily = object.tagFamily ?? 0;
+    message.decimate = object.decimate ?? 0;
+    message.blur = object.blur ?? 0;
+    message.threads = object.threads ?? 0;
+    message.debug = object.debug ?? false;
+    message.refineEdges = object.refineEdges ?? false;
+    message.numIterations = object.numIterations ?? 0;
+    message.hammingDist = object.hammingDist ?? 0;
+    message.decisionMargin = object.decisionMargin ?? 0;
+    message.doMultiTarget = object.doMultiTarget ?? false;
+    message.doSingleTargetAlways = object.doSingleTargetAlways ?? false;
+    message.debugThreshold = object.debugThreshold ?? false;
+    message.useCornerRefinement = object.useCornerRefinement ?? false;
+    message.refineNumIterations = object.refineNumIterations ?? 0;
+    message.refineMinErrorPx = object.refineMinErrorPx ?? 0;
+    message.useAruco3 = object.useAruco3 ?? false;
+    message.aruco3MinMarkerSideRatio = object.aruco3MinMarkerSideRatio ?? 0;
+    message.aruco3MinCanonicalImgSide = object.aruco3MinCanonicalImgSide ?? 0;
+    message.confidence = object.confidence ?? 0;
+    message.nms = object.nms ?? 0;
+    message.model = (object.model !== undefined && object.model !== null)
+      ? ModelProperties.fromPartial(object.model)
+      : undefined;
+    message.contourFilterRangeX = object.contourFilterRangeX ?? 0;
+    message.contourFilterRangeY = object.contourFilterRangeY ?? 0;
+    message.crosshair = object.crosshair ?? false;
+    message.offsetPoint = (object.offsetPoint !== undefined && object.offsetPoint !== null)
+      ? NumberPair.fromPartial(object.offsetPoint)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseVideoFormatInfo(): VideoFormatInfo {
+  return {
+    index: 0,
+    width: 0,
+    height: 0,
+    fps: 0,
+    pixelFormat: "",
+    diagonalFOV: undefined,
+    horizontalFOV: undefined,
+    verticalFOV: undefined,
+    mean: undefined,
+    standardDeviation: undefined,
+  };
+}
+
+export const VideoFormatInfo: MessageFns<VideoFormatInfo> = {
+  encode(message: VideoFormatInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.index !== 0) {
+      writer.uint32(8).int32(message.index);
+    }
+    if (message.width !== 0) {
+      writer.uint32(16).int32(message.width);
+    }
+    if (message.height !== 0) {
+      writer.uint32(24).int32(message.height);
+    }
+    if (message.fps !== 0) {
+      writer.uint32(32).int32(message.fps);
+    }
+    if (message.pixelFormat !== "") {
+      writer.uint32(42).string(message.pixelFormat);
+    }
+    if (message.diagonalFOV !== undefined) {
+      writer.uint32(49).double(message.diagonalFOV);
+    }
+    if (message.horizontalFOV !== undefined) {
+      writer.uint32(57).double(message.horizontalFOV);
+    }
+    if (message.verticalFOV !== undefined) {
+      writer.uint32(65).double(message.verticalFOV);
+    }
+    if (message.mean !== undefined) {
+      writer.uint32(73).double(message.mean);
+    }
+    if (message.standardDeviation !== undefined) {
+      writer.uint32(81).double(message.standardDeviation);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VideoFormatInfo {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseVideoFormatInfo();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.index = reader.int32();
+            continue;
+          }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.width = reader.int32();
+            continue;
+          }
+          case 3: {
+            if (tag !== 24) {
+              break;
+            }
+
+            message.height = reader.int32();
+            continue;
+          }
+          case 4: {
+            if (tag !== 32) {
+              break;
+            }
+
+            message.fps = reader.int32();
+            continue;
+          }
+          case 5: {
+            if (tag !== 42) {
+              break;
+            }
+
+            message.pixelFormat = reader.string();
+            continue;
+          }
+          case 6: {
+            if (tag !== 49) {
+              break;
+            }
+
+            message.diagonalFOV = reader.double();
+            continue;
+          }
+          case 7: {
+            if (tag !== 57) {
+              break;
+            }
+
+            message.horizontalFOV = reader.double();
+            continue;
+          }
+          case 8: {
+            if (tag !== 65) {
+              break;
+            }
+
+            message.verticalFOV = reader.double();
+            continue;
+          }
+          case 9: {
+            if (tag !== 73) {
+              break;
+            }
+
+            message.mean = reader.double();
+            continue;
+          }
+          case 10: {
+            if (tag !== 81) {
+              break;
+            }
+
+            message.standardDeviation = reader.double();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): VideoFormatInfo {
+    return {
+      index: isSet(object.index) ? globalThis.Number(object.index) : 0,
+      width: isSet(object.width) ? globalThis.Number(object.width) : 0,
+      height: isSet(object.height) ? globalThis.Number(object.height) : 0,
+      fps: isSet(object.fps) ? globalThis.Number(object.fps) : 0,
+      pixelFormat: isSet(object.pixelFormat) ? globalThis.String(object.pixelFormat) : "",
+      diagonalFOV: isSet(object.diagonalFOV) ? globalThis.Number(object.diagonalFOV) : undefined,
+      horizontalFOV: isSet(object.horizontalFOV) ? globalThis.Number(object.horizontalFOV) : undefined,
+      verticalFOV: isSet(object.verticalFOV) ? globalThis.Number(object.verticalFOV) : undefined,
+      mean: isSet(object.mean) ? globalThis.Number(object.mean) : undefined,
+      standardDeviation: isSet(object.standardDeviation) ? globalThis.Number(object.standardDeviation) : undefined,
+    };
+  },
+
+  toJSON(message: VideoFormatInfo): unknown {
+    const obj: any = {};
+    if (message.index !== 0) {
+      obj.index = Math.round(message.index);
+    }
+    if (message.width !== 0) {
+      obj.width = Math.round(message.width);
+    }
+    if (message.height !== 0) {
+      obj.height = Math.round(message.height);
+    }
+    if (message.fps !== 0) {
+      obj.fps = Math.round(message.fps);
+    }
+    if (message.pixelFormat !== "") {
+      obj.pixelFormat = message.pixelFormat;
+    }
+    if (message.diagonalFOV !== undefined) {
+      obj.diagonalFOV = message.diagonalFOV;
+    }
+    if (message.horizontalFOV !== undefined) {
+      obj.horizontalFOV = message.horizontalFOV;
+    }
+    if (message.verticalFOV !== undefined) {
+      obj.verticalFOV = message.verticalFOV;
+    }
+    if (message.mean !== undefined) {
+      obj.mean = message.mean;
+    }
+    if (message.standardDeviation !== undefined) {
+      obj.standardDeviation = message.standardDeviation;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VideoFormatInfo>, I>>(base?: I): VideoFormatInfo {
+    return VideoFormatInfo.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VideoFormatInfo>, I>>(object: I): VideoFormatInfo {
+    const message = createBaseVideoFormatInfo();
+    message.index = object.index ?? 0;
+    message.width = object.width ?? 0;
+    message.height = object.height ?? 0;
+    message.fps = object.fps ?? 0;
+    message.pixelFormat = object.pixelFormat ?? "";
+    message.diagonalFOV = object.diagonalFOV ?? undefined;
+    message.horizontalFOV = object.horizontalFOV ?? undefined;
+    message.verticalFOV = object.verticalFOV ?? undefined;
+    message.mean = object.mean ?? undefined;
+    message.standardDeviation = object.standardDeviation ?? undefined;
+    return message;
+  },
+};
+
+function createBaseCameraQuirks(): CameraQuirks {
+  return { baseName: "", usbVid: 0, usbPid: 0, displayName: "", quirks: {} };
+}
+
+export const CameraQuirks: MessageFns<CameraQuirks> = {
+  encode(message: CameraQuirks, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.baseName !== "") {
+      writer.uint32(10).string(message.baseName);
+    }
+    if (message.usbVid !== 0) {
+      writer.uint32(16).int32(message.usbVid);
+    }
+    if (message.usbPid !== 0) {
+      writer.uint32(24).int32(message.usbPid);
+    }
+    if (message.displayName !== "") {
+      writer.uint32(34).string(message.displayName);
+    }
+    globalThis.Object.entries(message.quirks).forEach(([key, value]: [string, boolean]) => {
+      CameraQuirks_QuirksEntry.encode({ key: key as any, value }, writer.uint32(42).fork()).join();
+    });
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CameraQuirks {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseCameraQuirks();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.baseName = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.usbVid = reader.int32();
+            continue;
+          }
+          case 3: {
+            if (tag !== 24) {
+              break;
+            }
+
+            message.usbPid = reader.int32();
+            continue;
+          }
+          case 4: {
+            if (tag !== 34) {
+              break;
+            }
+
+            message.displayName = reader.string();
+            continue;
+          }
+          case 5: {
+            if (tag !== 42) {
+              break;
+            }
+
+            const entry5 = CameraQuirks_QuirksEntry.decode(reader, reader.uint32());
+            if (entry5.value !== undefined) {
+              message.quirks[entry5.key] = entry5.value;
+            }
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): CameraQuirks {
+    return {
+      baseName: isSet(object.baseName) ? globalThis.String(object.baseName) : "",
+      usbVid: isSet(object.usbVid) ? globalThis.Number(object.usbVid) : 0,
+      usbPid: isSet(object.usbPid) ? globalThis.Number(object.usbPid) : 0,
+      displayName: isSet(object.displayName) ? globalThis.String(object.displayName) : "",
+      quirks: isObject(object.quirks)
+        ? (globalThis.Object.entries(object.quirks) as [string, any][]).reduce(
+          (acc: { [key: string]: boolean }, [key, value]: [string, any]) => {
+            globalThis.Object.defineProperty(acc, key, {
+              value: globalThis.Boolean(value),
+              enumerable: true,
+              configurable: true,
+              writable: true,
+            });
+            return acc;
+          },
+          {},
+        )
+        : {},
+    };
+  },
+
+  toJSON(message: CameraQuirks): unknown {
+    const obj: any = {};
+    if (message.baseName !== "") {
+      obj.baseName = message.baseName;
+    }
+    if (message.usbVid !== 0) {
+      obj.usbVid = Math.round(message.usbVid);
+    }
+    if (message.usbPid !== 0) {
+      obj.usbPid = Math.round(message.usbPid);
+    }
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.quirks) {
+      const entries = globalThis.Object.entries(message.quirks) as [string, boolean][];
+      if (entries.length > 0) {
+        obj.quirks = {};
+        entries.forEach(([k, v]) => {
+          obj.quirks[k] = v;
+        });
+      }
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CameraQuirks>, I>>(base?: I): CameraQuirks {
+    return CameraQuirks.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CameraQuirks>, I>>(object: I): CameraQuirks {
+    const message = createBaseCameraQuirks();
+    message.baseName = object.baseName ?? "";
+    message.usbVid = object.usbVid ?? 0;
+    message.usbPid = object.usbPid ?? 0;
+    message.displayName = object.displayName ?? "";
+    message.quirks = (globalThis.Object.entries(object.quirks ?? {}) as [string, boolean][]).reduce(
+      (acc: { [key: string]: boolean }, [key, value]: [string, boolean]) => {
+        if (value !== undefined) {
+          acc[key] = globalThis.Boolean(value);
+        }
+        return acc;
+      },
+      {},
+    );
+    return message;
+  },
+};
+
+function createBaseCameraQuirks_QuirksEntry(): CameraQuirks_QuirksEntry {
+  return { key: "", value: false };
+}
+
+export const CameraQuirks_QuirksEntry: MessageFns<CameraQuirks_QuirksEntry> = {
+  encode(message: CameraQuirks_QuirksEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== false) {
+      writer.uint32(16).bool(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CameraQuirks_QuirksEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseCameraQuirks_QuirksEntry();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.key = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.value = reader.bool();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): CameraQuirks_QuirksEntry {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value) ? globalThis.Boolean(object.value) : false,
+    };
+  },
+
+  toJSON(message: CameraQuirks_QuirksEntry): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== false) {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CameraQuirks_QuirksEntry>, I>>(base?: I): CameraQuirks_QuirksEntry {
+    return CameraQuirks_QuirksEntry.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CameraQuirks_QuirksEntry>, I>>(object: I): CameraQuirks_QuirksEntry {
+    const message = createBaseCameraQuirks_QuirksEntry();
+    message.key = object.key ?? "";
+    message.value = object.value ?? false;
+    return message;
+  },
+};
+
+function createBaseMatchedCameraInfo(): MatchedCameraInfo {
+  return {
+    type: "",
+    path: "",
+    name: "",
+    uniquePath: "",
+    baseName: "",
+    dev: 0,
+    vendorId: 0,
+    productId: 0,
+    otherPaths: [],
+  };
+}
+
+export const MatchedCameraInfo: MessageFns<MatchedCameraInfo> = {
+  encode(message: MatchedCameraInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.type !== "") {
+      writer.uint32(10).string(message.type);
+    }
+    if (message.path !== "") {
+      writer.uint32(18).string(message.path);
+    }
+    if (message.name !== "") {
+      writer.uint32(26).string(message.name);
+    }
+    if (message.uniquePath !== "") {
+      writer.uint32(34).string(message.uniquePath);
+    }
+    if (message.baseName !== "") {
+      writer.uint32(42).string(message.baseName);
+    }
+    if (message.dev !== 0) {
+      writer.uint32(48).int32(message.dev);
+    }
+    if (message.vendorId !== 0) {
+      writer.uint32(56).int32(message.vendorId);
+    }
+    if (message.productId !== 0) {
+      writer.uint32(64).int32(message.productId);
+    }
+    for (const v of message.otherPaths) {
+      writer.uint32(74).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MatchedCameraInfo {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMatchedCameraInfo();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.type = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.path = reader.string();
+            continue;
+          }
+          case 3: {
+            if (tag !== 26) {
+              break;
+            }
+
+            message.name = reader.string();
+            continue;
+          }
+          case 4: {
+            if (tag !== 34) {
+              break;
+            }
+
+            message.uniquePath = reader.string();
+            continue;
+          }
+          case 5: {
+            if (tag !== 42) {
+              break;
+            }
+
+            message.baseName = reader.string();
+            continue;
+          }
+          case 6: {
+            if (tag !== 48) {
+              break;
+            }
+
+            message.dev = reader.int32();
+            continue;
+          }
+          case 7: {
+            if (tag !== 56) {
+              break;
+            }
+
+            message.vendorId = reader.int32();
+            continue;
+          }
+          case 8: {
+            if (tag !== 64) {
+              break;
+            }
+
+            message.productId = reader.int32();
+            continue;
+          }
+          case 9: {
+            if (tag !== 74) {
+              break;
+            }
+
+            message.otherPaths.push(reader.string());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): MatchedCameraInfo {
+    return {
+      type: isSet(object.type) ? globalThis.String(object.type) : "",
+      path: isSet(object.path) ? globalThis.String(object.path) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      uniquePath: isSet(object.uniquePath) ? globalThis.String(object.uniquePath) : "",
+      baseName: isSet(object.baseName) ? globalThis.String(object.baseName) : "",
+      dev: isSet(object.dev) ? globalThis.Number(object.dev) : 0,
+      vendorId: isSet(object.vendorId) ? globalThis.Number(object.vendorId) : 0,
+      productId: isSet(object.productId) ? globalThis.Number(object.productId) : 0,
+      otherPaths: globalThis.Array.isArray(object?.otherPaths)
+        ? object.otherPaths.map((e: any) => globalThis.String(e))
+        : [],
+    };
+  },
+
+  toJSON(message: MatchedCameraInfo): unknown {
+    const obj: any = {};
+    if (message.type !== "") {
+      obj.type = message.type;
+    }
+    if (message.path !== "") {
+      obj.path = message.path;
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.uniquePath !== "") {
+      obj.uniquePath = message.uniquePath;
+    }
+    if (message.baseName !== "") {
+      obj.baseName = message.baseName;
+    }
+    if (message.dev !== 0) {
+      obj.dev = Math.round(message.dev);
+    }
+    if (message.vendorId !== 0) {
+      obj.vendorId = Math.round(message.vendorId);
+    }
+    if (message.productId !== 0) {
+      obj.productId = Math.round(message.productId);
+    }
+    if (message.otherPaths?.length) {
+      obj.otherPaths = message.otherPaths;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MatchedCameraInfo>, I>>(base?: I): MatchedCameraInfo {
+    return MatchedCameraInfo.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MatchedCameraInfo>, I>>(object: I): MatchedCameraInfo {
+    const message = createBaseMatchedCameraInfo();
+    message.type = object.type ?? "";
+    message.path = object.path ?? "";
+    message.name = object.name ?? "";
+    message.uniquePath = object.uniquePath ?? "";
+    message.baseName = object.baseName ?? "";
+    message.dev = object.dev ?? 0;
+    message.vendorId = object.vendorId ?? 0;
+    message.productId = object.productId ?? 0;
+    message.otherPaths = object.otherPaths?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseNetworkInterfaceInfo(): NetworkInterfaceInfo {
+  return { connName: "", devName: "" };
+}
+
+export const NetworkInterfaceInfo: MessageFns<NetworkInterfaceInfo> = {
+  encode(message: NetworkInterfaceInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.connName !== "") {
+      writer.uint32(10).string(message.connName);
+    }
+    if (message.devName !== "") {
+      writer.uint32(18).string(message.devName);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): NetworkInterfaceInfo {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseNetworkInterfaceInfo();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.connName = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.devName = reader.string();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): NetworkInterfaceInfo {
+    return {
+      connName: isSet(object.connName) ? globalThis.String(object.connName) : "",
+      devName: isSet(object.devName) ? globalThis.String(object.devName) : "",
+    };
+  },
+
+  toJSON(message: NetworkInterfaceInfo): unknown {
+    const obj: any = {};
+    if (message.connName !== "") {
+      obj.connName = message.connName;
+    }
+    if (message.devName !== "") {
+      obj.devName = message.devName;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<NetworkInterfaceInfo>, I>>(base?: I): NetworkInterfaceInfo {
+    return NetworkInterfaceInfo.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<NetworkInterfaceInfo>, I>>(object: I): NetworkInterfaceInfo {
+    const message = createBaseNetworkInterfaceInfo();
+    message.connName = object.connName ?? "";
+    message.devName = object.devName ?? "";
+    return message;
+  },
+};
+
+function createBaseNetworkSettings(): NetworkSettings {
+  return {
+    ntServerAddress: "",
+    connectionType: 0,
+    staticIp: "",
+    hostname: "",
+    runNTServer: false,
+    shouldManage: false,
+    shouldPublishProto: false,
+    networkManagerIface: "",
+    setStaticCommand: "",
+    setDHCPcommand: "",
+    networkInterfaceNames: [],
+    networkingDisabled: false,
+  };
+}
+
+export const NetworkSettings: MessageFns<NetworkSettings> = {
+  encode(message: NetworkSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.ntServerAddress !== "") {
+      writer.uint32(10).string(message.ntServerAddress);
+    }
+    if (message.connectionType !== 0) {
+      writer.uint32(16).int32(message.connectionType);
+    }
+    if (message.staticIp !== "") {
+      writer.uint32(26).string(message.staticIp);
+    }
+    if (message.hostname !== "") {
+      writer.uint32(34).string(message.hostname);
+    }
+    if (message.runNTServer !== false) {
+      writer.uint32(40).bool(message.runNTServer);
+    }
+    if (message.shouldManage !== false) {
+      writer.uint32(48).bool(message.shouldManage);
+    }
+    if (message.shouldPublishProto !== false) {
+      writer.uint32(56).bool(message.shouldPublishProto);
+    }
+    if (message.networkManagerIface !== "") {
+      writer.uint32(66).string(message.networkManagerIface);
+    }
+    if (message.setStaticCommand !== "") {
+      writer.uint32(74).string(message.setStaticCommand);
+    }
+    if (message.setDHCPcommand !== "") {
+      writer.uint32(82).string(message.setDHCPcommand);
+    }
+    for (const v of message.networkInterfaceNames) {
+      NetworkInterfaceInfo.encode(v!, writer.uint32(90).fork()).join();
+    }
+    if (message.networkingDisabled !== false) {
+      writer.uint32(96).bool(message.networkingDisabled);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): NetworkSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseNetworkSettings();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.ntServerAddress = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.connectionType = reader.int32();
+            continue;
+          }
+          case 3: {
+            if (tag !== 26) {
+              break;
+            }
+
+            message.staticIp = reader.string();
+            continue;
+          }
+          case 4: {
+            if (tag !== 34) {
+              break;
+            }
+
+            message.hostname = reader.string();
+            continue;
+          }
+          case 5: {
+            if (tag !== 40) {
+              break;
+            }
+
+            message.runNTServer = reader.bool();
+            continue;
+          }
+          case 6: {
+            if (tag !== 48) {
+              break;
+            }
+
+            message.shouldManage = reader.bool();
+            continue;
+          }
+          case 7: {
+            if (tag !== 56) {
+              break;
+            }
+
+            message.shouldPublishProto = reader.bool();
+            continue;
+          }
+          case 8: {
+            if (tag !== 66) {
+              break;
+            }
+
+            message.networkManagerIface = reader.string();
+            continue;
+          }
+          case 9: {
+            if (tag !== 74) {
+              break;
+            }
+
+            message.setStaticCommand = reader.string();
+            continue;
+          }
+          case 10: {
+            if (tag !== 82) {
+              break;
+            }
+
+            message.setDHCPcommand = reader.string();
+            continue;
+          }
+          case 11: {
+            if (tag !== 90) {
+              break;
+            }
+
+            message.networkInterfaceNames.push(NetworkInterfaceInfo.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 12: {
+            if (tag !== 96) {
+              break;
+            }
+
+            message.networkingDisabled = reader.bool();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): NetworkSettings {
+    return {
+      ntServerAddress: isSet(object.ntServerAddress) ? globalThis.String(object.ntServerAddress) : "",
+      connectionType: isSet(object.connectionType) ? globalThis.Number(object.connectionType) : 0,
+      staticIp: isSet(object.staticIp) ? globalThis.String(object.staticIp) : "",
+      hostname: isSet(object.hostname) ? globalThis.String(object.hostname) : "",
+      runNTServer: isSet(object.runNTServer) ? globalThis.Boolean(object.runNTServer) : false,
+      shouldManage: isSet(object.shouldManage) ? globalThis.Boolean(object.shouldManage) : false,
+      shouldPublishProto: isSet(object.shouldPublishProto) ? globalThis.Boolean(object.shouldPublishProto) : false,
+      networkManagerIface: isSet(object.networkManagerIface) ? globalThis.String(object.networkManagerIface) : "",
+      setStaticCommand: isSet(object.setStaticCommand) ? globalThis.String(object.setStaticCommand) : "",
+      setDHCPcommand: isSet(object.setDHCPcommand) ? globalThis.String(object.setDHCPcommand) : "",
+      networkInterfaceNames: globalThis.Array.isArray(object?.networkInterfaceNames)
+        ? object.networkInterfaceNames.map((e: any) => NetworkInterfaceInfo.fromJSON(e))
+        : [],
+      networkingDisabled: isSet(object.networkingDisabled) ? globalThis.Boolean(object.networkingDisabled) : false,
+    };
+  },
+
+  toJSON(message: NetworkSettings): unknown {
+    const obj: any = {};
+    if (message.ntServerAddress !== "") {
+      obj.ntServerAddress = message.ntServerAddress;
+    }
+    if (message.connectionType !== 0) {
+      obj.connectionType = Math.round(message.connectionType);
+    }
+    if (message.staticIp !== "") {
+      obj.staticIp = message.staticIp;
+    }
+    if (message.hostname !== "") {
+      obj.hostname = message.hostname;
+    }
+    if (message.runNTServer !== false) {
+      obj.runNTServer = message.runNTServer;
+    }
+    if (message.shouldManage !== false) {
+      obj.shouldManage = message.shouldManage;
+    }
+    if (message.shouldPublishProto !== false) {
+      obj.shouldPublishProto = message.shouldPublishProto;
+    }
+    if (message.networkManagerIface !== "") {
+      obj.networkManagerIface = message.networkManagerIface;
+    }
+    if (message.setStaticCommand !== "") {
+      obj.setStaticCommand = message.setStaticCommand;
+    }
+    if (message.setDHCPcommand !== "") {
+      obj.setDHCPcommand = message.setDHCPcommand;
+    }
+    if (message.networkInterfaceNames?.length) {
+      obj.networkInterfaceNames = message.networkInterfaceNames.map((e) => NetworkInterfaceInfo.toJSON(e));
+    }
+    if (message.networkingDisabled !== false) {
+      obj.networkingDisabled = message.networkingDisabled;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<NetworkSettings>, I>>(base?: I): NetworkSettings {
+    return NetworkSettings.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<NetworkSettings>, I>>(object: I): NetworkSettings {
+    const message = createBaseNetworkSettings();
+    message.ntServerAddress = object.ntServerAddress ?? "";
+    message.connectionType = object.connectionType ?? 0;
+    message.staticIp = object.staticIp ?? "";
+    message.hostname = object.hostname ?? "";
+    message.runNTServer = object.runNTServer ?? false;
+    message.shouldManage = object.shouldManage ?? false;
+    message.shouldPublishProto = object.shouldPublishProto ?? false;
+    message.networkManagerIface = object.networkManagerIface ?? "";
+    message.setStaticCommand = object.setStaticCommand ?? "";
+    message.setDHCPcommand = object.setDHCPcommand ?? "";
+    message.networkInterfaceNames = object.networkInterfaceNames?.map((e) => NetworkInterfaceInfo.fromPartial(e)) || [];
+    message.networkingDisabled = object.networkingDisabled ?? false;
+    return message;
+  },
+};
+
+function createBaseLightingSettings(): LightingSettings {
+  return { brightness: 0, supported: false };
+}
+
+export const LightingSettings: MessageFns<LightingSettings> = {
+  encode(message: LightingSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.brightness !== 0) {
+      writer.uint32(8).int32(message.brightness);
+    }
+    if (message.supported !== false) {
+      writer.uint32(16).bool(message.supported);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LightingSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseLightingSettings();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.brightness = reader.int32();
+            continue;
+          }
+          case 2: {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.supported = reader.bool();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): LightingSettings {
+    return {
+      brightness: isSet(object.brightness) ? globalThis.Number(object.brightness) : 0,
+      supported: isSet(object.supported) ? globalThis.Boolean(object.supported) : false,
+    };
+  },
+
+  toJSON(message: LightingSettings): unknown {
+    const obj: any = {};
+    if (message.brightness !== 0) {
+      obj.brightness = Math.round(message.brightness);
+    }
+    if (message.supported !== false) {
+      obj.supported = message.supported;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<LightingSettings>, I>>(base?: I): LightingSettings {
+    return LightingSettings.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<LightingSettings>, I>>(object: I): LightingSettings {
+    const message = createBaseLightingSettings();
+    message.brightness = object.brightness ?? 0;
+    message.supported = object.supported ?? false;
+    return message;
+  },
+};
+
+function createBaseModelProperties(): ModelProperties {
+  return { modelPath: "", nickname: "", labels: [], resolutionWidth: 0, resolutionHeight: 0, family: "", version: "" };
+}
+
+export const ModelProperties: MessageFns<ModelProperties> = {
+  encode(message: ModelProperties, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.modelPath !== "") {
+      writer.uint32(10).string(message.modelPath);
+    }
+    if (message.nickname !== "") {
+      writer.uint32(18).string(message.nickname);
+    }
+    for (const v of message.labels) {
+      writer.uint32(26).string(v!);
+    }
+    if (message.resolutionWidth !== 0) {
+      writer.uint32(32).int32(message.resolutionWidth);
+    }
+    if (message.resolutionHeight !== 0) {
+      writer.uint32(40).int32(message.resolutionHeight);
+    }
+    if (message.family !== "") {
+      writer.uint32(50).string(message.family);
+    }
+    if (message.version !== "") {
+      writer.uint32(58).string(message.version);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ModelProperties {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseModelProperties();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.modelPath = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.nickname = reader.string();
+            continue;
+          }
+          case 3: {
+            if (tag !== 26) {
+              break;
+            }
+
+            message.labels.push(reader.string());
+            continue;
+          }
+          case 4: {
+            if (tag !== 32) {
+              break;
+            }
+
+            message.resolutionWidth = reader.int32();
+            continue;
+          }
+          case 5: {
+            if (tag !== 40) {
+              break;
+            }
+
+            message.resolutionHeight = reader.int32();
+            continue;
+          }
+          case 6: {
+            if (tag !== 50) {
+              break;
+            }
+
+            message.family = reader.string();
+            continue;
+          }
+          case 7: {
+            if (tag !== 58) {
+              break;
+            }
+
+            message.version = reader.string();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): ModelProperties {
+    return {
+      modelPath: isSet(object.modelPath) ? globalThis.String(object.modelPath) : "",
+      nickname: isSet(object.nickname) ? globalThis.String(object.nickname) : "",
+      labels: globalThis.Array.isArray(object?.labels) ? object.labels.map((e: any) => globalThis.String(e)) : [],
+      resolutionWidth: isSet(object.resolutionWidth) ? globalThis.Number(object.resolutionWidth) : 0,
+      resolutionHeight: isSet(object.resolutionHeight) ? globalThis.Number(object.resolutionHeight) : 0,
+      family: isSet(object.family) ? globalThis.String(object.family) : "",
+      version: isSet(object.version) ? globalThis.String(object.version) : "",
+    };
+  },
+
+  toJSON(message: ModelProperties): unknown {
+    const obj: any = {};
+    if (message.modelPath !== "") {
+      obj.modelPath = message.modelPath;
+    }
+    if (message.nickname !== "") {
+      obj.nickname = message.nickname;
+    }
+    if (message.labels?.length) {
+      obj.labels = message.labels;
+    }
+    if (message.resolutionWidth !== 0) {
+      obj.resolutionWidth = Math.round(message.resolutionWidth);
+    }
+    if (message.resolutionHeight !== 0) {
+      obj.resolutionHeight = Math.round(message.resolutionHeight);
+    }
+    if (message.family !== "") {
+      obj.family = message.family;
+    }
+    if (message.version !== "") {
+      obj.version = message.version;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ModelProperties>, I>>(base?: I): ModelProperties {
+    return ModelProperties.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ModelProperties>, I>>(object: I): ModelProperties {
+    const message = createBaseModelProperties();
+    message.modelPath = object.modelPath ?? "";
+    message.nickname = object.nickname ?? "";
+    message.labels = object.labels?.map((e) => e) || [];
+    message.resolutionWidth = object.resolutionWidth ?? 0;
+    message.resolutionHeight = object.resolutionHeight ?? 0;
+    message.family = object.family ?? "";
+    message.version = object.version ?? "";
+    return message;
+  },
+};
+
+function createBaseGeneralSettings(): GeneralSettings {
+  return {
+    version: undefined,
+    imageVersion: undefined,
+    gpuAcceleration: undefined,
+    mrCalWorking: false,
+    availableModels: [],
+    supportedBackends: [],
+    hardwareModel: undefined,
+    hardwarePlatform: undefined,
+    wpilibArch: undefined,
+    conflictingHostname: false,
+    conflictingCameras: "",
+  };
+}
+
+export const GeneralSettings: MessageFns<GeneralSettings> = {
+  encode(message: GeneralSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.version !== undefined) {
+      writer.uint32(10).string(message.version);
+    }
+    if (message.imageVersion !== undefined) {
+      writer.uint32(18).string(message.imageVersion);
+    }
+    if (message.gpuAcceleration !== undefined) {
+      writer.uint32(26).string(message.gpuAcceleration);
+    }
+    if (message.mrCalWorking !== false) {
+      writer.uint32(32).bool(message.mrCalWorking);
+    }
+    for (const v of message.availableModels) {
+      ModelProperties.encode(v!, writer.uint32(42).fork()).join();
+    }
+    for (const v of message.supportedBackends) {
+      writer.uint32(50).string(v!);
+    }
+    if (message.hardwareModel !== undefined) {
+      writer.uint32(58).string(message.hardwareModel);
+    }
+    if (message.hardwarePlatform !== undefined) {
+      writer.uint32(66).string(message.hardwarePlatform);
+    }
+    if (message.wpilibArch !== undefined) {
+      writer.uint32(74).string(message.wpilibArch);
+    }
+    if (message.conflictingHostname !== false) {
+      writer.uint32(80).bool(message.conflictingHostname);
+    }
+    if (message.conflictingCameras !== "") {
+      writer.uint32(90).string(message.conflictingCameras);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GeneralSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseGeneralSettings();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.version = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.imageVersion = reader.string();
+            continue;
+          }
+          case 3: {
+            if (tag !== 26) {
+              break;
+            }
+
+            message.gpuAcceleration = reader.string();
+            continue;
+          }
+          case 4: {
+            if (tag !== 32) {
+              break;
+            }
+
+            message.mrCalWorking = reader.bool();
+            continue;
+          }
+          case 5: {
+            if (tag !== 42) {
+              break;
+            }
+
+            message.availableModels.push(ModelProperties.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 6: {
+            if (tag !== 50) {
+              break;
+            }
+
+            message.supportedBackends.push(reader.string());
+            continue;
+          }
+          case 7: {
+            if (tag !== 58) {
+              break;
+            }
+
+            message.hardwareModel = reader.string();
+            continue;
+          }
+          case 8: {
+            if (tag !== 66) {
+              break;
+            }
+
+            message.hardwarePlatform = reader.string();
+            continue;
+          }
+          case 9: {
+            if (tag !== 74) {
+              break;
+            }
+
+            message.wpilibArch = reader.string();
+            continue;
+          }
+          case 10: {
+            if (tag !== 80) {
+              break;
+            }
+
+            message.conflictingHostname = reader.bool();
+            continue;
+          }
+          case 11: {
+            if (tag !== 90) {
+              break;
+            }
+
+            message.conflictingCameras = reader.string();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): GeneralSettings {
+    return {
+      version: isSet(object.version) ? globalThis.String(object.version) : undefined,
+      imageVersion: isSet(object.imageVersion) ? globalThis.String(object.imageVersion) : undefined,
+      gpuAcceleration: isSet(object.gpuAcceleration) ? globalThis.String(object.gpuAcceleration) : undefined,
+      mrCalWorking: isSet(object.mrCalWorking) ? globalThis.Boolean(object.mrCalWorking) : false,
+      availableModels: globalThis.Array.isArray(object?.availableModels)
+        ? object.availableModels.map((e: any) => ModelProperties.fromJSON(e))
+        : [],
+      supportedBackends: globalThis.Array.isArray(object?.supportedBackends)
+        ? object.supportedBackends.map((e: any) => globalThis.String(e))
+        : [],
+      hardwareModel: isSet(object.hardwareModel) ? globalThis.String(object.hardwareModel) : undefined,
+      hardwarePlatform: isSet(object.hardwarePlatform) ? globalThis.String(object.hardwarePlatform) : undefined,
+      wpilibArch: isSet(object.wpilibArch) ? globalThis.String(object.wpilibArch) : undefined,
+      conflictingHostname: isSet(object.conflictingHostname) ? globalThis.Boolean(object.conflictingHostname) : false,
+      conflictingCameras: isSet(object.conflictingCameras) ? globalThis.String(object.conflictingCameras) : "",
+    };
+  },
+
+  toJSON(message: GeneralSettings): unknown {
+    const obj: any = {};
+    if (message.version !== undefined) {
+      obj.version = message.version;
+    }
+    if (message.imageVersion !== undefined) {
+      obj.imageVersion = message.imageVersion;
+    }
+    if (message.gpuAcceleration !== undefined) {
+      obj.gpuAcceleration = message.gpuAcceleration;
+    }
+    if (message.mrCalWorking !== false) {
+      obj.mrCalWorking = message.mrCalWorking;
+    }
+    if (message.availableModels?.length) {
+      obj.availableModels = message.availableModels.map((e) => ModelProperties.toJSON(e));
+    }
+    if (message.supportedBackends?.length) {
+      obj.supportedBackends = message.supportedBackends;
+    }
+    if (message.hardwareModel !== undefined) {
+      obj.hardwareModel = message.hardwareModel;
+    }
+    if (message.hardwarePlatform !== undefined) {
+      obj.hardwarePlatform = message.hardwarePlatform;
+    }
+    if (message.wpilibArch !== undefined) {
+      obj.wpilibArch = message.wpilibArch;
+    }
+    if (message.conflictingHostname !== false) {
+      obj.conflictingHostname = message.conflictingHostname;
+    }
+    if (message.conflictingCameras !== "") {
+      obj.conflictingCameras = message.conflictingCameras;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GeneralSettings>, I>>(base?: I): GeneralSettings {
+    return GeneralSettings.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GeneralSettings>, I>>(object: I): GeneralSettings {
+    const message = createBaseGeneralSettings();
+    message.version = object.version ?? undefined;
+    message.imageVersion = object.imageVersion ?? undefined;
+    message.gpuAcceleration = object.gpuAcceleration ?? undefined;
+    message.mrCalWorking = object.mrCalWorking ?? false;
+    message.availableModels = object.availableModels?.map((e) => ModelProperties.fromPartial(e)) || [];
+    message.supportedBackends = object.supportedBackends?.map((e) => e) || [];
+    message.hardwareModel = object.hardwareModel ?? undefined;
+    message.hardwarePlatform = object.hardwarePlatform ?? undefined;
+    message.wpilibArch = object.wpilibArch ?? undefined;
+    message.conflictingHostname = object.conflictingHostname ?? false;
+    message.conflictingCameras = object.conflictingCameras ?? "";
+    return message;
+  },
+};
+
+function createBaseFieldDimensions(): FieldDimensions {
+  return { length: 0, width: 0 };
+}
+
+export const FieldDimensions: MessageFns<FieldDimensions> = {
+  encode(message: FieldDimensions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.length !== 0) {
+      writer.uint32(9).double(message.length);
+    }
+    if (message.width !== 0) {
+      writer.uint32(17).double(message.width);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FieldDimensions {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseFieldDimensions();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 9) {
+              break;
+            }
+
+            message.length = reader.double();
+            continue;
+          }
+          case 2: {
+            if (tag !== 17) {
+              break;
+            }
+
+            message.width = reader.double();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): FieldDimensions {
+    return {
+      length: isSet(object.length) ? globalThis.Number(object.length) : 0,
+      width: isSet(object.width) ? globalThis.Number(object.width) : 0,
+    };
+  },
+
+  toJSON(message: FieldDimensions): unknown {
+    const obj: any = {};
+    if (message.length !== 0) {
+      obj.length = message.length;
+    }
+    if (message.width !== 0) {
+      obj.width = message.width;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FieldDimensions>, I>>(base?: I): FieldDimensions {
+    return FieldDimensions.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FieldDimensions>, I>>(object: I): FieldDimensions {
+    const message = createBaseFieldDimensions();
+    message.length = object.length ?? 0;
+    message.width = object.width ?? 0;
+    return message;
+  },
+};
+
+function createBaseFieldTag(): FieldTag {
+  return { id: 0, pose: undefined };
+}
+
+export const FieldTag: MessageFns<FieldTag> = {
+  encode(message: FieldTag, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== 0) {
+      writer.uint32(8).int32(message.id);
+    }
+    if (message.pose !== undefined) {
+      ProtobufTransform3d.encode(message.pose, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FieldTag {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseFieldTag();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = reader.int32();
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.pose = ProtobufTransform3d.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): FieldTag {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      pose: isSet(object.pose) ? ProtobufTransform3d.fromJSON(object.pose) : undefined,
+    };
+  },
+
+  toJSON(message: FieldTag): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.pose !== undefined) {
+      obj.pose = ProtobufTransform3d.toJSON(message.pose);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FieldTag>, I>>(base?: I): FieldTag {
+    return FieldTag.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FieldTag>, I>>(object: I): FieldTag {
+    const message = createBaseFieldTag();
+    message.id = object.id ?? 0;
+    message.pose = (object.pose !== undefined && object.pose !== null)
+      ? ProtobufTransform3d.fromPartial(object.pose)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseField(): Field {
+  return { fieldDimensions: undefined, fieldTags: [] };
+}
+
+export const Field: MessageFns<Field> = {
+  encode(message: Field, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.fieldDimensions !== undefined) {
+      FieldDimensions.encode(message.fieldDimensions, writer.uint32(10).fork()).join();
+    }
+    for (const v of message.fieldTags) {
+      FieldTag.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Field {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const previousRecursionDepth = (reader as any).__tsProtoDecodeDepth ?? 0;
+    if (previousRecursionDepth >= 100) {
+      throw new globalThis.Error("protobuf decode recursion limit exceeded");
+    }
+    (reader as any).__tsProtoDecodeDepth = previousRecursionDepth + 1;
+    try {
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseField();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.fieldDimensions = FieldDimensions.decode(reader, reader.uint32());
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.fieldTags.push(FieldTag.decode(reader, reader.uint32()));
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    } finally {
+      (reader as any).__tsProtoDecodeDepth = previousRecursionDepth;
+    }
+  },
+
+  fromJSON(object: any): Field {
+    return {
+      fieldDimensions: isSet(object.fieldDimensions) ? FieldDimensions.fromJSON(object.fieldDimensions) : undefined,
+      fieldTags: globalThis.Array.isArray(object?.fieldTags)
+        ? object.fieldTags.map((e: any) => FieldTag.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: Field): unknown {
+    const obj: any = {};
+    if (message.fieldDimensions !== undefined) {
+      obj.fieldDimensions = FieldDimensions.toJSON(message.fieldDimensions);
+    }
+    if (message.fieldTags?.length) {
+      obj.fieldTags = message.fieldTags.map((e) => FieldTag.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Field>, I>>(base?: I): Field {
+    return Field.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Field>, I>>(object: I): Field {
+    const message = createBaseField();
+    message.fieldDimensions = (object.fieldDimensions !== undefined && object.fieldDimensions !== null)
+      ? FieldDimensions.fromPartial(object.fieldDimensions)
+      : undefined;
+    message.fieldTags = object.fieldTags?.map((e) => FieldTag.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 function createBasePhotonSettings(): PhotonSettings {
-  return {};
+  return { networkSettings: undefined, lighting: undefined, general: undefined, field: undefined };
 }
 
 export const PhotonSettings: MessageFns<PhotonSettings> = {
-  encode(_: PhotonSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: PhotonSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.networkSettings !== undefined) {
+      NetworkSettings.encode(message.networkSettings, writer.uint32(10).fork()).join();
+    }
+    if (message.lighting !== undefined) {
+      LightingSettings.encode(message.lighting, writer.uint32(18).fork()).join();
+    }
+    if (message.general !== undefined) {
+      GeneralSettings.encode(message.general, writer.uint32(26).fork()).join();
+    }
+    if (message.field !== undefined) {
+      Field.encode(message.field, writer.uint32(34).fork()).join();
+    }
     return writer;
   },
 
@@ -1289,6 +4865,38 @@ export const PhotonSettings: MessageFns<PhotonSettings> = {
       while (reader.pos < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.networkSettings = NetworkSettings.decode(reader, reader.uint32());
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.lighting = LightingSettings.decode(reader, reader.uint32());
+            continue;
+          }
+          case 3: {
+            if (tag !== 26) {
+              break;
+            }
+
+            message.general = GeneralSettings.decode(reader, reader.uint32());
+            continue;
+          }
+          case 4: {
+            if (tag !== 34) {
+              break;
+            }
+
+            message.field = Field.decode(reader, reader.uint32());
+            continue;
+          }
         }
         if ((tag & 7) === 4 || tag === 0) {
           break;
@@ -1301,62 +4909,157 @@ export const PhotonSettings: MessageFns<PhotonSettings> = {
     }
   },
 
-  fromJSON(_: any): PhotonSettings {
-    return {};
+  fromJSON(object: any): PhotonSettings {
+    return {
+      networkSettings: isSet(object.networkSettings) ? NetworkSettings.fromJSON(object.networkSettings) : undefined,
+      lighting: isSet(object.lighting) ? LightingSettings.fromJSON(object.lighting) : undefined,
+      general: isSet(object.general) ? GeneralSettings.fromJSON(object.general) : undefined,
+      field: isSet(object.field) ? Field.fromJSON(object.field) : undefined,
+    };
   },
 
-  toJSON(_: PhotonSettings): unknown {
+  toJSON(message: PhotonSettings): unknown {
     const obj: any = {};
+    if (message.networkSettings !== undefined) {
+      obj.networkSettings = NetworkSettings.toJSON(message.networkSettings);
+    }
+    if (message.lighting !== undefined) {
+      obj.lighting = LightingSettings.toJSON(message.lighting);
+    }
+    if (message.general !== undefined) {
+      obj.general = GeneralSettings.toJSON(message.general);
+    }
+    if (message.field !== undefined) {
+      obj.field = Field.toJSON(message.field);
+    }
     return obj;
   },
 
   create<I extends Exact<DeepPartial<PhotonSettings>, I>>(base?: I): PhotonSettings {
     return PhotonSettings.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PhotonSettings>, I>>(_: I): PhotonSettings {
+  fromPartial<I extends Exact<DeepPartial<PhotonSettings>, I>>(object: I): PhotonSettings {
     const message = createBasePhotonSettings();
+    message.networkSettings = (object.networkSettings !== undefined && object.networkSettings !== null)
+      ? NetworkSettings.fromPartial(object.networkSettings)
+      : undefined;
+    message.lighting = (object.lighting !== undefined && object.lighting !== null)
+      ? LightingSettings.fromPartial(object.lighting)
+      : undefined;
+    message.general = (object.general !== undefined && object.general !== null)
+      ? GeneralSettings.fromPartial(object.general)
+      : undefined;
+    message.field = (object.field !== undefined && object.field !== null) ? Field.fromPartial(object.field) : undefined;
     return message;
   },
 };
 
 function createBaseCameraSettings(): CameraSettings {
   return {
+    cameraPath: "",
+    deactivated: false,
     nickname: "",
     uniqueName: "",
-    inputStreamPort: 0,
+    fov: 0,
+    currentPipelineSettings: undefined,
+    currentPipelineIndex: 0,
+    pipelineNicknames: [],
+    videoFormatList: [],
     outputStreamPort: 0,
+    inputStreamPort: 0,
+    calibrations: [],
+    isFovConfigurable: false,
+    cameraQuirks: undefined,
+    isCSICamera: false,
+    minExposureRaw: 0,
+    maxExposureRaw: 0,
+    minWhiteBalanceTemp: 0,
+    maxWhiteBalanceTemp: 0,
+    matchedCameraInfo: undefined,
+    mismatch: false,
+    fpsLimit: 0,
     isEnabled: false,
     isConnected: false,
     hasConnected: false,
-    mismatch: false,
   };
 }
 
 export const CameraSettings: MessageFns<CameraSettings> = {
   encode(message: CameraSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cameraPath !== "") {
+      writer.uint32(10).string(message.cameraPath);
+    }
+    if (message.deactivated !== false) {
+      writer.uint32(16).bool(message.deactivated);
+    }
     if (message.nickname !== "") {
-      writer.uint32(10).string(message.nickname);
+      writer.uint32(26).string(message.nickname);
     }
     if (message.uniqueName !== "") {
-      writer.uint32(18).string(message.uniqueName);
+      writer.uint32(34).string(message.uniqueName);
     }
-    if (message.inputStreamPort !== 0) {
-      writer.uint32(24).int32(message.inputStreamPort);
+    if (message.fov !== 0) {
+      writer.uint32(41).double(message.fov);
+    }
+    if (message.currentPipelineSettings !== undefined) {
+      CameraPipelineSettings.encode(message.currentPipelineSettings, writer.uint32(50).fork()).join();
+    }
+    if (message.currentPipelineIndex !== 0) {
+      writer.uint32(56).int32(message.currentPipelineIndex);
+    }
+    for (const v of message.pipelineNicknames) {
+      writer.uint32(66).string(v!);
+    }
+    for (const v of message.videoFormatList) {
+      VideoFormatInfo.encode(v!, writer.uint32(74).fork()).join();
     }
     if (message.outputStreamPort !== 0) {
-      writer.uint32(32).int32(message.outputStreamPort);
+      writer.uint32(80).int32(message.outputStreamPort);
     }
-    if (message.isEnabled !== false) {
-      writer.uint32(40).bool(message.isEnabled);
+    if (message.inputStreamPort !== 0) {
+      writer.uint32(88).int32(message.inputStreamPort);
     }
-    if (message.isConnected !== false) {
-      writer.uint32(48).bool(message.isConnected);
+    for (const v of message.calibrations) {
+      CameraCalibrationCoefficients.encode(v!, writer.uint32(98).fork()).join();
     }
-    if (message.hasConnected !== false) {
-      writer.uint32(56).bool(message.hasConnected);
+    if (message.isFovConfigurable !== false) {
+      writer.uint32(104).bool(message.isFovConfigurable);
+    }
+    if (message.cameraQuirks !== undefined) {
+      CameraQuirks.encode(message.cameraQuirks, writer.uint32(114).fork()).join();
+    }
+    if (message.isCSICamera !== false) {
+      writer.uint32(120).bool(message.isCSICamera);
+    }
+    if (message.minExposureRaw !== 0) {
+      writer.uint32(129).double(message.minExposureRaw);
+    }
+    if (message.maxExposureRaw !== 0) {
+      writer.uint32(137).double(message.maxExposureRaw);
+    }
+    if (message.minWhiteBalanceTemp !== 0) {
+      writer.uint32(145).double(message.minWhiteBalanceTemp);
+    }
+    if (message.maxWhiteBalanceTemp !== 0) {
+      writer.uint32(153).double(message.maxWhiteBalanceTemp);
+    }
+    if (message.matchedCameraInfo !== undefined) {
+      MatchedCameraInfo.encode(message.matchedCameraInfo, writer.uint32(162).fork()).join();
     }
     if (message.mismatch !== false) {
-      writer.uint32(64).bool(message.mismatch);
+      writer.uint32(168).bool(message.mismatch);
+    }
+    if (message.fpsLimit !== 0) {
+      writer.uint32(176).int32(message.fpsLimit);
+    }
+    if (message.isEnabled !== false) {
+      writer.uint32(184).bool(message.isEnabled);
+    }
+    if (message.isConnected !== false) {
+      writer.uint32(192).bool(message.isConnected);
+    }
+    if (message.hasConnected !== false) {
+      writer.uint32(200).bool(message.hasConnected);
     }
     return writer;
   },
@@ -1379,47 +5082,47 @@ export const CameraSettings: MessageFns<CameraSettings> = {
               break;
             }
 
-            message.nickname = reader.string();
+            message.cameraPath = reader.string();
             continue;
           }
           case 2: {
-            if (tag !== 18) {
+            if (tag !== 16) {
+              break;
+            }
+
+            message.deactivated = reader.bool();
+            continue;
+          }
+          case 3: {
+            if (tag !== 26) {
+              break;
+            }
+
+            message.nickname = reader.string();
+            continue;
+          }
+          case 4: {
+            if (tag !== 34) {
               break;
             }
 
             message.uniqueName = reader.string();
             continue;
           }
-          case 3: {
-            if (tag !== 24) {
-              break;
-            }
-
-            message.inputStreamPort = reader.int32();
-            continue;
-          }
-          case 4: {
-            if (tag !== 32) {
-              break;
-            }
-
-            message.outputStreamPort = reader.int32();
-            continue;
-          }
           case 5: {
-            if (tag !== 40) {
+            if (tag !== 41) {
               break;
             }
 
-            message.isEnabled = reader.bool();
+            message.fov = reader.double();
             continue;
           }
           case 6: {
-            if (tag !== 48) {
+            if (tag !== 50) {
               break;
             }
 
-            message.isConnected = reader.bool();
+            message.currentPipelineSettings = CameraPipelineSettings.decode(reader, reader.uint32());
             continue;
           }
           case 7: {
@@ -1427,15 +5130,151 @@ export const CameraSettings: MessageFns<CameraSettings> = {
               break;
             }
 
-            message.hasConnected = reader.bool();
+            message.currentPipelineIndex = reader.int32();
             continue;
           }
           case 8: {
-            if (tag !== 64) {
+            if (tag !== 66) {
+              break;
+            }
+
+            message.pipelineNicknames.push(reader.string());
+            continue;
+          }
+          case 9: {
+            if (tag !== 74) {
+              break;
+            }
+
+            message.videoFormatList.push(VideoFormatInfo.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 10: {
+            if (tag !== 80) {
+              break;
+            }
+
+            message.outputStreamPort = reader.int32();
+            continue;
+          }
+          case 11: {
+            if (tag !== 88) {
+              break;
+            }
+
+            message.inputStreamPort = reader.int32();
+            continue;
+          }
+          case 12: {
+            if (tag !== 98) {
+              break;
+            }
+
+            message.calibrations.push(CameraCalibrationCoefficients.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 13: {
+            if (tag !== 104) {
+              break;
+            }
+
+            message.isFovConfigurable = reader.bool();
+            continue;
+          }
+          case 14: {
+            if (tag !== 114) {
+              break;
+            }
+
+            message.cameraQuirks = CameraQuirks.decode(reader, reader.uint32());
+            continue;
+          }
+          case 15: {
+            if (tag !== 120) {
+              break;
+            }
+
+            message.isCSICamera = reader.bool();
+            continue;
+          }
+          case 16: {
+            if (tag !== 129) {
+              break;
+            }
+
+            message.minExposureRaw = reader.double();
+            continue;
+          }
+          case 17: {
+            if (tag !== 137) {
+              break;
+            }
+
+            message.maxExposureRaw = reader.double();
+            continue;
+          }
+          case 18: {
+            if (tag !== 145) {
+              break;
+            }
+
+            message.minWhiteBalanceTemp = reader.double();
+            continue;
+          }
+          case 19: {
+            if (tag !== 153) {
+              break;
+            }
+
+            message.maxWhiteBalanceTemp = reader.double();
+            continue;
+          }
+          case 20: {
+            if (tag !== 162) {
+              break;
+            }
+
+            message.matchedCameraInfo = MatchedCameraInfo.decode(reader, reader.uint32());
+            continue;
+          }
+          case 21: {
+            if (tag !== 168) {
               break;
             }
 
             message.mismatch = reader.bool();
+            continue;
+          }
+          case 22: {
+            if (tag !== 176) {
+              break;
+            }
+
+            message.fpsLimit = reader.int32();
+            continue;
+          }
+          case 23: {
+            if (tag !== 184) {
+              break;
+            }
+
+            message.isEnabled = reader.bool();
+            continue;
+          }
+          case 24: {
+            if (tag !== 192) {
+              break;
+            }
+
+            message.isConnected = reader.bool();
+            continue;
+          }
+          case 25: {
+            if (tag !== 200) {
+              break;
+            }
+
+            message.hasConnected = reader.bool();
             continue;
           }
         }
@@ -1452,30 +5291,111 @@ export const CameraSettings: MessageFns<CameraSettings> = {
 
   fromJSON(object: any): CameraSettings {
     return {
+      cameraPath: isSet(object.cameraPath) ? globalThis.String(object.cameraPath) : "",
+      deactivated: isSet(object.deactivated) ? globalThis.Boolean(object.deactivated) : false,
       nickname: isSet(object.nickname) ? globalThis.String(object.nickname) : "",
       uniqueName: isSet(object.uniqueName) ? globalThis.String(object.uniqueName) : "",
-      inputStreamPort: isSet(object.inputStreamPort) ? globalThis.Number(object.inputStreamPort) : 0,
+      fov: isSet(object.fov) ? globalThis.Number(object.fov) : 0,
+      currentPipelineSettings: isSet(object.currentPipelineSettings)
+        ? CameraPipelineSettings.fromJSON(object.currentPipelineSettings)
+        : undefined,
+      currentPipelineIndex: isSet(object.currentPipelineIndex) ? globalThis.Number(object.currentPipelineIndex) : 0,
+      pipelineNicknames: globalThis.Array.isArray(object?.pipelineNicknames)
+        ? object.pipelineNicknames.map((e: any) => globalThis.String(e))
+        : [],
+      videoFormatList: globalThis.Array.isArray(object?.videoFormatList)
+        ? object.videoFormatList.map((e: any) => VideoFormatInfo.fromJSON(e))
+        : [],
       outputStreamPort: isSet(object.outputStreamPort) ? globalThis.Number(object.outputStreamPort) : 0,
+      inputStreamPort: isSet(object.inputStreamPort) ? globalThis.Number(object.inputStreamPort) : 0,
+      calibrations: globalThis.Array.isArray(object?.calibrations)
+        ? object.calibrations.map((e: any) => CameraCalibrationCoefficients.fromJSON(e))
+        : [],
+      isFovConfigurable: isSet(object.isFovConfigurable) ? globalThis.Boolean(object.isFovConfigurable) : false,
+      cameraQuirks: isSet(object.cameraQuirks) ? CameraQuirks.fromJSON(object.cameraQuirks) : undefined,
+      isCSICamera: isSet(object.isCSICamera) ? globalThis.Boolean(object.isCSICamera) : false,
+      minExposureRaw: isSet(object.minExposureRaw) ? globalThis.Number(object.minExposureRaw) : 0,
+      maxExposureRaw: isSet(object.maxExposureRaw) ? globalThis.Number(object.maxExposureRaw) : 0,
+      minWhiteBalanceTemp: isSet(object.minWhiteBalanceTemp) ? globalThis.Number(object.minWhiteBalanceTemp) : 0,
+      maxWhiteBalanceTemp: isSet(object.maxWhiteBalanceTemp) ? globalThis.Number(object.maxWhiteBalanceTemp) : 0,
+      matchedCameraInfo: isSet(object.matchedCameraInfo)
+        ? MatchedCameraInfo.fromJSON(object.matchedCameraInfo)
+        : undefined,
+      mismatch: isSet(object.mismatch) ? globalThis.Boolean(object.mismatch) : false,
+      fpsLimit: isSet(object.fpsLimit) ? globalThis.Number(object.fpsLimit) : 0,
       isEnabled: isSet(object.isEnabled) ? globalThis.Boolean(object.isEnabled) : false,
       isConnected: isSet(object.isConnected) ? globalThis.Boolean(object.isConnected) : false,
       hasConnected: isSet(object.hasConnected) ? globalThis.Boolean(object.hasConnected) : false,
-      mismatch: isSet(object.mismatch) ? globalThis.Boolean(object.mismatch) : false,
     };
   },
 
   toJSON(message: CameraSettings): unknown {
     const obj: any = {};
+    if (message.cameraPath !== "") {
+      obj.cameraPath = message.cameraPath;
+    }
+    if (message.deactivated !== false) {
+      obj.deactivated = message.deactivated;
+    }
     if (message.nickname !== "") {
       obj.nickname = message.nickname;
     }
     if (message.uniqueName !== "") {
       obj.uniqueName = message.uniqueName;
     }
-    if (message.inputStreamPort !== 0) {
-      obj.inputStreamPort = Math.round(message.inputStreamPort);
+    if (message.fov !== 0) {
+      obj.fov = message.fov;
+    }
+    if (message.currentPipelineSettings !== undefined) {
+      obj.currentPipelineSettings = CameraPipelineSettings.toJSON(message.currentPipelineSettings);
+    }
+    if (message.currentPipelineIndex !== 0) {
+      obj.currentPipelineIndex = Math.round(message.currentPipelineIndex);
+    }
+    if (message.pipelineNicknames?.length) {
+      obj.pipelineNicknames = message.pipelineNicknames;
+    }
+    if (message.videoFormatList?.length) {
+      obj.videoFormatList = message.videoFormatList.map((e) => VideoFormatInfo.toJSON(e));
     }
     if (message.outputStreamPort !== 0) {
       obj.outputStreamPort = Math.round(message.outputStreamPort);
+    }
+    if (message.inputStreamPort !== 0) {
+      obj.inputStreamPort = Math.round(message.inputStreamPort);
+    }
+    if (message.calibrations?.length) {
+      obj.calibrations = message.calibrations.map((e) => CameraCalibrationCoefficients.toJSON(e));
+    }
+    if (message.isFovConfigurable !== false) {
+      obj.isFovConfigurable = message.isFovConfigurable;
+    }
+    if (message.cameraQuirks !== undefined) {
+      obj.cameraQuirks = CameraQuirks.toJSON(message.cameraQuirks);
+    }
+    if (message.isCSICamera !== false) {
+      obj.isCSICamera = message.isCSICamera;
+    }
+    if (message.minExposureRaw !== 0) {
+      obj.minExposureRaw = message.minExposureRaw;
+    }
+    if (message.maxExposureRaw !== 0) {
+      obj.maxExposureRaw = message.maxExposureRaw;
+    }
+    if (message.minWhiteBalanceTemp !== 0) {
+      obj.minWhiteBalanceTemp = message.minWhiteBalanceTemp;
+    }
+    if (message.maxWhiteBalanceTemp !== 0) {
+      obj.maxWhiteBalanceTemp = message.maxWhiteBalanceTemp;
+    }
+    if (message.matchedCameraInfo !== undefined) {
+      obj.matchedCameraInfo = MatchedCameraInfo.toJSON(message.matchedCameraInfo);
+    }
+    if (message.mismatch !== false) {
+      obj.mismatch = message.mismatch;
+    }
+    if (message.fpsLimit !== 0) {
+      obj.fpsLimit = Math.round(message.fpsLimit);
     }
     if (message.isEnabled !== false) {
       obj.isEnabled = message.isEnabled;
@@ -1486,9 +5406,6 @@ export const CameraSettings: MessageFns<CameraSettings> = {
     if (message.hasConnected !== false) {
       obj.hasConnected = message.hasConnected;
     }
-    if (message.mismatch !== false) {
-      obj.mismatch = message.mismatch;
-    }
     return obj;
   },
 
@@ -1497,14 +5414,38 @@ export const CameraSettings: MessageFns<CameraSettings> = {
   },
   fromPartial<I extends Exact<DeepPartial<CameraSettings>, I>>(object: I): CameraSettings {
     const message = createBaseCameraSettings();
+    message.cameraPath = object.cameraPath ?? "";
+    message.deactivated = object.deactivated ?? false;
     message.nickname = object.nickname ?? "";
     message.uniqueName = object.uniqueName ?? "";
-    message.inputStreamPort = object.inputStreamPort ?? 0;
+    message.fov = object.fov ?? 0;
+    message.currentPipelineSettings =
+      (object.currentPipelineSettings !== undefined && object.currentPipelineSettings !== null)
+        ? CameraPipelineSettings.fromPartial(object.currentPipelineSettings)
+        : undefined;
+    message.currentPipelineIndex = object.currentPipelineIndex ?? 0;
+    message.pipelineNicknames = object.pipelineNicknames?.map((e) => e) || [];
+    message.videoFormatList = object.videoFormatList?.map((e) => VideoFormatInfo.fromPartial(e)) || [];
     message.outputStreamPort = object.outputStreamPort ?? 0;
+    message.inputStreamPort = object.inputStreamPort ?? 0;
+    message.calibrations = object.calibrations?.map((e) => CameraCalibrationCoefficients.fromPartial(e)) || [];
+    message.isFovConfigurable = object.isFovConfigurable ?? false;
+    message.cameraQuirks = (object.cameraQuirks !== undefined && object.cameraQuirks !== null)
+      ? CameraQuirks.fromPartial(object.cameraQuirks)
+      : undefined;
+    message.isCSICamera = object.isCSICamera ?? false;
+    message.minExposureRaw = object.minExposureRaw ?? 0;
+    message.maxExposureRaw = object.maxExposureRaw ?? 0;
+    message.minWhiteBalanceTemp = object.minWhiteBalanceTemp ?? 0;
+    message.maxWhiteBalanceTemp = object.maxWhiteBalanceTemp ?? 0;
+    message.matchedCameraInfo = (object.matchedCameraInfo !== undefined && object.matchedCameraInfo !== null)
+      ? MatchedCameraInfo.fromPartial(object.matchedCameraInfo)
+      : undefined;
+    message.mismatch = object.mismatch ?? false;
+    message.fpsLimit = object.fpsLimit ?? 0;
     message.isEnabled = object.isEnabled ?? false;
     message.isConnected = object.isConnected ?? false;
     message.hasConnected = object.hasConnected ?? false;
-    message.mismatch = object.mismatch ?? false;
     return message;
   },
 };
@@ -1825,6 +5766,10 @@ function longToNumber(int64: { toString(): string }): number {
     throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
   }
   return num;
+}
+
+function isObject(value: any): boolean {
+  return typeof value === "object" && value !== null;
 }
 
 function isSet(value: any): boolean {
