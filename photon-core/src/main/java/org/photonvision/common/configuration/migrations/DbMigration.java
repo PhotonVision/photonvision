@@ -39,20 +39,17 @@ public class DbMigration {
     }
 
     public static final class Columns {
-        public static final String GLB_FILENAME = "filename";
+        public static final String GLB_FILENAME = "config_name";
         public static final String GLB_CONTENTS = "contents";
 
         public static final String CAM_UNIQUE_NAME = "unique_name";
-        public static final String CAM_CONFIG_JSON = "config_json";
-        public static final String CAM_DRIVERMODE_JSON = "drivermode_json";
-        public static final String CAM_PIPELINE_JSONS = "pipeline_jsons";
-        public static final String CAM_OTHERPATHS_JSON = "otherpaths_json";
+        public static final String CAM_CONFIG_JSON = "contents";
     }
 
     public static final MigrationManager getMigration() {
         return new MigrationManager(2, schema02)
             .addStep(202701, update2026CameraConfig)
-            .addStep(202702, sql202702);
+            .addStep(202702, schema202702);
     }
 
     private static final String schema02 =
@@ -70,20 +67,20 @@ public class DbMigration {
         );
         """;
 
-    private static final String sql202702 =
-        """
-        ALTER TABLE cameras DROP COLUMN drivermode_json;
-        ALTER TABLE cameras DROP COLUMN pipeline_jsons;
-        ALTER TABLE cameras DROP COLUMN otherpaths_json;
-        """;
+    // private static final String sql202702 =
+    //     """
+    //     ALTER TABLE cameras DROP COLUMN drivermode_json;
+    //     ALTER TABLE cameras DROP COLUMN pipeline_jsons;
+    //     ALTER TABLE cameras DROP COLUMN otherpaths_json;
+    //     """;
 
-    private static final String schema202703 =
+    private static final String schema202702 =
         """
         CREATE TABLE IF NOT EXISTS new_global (
-            filename TEXT PRIMARY KEY,
+            config_name TEXT PRIMARY KEY,
             contents JSON NOT NULL
         );
-        INSERT INTO new_global (filename, contents)
+        INSERT INTO new_global (config_name, contents)
         SELECT filename, contents
         FROM global
         WHERE EXISTS (
@@ -94,9 +91,9 @@ public class DbMigration {
 
         CREATE TABLE IF NOT EXISTS new_cameras (
             unique_name TEXT PRIMARY KEY,
-            config_json JSON NOT NULL
+            contents JSON NOT NULL
         );
-        INSERT INTO new_cameras (unique_name, config_json)
+        INSERT INTO new_cameras (unique_name, contents)
         SELECT unique_name, config_json
         FROM cameras
         WHERE EXISTS (
