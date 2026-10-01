@@ -139,6 +139,12 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     }
 
     @Override
+    public void setSaturation(int saturationRaw) {
+        float saturation = (float) MathUtils.map(saturationRaw, 0f, 100f, 0f, 2f);
+        LibCameraJNI.setSaturation(r_ptr, saturation);
+    }
+
+    @Override
     public void setExposureRaw(double exposureRaw) {
         logger.debug("Setting exposure to " + exposureRaw);
 

@@ -138,6 +138,9 @@ public class VisionModuleManagerTest {
         }
 
         @Override
+        public void setSaturation(int saturation) {}
+
+        @Override
         public void setAutoWhiteBalance(boolean autowb) {}
 
         @Override
