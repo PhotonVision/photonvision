@@ -40,6 +40,7 @@ interface StateStore {
   calibrationData: {
     imageCount: number;
     videoFormatIndex: number;
+    autoCalibrate: boolean;
   };
 
   snackbarData: {
@@ -87,7 +88,8 @@ export const useStateStore = defineStore("state", {
 
       calibrationData: {
         imageCount: 0,
-        videoFormatIndex: 0
+        videoFormatIndex: 0,
+        autoCalibrate: false
       },
 
       snackbarData: {
@@ -158,7 +160,8 @@ export const useStateStore = defineStore("state", {
     updateCalibrationStateValuesFromWebsocket(data: WebsocketCalibrationData) {
       this.calibrationData = {
         imageCount: data.count,
-        videoFormatIndex: data.videoModeIndex
+        videoFormatIndex: data.videoModeIndex,
+        autoCalibrate: data.autoCalibrate ?? false
       };
     },
     updateDiscoveredCameras(data: VsmState) {

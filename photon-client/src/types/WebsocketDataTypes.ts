@@ -89,6 +89,7 @@ export interface WebsocketCalibrationData {
   patternHeight: number;
   squareSizeMm: number;
   markerSizeMm: number;
+  autoCalibrate?: boolean;
 }
 
 export interface IncomingWebsocketData {

@@ -375,7 +375,12 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void startCalibration(UICalibrationData data) {
-        var settings = pipelineManager.calibration3dPipeline.getSettings();
+        var calibrationPipeline =
+                data.autoCalibrate
+                        ? pipelineManager.autoCalibration3dPipeline
+                        : pipelineManager.calibration3dPipeline;
+        pipelineManager.setActiveCalibrationPipeline(calibrationPipeline);
+        var settings = calibrationPipeline.getSettings();
 
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
         var resolution = new Size(videoMode.width, videoMode.height);
@@ -408,7 +413,7 @@ public class VisionModule implements AutoCloseable {
         settings.cameraAutoExposure = true;
 
         setPipeline(PipelineManager.CAL_3D_INDEX);
-        pipelineManager.calibration3dPipeline.broadcastState();
+        calibrationPipeline.broadcastState();
     }
 
     public void saveInputSnapshot() {
@@ -420,17 +425,18 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void takeCalibrationSnapshot() {
-        pipelineManager.calibration3dPipeline.takeSnapshot();
+        pipelineManager.getActiveCalibrationPipeline().takeSnapshot();
     }
 
     public CameraCalibrationCoefficients endCalibration(boolean cancel) {
+        var calibrationPipeline = pipelineManager.getActiveCalibrationPipeline();
         CameraCalibrationCoefficients ret = null;
         if (!cancel) {
             ret =
-                    pipelineManager.calibration3dPipeline.tryCalibration(
+                    calibrationPipeline.tryCalibration(
                             ConfigManager.getInstance()
                                     .getCalibrationImageSavePathWithRes(
-                                            pipelineManager.calibration3dPipeline.getSettings().resolution,
+                                            calibrationPipeline.getSettings().resolution,
                                             visionSource.getCameraConfiguration().uniqueName));
         } else {
             logger.info("Calibration canceled -- not computing or saving a result");
