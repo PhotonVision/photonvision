@@ -117,7 +117,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                 // No error! yay
                 var mat = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
 
-                ret = new CVMat(mat, frame);
+                var capturedMat = new CVMat(mat, frame);
                 if (decodeMjpeg) {
                     Mat gray = null;
                     try {
@@ -135,9 +135,11 @@ public class USBFrameProvider extends CpuImageProcessor {
                         gray = null;
                         logger.error("Could not decode MJPEG frame", e);
                     } finally {
-                        ret.release();
+                        capturedMat.release();
                     }
                     ret = gray == null ? new CVMat() : new CVMat(gray);
+                } else {
+                    ret = capturedMat;
                 }
             }
 
