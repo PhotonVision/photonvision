@@ -41,7 +41,15 @@ public class PipelineManager implements AutoCloseable {
 
     protected final List<CVPipelineSettings> userPipelineSettings;
     protected final Calibrate3dPipeline calibration3dPipeline;
+    protected final AutoCalibrate3dPipeline autoCalibration3dPipeline;
     protected final FocusPipeline focusPipeline = new FocusPipeline();
+
+    /**
+     * The calibration pipeline (manual or auto) most recently used. Both pipelines share {@link
+     * PipelineManager#CAL_3D_INDEX}, so this var is used for routing.
+     */
+    private Calibrate3dPipeline activeCalibrationPipeline;
+
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
@@ -73,6 +81,8 @@ public class PipelineManager implements AutoCloseable {
         if (userPipelines.isEmpty()) addPipeline(PipelineType.AprilTag);
 
         calibration3dPipeline = new Calibrate3dPipeline();
+        autoCalibration3dPipeline = new AutoCalibrate3dPipeline();
+        activeCalibrationPipeline = calibration3dPipeline;
 
         // We know that at this stage, VisionRunner hasn't yet started so we're good to
         // do this from
@@ -94,7 +104,7 @@ public class PipelineManager implements AutoCloseable {
     public CVPipelineSettings getPipelineSettings(int index) {
         return switch (index) {
             case DRIVERMODE_INDEX -> driverModePipeline.getSettings();
-            case CAL_3D_INDEX -> calibration3dPipeline.getSettings();
+            case CAL_3D_INDEX -> activeCalibrationPipeline.getSettings();
             case FOCUS_INDEX -> focusPipeline.getSettings();
             default -> {
                 for (var setting : userPipelineSettings) {
@@ -114,7 +124,7 @@ public class PipelineManager implements AutoCloseable {
     public String getPipelineNickname(int index) {
         return switch (index) {
             case DRIVERMODE_INDEX -> driverModePipeline.getSettings().pipelineNickname;
-            case CAL_3D_INDEX -> calibration3dPipeline.getSettings().pipelineNickname;
+            case CAL_3D_INDEX -> activeCalibrationPipeline.getSettings().pipelineNickname;
             case FOCUS_INDEX -> focusPipeline.getSettings().pipelineNickname;
             default -> {
                 for (var setting : userPipelineSettings) {
@@ -155,7 +165,7 @@ public class PipelineManager implements AutoCloseable {
     public CVPipeline getCurrentPipeline() {
         updatePipelineFromRequested();
         return switch (currentPipelineIndex) {
-            case CAL_3D_INDEX -> calibration3dPipeline;
+            case CAL_3D_INDEX -> activeCalibrationPipeline;
             case DRIVERMODE_INDEX -> driverModePipeline;
             case FOCUS_INDEX -> focusPipeline;
             // Just return the current user pipeline, we're not on a built-in one
@@ -278,8 +288,16 @@ public class PipelineManager implements AutoCloseable {
      * @param wantsCalibration True to enter calibration mode, false to exit calibration mode.
      */
     public void setCalibrationMode(boolean wantsCalibration) {
-        if (!wantsCalibration) calibration3dPipeline.finishCalibration();
+        if (!wantsCalibration) activeCalibrationPipeline.finishCalibration();
         setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastUserPipelineIdx);
+    }
+
+    public Calibrate3dPipeline getActiveCalibrationPipeline() {
+        return activeCalibrationPipeline;
+    }
+
+    public void setActiveCalibrationPipeline(Calibrate3dPipeline pipeline) {
+        this.activeCalibrationPipeline = pipeline;
     }
 
     /**
@@ -523,6 +541,7 @@ public class PipelineManager implements AutoCloseable {
     @Override
     public void close() {
         calibration3dPipeline.release();
+        autoCalibration3dPipeline.release();
         focusPipeline.release();
         driverModePipeline.release();
         currentUserPipeline.release();

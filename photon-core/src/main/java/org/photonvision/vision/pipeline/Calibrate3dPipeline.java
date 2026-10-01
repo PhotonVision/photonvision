@@ -51,9 +51,9 @@ public class Calibrate3dPipeline
     private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 
     // Find board corners decides internally between opencv and mrgingham
-    private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
-    private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
-    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+    protected final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
+    protected final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
+    protected final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     // Getter methods have been set for calibrate and takeSnapshot
     private boolean takeSnapshot = false;
@@ -64,7 +64,7 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    private boolean calibrating = false;
+    protected boolean calibrating = false;
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
@@ -190,6 +190,11 @@ public class Calibrate3dPipeline
         broadcastState();
     }
 
+    /** Whether this pipeline captures snapshots automatically rather than on request. */
+    protected boolean isAutoCalibration() {
+        return false;
+    }
+
     public void broadcastState() {
         Map<String, Object> state =
                 SerializationUtils.objectToHashMap(
@@ -202,7 +207,8 @@ public class Calibrate3dPipeline
                                 settings.boardHeight,
                                 settings.boardType,
                                 settings.useOldPattern,
-                                settings.tagFamily));
+                                settings.tagFamily,
+                                isAutoCalibration()));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));
