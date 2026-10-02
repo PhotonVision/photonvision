@@ -89,6 +89,9 @@ public class RequestHandler {
     @Json
     record CommonCameraUniqueName(String cameraUniqueName) {}
 
+    @Json
+    record CalibrationEndRequest(String cameraUniqueName, boolean cancel) {}
+
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
@@ -492,15 +495,24 @@ public class RequestHandler {
         logger.info("Calibrating camera! This will take a long time...");
 
         try {
-            CommonCameraUniqueName request =
-                    Jsonb.instance().type(CommonCameraUniqueName.class).fromJson(ctx.body());
+            CalibrationEndRequest request =
+                    Jsonb.instance().type(CalibrationEndRequest.class).fromJson(ctx.body());
 
             var calData =
                     VisionSourceManager.getInstance()
                             .vmm
                             .getModule(request.cameraUniqueName)
-                            .endCalibration();
+                            .endCalibration(request.cancel);
             if (calData == null) {
+                if (request.cancel) {
+                    ctx.result("The calibration process was canceled");
+                    ctx.status(200);
+                    logger.info(
+                            "Calibration canceled for module at cameraUniqueName ("
+                                    + request.cameraUniqueName
+                                    + ")");
+                    return;
+                }
                 ctx.result("The calibration process failed");
                 ctx.status(500);
                 logger.error(
