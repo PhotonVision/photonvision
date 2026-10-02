@@ -40,6 +40,8 @@ public class NetworkingCommands {
         nmcli connection modify "${connection}"
         autoconnect yes
         ipv4.method auto
+        ipv4.link-local fallback
+        ipv4.dhcp-timeout infinity
         ipv6.method disabled
         """.replaceAll("[\\n]", " ");
 }
