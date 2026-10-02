@@ -81,6 +81,7 @@ tasks.register('buildClient', PnpmTask) {
     outputs.dir file("${projectDir}/../photon-client/dist")
     args = ["build"]
     dependsOn "pnpmInstall"
+    dependsOn(':photon-core:copyTsProto')
 }
 
 tasks.register('buildAndCopyUI') {

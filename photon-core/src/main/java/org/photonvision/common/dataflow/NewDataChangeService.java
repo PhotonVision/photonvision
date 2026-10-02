@@ -1,0 +1,92 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package org.photonvision.common.dataflow;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import photonvision.core.proto.PhotonMessage.OutgoingDashboardEvent;
+import photonvision.core.proto.PhotonMessage.PhotonDataChangeEvent;
+import us.hebi.quickbuf.ProtoMessage;
+
+// Considered NT, but seems overkill. NewDataChangeService is <60 LOC
+public class NewDataChangeService<T extends ProtoMessage<?>> {
+    // Incredibly cursed version of NtTopicSet. Hard-code so we're statically typed
+    public static final NewDataChangeService<PhotonDataChangeEvent> INBOUND_UI_EVENTS =
+            new NewDataChangeService<>();
+    public static final NewDataChangeService<OutgoingDashboardEvent> OUTBOUND_UI_EVENTS =
+            new NewDataChangeService<>();
+
+    private static final Logger logger = new Logger(NewDataChangeService.class, LogGroup.WebServer);
+
+    // Subscribers own their own queues of changes
+    public static class NewDataChangeSubscriber<T extends ProtoMessage<?>> {
+        // Make sure access is syncronized
+        // TODO length is unbounded
+        private final List<T> unprocessedEvents = new ArrayList<>();
+
+        public void publish(T event) {
+            synchronized (unprocessedEvents) {
+                unprocessedEvents.add(event);
+                unprocessedEvents.notifyAll();
+            }
+        }
+
+        public final List<T> getAndClearEvents() {
+            synchronized (unprocessedEvents) {
+                var copy = new ArrayList<>(unprocessedEvents);
+                unprocessedEvents.clear();
+                return copy;
+            }
+        }
+
+        // Block until at least one event is available, then return all events
+        public final List<T> waitForEvents() throws InterruptedException {
+            synchronized (unprocessedEvents) {
+                while (unprocessedEvents.isEmpty()) {
+                    unprocessedEvents.wait();
+                }
+                var copy = new ArrayList<>(unprocessedEvents);
+                unprocessedEvents.clear();
+                return copy;
+            }
+        }
+    }
+
+    // Syncronize access to this list
+    private final List<NewDataChangeSubscriber<T>> subscribers = new ArrayList<>();
+
+    public NewDataChangeService() {}
+
+    public NewDataChangeSubscriber<T> subscribe() {
+        var ret = new NewDataChangeSubscriber<T>();
+        synchronized (subscribers) {
+            subscribers.add(ret);
+        }
+        return ret;
+    }
+
+    public void publish(T event) {
+        synchronized (subscribers) {
+            for (var sub : subscribers) {
+                sub.publish(event);
+            }
+        }
+    }
+}

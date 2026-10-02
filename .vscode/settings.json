@@ -2,5 +2,19 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.cwd": "photon-lib/py",
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.project.sourceExclusions": [
+        "**/build/**",
+        "**/target/**",
+        "**/dist/**"
+    ],
+    "java.import.exclusions": [
+        "**/build/**",
+        "**/target/**",
+        "**/dist/**"
+    ],
+    "java.project.referencedLibraries": {
+        "include": ["libs/**/*.jar"],
+        "exclude": ["build/**", "**/test/**"]
+    }
 }

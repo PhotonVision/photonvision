@@ -18,6 +18,8 @@
 package org.photonvision.common.dataflow.websocket;
 
 import io.avaje.jsonb.Json;
+import io.avaje.jsonb.Jsonb;
+import java.io.IOException;
 import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.LoadJNI;
@@ -31,6 +33,8 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
+import photonvision.core.proto.PhotonMessage.OutgoingDashboardEvent;
+import us.hebi.quickbuf.JsonSource;
 
 @Json
 public class UIPhotonConfiguration {
@@ -41,6 +45,21 @@ public class UIPhotonConfiguration {
             UIProgramSettings settings, List<UICameraConfiguration> cameraSettings) {
         this.cameraSettings = cameraSettings;
         this.settings = settings;
+    }
+
+    private static final Jsonb json = Jsonb.builder().build();
+
+    // OutgoingDashboardEvent is a quickbuf protobuf object
+    public static OutgoingDashboardEvent programStateToProto(PhotonConfiguration c) {
+        try {
+            var jsonStr = json.type(UIPhotonConfiguration.class).toJsonBytes(programStateToUi(c));
+            System.out.println(json.type(UIPhotonConfiguration.class).toJson(programStateToUi(c)));
+            return OutgoingDashboardEvent.parseFrom(JsonSource.newInstance(jsonStr));
+        } catch (IOException e) {
+            e.printStackTrace();
+            // ^_^
+            return null;
+        }
     }
 
     public static UIPhotonConfiguration programStateToUi(PhotonConfiguration c) {
