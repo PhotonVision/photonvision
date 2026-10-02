@@ -278,11 +278,7 @@ const isCalibrating = computed(
 const calibrationMode = ref<"normal" | "auto">("normal");
 
 const activeCalibrationMode = computed<"normal" | "auto">(() =>
-  isCalibrating.value
-    ? useStateStore().calibrationData.autoCalibrate
-      ? "auto"
-      : "normal"
-    : calibrationMode.value
+  isCalibrating.value ? (useStateStore().calibrationData.autoCalibrate ? "auto" : "normal") : calibrationMode.value
 );
 
 // Keep the dropdown preference in sync with the backend while calibrating
@@ -760,7 +756,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <v-icon start class="calib-btn-icon" size="large">
                 {{ activeCalibrationMode === "auto" ? "mdi-camera-burst" : "mdi-camera" }}
               </v-icon>
-              <span class="calib-btn-label">{{ activeCalibrationMode === "auto" ? "Auto Capturing" : "Take Snapshot" }}</span>
+              <span class="calib-btn-label">{{
+                activeCalibrationMode === "auto" ? "Auto Capturing" : "Take Snapshot"
+              }}</span>
             </v-btn>
           </v-col>
           <v-col cols="6" class="pa-0 pl-2">
