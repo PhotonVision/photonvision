@@ -423,13 +423,18 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
-    public CameraCalibrationCoefficients endCalibration() {
-        var ret =
-                pipelineManager.calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(
-                                        pipelineManager.calibration3dPipeline.getSettings().resolution,
-                                        visionSource.getCameraConfiguration().uniqueName));
+    public CameraCalibrationCoefficients endCalibration(boolean cancel) {
+        CameraCalibrationCoefficients ret = null;
+        if (!cancel) {
+            ret =
+                    pipelineManager.calibration3dPipeline.tryCalibration(
+                            ConfigManager.getInstance()
+                                    .getCalibrationImageSavePathWithRes(
+                                            pipelineManager.calibration3dPipeline.getSettings().resolution,
+                                            visionSource.getCameraConfiguration().uniqueName));
+        } else {
+            logger.info("Calibration canceled -- not computing or saving a result");
+        }
         pipelineManager.setCalibrationMode(false);
 
         setPipeline(pipelineManager.getRequestedIndex());
@@ -437,7 +442,7 @@ public class VisionModule implements AutoCloseable {
         if (ret != null) {
             logger.debug("Saving calibration...");
             visionSource.getSettables().addCalibration(ret);
-        } else {
+        } else if (!cancel) {
             logger.error("Calibration failed...");
         }
         saveAndBroadcastAll();

@@ -306,7 +306,7 @@ const endCalibration = () => {
   showCalibEndDialog.value = true;
   // Check if calibration finished cleanly or was canceled
   useCameraSettingsStore()
-    .endPnPCalibration()
+    .endPnPCalibration(useStateStore().currentCameraUniqueName, !hasEnoughImages.value)
     .then(() => {
       calibSuccess.value = true;
     })
