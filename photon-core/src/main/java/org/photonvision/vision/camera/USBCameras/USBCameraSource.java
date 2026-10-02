@@ -223,6 +223,10 @@ public class USBCameraSource extends VisionSource {
         return getCameraConfiguration().cameraQuirks;
     }
 
+    public UsbCamera getCamera() {
+        return camera;
+    }
+
     @Override
     public FrameProvider getFrameProvider() {
         return usbFrameProvider;
