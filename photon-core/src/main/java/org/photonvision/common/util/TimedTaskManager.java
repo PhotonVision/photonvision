@@ -18,11 +18,12 @@
 package org.photonvision.common.util;
 
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.NotNull;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
-public class TimedTaskManager {
+public class TimedTaskManager implements AutoCloseable {
     private static final Logger logger = new Logger(TimedTaskManager.class, LogGroup.General);
 
     private static class Singleton {
@@ -35,10 +36,13 @@ public class TimedTaskManager {
 
     private static class CaughtThreadFactory implements ThreadFactory {
         private static final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+        private static final AtomicInteger threadCount = new AtomicInteger();
 
         @Override
         public Thread newThread(@NotNull Runnable r) {
             Thread thread = defaultThreadFactory.newThread(r);
+            thread.setDaemon(true);
+            thread.setName("TimedTaskManager-thread-" + threadCount.getAndIncrement());
             thread.setUncaughtExceptionHandler(
                     (t, e) -> logger.error("TimedTask threw uncaught exception!", e));
             return thread;
@@ -131,5 +135,10 @@ public class TimedTaskManager {
 
     public boolean taskActive(String identifier) {
         return activeTasks.containsKey(identifier);
+    }
+
+    @Override
+    public void close() {
+        timedTaskExecutorPool.close();
     }
 }
