@@ -99,18 +99,6 @@ public class USBFrameProvider extends CpuImageProcessor {
                         lastFrameTime);
         lastTime = captureTimeNs;
 
-        System.out.println(
-                "now "
-                        + System.nanoTime()
-                        + " rv "
-                        + captureTimeNs
-                        + " frame time "
-                        + frame.getTimestamp()
-                        + " src "
-                        + frame.getTimestampSource()
-                        + " last "
-                        + lastFrameTime);
-
         // 0 means capture error
         if (captureTimeNs == 0) {
             var error = cvSink.getError();
