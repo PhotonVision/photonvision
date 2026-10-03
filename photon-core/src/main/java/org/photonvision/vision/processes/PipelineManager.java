@@ -525,6 +525,6 @@ public class PipelineManager implements AutoCloseable {
         calibration3dPipeline.release();
         focusPipeline.release();
         driverModePipeline.release();
-        currentUserPipeline.release();
+        if (currentUserPipeline != null) currentUserPipeline.release();
     }
 }
