@@ -36,7 +36,7 @@ public class CscoreExtras {
      * @return Frame time, in nS, of the incoming frame.
      */
     public static native long grabRawSinkFrameTimeoutLastTime(
-            int sink, long framePtr, double timeout, long lastFrameTime);
+            int sink, RawFrame frameObj, long framePtr, double timeout, long lastFrameTime);
 
     /**
      * Wrap the data owned by a RawFrame in a cv::Mat
@@ -45,8 +45,6 @@ public class CscoreExtras {
      * @return pointer to a cv::Mat
      */
     public static native long wrapRawFrame(long rawFramePtr);
-
-    public static native int getPixelFormatNative(long rawFramePtr);
 
     private static native int getTimestampSourceNative(long rawFramePtr);
 
