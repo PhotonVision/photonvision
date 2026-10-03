@@ -44,7 +44,7 @@ public class USBFrameProvider extends CpuImageProcessor {
     private Runnable connectedCallback;
 
     private long lastTime = 0;
-    private boolean grayscaleInput = false;
+    private boolean wantsGreyscaleOutput = false;
 
     @SuppressWarnings("SpellCheckingInspection")
     public USBFrameProvider(
@@ -73,13 +73,13 @@ public class USBFrameProvider extends CpuImageProcessor {
         // TODO - consider a frame pool
         // TODO - getCurrentVideoMode is a JNI call for us, but profiling indicates it's fast
         var cameraMode = settables.getCurrentVideoMode();
-        boolean decodeMjpeg = grayscaleInput && cameraMode.pixelFormat == PixelFormat.MJPEG;
+        boolean decodeMjpeg = wantsGreyscaleOutput && cameraMode.pixelFormat == PixelFormat.MJPEG;
         var frame = new RawFrame();
         frame.setInfo(
                 cameraMode.width,
                 cameraMode.height,
-                grayscaleInput ? 0 : cameraMode.width * 3,
-                decodeMjpeg ? PixelFormat.UNKNOWN : grayscaleInput ? PixelFormat.GRAY : PixelFormat.BGR);
+                wantsGreyscaleOutput ? 0 : cameraMode.width * 3,
+                decodeMjpeg ? PixelFormat.UNKNOWN : wantsGreyscaleOutput ? PixelFormat.GRAY : PixelFormat.BGR);
 
         // if m_blockForFrames :
         // - start waiting for the cvSink to get a new image delivered
@@ -163,7 +163,7 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     @Override
     public void requestGrayscaleInput(boolean grayscaleInput) {
-        this.grayscaleInput = grayscaleInput;
+        this.wantsGreyscaleOutput = grayscaleInput;
     }
 
     @Override
