@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,12 +52,24 @@ public class Calibrate3dPipeline
     private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 
     // Find board corners decides internally between opencv and mrgingham
-    protected final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
-    protected final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
-    protected final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+    private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
+    private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     // Getter methods have been set for calibrate and takeSnapshot
     private boolean takeSnapshot = false;
+
+    // In auto mode, snapshots are taken once the board has moved far enough from the last
+    // snapshot and been stable for a few frames, instead of on request from the UI.
+    private static final double MIN_MOVEMENT_FRACTION = 0.05;
+
+    private static final double STABILITY_FRACTION = 0.01;
+
+    private static final int STABILITY_WINDOW = 3;
+
+    private final ArrayDeque<Point> recentCentroids = new ArrayDeque<>();
+
+    private Point lastSnapshotCentroid = null;
 
     // Output of the corners
     public final List<FindBoardCornersPipeResult> foundCornersList;
@@ -64,7 +77,7 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    protected boolean calibrating = false;
+    private boolean calibrating = false;
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
@@ -124,14 +137,10 @@ public class Calibrate3dPipeline
             takeSnapshot = false;
 
             if (findBoardResult != null) {
-                // Only copy the image into the result when we absolutely must
-                findBoardResult.inputImage = inputColorMat.clone();
-
-                foundCornersList.add(findBoardResult);
-
-                // update the UI
-                broadcastState();
+                captureSnapshot(findBoardResult, inputColorMat);
             }
+        } else if (settings.autoCalibrate) {
+            autoTakeSnapshot(findBoardResult, inputColorMat);
         }
 
         var fpsResult = calculateFPSPipe.run(null);
@@ -152,6 +161,90 @@ public class Calibrate3dPipeline
                         FrameThresholdType.NONE,
                         frame.frameStaticProperties),
                 getCornersList());
+    }
+
+    /** Adds a detected board to the snapshot list and updates the UI. */
+    private void captureSnapshot(FindBoardCornersPipeResult findBoardResult, Mat inputColorMat) {
+        // Only copy the image into the result when we absolutely must
+        findBoardResult.inputImage = inputColorMat.clone();
+
+        foundCornersList.add(findBoardResult);
+
+        // update the UI
+        broadcastState();
+    }
+
+    /**
+     * In auto mode, takes a snapshot if the board has moved far enough from the last snapshot and
+     * has been stable over the last {@link #STABILITY_WINDOW} detections.
+     */
+    private void autoTakeSnapshot(FindBoardCornersPipeResult findBoardResult, Mat inputColorMat) {
+        if (findBoardResult == null) {
+            // No board visible -- don't let stale positions count towards stability
+            recentCentroids.clear();
+            return;
+        }
+
+        Point centroid = computeCentroid(findBoardResult.imagePoints.toList());
+        double frameDiagonal = Math.hypot(findBoardResult.size.width, findBoardResult.size.height);
+
+        recentCentroids.addLast(centroid);
+        while (recentCentroids.size() > STABILITY_WINDOW) {
+            recentCentroids.removeFirst();
+        }
+
+        double minMovementPx = MIN_MOVEMENT_FRACTION * frameDiagonal;
+        boolean movedEnough =
+                lastSnapshotCentroid == null || distance(centroid, lastSnapshotCentroid) >= minMovementPx;
+        if (!movedEnough || !isStable(STABILITY_FRACTION * frameDiagonal)) {
+            return;
+        }
+
+        captureSnapshot(findBoardResult, inputColorMat);
+        lastSnapshotCentroid = centroid;
+        recentCentroids.clear();
+
+        logger.info("Automatically took calibration snapshot " + foundCornersList.size());
+    }
+
+    /**
+     * True if the last {@link #STABILITY_WINDOW} centroids all sit within {@code maxDeviationPx} of
+     * their average.
+     */
+    private boolean isStable(double maxDeviationPx) {
+        if (recentCentroids.size() < STABILITY_WINDOW) {
+            return false;
+        }
+
+        Point mean = new Point(0, 0);
+        for (Point p : recentCentroids) {
+            mean.x += p.x;
+            mean.y += p.y;
+        }
+        mean.x /= recentCentroids.size();
+        mean.y /= recentCentroids.size();
+
+        for (Point p : recentCentroids) {
+            if (distance(p, mean) > maxDeviationPx) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static Point computeCentroid(List<Point> points) {
+        Point centroid = new Point(0, 0);
+        for (Point p : points) {
+            centroid.x += p.x;
+            centroid.y += p.y;
+        }
+        centroid.x /= points.size();
+        centroid.y /= points.size();
+        return centroid;
+    }
+
+    private static double distance(Point a, Point b) {
+        return Math.hypot(a.x - b.x, a.y - b.y);
     }
 
     List<List<Point>> getCornersList() {
@@ -187,12 +280,10 @@ public class Calibrate3dPipeline
         foundCornersList.forEach(it -> it.release());
         foundCornersList.clear();
 
-        broadcastState();
-    }
+        recentCentroids.clear();
+        lastSnapshotCentroid = null;
 
-    /** Whether this pipeline captures snapshots automatically rather than on request. */
-    protected boolean isAutoCalibration() {
-        return false;
+        broadcastState();
     }
 
     public void broadcastState() {
@@ -208,7 +299,7 @@ public class Calibrate3dPipeline
                                 settings.boardType,
                                 settings.useOldPattern,
                                 settings.tagFamily,
-                                isAutoCalibration()));
+                                settings.autoCalibrate));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));

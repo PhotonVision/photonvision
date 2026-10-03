@@ -40,7 +40,7 @@ import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.wpilib.math.util.Units;
 
-public class AutoCalibrate3dPipelineTest {
+public class Calibrate3dPipelineAutoTest {
     private static final Size RESOLUTION = new Size(1280, 720);
     private static final String IMAGE_RELATIVE_PATH = "lifecam/2024-05-07_lifecam_1280/img0.png";
 
@@ -49,8 +49,9 @@ public class AutoCalibrate3dPipelineTest {
         LoadJNI.loadLibraries();
     }
 
-    private static AutoCalibrate3dPipeline createPipeline() {
-        var pipeline = new AutoCalibrate3dPipeline();
+    private static Calibrate3dPipeline createPipeline() {
+        var pipeline = new Calibrate3dPipeline();
+        pipeline.getSettings().autoCalibrate = true;
         pipeline.getSettings().boardType = BoardType.CHARUCOBOARD;
         pipeline.getSettings().tagFamily = TagFamily.Dict_4X4_1000;
         pipeline.getSettings().boardHeight = 8;
@@ -62,7 +63,7 @@ public class AutoCalibrate3dPipelineTest {
         return pipeline;
     }
 
-    private static void runFrame(AutoCalibrate3dPipeline pipeline, double translateX) {
+    private static void runFrame(Calibrate3dPipeline pipeline, double translateX) {
         Mat image =
                 Imgcodecs.imread(
                         TestUtils.getCharucoBoardImagesPath().resolve(IMAGE_RELATIVE_PATH).toString());
@@ -89,10 +90,10 @@ public class AutoCalibrate3dPipelineTest {
 
     @Test
     public void autoSnapshotsRequireStabilityAndMovement() {
-        // 5% of the 1280x720 frame diagonal -- matches AutoCalibrate3dPipeline.MIN_MOVEMENT_FRACTION
+        // 5% of the 1280x720 frame diagonal -- matches Calibrate3dPipeline's MIN_MOVEMENT_FRACTION
         double minMovementPx = 0.05 * Math.hypot(RESOLUTION.width, RESOLUTION.height);
 
-        try (AutoCalibrate3dPipeline pipeline = createPipeline()) {
+        try (Calibrate3dPipeline pipeline = createPipeline()) {
             // A single frame must not snapshot: the board has not been stable for STABILITY_WINDOW frames
             runFrame(pipeline, 0);
             runFrame(pipeline, 0);
