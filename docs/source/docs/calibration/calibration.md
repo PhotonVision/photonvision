@@ -52,6 +52,10 @@ Ensure that there is no scaling applied during printing (it should be at 100%) a
 
 We'll next select a resolution to calibrate and populate our pattern spacing, marker size, and board size. The provided chessboard and ChArUco board are an 8x8 grid of 1 inch square. The provided ChArUco board uses the 4x4 dictionary with a marker size of 0.75 inches (this board does not need the old OpenCV pattern selector selected). Printers are not perfect, and you need to measure your calibration target and enter the correct marker size (size of the ArUco marker) and pattern spacing (aka size of the black square) using calipers or similar. Finally, once our entered data is correct, we'll click "start calibration."
 
+:::{note}
+The "Start Calibration" button has a dropdown arrow that also allows selecting "Auto Calibration". In auto calibration mode, snapshots are taken automatically: once the detected board has moved at least a minimum distance from its position at the last snapshot, and has then been held still for a few frames (to avoid motion blur), a snapshot is captured without any button presses. Simply move the board to a new angle, hold it steady, and repeat.
+:::
+
 :::{warning} Old OpenCV Pattern selector. This should be used in the case that the calibration image is generated from a version of OpenCV before version 4.6.0. This would include targets created by calib.io. If this selector is not set correctly the calibration will be completely invalid. For more info view [this GitHub issue](https://github.com/opencv/opencv_contrib/issues/3291).
 :::
 

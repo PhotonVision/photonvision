@@ -31,6 +31,7 @@ public class UICalibrationData {
     public double markerSizeMeters;
     public boolean useOldPattern;
     public TagFamily tagFamily;
+    public boolean autoCalibrate = false;
 
     public UICalibrationData() {}
 
@@ -43,7 +44,8 @@ public class UICalibrationData {
             int patternHeight,
             BoardType boardType,
             boolean useOldPattern,
-            TagFamily tagFamily) {
+            TagFamily tagFamily,
+            boolean autoCalibrate) {
         this.count = count;
         this.videoModeIndex = videoModeIndex;
         this.squareSizeMeters = squareSizeMeters;
@@ -53,6 +55,7 @@ public class UICalibrationData {
         this.boardType = boardType;
         this.useOldPattern = useOldPattern;
         this.tagFamily = tagFamily;
+        this.autoCalibrate = autoCalibrate;
     }
 
     @Json
