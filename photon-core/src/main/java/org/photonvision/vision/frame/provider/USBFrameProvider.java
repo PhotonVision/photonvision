@@ -75,11 +75,23 @@ public class USBFrameProvider extends CpuImageProcessor {
         var cameraMode = settables.getCurrentVideoMode();
         boolean decodeMjpeg = wantsGreyscaleOutput && cameraMode.pixelFormat == PixelFormat.MJPEG;
         var frame = new RawFrame();
-        frame.setInfo(
-                cameraMode.width,
-                cameraMode.height,
-                wantsGreyscaleOutput ? 0 : cameraMode.width * 3,
-                decodeMjpeg ? PixelFormat.UNKNOWN : wantsGreyscaleOutput ? PixelFormat.GRAY : PixelFormat.BGR);
+
+        // MJPEG: cscore mutates stride to zero
+        // GRAY: cscore sets stride to 1 byte/pixel
+        // BGR: cscore sets stride to 3 byte/pixel
+        // We leave as zero, let cscore tell us
+        int stride = 0;
+        PixelFormat pixelFormat;
+        if (wantsGreyscaleOutput) {
+            if (decodeMjpeg) {
+                pixelFormat = PixelFormat.UNKNOWN;
+            } else {
+                pixelFormat = PixelFormat.GRAY;
+            }
+        } else {
+            pixelFormat = PixelFormat.BGR;
+        }
+        frame.setInfo(cameraMode.width, cameraMode.height, stride, pixelFormat);
 
         // if m_blockForFrames :
         // - start waiting for the cvSink to get a new image delivered
@@ -89,7 +101,13 @@ public class USBFrameProvider extends CpuImageProcessor {
         // - Call GrabSinkFrameTimeoutLastTime lastTime = lastTime
         // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is whatever epoch
         // std::steady_clock is      long captureTimeNs =
-        long lastFrameTime = m_blockForFrames ? 0 : lastTime;
+        long lastFrameTime;
+        if (m_blockForFrames) {
+            lastFrameTime = 0;
+        } else {
+            lastFrameTime = lastTime;
+        }
+
         long captureTimeNs =
                 CscoreExtras.grabRawSinkFrameTimeoutLastTime(
                         cvSink.getHandle(),
