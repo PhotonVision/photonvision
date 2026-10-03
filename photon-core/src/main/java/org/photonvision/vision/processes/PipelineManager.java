@@ -42,7 +42,6 @@ public class PipelineManager implements AutoCloseable {
     protected final List<CVPipelineSettings> userPipelineSettings;
     protected final Calibrate3dPipeline calibration3dPipeline;
     protected final FocusPipeline focusPipeline = new FocusPipeline();
-
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
