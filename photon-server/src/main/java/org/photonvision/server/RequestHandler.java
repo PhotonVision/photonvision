@@ -19,7 +19,6 @@ package org.photonvision.server;
 
 import io.avaje.json.JsonException;
 import io.avaje.jsonb.Json;
-import io.avaje.jsonb.Jsonb;
 import io.avaje.jsonb.Types;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
@@ -88,6 +87,9 @@ public class RequestHandler {
 
     @Json
     record CommonCameraUniqueName(String cameraUniqueName) {}
+
+    @Json
+    record CalibrationEndRequest(String cameraUniqueName, boolean cancel) {}
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -375,7 +377,7 @@ public class RequestHandler {
     public static void onGeneralSettingsRequest(Context ctx) {
         NetworkConfig config;
         try {
-            config = Jsonb.instance().type(NetworkConfig.class).fromJson(ctx.bodyInputStream());
+            config = ctx.bodyAsClass(NetworkConfig.class);
 
             ctx.status(200);
             ctx.result("Successfully saved general settings");
@@ -403,8 +405,7 @@ public class RequestHandler {
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-            CameraSettingsRequest request =
-                    Jsonb.instance().type(CameraSettingsRequest.class).fromJson(ctx.body());
+            CameraSettingsRequest request = ctx.bodyAsClass(CameraSettingsRequest.class);
             // Extract the settings from the request
             double fov = request.fov;
             Map<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
@@ -492,15 +493,23 @@ public class RequestHandler {
         logger.info("Calibrating camera! This will take a long time...");
 
         try {
-            CommonCameraUniqueName request =
-                    Jsonb.instance().type(CommonCameraUniqueName.class).fromJson(ctx.body());
+            CalibrationEndRequest request = ctx.bodyAsClass(CalibrationEndRequest.class);
 
             var calData =
                     VisionSourceManager.getInstance()
                             .vmm
                             .getModule(request.cameraUniqueName)
-                            .endCalibration();
+                            .endCalibration(request.cancel);
             if (calData == null) {
+                if (request.cancel) {
+                    ctx.result("The calibration process was canceled");
+                    ctx.status(200);
+                    logger.info(
+                            "Calibration canceled for module at cameraUniqueName ("
+                                    + request.cameraUniqueName
+                                    + ")");
+                    return;
+                }
                 ctx.result("The calibration process failed");
                 ctx.status(500);
                 logger.error(
@@ -532,9 +541,8 @@ public class RequestHandler {
             String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
 
     public static void onDataCalibrationImportRequest(Context ctx) {
-        try (var stream = ctx.req().getInputStream()) {
-            DataCalibrationImportRequest request =
-                    Jsonb.instance().type(DataCalibrationImportRequest.class).fromJson(stream);
+        try {
+            DataCalibrationImportRequest request = ctx.bodyAsClass(DataCalibrationImportRequest.class);
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
@@ -872,7 +880,7 @@ public class RequestHandler {
 
         try {
             DeleteObjectDetectionModelRequest request =
-                    Jsonb.instance().type(DeleteObjectDetectionModelRequest.class).fromJson(ctx.body());
+                    ctx.bodyAsClass(DeleteObjectDetectionModelRequest.class);
 
             if (request.modelPath == null) {
                 ctx.status(400);
@@ -928,7 +936,7 @@ public class RequestHandler {
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
             RenameObjectDetectionModelRequest request =
-                    Jsonb.instance().type(RenameObjectDetectionModelRequest.class).fromJson(ctx.body());
+                    ctx.bodyAsClass(RenameObjectDetectionModelRequest.class);
 
             if (request.modelPath == null) {
                 ctx.status(400);
@@ -1005,8 +1013,7 @@ public class RequestHandler {
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            CameraNicknameChangeRequest request =
-                    Jsonb.instance().type(CameraNicknameChangeRequest.class).fromJson(ctx.body());
+            CameraNicknameChangeRequest request = ctx.bodyAsClass(CameraNicknameChangeRequest.class);
 
             VisionSourceManager.getInstance()
                     .vmm
@@ -1056,7 +1063,7 @@ public class RequestHandler {
         }
 
         ctx.contentType("application/json");
-        ctx.result(Jsonb.instance().toJson(calList));
+        ctx.json(calList);
         ctx.status(200);
     }
 
@@ -1109,8 +1116,7 @@ public class RequestHandler {
 
     public static void onCalibrationRemoveRequest(Context ctx) {
         try {
-            CalibrationRemoveRequest request =
-                    Jsonb.instance().type(CalibrationRemoveRequest.class).fromJson(ctx.body());
+            CalibrationRemoveRequest request = ctx.bodyAsClass(CalibrationRemoveRequest.class);
 
             logger.info(
                     "Attempting to remove calibration for camera: "
@@ -1212,7 +1218,7 @@ public class RequestHandler {
         var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
         ctx.contentType("application/json");
         ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        ctx.result(Jsonb.instance().toJson(calList));
+        ctx.json(calList);
 
         ctx.status(200);
     }
@@ -1252,7 +1258,7 @@ public class RequestHandler {
 
         ctx.status(200);
         ctx.contentType("application/json");
-        ctx.result(Jsonb.instance().toJson(snapshots));
+        ctx.json(snapshots);
     }
 
     public static void onCameraCalibImagesRequest(Context ctx) {
@@ -1291,7 +1297,7 @@ public class RequestHandler {
             }
 
             ctx.contentType("application/json");
-            ctx.result(Jsonb.instance().toJson(snapshots));
+            ctx.json(snapshots);
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("An error occurred while getting calib data");
@@ -1372,8 +1378,7 @@ public class RequestHandler {
 
     public static void onNukeOneCamera(Context ctx) {
         try {
-            CommonCameraUniqueName request =
-                    Jsonb.instance().type(CommonCameraUniqueName.class).fromJson(ctx.body());
+            CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
 
             logger.warn("Deleting camera name " + request.cameraUniqueName);
 
@@ -1399,8 +1404,7 @@ public class RequestHandler {
     public static void onActivateMatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
         try {
-            CommonCameraUniqueName request =
-                    Jsonb.instance().type(CommonCameraUniqueName.class).fromJson(ctx.body());
+            CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
 
             if (VisionSourceManager.getInstance()
                     .reactivateDisabledCameraConfig(request.cameraUniqueName)) {
@@ -1423,8 +1427,7 @@ public class RequestHandler {
         logger.info(ctx.queryString());
 
         try {
-            AssignUnmatchedCamera request =
-                    Jsonb.instance().type(AssignUnmatchedCamera.class).fromJson(ctx.body());
+            AssignUnmatchedCamera request = ctx.bodyAsClass(AssignUnmatchedCamera.class);
 
             if (request.cameraInfo == null) {
                 ctx.status(400);
@@ -1451,8 +1454,7 @@ public class RequestHandler {
     public static void onUnassignCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
         try {
-            CommonCameraUniqueName request =
-                    Jsonb.instance().type(CommonCameraUniqueName.class).fromJson(ctx.body());
+            CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
 
             if (VisionSourceManager.getInstance().deactivateVisionSource(request.cameraUniqueName)) {
                 ctx.status(200);

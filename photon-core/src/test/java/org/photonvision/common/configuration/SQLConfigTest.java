@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.photonvision.common.configuration.migrations.DbMigration.Columns;
+import static org.photonvision.common.configuration.migrations.DbMigration.Tables;
 
 import io.avaje.json.JsonDataException;
 import io.avaje.jsonb.Jsonb;
@@ -32,17 +34,23 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.opencv.CVMat;
@@ -57,6 +65,7 @@ import org.wpilib.fields.Field;
 import org.wpilib.fields.Fields;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
+@TestMethodOrder(OrderAnnotation.class)
 public class SQLConfigTest {
     @TempDir private Path tmpDir;
 
@@ -64,6 +73,14 @@ public class SQLConfigTest {
     public static void init() {
         LoadJNI.loadLibraries();
         CVMat.enablePrint(false);
+
+        var logLevel = LogLevel.DEBUG;
+        Logger.setLevel(LogGroup.Camera, logLevel);
+        Logger.setLevel(LogGroup.WebServer, logLevel);
+        Logger.setLevel(LogGroup.VisionModule, logLevel);
+        Logger.setLevel(LogGroup.Data, logLevel);
+        Logger.setLevel(LogGroup.Config, logLevel);
+        Logger.setLevel(LogGroup.General, logLevel);
     }
 
     @AfterAll
@@ -74,18 +91,75 @@ public class SQLConfigTest {
 
     @Test
     @Order(1)
-    public void testMigration() {
+    public void testNewDatabase() {
         SqlConfigProvider cfgLoader = new SqlConfigProvider(tmpDir);
         cfgLoader.load();
 
         assertEquals(
-                DatabaseSchema.migrations.length,
-                cfgLoader.getUserVersion(),
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
                 "Database isn't at the correct version");
     }
 
     @Test
     @Order(2)
+    public void testNewDatabaseFromDefault() throws IOException {
+        var defaultDir = tmpDir.resolve("conf.d");
+        defaultDir.toFile().mkdirs();
+        FileUtils.copyFile(
+                TestUtils.getConfigDirectoriesPath(false)
+                        .resolve("2026.3.4-windows/photon.sqlite")
+                        .toFile(),
+                defaultDir.resolve("photon2026.3.4-windows.sqlite").toFile());
+
+        var configDir = tmpDir.resolve("photonvision_config");
+        configDir.toFile().mkdirs();
+
+        SqlConfigProvider cfgLoader = new SqlConfigProvider(configDir);
+        cfgLoader.load();
+
+        assertEquals(
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
+                "Database isn't at the correct version");
+    }
+
+    @Test
+    @Order(3)
+    public void testFailureRecovery() throws IOException, SQLException {
+        var originalDatabase = tmpDir.resolve("photon.sqlite");
+        FileUtils.copyFile(
+                TestUtils.getConfigDirectoriesPath(false)
+                        .resolve("2026.3.4-windows/photon.sqlite")
+                        .toFile(),
+                originalDatabase.toFile());
+        try (Connection conn =
+                DriverManager.getConnection("jdbc:sqlite:" + originalDatabase.toAbsolutePath())) {
+            Statement stmt = conn.createStatement();
+            stmt.execute("PRAGMA user_version = 0;"); // Force a failure by setting an unsupported version
+        }
+        ;
+        var databaseBeforeRecovery = tmpDir.resolve("photon.sqlite.before-recovery");
+        Files.copy(originalDatabase, databaseBeforeRecovery);
+
+        var cfgLoader = new SqlConfigProvider(tmpDir);
+        cfgLoader.load();
+
+        var backupDatabase = tmpDir.resolve("photon.sqlite.backup.1");
+        assertTrue(Files.exists(backupDatabase), "Failed database backup was not created");
+        assertEquals(
+                -1L,
+                Files.mismatch(databaseBeforeRecovery, backupDatabase),
+                "Database backup does not match the database with the unsupported schema version");
+
+        assertEquals(
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
+                "Database isn't at the correct version");
+    }
+
+    @Test
+    @Order(4)
     public void testLoad() {
         var cfgLoader = new SqlConfigProvider(tmpDir);
 
@@ -107,7 +181,7 @@ public class SQLConfigTest {
         cfgLoader.saveToDisk();
 
         cfgLoader.load();
-        System.out.println(cfgLoader.getConfig());
+        // System.out.println(cfgLoader.getConfig()); // was this left in on purpose?
 
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
@@ -141,7 +215,7 @@ public class SQLConfigTest {
 
         assertDoesNotThrow(cfgManager::load);
 
-        System.out.println(cfgManager.getConfig());
+        // System.out.println(cfgManager.getConfig());  // was this left in on purpose?
         common2025p3p1Assertions(cfgManager.getConfig());
 
         // And we now see two models
@@ -217,9 +291,7 @@ public class SQLConfigTest {
                         conn.prepareStatement(
                                 String.format(
                                         "REPLACE INTO %s (%s, %s) VALUES (?,?)",
-                                        DatabaseSchema.Tables.GLOBAL,
-                                        DatabaseSchema.Columns.GLB_FILENAME,
-                                        DatabaseSchema.Columns.GLB_CONTENTS))) {
+                                        Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS))) {
             ps.setString(1, key);
             ps.setString(2, contents);
             ps.executeUpdate();

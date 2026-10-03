@@ -134,19 +134,6 @@ public class OutputStreamPipeline implements Releasable {
         if (!outEmpty)
             sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
-        // The input stream's full-frame context image streams at the same divisor as everything else
-        var contextImage = inputAndOutputFrame.contextColorImage;
-        if (contextImage != null && !contextImage.getMat().empty()) {
-            sumPipeNanosElapsed += resizeImagePipe.run(contextImage.getMat()).nanosElapsed;
-            if (contextImage.getMat().channels() == 1) {
-                sumPipeNanosElapsed += outputMatPipe.run(contextImage.getMat()).nanosElapsed;
-            }
-        }
-
-        if (!inEmpty && inMat.channels() == 1) {
-            sumPipeNanosElapsed += outputMatPipe.run(inMat).nanosElapsed;
-        }
-
         // Only attempt drawing on a non-empty frame
         if (!outEmpty) {
             // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming

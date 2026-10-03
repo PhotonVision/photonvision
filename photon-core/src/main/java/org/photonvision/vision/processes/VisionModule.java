@@ -143,9 +143,7 @@ public class VisionModule implements AutoCloseable {
                         this.cameraQuirks,
                         getChangeSubscriber(),
                         this::getFPSLimit,
-                        this::getEnabled,
-                        // Streams are created after the runner, so read the field lazily
-                        () -> inputVideoStreamer != null && inputVideoStreamer.isStreamConsumed());
+                        this::getEnabled);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
@@ -238,11 +236,7 @@ public class VisionModule implements AutoCloseable {
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    // When cropping, stream the full frame with the cropped-away area dimmed so the
-                    // crop can be seen in context; the pipeline itself only ever sees the cropped image.
-                    if (frame != null)
-                        inputVideoStreamer.accept(
-                                frame.contextColorImage != null ? frame.contextColorImage : frame.colorImage);
+                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
@@ -429,13 +423,18 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
-    public CameraCalibrationCoefficients endCalibration() {
-        var ret =
-                pipelineManager.calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(
-                                        pipelineManager.calibration3dPipeline.getSettings().resolution,
-                                        visionSource.getCameraConfiguration().uniqueName));
+    public CameraCalibrationCoefficients endCalibration(boolean cancel) {
+        CameraCalibrationCoefficients ret = null;
+        if (!cancel) {
+            ret =
+                    pipelineManager.calibration3dPipeline.tryCalibration(
+                            ConfigManager.getInstance()
+                                    .getCalibrationImageSavePathWithRes(
+                                            pipelineManager.calibration3dPipeline.getSettings().resolution,
+                                            visionSource.getCameraConfiguration().uniqueName));
+        } else {
+            logger.info("Calibration canceled -- not computing or saving a result");
+        }
         pipelineManager.setCalibrationMode(false);
 
         setPipeline(pipelineManager.getRequestedIndex());
@@ -443,7 +442,7 @@ public class VisionModule implements AutoCloseable {
         if (ret != null) {
             logger.debug("Saving calibration...");
             visionSource.getSettables().addCalibration(ret);
-        } else {
+        } else if (!cancel) {
             logger.error("Calibration failed...");
         }
         saveAndBroadcastAll();
