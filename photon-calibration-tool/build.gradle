@@ -48,6 +48,11 @@ shadowJar {
 }
 
 run {
+    onlyIf {
+        // Only run if explicitly requested
+        gradle.startParameter.taskNames.any { it.endsWith("${project.name}:run") }
+    }
+
     environment "PATH_PREFIX", "../"
 
     if (project.hasProperty("profile")) {
