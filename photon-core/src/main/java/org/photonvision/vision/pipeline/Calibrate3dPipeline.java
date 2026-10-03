@@ -175,8 +175,8 @@ public class Calibrate3dPipeline
     }
 
     /**
-     * In auto mode, takes a snapshot if the board has moved far enough from the last snapshot and
-     * has been stable over the last {@link #STABILITY_WINDOW} detections.
+     * In auto mode, takes a snapshot if the board has moved far enough from the last snapshot and has
+     * been stable over the last {@link #STABILITY_WINDOW} detections.
      */
     private void autoTakeSnapshot(FindBoardCornersPipeResult findBoardResult, Mat inputColorMat) {
         if (findBoardResult == null) {
