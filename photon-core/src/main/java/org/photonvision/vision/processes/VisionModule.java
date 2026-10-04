@@ -153,7 +153,6 @@ public class VisionModule implements AutoCloseable {
                         getChangeSubscriber(),
                         this::getFPSLimit,
                         this::getEnabled,
-                        // Streams are created after the runner, so read the field lazily
                         () -> inputVideoStreamer != null && inputVideoStreamer.isStreamConsumed());
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
@@ -247,8 +246,6 @@ public class VisionModule implements AutoCloseable {
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    // When cropping, stream the full frame with the cropped-away area dimmed so the
-                    // crop can be seen in context; the pipeline itself only ever sees the cropped image.
                     if (frame != null)
                         inputVideoStreamer.accept(
                                 frame.contextColorImage != null ? frame.contextColorImage : frame.colorImage);
