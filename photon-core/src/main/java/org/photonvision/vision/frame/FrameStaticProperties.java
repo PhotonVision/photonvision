@@ -18,6 +18,7 @@
 package org.photonvision.vision.frame;
 
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ImageRotationMode;
@@ -88,6 +89,80 @@ public class FrameStaticProperties {
             horizontalFocalLength = (this.imageWidth / 2.0) / Math.tan(horizFOV / 2.0);
             verticalFocalLength = (this.imageHeight / 2.0) / Math.tan(vertFOV / 2.0);
         }
+    }
+
+    /**
+     * Instantiates frame static properties with explicit optical parameters, bypassing the pinhole
+     * derivation. Used when transforming existing properties (e.g. cropping) where the focal lengths
+     * and principal point are already known and must be preserved rather than recomputed.
+     *
+     * @param imageWidth The width of the image, in pixels.
+     * @param imageHeight The height of the image, in pixels.
+     * @param fov The FOV (Field Of Vision) of the image in degrees.
+     * @param horizontalFocalLength The horizontal focal length, in pixels.
+     * @param verticalFocalLength The vertical focal length, in pixels.
+     * @param centerX The principal point's x coordinate, in pixels.
+     * @param centerY The principal point's y coordinate, in pixels.
+     * @param cal The camera calibration these properties describe, or null if uncalibrated.
+     */
+    private FrameStaticProperties(
+            int imageWidth,
+            int imageHeight,
+            double fov,
+            double horizontalFocalLength,
+            double verticalFocalLength,
+            double centerX,
+            double centerY,
+            CameraCalibrationCoefficients cal) {
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
+        this.fov = fov;
+        this.imageArea = imageWidth * imageHeight;
+        this.horizontalFocalLength = horizontalFocalLength;
+        this.verticalFocalLength = verticalFocalLength;
+        this.centerX = centerX;
+        this.centerY = centerY;
+        this.centerPoint = new Point(centerX, centerY);
+        this.cameraCalibration = cal;
+    }
+
+    /**
+     * Derive frame static properties for a statically-cropped image. Cropping shrinks the image and
+     * shifts the origin to the crop's top-left corner, so the principal point shifts by the crop
+     * origin while the focal lengths (which depend on the lens, not the framing) are preserved.
+     *
+     * <p>When calibrated, each call allocates fresh derived calibration coefficients holding native
+     * memory; the caller owns them and must release them when done. A caller cropping every frame
+     * should cache the result per rectangle, as {@link org.photonvision.vision.pipe.impl.CropPipe}
+     * does.
+     *
+     * @param cropRect The crop rectangle, in pixel coordinates of this image. Must lie within the
+     *     image bounds. A null rectangle is treated as a no-op.
+     * @return Static properties describing the cropped image.
+     */
+    public FrameStaticProperties crop(Rect cropRect) {
+        if (cropRect == null) {
+            return this;
+        }
+
+        if (cameraCalibration != null) {
+            // Derive optical parameters from the shifted intrinsics so everything stays self
+            // consistent with the cropped calibration used for pose estimation.
+            return new FrameStaticProperties(
+                    cropRect.width, cropRect.height, fov, cameraCalibration.cropCoefficients(cropRect));
+        }
+
+        // No calibration: keep the focal lengths (the lens is unchanged) and shift the principal
+        // point to match the new image origin.
+        return new FrameStaticProperties(
+                cropRect.width,
+                cropRect.height,
+                fov,
+                horizontalFocalLength,
+                verticalFocalLength,
+                centerX - cropRect.x,
+                centerY - cropRect.y,
+                null);
     }
 
     public FrameStaticProperties rotate(ImageRotationMode rotation) {
