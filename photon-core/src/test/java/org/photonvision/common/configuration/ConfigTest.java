@@ -18,6 +18,7 @@
 package org.photonvision.common.configuration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.avaje.jsonb.Jsonb;
@@ -29,6 +30,7 @@ import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.LoadJNI;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -95,6 +97,8 @@ public class ConfigTest {
         assertTrue(
                 Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "networkSettings.json")),
                 "networkSettings.json file not found!");
+
+        assertNotNull(UIPhotonConfiguration.programStateToProto(configMgr.getConfig()));
     }
 
     @Test
@@ -149,7 +153,7 @@ public class ConfigTest {
 
         CameraConfiguration result = Jsonb.instance().type(CameraConfiguration.class).fromJson(json);
         String ser = Jsonb.instance().toJson(result);
-        System.out.println(ser);
+        // System.out.println(ser);
     }
 
     @Test

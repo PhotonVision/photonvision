@@ -70,10 +70,6 @@ public class DataChangeService {
         dispatchThread.start();
     }
 
-    public boolean hasEvents() {
-        return !eventQueue.isEmpty();
-    }
-
     private void dispatchFromQueue() {
         while (true) {
             try {
@@ -124,11 +120,5 @@ public class DataChangeService {
 
     public void publishEvent(DataChangeEvent event) {
         eventQueue.offer(event);
-    }
-
-    public void publishEvents(DataChangeEvent... events) {
-        for (var event : events) {
-            publishEvent(event);
-        }
     }
 }

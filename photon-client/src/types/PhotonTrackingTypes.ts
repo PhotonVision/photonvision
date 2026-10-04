@@ -48,37 +48,3 @@ export interface Field {
   "field-dimensions": FieldDimensions;
   "field-tags": FieldTag[] | null;
 }
-
-export interface PhotonTarget {
-  yaw: number;
-  pitch: number;
-  skew: number;
-  area: number;
-  // -1 if not set
-  ambiguity: number;
-  // -1 if not set
-  fiducialId: number;
-  confidence: number;
-  classId: number;
-  // undefined if 3d isn't enabled
-  pose?: Transform3d;
-}
-
-export interface MultitagResult {
-  bestTransform: Transform3d;
-  bestReprojectionError: number;
-  fiducialIDsUsed: number[];
-}
-
-export interface PipelineResult {
-  sequenceID: number;
-  fps: number;
-  latency: number;
-  // Focus pipeline
-  focus?: number;
-  targets: PhotonTarget[];
-  // undefined if multitag failed or non-tag pipeline
-  multitagResult?: MultitagResult;
-  // Object detection class names -- empty if not doing object detection
-  classNames: string[];
-}
