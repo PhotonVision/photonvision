@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -41,6 +42,8 @@ import org.wpilib.fields.Field;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class ConfigTest {
+    @TempDir private static Path tmpDir;
+
     private static ConfigManager configMgr;
     private static final CameraConfiguration cameraConfig =
             new CameraConfiguration(
@@ -52,8 +55,7 @@ public class ConfigTest {
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
-        var path = Path.of("testconfigdir");
-        configMgr = new ConfigManager(path, new SqlConfigProvider(path));
+        configMgr = new ConfigManager(tmpDir, new SqlConfigProvider(tmpDir));
         configMgr.load();
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
