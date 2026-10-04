@@ -209,13 +209,7 @@ public class CameraCalibrationCoefficients implements Releasable {
     }
 
     /**
-     * Produce calibration coefficients for a statically-cropped image. Cropping does not change the
-     * lens, so the focal lengths and distortion coefficients are unchanged; only the principal point
-     * (cx, cy) shifts by the crop origin and the resolution shrinks to the crop size.
-     *
-     * @param cropRect The crop rectangle, in pixel coordinates of the image these coefficients apply
-     *     to.
-     * @return New coefficients describing the cropped image.
+     * Produce calibration coefficients for a cropped image.
      */
     public CameraCalibrationCoefficients cropCoefficients(Rect cropRect) {
         Mat croppedIntrinsics = getCameraIntrinsicsMat().clone();
