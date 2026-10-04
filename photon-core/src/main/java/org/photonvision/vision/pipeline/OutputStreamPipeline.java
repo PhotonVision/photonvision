@@ -22,7 +22,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
-import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.*;
@@ -158,14 +157,14 @@ public class OutputStreamPipeline implements Releasable {
                             contextImage.getMat().cols(),
                             contextImage.getMat().rows());
             if (effectiveCrop != null) {
-             Mat srcRoi = inputAndOutputFrame.colorImage.getMat().submat(effectiveCrop);
-             Mat dstRoi = dimmed.submat(effectiveCrop);
-             srcRoi.copyTo(dstRoi);
-             srcRoi.release();
-             dstRoi.release();
-             inputAndOutputFrame.colorImage.copyFrom(dimmed);
-             dimmed.release();
-             sumPipeNanosElapsed += resizeImagePipe.run(contextImage.getMat()).nanosElapsed;
+                Mat srcRoi = inputAndOutputFrame.colorImage.getMat().submat(effectiveCrop);
+                Mat dstRoi = dimmed.submat(effectiveCrop);
+                srcRoi.copyTo(dstRoi);
+                srcRoi.release();
+                dstRoi.release();
+                inputAndOutputFrame.colorImage.copyFrom(dimmed);
+                dimmed.release();
+                sumPipeNanosElapsed += resizeImagePipe.run(contextImage.getMat()).nanosElapsed;
             }
         }
 

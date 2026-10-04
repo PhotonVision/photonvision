@@ -47,6 +47,7 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
+import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class CropPipeTest {
@@ -115,13 +116,13 @@ public class CropPipeTest {
         provider.setCropParams(settings);
 
         var frame = uniformFrame(640, 480, 0);
-        frame.processedImage.getMat().put(expected.y, expected.x, new byte[] {(byte) 200});
+        frame.colorImage.getMat().put(expected.y, expected.x, new byte[] {(byte) 200, 0, 0});
 
-        var cropped = provider.cropFrame(frame, false);
+        var cropped = provider.cropFrame(frame);
         assertEquals(expected.width, cropped.processedImage.getMat().cols(), "Crop width");
         assertEquals(expected.height, cropped.processedImage.getMat().rows(), "Crop height");
 
-        byte[] pixel = new byte[1];
+        byte[] pixel = new byte[3];
         cropped.processedImage.getMat().get(0, 0, pixel);
         assertEquals(200, pixel[0] & 0xFF, "The crop origin should be at " + expected);
 
@@ -134,7 +135,7 @@ public class CropPipeTest {
         provider.setCropParams(settings);
 
         var frame = uniformFrame(640, 480, 0);
-        assertSame(frame, provider.cropFrame(frame, false), message);
+        assertSame(frame, provider.cropFrame(frame), message);
         frame.release();
     }
 
@@ -190,14 +191,14 @@ public class CropPipeTest {
         var props = new FrameStaticProperties(640, 480, 70.0, cal);
         var provider = providerFor(100, 300, 50, 200);
 
-        var first = provider.cropFrame(uniformFrame(640, 480, 200, props), false);
+        var first = provider.cropFrame(uniformFrame(640, 480, 200, props));
         var firstCal = first.frameStaticProperties.cameraCalibration;
         // Force the lazy native allocation that the release has to clean up.
         assertNotNull(firstCal.getCameraIntrinsicsMat());
         first.release();
 
         provider.setCropParams(settings(new IntegerCouple(120, 320), new IntegerCouple(60, 210)));
-        var second = provider.cropFrame(uniformFrame(640, 480, 200, props), false);
+        var second = provider.cropFrame(uniformFrame(640, 480, 200, props));
         var secondCal = second.frameStaticProperties.cameraCalibration;
         assertNotSame(firstCal, secondCal);
 
@@ -219,7 +220,7 @@ public class CropPipeTest {
         var props = new FrameStaticProperties(640, 480, 70.0, cal);
         var provider = providerFor(100, 300, 50, 200);
 
-        var cropped = provider.cropFrame(uniformFrame(640, 480, 200, props), false);
+        var cropped = provider.cropFrame(uniformFrame(640, 480, 200, props));
         var croppedCal = cropped.frameStaticProperties.cameraCalibration;
         assertNotNull(croppedCal.getCameraIntrinsicsMat());
         cropped.release();
@@ -228,8 +229,7 @@ public class CropPipeTest {
         disabled.staticCropEnabled = false;
         provider.setCropParams(disabled);
         var frame = uniformFrame(640, 480, 200, props);
-        assertSame(
-                frame, provider.cropFrame(frame, false), "A disabled crop should pass the frame through");
+        assertSame(frame, provider.cropFrame(frame), "A disabled crop should pass the frame through");
 
         assertThrows(
                 RuntimeException.class,
@@ -260,17 +260,22 @@ public class CropPipeTest {
     }
 
     @Test
-    public void cropFrameKeepsADimmedFullFrameContextImage() {
-        var provider = providerFor(100, 300, 50, 200);
-        var frame = uniformFrame(640, 480, 200);
+    public void outputStreamDimsTheFullFrameOutsideTheCrop() {
+        var settings = settings(new IntegerCouple(100, 300), new IntegerCouple(50, 200));
+        settings.inputShouldShow = true;
+        settings.outputShouldDraw = false;
+        var provider = new TestFrameProvider();
+        provider.setCropParams(settings);
+        var frame = uniformFrame(640, 480, 200, new FrameStaticProperties(640, 480, 70.0, null));
 
-        var cropped = provider.cropFrame(frame, true);
+        var cropped = provider.cropFrame(frame);
 
-        assertEquals(200, cropped.colorImage.getMat().cols());
-        assertEquals(150, cropped.colorImage.getMat().rows());
+        assertEquals(200, cropped.processedImage.getMat().cols());
+        assertEquals(150, cropped.processedImage.getMat().rows());
 
-        var context = cropped.contextColorImage;
-        assertNotNull(context, "Cropping with keepContext should produce a context image");
+        var pipeline = new OutputStreamPipeline();
+        pipeline.process(cropped, settings, List.of());
+        var context = cropped.colorImage;
         assertEquals(640, context.getMat().cols());
         assertEquals(480, context.getMat().rows());
 
@@ -283,17 +288,23 @@ public class CropPipeTest {
                 dimmed > 0 && dimmed < 120, "Pixels outside the crop should be dimmed, got " + dimmed);
 
         cropped.release();
-        assertTrue(context.isReleased(), "The context image is owned by the frame");
+        assertTrue(context.isReleased(), "The color image is owned by the frame");
+        pipeline.release();
     }
 
     @Test
-    public void cropFrameWithoutContextKeepsNoExtraImage() {
+    public void cropFramePreservesTheFullColorImage() {
         var provider = providerFor(100, 300, 50, 200);
         var frame = uniformFrame(640, 480, 200);
 
-        var cropped = provider.cropFrame(frame, false);
+        var cropped = provider.cropFrame(frame);
 
-        assertNull(cropped.contextColorImage, "No context image unless asked for");
+        assertSame(frame.colorImage, cropped.colorImage);
+        assertEquals(640, cropped.colorImage.getMat().cols());
+        assertEquals(480, cropped.colorImage.getMat().rows());
+        byte[] pixel = new byte[3];
+        cropped.colorImage.getMat().get(10, 10, pixel);
+        assertEquals(200, pixel[0] & 0xFF, "Cropping should not dim the color image");
         cropped.release();
     }
 
@@ -414,8 +425,8 @@ public class CropPipeTest {
         var provider = new TestFrameProvider();
         provider.setCropParams(settings);
 
-        var first = provider.cropFrame(uniformFrame(100, 100, 0), false);
-        assertEquals(40, first.colorImage.getMat().cols());
+        var first = provider.cropFrame(uniformFrame(100, 100, 0));
+        assertEquals(40, first.processedImage.getMat().cols());
         first.release();
 
         // The settings object is mutated in place, exactly as the settings subscriber does, so
@@ -423,9 +434,9 @@ public class CropPipeTest {
         settings.staticCropX.set(10, 90);
         provider.setCropParams(settings);
 
-        var second = provider.cropFrame(uniformFrame(100, 100, 0), false);
+        var second = provider.cropFrame(uniformFrame(100, 100, 0));
         assertEquals(
-                80, second.colorImage.getMat().cols(), "The crop should follow the mutated settings");
+                80, second.processedImage.getMat().cols(), "The crop should follow the mutated settings");
         second.release();
     }
 
