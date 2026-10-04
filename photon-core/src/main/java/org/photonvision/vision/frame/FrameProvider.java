@@ -89,7 +89,7 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     }
 
     public final Frame cropFrame(Frame frame) {
-        var frameToCrop = frame.colorImage;
+        var frameToCrop = frame.processedImage;
         Rect effectiveCrop =
                 CropPipe.clampCropToImage(
                         cropPipe.getParams().rect(), frameToCrop.getMat().cols(), frameToCrop.getMat().rows());
@@ -98,7 +98,7 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
             return frame;
         }
 
-        boolean cropped = cropInPlace(frameToCrop, frame.processedImage);
+        boolean cropped = cropInPlace(frameToCrop);
         if (!cropped) {
             return frame;
         }
@@ -116,15 +116,15 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         return croppedFrame;
     }
 
-    private boolean cropInPlace(CVMat inputImage, CVMat outputImage) {
-        var result = cropPipe.run(inputImage);
+    private boolean cropInPlace(CVMat image) {
+        var result = cropPipe.run(image);
         if (result.output == null) {
             return false;
         }
 
         Mat cropped = result.output.getMat().clone();
         result.output.release();
-        cropped.copyTo(outputImage.getMat());
+        cropped.copyTo(image.getMat());
         cropped.release();
         return true;
     }
