@@ -36,7 +36,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.LoadJNI;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -311,7 +311,7 @@ public class Calibrate3dPipeTest {
 
             cal =
                     calibration3dPipeline.tryCalibration(
-                            ConfigManager.getInstance()
+                            ConfigProvider.getInstance()
                                     .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
             calibration3dPipeline.finishCalibration();
         }

@@ -44,7 +44,7 @@ import org.wpilib.fields.Field;
 public class ConfigTest {
     @TempDir private static Path tmpDir;
 
-    private static ConfigManager configMgr;
+    private static ConfigProvider configMgr;
     private static final CameraConfiguration cameraConfig =
             new CameraConfiguration(
                     "TestCamera", PVCameraInfo.fromFileInfo("TestCamera", "/dev/video420"));
@@ -55,7 +55,7 @@ public class ConfigTest {
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
-        configMgr = new ConfigManager(tmpDir, new SqlConfigProvider(tmpDir));
+        configMgr = new ConfigProvider(tmpDir);
         configMgr.load();
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);

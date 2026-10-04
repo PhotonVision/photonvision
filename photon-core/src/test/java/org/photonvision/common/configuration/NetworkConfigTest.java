@@ -80,7 +80,7 @@ public class NetworkConfigTest {
                         .resolve(String.format("networkConfigTest/%s.sqlite", testSource))
                         .toFile(),
                 testDatabase.toFile());
-        var configMgr = new ConfigManager(tmpDir, new SqlConfigProvider(tmpDir));
+        var configMgr = new ConfigProvider(tmpDir);
         configMgr.load();
         assertEquals(expectedNtServerAddress, configMgr.getConfig().getNetworkConfig().ntServerAddress);
     }

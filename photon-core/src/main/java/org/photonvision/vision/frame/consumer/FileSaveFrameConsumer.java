@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.Consumer;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -39,7 +39,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private final Logger logger = new Logger(FileSaveFrameConsumer.class, LogGroup.General);
 
     // Formatters to generate unique, timestamped file names
-    private static final String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
+    private static final String FILE_PATH = ConfigProvider.getInstance().getImageSavePath().toString();
     static final String FILE_EXTENSION = ".jpg";
     private static final String NT_SUFFIX = "SaveImgCmd";
 

@@ -18,7 +18,7 @@
 package org.photonvision.vision.camera.csi;
 
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraType;
@@ -95,12 +95,12 @@ public class LibcameraGpuSource extends VisionSource {
 
     @Override
     public boolean isVendorCamera() {
-        return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV();
+        return ConfigProvider.getInstance().getConfig().getHardwareConfig().hasPresetFOV();
     }
 
     @Override
     public boolean hasLEDs() {
-        return (ConfigManager.getInstance().getConfig().getHardwareConfig().ledPins.size() > 0);
+        return (ConfigProvider.getInstance().getConfig().getHardwareConfig().ledPins.size() > 0);
     }
 
     @Override
