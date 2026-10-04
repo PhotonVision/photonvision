@@ -36,8 +36,6 @@ public class Frame implements Releasable {
 
     public final FrameStaticProperties frameStaticProperties;
 
-    public CVMat contextColorImage = null;
-
     public Frame(
             long sequenceID,
             CVMat color,
@@ -99,9 +97,5 @@ public class Frame implements Releasable {
 
         colorImage.release();
         processedImage.release();
-        if (contextColorImage != null) {
-            contextColorImage.release();
-            contextColorImage = null;
-        }
     }
 }
