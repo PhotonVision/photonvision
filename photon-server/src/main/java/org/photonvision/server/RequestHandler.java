@@ -720,7 +720,8 @@ public class RequestHandler {
                     .getNeuralNetworkProperties()
                     .addModelProperties(modelProperties);
 
-            logger.debug(ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties().toString());
+            logger.debug(
+                    ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties().toString());
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 
@@ -921,7 +922,8 @@ public class RequestHandler {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(
+                                            ConfigProvider.getInstance().getConfig())));
 
         } catch (Exception e) {
             ctx.status(500);
@@ -976,7 +978,8 @@ public class RequestHandler {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(
+                                            ConfigProvider.getInstance().getConfig())));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error renaming object detection model: " + e.getMessage());

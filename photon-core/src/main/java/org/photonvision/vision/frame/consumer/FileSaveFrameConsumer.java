@@ -39,7 +39,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private final Logger logger = new Logger(FileSaveFrameConsumer.class, LogGroup.General);
 
     // Formatters to generate unique, timestamped file names
-    private static final String FILE_PATH = ConfigProvider.getInstance().getImageSavePath().toString();
+    private static final String FILE_PATH =
+            ConfigProvider.getInstance().getImageSavePath().toString();
     static final String FILE_EXTENSION = ".jpg";
     private static final String NT_SUFFIX = "SaveImgCmd";
 

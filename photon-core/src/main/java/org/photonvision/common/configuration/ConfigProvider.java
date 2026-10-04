@@ -28,13 +28,13 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -343,11 +343,11 @@ public class ConfigProvider {
         try {
             conn.commit();
         } catch (SQLException e1) {
-            logger.error("Err committing changes: ", e1);
+            logger.error("Error committing changes: ", e1);
             try {
                 conn.rollback();
             } catch (SQLException e2) {
-                logger.error("Err rolling back changes: ", e2);
+                logger.error("Error rolling back changes: ", e2);
             }
         }
     }
@@ -390,7 +390,7 @@ public class ConfigProvider {
             } catch (SQLException e) {
                 // TODO, does the file still save if the SQL connection isn't closed correctly?
                 // If so, return false here.
-                logger.error("SQL Err closing connection while saving to disk: ", e);
+                logger.error("SQL Error closing connection while saving to disk: ", e);
             }
         }
 
@@ -500,7 +500,7 @@ public class ConfigProvider {
             try {
                 conn.close();
             } catch (SQLException e) {
-                logger.error("SQL Err closing connection while loading: ", e);
+                logger.error("SQL Error closing connection while loading: ", e);
             }
 
             this.config =
@@ -525,12 +525,12 @@ public class ConfigProvider {
                 return result.getString(Columns.GLB_CONTENTS);
             }
         } catch (SQLException e) {
-            logger.error("SQL Err getting file " + filename, e);
+            logger.error("SQL Error getting file " + filename, e);
         } finally {
             try {
                 if (query != null) query.close();
             } catch (SQLException e) {
-                logger.error("SQL Err closing config file query " + filename, e);
+                logger.error("SQL Error closing config file query " + filename, e);
             }
         }
 
@@ -568,11 +568,11 @@ public class ConfigProvider {
                 statement.executeUpdate();
             }
         } catch (SQLException | IllegalStateException | JsonException e) {
-            logger.error("Err saving cameras", e);
+            logger.error("Error saving cameras", e);
             try {
                 conn.rollback();
             } catch (SQLException e1) {
-                logger.error("Err rolling back changes: ", e);
+                logger.error("Error rolling back changes: ", e);
             }
         }
     }
@@ -660,11 +660,11 @@ public class ConfigProvider {
             }
 
         } catch (SQLException | IllegalStateException | JsonException e) {
-            logger.error("Err saving global", e);
+            logger.error("Error saving global", e);
             try {
                 conn.rollback();
             } catch (SQLException e1) {
-                logger.error("Err rolling back changes: ", e);
+                logger.error("Error rolling back changes: ", e);
             }
         } finally {
             try {
@@ -672,7 +672,7 @@ public class ConfigProvider {
                 if (statement2 != null) statement2.close();
                 if (statement3 != null) statement3.close();
             } catch (SQLException e) {
-                logger.error("SQL Err closing global settings query ", e);
+                logger.error("SQL Error closing global settings query ", e);
             }
         }
     }
@@ -790,12 +790,12 @@ public class ConfigProvider {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Err querying database to load cameras: ", e);
+            logger.error("Error querying database to load cameras: ", e);
         } finally {
             try {
                 if (query != null) query.close();
             } catch (SQLException e) {
-                logger.error("SQL Err closing connection while loading cameras ", e);
+                logger.error("SQL Error closing connection while loading cameras ", e);
             }
         }
         return loadedConfigurations;

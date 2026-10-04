@@ -201,7 +201,8 @@ public class NetworkTablesManager {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(
+                                            ConfigProvider.getInstance().getConfig())));
         } catch (IllegalStateException | JsonException e) {
             logger.error("Error deserializing field layout!");
             logger.error(field_json);
@@ -319,7 +320,8 @@ public class NetworkTablesManager {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(
+                                            ConfigProvider.getInstance().getConfig())));
         }
         if (conflictingHostname) {
             conflictAlert.setText("Hostname conflict detected for " + hostname + "!");

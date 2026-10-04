@@ -71,7 +71,11 @@ public class NeuralNetworkModelsSettings {
                 throws IllegalArgumentException, IOException {
             // Used to point to default models directory
             var model =
-                    ConfigProvider.getInstance().getModelsDirectory().toPath().resolve(modelFileName).toFile();
+                    ConfigProvider.getInstance()
+                            .getModelsDirectory()
+                            .toPath()
+                            .resolve(modelFileName)
+                            .toFile();
 
             // Get the model extension and check if it is supported
             String modelExtension = model.getName().substring(model.getName().lastIndexOf('.'));
