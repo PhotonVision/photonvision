@@ -18,7 +18,7 @@
 package org.photonvision.server;
 
 import java.util.Collections;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeSource;
@@ -44,7 +44,7 @@ public class UIInboundSubscriber extends DataChangeSubscriber {
                     || incomingWSEvent.propertyName.equals("sendFullSettings")) {
                 // Send full settings
                 var settings =
-                        UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig());
+                        UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig());
                 var message =
                         new OutgoingUIEvent<>("fullsettings", settings, incomingWSEvent.originContext);
                 DataChangeService.getInstance().publishEvent(message);

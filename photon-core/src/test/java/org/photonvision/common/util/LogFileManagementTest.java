@@ -32,23 +32,23 @@ import java.time.ZoneOffset;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.junit.jupiter.api.Test;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.logging.Logger;
 
 public class LogFileManagementTest {
     @Test
     public void fileCleanupTest() {
         // Ensure we instantiate the new log correctly
-        ConfigManager.getInstance();
+        ConfigProvider.getInstance();
 
-        String testDir = ConfigManager.getInstance().getLogsDir().toString() + "/test";
+        String testDir = ConfigProvider.getInstance().getLogsDir().toString() + "/test";
 
         assertDoesNotThrow(() -> Files.createDirectories(Path.of(testDir)));
 
         // Create a bunch of log files with dummy contents.
         for (int fileIdx = 0; fileIdx < Logger.MAX_LOGS_TO_KEEP + 5; fileIdx++) {
             String fname =
-                    ConfigManager.getInstance()
+                    ConfigProvider.getInstance()
                             .taToLogFname(
                                     LocalDateTime.ofEpochSecond(1500000000 + fileIdx * 60, 0, ZoneOffset.UTC));
             try {

@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -182,7 +182,7 @@ public class VisionSourceManager implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
 
         pushUiUpdate();
 
@@ -217,7 +217,7 @@ public class VisionSourceManager implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
 
         pushUiUpdate();
 
@@ -227,14 +227,14 @@ public class VisionSourceManager implements AutoCloseable {
     public synchronized boolean deleteVisionSource(String uniqueName) {
         deactivateVisionSource(uniqueName);
         var config = disabledCameraConfigs.remove(uniqueName);
-        ConfigManager.getInstance().getConfig().removeCameraConfig(uniqueName);
-        ConfigManager.getInstance().saveToDisk();
+        ConfigProvider.getInstance().getConfig().removeCameraConfig(uniqueName);
+        ConfigProvider.getInstance().saveToDisk();
 
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
         pushUiUpdate();
 
         return config != null;

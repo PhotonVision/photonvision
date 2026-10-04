@@ -30,7 +30,7 @@ import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -58,7 +58,7 @@ public class CalibrationRotationPipeTest {
         Logger.setLevel(LogGroup.Data, logLevel);
         Logger.setLevel(LogGroup.Config, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
     }
 
     @Test

@@ -39,7 +39,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Point3;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
@@ -122,13 +122,13 @@ public class RequestHandler {
             return;
         }
 
-        ConfigManager.getInstance().setWriteTaskEnabled(false);
-        ConfigManager.getInstance().disableFlushOnShutdown();
+        ConfigProvider.getInstance().setWriteTaskEnabled(false);
+        ConfigProvider.getInstance().disableFlushOnShutdown();
         // We want to delete the -whole- zip file, so we need to teardown loggers for
         // now
         logger.info("Writing new settings zip (logs may be truncated)...");
         Logger.closeAllLoggers();
-        if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
+        if (ConfigProvider.saveUploadedSettingsZip(tempFilePath.get())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded settings zip, rebooting...");
             restartProgram();
@@ -142,7 +142,7 @@ public class RequestHandler {
         logger.info("Exporting Settings to ZIP Archive");
 
         try {
-            var zip = ConfigManager.getInstance().getSettingsFolderAsZip();
+            var zip = ConfigProvider.getInstance().getSettingsFolderAsZip();
             var stream = new FileInputStream(zip);
             logger.info("Uploading settings with size " + stream.available());
 
@@ -190,7 +190,7 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.get().toPath())) {
+        if (ConfigProvider.getInstance().saveUploadedHardwareConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware config, rebooting...");
             logger.info("Successfully saved the uploaded hardware config, rebooting...");
@@ -233,7 +233,7 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
+        if (ConfigProvider.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware settings, rebooting...");
             logger.info("Successfully saved the uploaded hardware settings, rebooting...");
@@ -276,7 +276,7 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.get().toPath())) {
+        if (ConfigProvider.getInstance().saveUploadedNetworkConfig(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded network config, rebooting...");
             logger.info("Successfully saved the uploaded network config, rebooting...");
@@ -319,7 +319,7 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigManager.getInstance().saveUploadedFieldLayout(tempFilePath.get().toPath())) {
+        if (ConfigProvider.getInstance().saveUploadedFieldLayout(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded FieldLayout, rebooting...");
             logger.info("Successfully saved the uploaded FieldLayout, rebooting...");
@@ -391,8 +391,8 @@ public class RequestHandler {
             logger.error("The provided general settings were malformed", e);
         }
 
-        ConfigManager.getInstance().setNetworkSettings(config);
-        ConfigManager.getInstance().requestSave();
+        ConfigProvider.getInstance().setNetworkSettings(config);
+        ConfigProvider.getInstance().requestSave();
 
         NetworkManager.getInstance().reinitialize();
 
@@ -664,7 +664,7 @@ public class RequestHandler {
 
             Path modelPath =
                     Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
+                            ConfigProvider.getInstance().getModelsDirectory().toString(), modelFile.filename());
 
             if (modelPath.toFile().exists()) {
                 ctx.status(400);
@@ -715,12 +715,12 @@ public class RequestHandler {
                     }
                 }
             }
-            ConfigManager.getInstance()
+            ConfigProvider.getInstance()
                     .getConfig()
                     .getNeuralNetworkProperties()
                     .addModelProperties(modelProperties);
 
-            logger.debug(ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().toString());
+            logger.debug(ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties().toString());
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 
@@ -734,14 +734,14 @@ public class RequestHandler {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
     }
 
     public static void onExportObjectDetectionModelsRequest(Context ctx) {
         logger.info("Exporting Object Detection Models to ZIP Archive");
 
         try {
-            var zip = ConfigManager.getInstance().getObjectDetectionExportAsZip();
+            var zip = ConfigProvider.getInstance().getObjectDetectionExportAsZip();
             var stream = new FileInputStream(zip);
             logger.info("Uploading object detection models with size " + stream.available());
 
@@ -826,7 +826,7 @@ public class RequestHandler {
             tempDir = Files.createTempDirectory("photonvision-od-models");
             ZipUtil.unpack(tempFilePath.get(), tempDir.toFile());
 
-            Path targetModelsDir = ConfigManager.getInstance().getModelsDirectory().toPath();
+            Path targetModelsDir = ConfigProvider.getInstance().getModelsDirectory().toPath();
 
             // Copy all files from the source models directory to the target models
             // directory
@@ -852,7 +852,7 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigManager.getInstance()
+        if (ConfigProvider.getInstance()
                 .saveUploadedNeuralNetworkProperties(
                         Path.of(tempDir.toString(), "photonvision-object-detection-models.json"))) {
             ctx.status(200);
@@ -869,7 +869,7 @@ public class RequestHandler {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
     }
 
     @Json
@@ -903,7 +903,7 @@ public class RequestHandler {
                 return;
             }
 
-            if (!ConfigManager.getInstance()
+            if (!ConfigProvider.getInstance()
                     .getConfig()
                     .getNeuralNetworkProperties()
                     .removeModel(request.modelPath)) {
@@ -921,7 +921,7 @@ public class RequestHandler {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
 
         } catch (Exception e) {
             ctx.status(500);
@@ -959,7 +959,7 @@ public class RequestHandler {
                 return;
             }
 
-            if (!ConfigManager.getInstance()
+            if (!ConfigProvider.getInstance()
                     .getConfig()
                     .getNeuralNetworkProperties()
                     .renameModel(request.modelPath, request.newName)) {
@@ -976,7 +976,7 @@ public class RequestHandler {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error renaming object detection model: " + e.getMessage());
@@ -1001,7 +1001,7 @@ public class RequestHandler {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
     }
 
     public static void onDeviceRestartRequest(Context ctx) {
@@ -1225,7 +1225,7 @@ public class RequestHandler {
 
     public static void onImageSnapshotsRequest(Context ctx) {
         var snapshots = new ArrayList<Map<String, Object>>();
-        var cameraDirs = ConfigManager.getInstance().getImageSavePath().toFile().listFiles();
+        var cameraDirs = ConfigProvider.getInstance().getImageSavePath().toFile().listFiles();
 
         if (cameraDirs != null) {
             try {
@@ -1265,7 +1265,7 @@ public class RequestHandler {
         try {
             Map<String, Map<String, ArrayList<Map<String, Object>>>> snapshots = new HashMap<>();
 
-            var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
+            var cameraDirs = ConfigProvider.getInstance().getCalibDir().toFile().listFiles();
             if (cameraDirs != null) {
                 var camData = new HashMap<String, ArrayList<Map<String, Object>>>();
                 for (var cameraDir : cameraDirs) {
@@ -1362,11 +1362,11 @@ public class RequestHandler {
     }
 
     public static void onNukeConfigDirectory(Context ctx) {
-        ConfigManager.getInstance().setWriteTaskEnabled(false);
-        ConfigManager.getInstance().disableFlushOnShutdown();
+        ConfigProvider.getInstance().setWriteTaskEnabled(false);
+        ConfigProvider.getInstance().disableFlushOnShutdown();
 
         Logger.closeAllLoggers();
-        if (ConfigManager.nukeConfigDirectory()) {
+        if (ConfigProvider.nukeConfigDirectory()) {
             ctx.status(200);
             ctx.result("Successfully nuked config dir");
             restartProgram();
@@ -1383,7 +1383,7 @@ public class RequestHandler {
             logger.warn("Deleting camera name " + request.cameraUniqueName);
 
             var cameraDir =
-                    ConfigManager.getInstance()
+                    ConfigProvider.getInstance()
                             .getCalibrationImageSavePath(request.cameraUniqueName)
                             .toFile();
             if (cameraDir.exists()) {

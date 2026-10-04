@@ -27,7 +27,7 @@ import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
@@ -102,10 +102,10 @@ public class Main implements Callable<Integer> {
     private Optional<Platform> platform;
 
     private static void addTestModeSources() {
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
 
         CameraConfiguration camConf2026 =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2026");
+                ConfigProvider.getInstance().getConfig().getCameraConfigurations().get("WPI2026");
         if (camConf2026 == null) {
             camConf2026 =
                     new CameraConfiguration(
@@ -167,8 +167,8 @@ public class Main implements Callable<Integer> {
 
         var cameraConfigs = List.of(camConf2026);
 
-        ConfigManager.getInstance().unloadCameraConfigs();
-        cameraConfigs.stream().forEach(ConfigManager.getInstance()::addCameraConfiguration);
+        ConfigProvider.getInstance().unloadCameraConfigs();
+        cameraConfigs.stream().forEach(ConfigProvider.getInstance()::addCameraConfiguration);
         VisionSourceManager.getInstance().registerLoadedConfigs(cameraConfigs);
     }
 
@@ -223,7 +223,7 @@ public class Main implements Callable<Integer> {
         }
 
         if (clearConfig) {
-            ConfigManager.getInstance().clearConfig();
+            ConfigProvider.getInstance().clearConfig();
         }
 
         if (platform.isPresent()) {
@@ -283,9 +283,9 @@ public class Main implements Callable<Integer> {
         // Add CSCore->Photon logger
         PvCSCoreLogger.getInstance();
 
-        logger.debug("Loading ConfigManager...");
-        ConfigManager.getInstance().load(); // init config manager
-        ConfigManager.getInstance().requestSave();
+        logger.debug("Loading ConfigProvider...");
+        ConfigProvider.getInstance().load(); // init config manager
+        ConfigProvider.getInstance().requestSave();
 
         logger.info("Loading ML models...");
         var modelManager = NeuralNetworkModelManager.getInstance();
@@ -295,7 +295,7 @@ public class Main implements Callable<Integer> {
         logger.debug("Loading NetworkManager...");
         NetworkManager.getInstance().reinitialize();
 
-        var conf = ConfigManager.getInstance().getConfig();
+        var conf = ConfigProvider.getInstance().getConfig();
 
         logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance().setConfig(conf.getNetworkConfig());
@@ -320,7 +320,7 @@ public class Main implements Callable<Integer> {
             logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
-                            ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
+                            ConfigProvider.getInstance().getConfig().getCameraConfigurations().values());
         } else {
             addTestModeSources();
         }
