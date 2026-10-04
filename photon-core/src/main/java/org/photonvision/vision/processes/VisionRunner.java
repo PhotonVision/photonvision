@@ -60,8 +60,6 @@ public class VisionRunner implements AutoCloseable {
     private final Supplier<Boolean> enabledSupplier;
     private final Supplier<Boolean> inputStreamConsumedSupplier;
 
-    // Warns (on the driver station, via NetworkTables) while the raw stream is being watched with
-    // static cropping enabled: composing the uncropped preview costs extra processing per frame.
     private final Alert croppedRawStreamAlert;
     private boolean croppedRawStreamAlertShown = false;
 
@@ -127,8 +125,6 @@ public class VisionRunner implements AutoCloseable {
                             advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
             frameSupplier.requestHsvSettings(hsvParams);
 
-            // setParams re-derives the crop rectangle, keeping it in step with the settings, which
-            // are mutated in place as the user adjusts them.
             frameSupplier.setCropParams(advanced);
             isCroppablePipeline = true;
         }
@@ -225,11 +221,6 @@ public class VisionRunner implements AutoCloseable {
         }
     }
 
-    /**
-     * Raise or clear the alert, only touching NetworkTables when the state actually changes.
-     *
-     * @param shown Whether the alert should be active.
-     */
     private void updateCroppedRawStreamAlert(boolean shown) {
         if (shown == croppedRawStreamAlertShown) return;
         croppedRawStreamAlertShown = shown;
@@ -276,14 +267,11 @@ public class VisionRunner implements AutoCloseable {
             // TODO would a callback object be a better fit?
             boolean isCroppablePipeline = configureFrameProviderForPipeline(frameSupplier, pipeline);
 
-            // Grab the new camera frame, and statically crop it (a no-op when cropping is disabled).
-            // The frame is already rotated, so the crop applies in the rotated coordinate space.
+            // Grab the new camera frame, and statically crop it if required.
             var frame = frameSupplier.get();
             boolean keepContext = false;
 
             if (isCroppablePipeline) {
-                // The dimmed full-frame context image exists only for the input stream's viewers --
-                // skip composing it when nothing is actually consuming that stream.
                 keepContext = pipeline.getSettings().inputShouldShow && inputStreamConsumedSupplier.get();
                 frame = frameSupplier.cropFrame(frame, keepContext);
             }

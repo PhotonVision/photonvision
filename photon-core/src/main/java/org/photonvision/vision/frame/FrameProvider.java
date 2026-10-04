@@ -30,14 +30,12 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
 
-    // Starts as a no-op crop (null rect) so params are always set; setCropParams replaces them.
     private final CropPipe cropPipe = new CropPipe();
 
     {
         cropPipe.setParams(new CropPipe.CropPipeParams(null, null));
     }
 
-    /** How much the cropped-away area is dimmed in the input stream's context image. */
     private static final double CONTEXT_DIM_FACTOR = 0.35;
 
     // Escape hatch to allow us to synchronously (from the main vision thread) run
@@ -92,22 +90,12 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         cropPipe.setParams(new CropPipe.CropPipeParams(settings));
     }
 
-    /**
-     * Statically crop the frame to the configured region, in place. A no-op crop returns the frame
-     * unchanged.
-     *
-     * @param frame The frame to crop.
-     * @param keepContext Whether to also keep a dimmed full-frame context image for the input stream.
-     * @return The cropped frame, carrying properties derived for the cropped size.
-     */
     public final Frame cropFrame(Frame frame, boolean keepContext) {
         var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
         Rect effectiveCrop =
                 CropPipe.clampCropToImage(
                         cropPipe.getParams().rect(), reference.getMat().cols(), reference.getMat().rows());
         if (effectiveCrop == null) {
-            // Cropping is a no-op, so the cached cropped properties can never be reused; don't hold
-            // their native calibration memory alive until a crop happens to come along again.
             cropPipe.releaseCachedProperties();
             return frame;
         }
@@ -116,8 +104,6 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         if (keepContext && !frame.colorImage.getMat().empty()) {
             Mat dimmed = new Mat();
             frame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
-            // submat hands back a new native header holding a refcount on the pixel buffer; both
-            // must be released or dimmed's buffer leaks for as long as the context image lives.
             Mat srcRoi = frame.colorImage.getMat().submat(effectiveCrop);
             Mat dstRoi = dimmed.submat(effectiveCrop);
             srcRoi.copyTo(dstRoi);
