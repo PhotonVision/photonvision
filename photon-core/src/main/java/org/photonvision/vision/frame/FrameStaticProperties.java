@@ -112,9 +112,7 @@ public class FrameStaticProperties {
         this.cameraCalibration = cal;
     }
 
-    /**
-     * Create frame static properties adjusted to match a cropped frame.
-     */
+    /** Create frame static properties adjusted to match a cropped frame. */
     public FrameStaticProperties crop(Rect cropRect) {
         if (cropRect == null) {
             return this;

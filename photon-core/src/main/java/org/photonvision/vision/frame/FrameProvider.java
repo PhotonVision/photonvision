@@ -36,8 +36,6 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         cropPipe.setParams(new CropPipe.CropPipeParams(null, null));
     }
 
-    private static final double CONTEXT_DIM_FACTOR = 0.35;
-
     // Escape hatch to allow us to synchronously (from the main vision thread) run
     // extra
     // setup/callbacks once cscore connects to our underlying device for the first
@@ -90,32 +88,18 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
         cropPipe.setParams(new CropPipe.CropPipeParams(settings));
     }
 
-    public final Frame cropFrame(Frame frame, boolean keepContext) {
-        var reference = !frame.colorImage.getMat().empty() ? frame.colorImage : frame.processedImage;
+    public final Frame cropFrame(Frame frame) {
+        var frameToCrop = frame.colorImage;
         Rect effectiveCrop =
                 CropPipe.clampCropToImage(
-                        cropPipe.getParams().rect(), reference.getMat().cols(), reference.getMat().rows());
+                        cropPipe.getParams().rect(), frameToCrop.getMat().cols(), frameToCrop.getMat().rows());
         if (effectiveCrop == null) {
             cropPipe.releaseCachedProperties();
             return frame;
         }
 
-        CVMat contextImage = null;
-        if (keepContext && !frame.colorImage.getMat().empty()) {
-            Mat dimmed = new Mat();
-            frame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
-            Mat srcRoi = frame.colorImage.getMat().submat(effectiveCrop);
-            Mat dstRoi = dimmed.submat(effectiveCrop);
-            srcRoi.copyTo(dstRoi);
-            srcRoi.release();
-            dstRoi.release();
-            contextImage = new CVMat(dimmed);
-        }
-
-        boolean cropped = cropInPlace(frame.colorImage);
-        cropped |= cropInPlace(frame.processedImage);
+        boolean cropped = cropInPlace(frameToCrop, frame.processedImage);
         if (!cropped) {
-            if (contextImage != null) contextImage.release();
             return frame;
         }
 
@@ -129,19 +113,18 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
                         frame.frameStaticProperties != null
                                 ? cropPipe.croppedProperties(frame.frameStaticProperties, effectiveCrop)
                                 : null);
-        croppedFrame.contextColorImage = contextImage;
         return croppedFrame;
     }
 
-    private boolean cropInPlace(CVMat image) {
-        var result = cropPipe.run(image);
+    private boolean cropInPlace(CVMat inputImage, CVMat outputImage) {
+        var result = cropPipe.run(inputImage);
         if (result.output == null) {
             return false;
         }
 
         Mat cropped = result.output.getMat().clone();
         result.output.release();
-        cropped.copyTo(image.getMat());
+        cropped.copyTo(outputImage.getMat());
         cropped.release();
         return true;
     }

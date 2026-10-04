@@ -269,12 +269,10 @@ public class VisionRunner implements AutoCloseable {
 
             // Grab the new camera frame, and statically crop it if required.
             var frame = frameSupplier.get();
-            boolean keepContext = false;
-
             if (isCroppablePipeline) {
-                keepContext = pipeline.getSettings().inputShouldShow && inputStreamConsumedSupplier.get();
-                frame = frameSupplier.cropFrame(frame, keepContext);
+                frame = frameSupplier.cropFrame(frame);
             }
+            var keepContext = pipeline.getSettings().inputShouldShow;
             updateCroppedRawStreamAlert(keepContext);
 
             // Frame empty -- no point in trying to do anything more?

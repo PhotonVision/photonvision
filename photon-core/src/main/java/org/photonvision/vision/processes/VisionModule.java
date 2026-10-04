@@ -246,9 +246,7 @@ public class VisionModule implements AutoCloseable {
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null)
-                        inputVideoStreamer.accept(
-                                frame.contextColorImage != null ? frame.contextColorImage : frame.colorImage);
+                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {

@@ -208,9 +208,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 optimizationInputs);
     }
 
-    /**
-     * Produce calibration coefficients for a cropped image.
-     */
+    /** Produce calibration coefficients for a cropped image. */
     public CameraCalibrationCoefficients cropCoefficients(Rect cropRect) {
         Mat croppedIntrinsics = getCameraIntrinsicsMat().clone();
         double cx = getCameraIntrinsicsMat().get(0, 2)[0];
