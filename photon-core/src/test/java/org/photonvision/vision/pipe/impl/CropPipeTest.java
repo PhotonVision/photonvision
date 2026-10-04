@@ -173,8 +173,8 @@ public class CropPipeTest {
         var provider = providerFor(100, 300, 50, 200);
         var props = new FrameStaticProperties(640, 480, 70.0, null);
 
-        var first = provider.cropFrame(uniformFrame(640, 480, 200, props), false);
-        var second = provider.cropFrame(uniformFrame(640, 480, 200, props), false);
+        var first = provider.cropFrame(uniformFrame(640, 480, 200, props));
+        var second = provider.cropFrame(uniformFrame(640, 480, 200, props));
         assertSame(
                 first.frameStaticProperties,
                 second.frameStaticProperties,

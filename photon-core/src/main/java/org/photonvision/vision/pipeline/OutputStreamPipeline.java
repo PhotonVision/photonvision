@@ -18,8 +18,11 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.*;
@@ -44,6 +47,13 @@ public class OutputStreamPipeline implements Releasable {
     private final Draw3dArucoPipe draw3dArucoPipe = new Draw3dArucoPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
+    private final CropPipe cropPipe = new CropPipe();
+
+    {
+        cropPipe.setParams(new CropPipe.CropPipeParams(null, null));
+    }
+
+    private static final double CONTEXT_DIM_FACTOR = 0.35;
 
     private final long[] pipeProfileNanos = new long[12];
 
@@ -108,6 +118,8 @@ public class OutputStreamPipeline implements Releasable {
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
 
+        cropPipe.setParams(new CropPipe.CropPipeParams(settings));
+
         if (settings instanceof Calibration3dPipelineSettings pipelineSettings) {
             drawCalibrationPipe.setParams(
                     new DrawCalibrationPipe.DrawCalibrationPipeParams(
@@ -134,9 +146,27 @@ public class OutputStreamPipeline implements Releasable {
         if (!outEmpty)
             sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
-        var contextImage = inputAndOutputFrame.contextColorImage;
-        if (contextImage != null && !contextImage.getMat().empty()) {
-            sumPipeNanosElapsed += resizeImagePipe.run(contextImage.getMat()).nanosElapsed;
+        var keepContext = settings.inputShouldShow;
+        if (keepContext) {
+            var contextImage = inputAndOutputFrame.colorImage;
+            Mat dimmed = new Mat();
+            inputAndOutputFrame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
+            cropPipe.setParams(new CropPipe.CropPipeParams(settings));
+            Rect effectiveCrop =
+                    CropPipe.clampCropToImage(
+                            cropPipe.getParams().rect(),
+                            contextImage.getMat().cols(),
+                            contextImage.getMat().rows());
+            if (effectiveCrop != null) {
+             Mat srcRoi = inputAndOutputFrame.colorImage.getMat().submat(effectiveCrop);
+             Mat dstRoi = dimmed.submat(effectiveCrop);
+             srcRoi.copyTo(dstRoi);
+             srcRoi.release();
+             dstRoi.release();
+             inputAndOutputFrame.colorImage.copyFrom(dimmed);
+             dimmed.release();
+             sumPipeNanosElapsed += resizeImagePipe.run(contextImage.getMat()).nanosElapsed;
+            }
         }
 
         // Only attempt drawing on a non-empty frame
