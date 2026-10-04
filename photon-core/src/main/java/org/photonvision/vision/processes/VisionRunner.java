@@ -272,8 +272,7 @@ public class VisionRunner implements AutoCloseable {
             if (isCroppablePipeline) {
                 frame = frameSupplier.cropFrame(frame);
             }
-            var keepContext = pipeline.getSettings().inputShouldShow;
-            updateCroppedRawStreamAlert(keepContext);
+            updateCroppedRawStreamAlert(pipeline.getSettings().inputShouldShow);
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
