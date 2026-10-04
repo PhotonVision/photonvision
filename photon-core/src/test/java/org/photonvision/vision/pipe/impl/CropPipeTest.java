@@ -116,7 +116,7 @@ public class CropPipeTest {
         provider.setCropParams(settings);
 
         var frame = uniformFrame(640, 480, 0);
-        frame.colorImage.getMat().put(expected.y, expected.x, new byte[] {(byte) 200, 0, 0});
+        frame.processedImage.getMat().put(expected.y, expected.x, new byte[] {(byte) 200, 0, 0});
 
         var cropped = provider.cropFrame(frame);
         assertEquals(expected.width, cropped.processedImage.getMat().cols(), "Crop width");
