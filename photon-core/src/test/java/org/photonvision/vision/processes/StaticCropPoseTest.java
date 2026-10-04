@@ -79,7 +79,7 @@ public class StaticCropPoseTest {
      */
     private static Transform3d poseFrom(AprilTagPipeline pipeline, FileFrameProvider provider) {
         provider.setCropParams(pipeline.getSettings());
-        var frame = provider.cropFrame(provider.get(), false);
+        var frame = provider.cropFrame(provider.get());
         var result = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         assertFalse(result.targets.isEmpty(), "The tag should be found");
         return result.targets.get(0).getBestCameraToTarget3d();
