@@ -76,7 +76,7 @@ public class NetworkConfigTest {
             throws IOException {
         var testDatabase = tmpDir.resolve("photon.sqlite");
         FileUtils.copyFile(
-                TestUtils.getConfigDirectoriesPath(false)
+                TestUtils.getResourcesFolderPath(false)
                         .resolve(String.format("networkConfigTest/%s.sqlite", testSource))
                         .toFile(),
                 testDatabase.toFile());
