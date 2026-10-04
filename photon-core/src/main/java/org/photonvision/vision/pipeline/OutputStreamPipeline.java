@@ -145,8 +145,7 @@ public class OutputStreamPipeline implements Releasable {
         if (!outEmpty)
             sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
-        var keepContext = settings.inputShouldShow;
-        if (keepContext) {
+        if (settings.inputShouldShow) {
             var contextImage = inputAndOutputFrame.colorImage;
             Mat dimmed = new Mat();
             inputAndOutputFrame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
