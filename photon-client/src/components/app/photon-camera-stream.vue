@@ -485,6 +485,7 @@ onBeforeUnmount(() => {
         @pointerdown="handleRegionPointerDown"
         @pointermove="handleRegionPointerMove"
         @pointerup="handleRegionPointerUp"
+        @pointercancel="handleRegionPointerUp"
         @pointerleave="handleRegionPointerLeave"
       />
       <div class="crop-outline" :style="cropOutlineStyle" />
@@ -563,6 +564,8 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  /* Prevent touch pans from stealing crop-drag gestures before the pointer events fire. */
+  touch-action: none;
 }
 
 .stream-overlay {
