@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
@@ -178,7 +178,7 @@ public class VisionModule implements AutoCloseable {
 
         // Set vendor FOV
         if (isVendorCamera()) {
-            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
+            var fov = ConfigProvider.getInstance().getConfig().getHardwareConfig().vendorFOV;
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
         }
@@ -428,7 +428,7 @@ public class VisionModule implements AutoCloseable {
         if (!cancel) {
             ret =
                     pipelineManager.calibration3dPipeline.tryCalibration(
-                            ConfigManager.getInstance()
+                            ConfigProvider.getInstance()
                                     .getCalibrationImageSavePathWithRes(
                                             pipelineManager.calibration3dPipeline.getSettings().resolution,
                                             visionSource.getCameraConfiguration().uniqueName));
@@ -528,7 +528,7 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void saveModule() {
-        ConfigManager.getInstance()
+        ConfigProvider.getInstance()
                 .saveModule(
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
     }
@@ -539,7 +539,7 @@ public class VisionModule implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
@@ -625,7 +625,7 @@ public class VisionModule implements AutoCloseable {
                         .toList();
 
         ret.isFovConfigurable =
-                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
+                !(ConfigProvider.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();

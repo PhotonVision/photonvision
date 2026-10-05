@@ -92,7 +92,7 @@ public class SQLConfigTest {
     @Test
     @Order(1)
     public void testNewDatabase() {
-        SqlConfigProvider cfgLoader = new SqlConfigProvider(tmpDir);
+        ConfigProvider cfgLoader = new ConfigProvider(tmpDir);
         cfgLoader.load();
 
         assertEquals(
@@ -115,7 +115,7 @@ public class SQLConfigTest {
         var configDir = tmpDir.resolve("photonvision_config");
         configDir.toFile().mkdirs();
 
-        SqlConfigProvider cfgLoader = new SqlConfigProvider(configDir);
+        ConfigProvider cfgLoader = new ConfigProvider(configDir);
         cfgLoader.load();
 
         assertEquals(
@@ -142,7 +142,7 @@ public class SQLConfigTest {
         var databaseBeforeRecovery = tmpDir.resolve("photon.sqlite.before-recovery");
         Files.copy(originalDatabase, databaseBeforeRecovery);
 
-        var cfgLoader = new SqlConfigProvider(tmpDir);
+        var cfgLoader = new ConfigProvider(tmpDir);
         cfgLoader.load();
 
         var backupDatabase = tmpDir.resolve("photon.sqlite.backup.1");
@@ -161,7 +161,7 @@ public class SQLConfigTest {
     @Test
     @Order(4)
     public void testLoad() {
-        var cfgLoader = new SqlConfigProvider(tmpDir);
+        var cfgLoader = new ConfigProvider(tmpDir);
 
         cfgLoader.load();
 
@@ -208,10 +208,10 @@ public class SQLConfigTest {
                 TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
                 folder.toFile());
 
-        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+        var cfgManager = new ConfigProvider(folder);
 
         // Replace global configmanager
-        ConfigManager.INSTANCE = cfgManager;
+        ConfigProvider.INSTANCE = cfgManager;
 
         assertDoesNotThrow(cfgManager::load);
 
@@ -225,17 +225,17 @@ public class SQLConfigTest {
         NeuralNetworkModelManager.getInstance().discoverModels();
         assertEquals(5, NeuralNetworkModelManager.getInstance().models.get(Family.RKNN).size());
 
-        ConfigManager.getInstance().saveToDisk();
+        ConfigProvider.getInstance().saveToDisk();
 
         // Now that we have the config saved, load it again
-        var reloadedProvider = new SqlConfigProvider(folder);
+        var reloadedProvider = new ConfigProvider(folder);
         reloadedProvider.load();
         common2025p3p1Assertions(reloadedProvider.getConfig());
 
         // And make sure NNPM has all 5 models
         assertEquals(5, reloadedProvider.getConfig().getNeuralNetworkProperties().getModels().length);
 
-        ConfigManager.INSTANCE = null;
+        ConfigProvider.INSTANCE = null;
     }
 
     @Test
@@ -245,10 +245,10 @@ public class SQLConfigTest {
                 TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
                 folder.toFile());
 
-        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+        var cfgManager = new ConfigProvider(folder);
 
         // Replace global configmanager
-        ConfigManager.INSTANCE = cfgManager;
+        ConfigProvider.INSTANCE = cfgManager;
 
         assertDoesNotThrow(cfgManager::load);
 
@@ -276,7 +276,7 @@ public class SQLConfigTest {
             }
         }
 
-        ConfigManager.INSTANCE = null;
+        ConfigProvider.INSTANCE = null;
     }
 
     private static Field testField(String name) {
@@ -301,7 +301,7 @@ public class SQLConfigTest {
     @Test
     public void testFieldLayoutNewKeyRoundTrip() throws IOException {
         var folder = tmpDir.resolve("field-new-key");
-        var provider = new SqlConfigProvider(folder);
+        var provider = new ConfigProvider(folder);
         provider.load();
 
         var field = testField("NewKeyRoundTrip");
@@ -309,7 +309,7 @@ public class SQLConfigTest {
         Files.writeString(upload, Jsonb.instance().type(Field.class).toJson(field));
         assertTrue(provider.saveUploadedFieldLayout(upload));
 
-        var reloaded = new SqlConfigProvider(folder);
+        var reloaded = new ConfigProvider(folder);
         reloaded.load();
         assertEquals(field, reloaded.getConfig().getFieldLayout());
     }
@@ -317,13 +317,13 @@ public class SQLConfigTest {
     @Test
     public void testFieldLayoutLegacyKeyFallback() throws SQLException {
         var folder = tmpDir.resolve("field-legacy-key");
-        var provider = new SqlConfigProvider(folder);
+        var provider = new ConfigProvider(folder);
         provider.load();
 
         var field = testField("LegacyKeyFallback");
         writeGlobalKey(folder, "apriltagFieldLayout", Jsonb.instance().type(Field.class).toJson(field));
 
-        var reloaded = new SqlConfigProvider(folder);
+        var reloaded = new ConfigProvider(folder);
         reloaded.load();
         assertEquals(field, reloaded.getConfig().getFieldLayout());
     }
@@ -331,26 +331,26 @@ public class SQLConfigTest {
     @Test
     public void testFieldLayoutNewKeyPreferred() throws SQLException {
         var folder = tmpDir.resolve("field-both-keys");
-        var provider = new SqlConfigProvider(folder);
+        var provider = new ConfigProvider(folder);
         provider.load();
 
         var newKeyField = testField("NewKeyWins");
         var legacyField = testField("LegacyKeyLoses");
         writeGlobalKey(
                 folder,
-                SqlConfigProvider.GlobalKeys.FIELD_CONFIG_FILE,
+                ConfigProvider.GlobalKeys.FIELD_CONFIG_FILE,
                 Jsonb.instance().type(Field.class).toJson(newKeyField));
         writeGlobalKey(
                 folder, "apriltagFieldLayout", Jsonb.instance().type(Field.class).toJson(legacyField));
 
-        var reloaded = new SqlConfigProvider(folder);
+        var reloaded = new ConfigProvider(folder);
         reloaded.load();
         assertEquals(newKeyField, reloaded.getConfig().getFieldLayout());
     }
 
     @Test
     public void testFieldLayoutDefaultsWhenAbsent() throws UncheckedIOException {
-        var provider = new SqlConfigProvider(tmpDir.resolve("field-absent"));
+        var provider = new ConfigProvider(tmpDir.resolve("field-absent"));
         provider.load();
 
         assertEquals(Field.loadField(Fields.DEFAULT_FIELD), provider.getConfig().getFieldLayout());
@@ -366,7 +366,7 @@ public class SQLConfigTest {
         FileUtils.copyDirectory(
                 TestUtils.getConfigDirectoriesPath(false).resolve(configName).toFile(), folder.toFile());
 
-        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+        var cfgManager = new ConfigProvider(folder);
 
         cfgManager.load();
 
