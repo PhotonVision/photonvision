@@ -99,30 +99,36 @@ const fpsTooLow = computed<boolean>(() => {
         >
           <span class="pr-1"> Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }} </span>
         </v-chip>
-        <div v-if="useCameraSettingsStore().isCalibrationMode" class="d-flex align-center" style="margin-inline: auto">
-          <v-chip
-            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
-            label
-            :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'"
-          >
-            {{ useStateStore().calibrationData.imageCount }} of at least
-            {{ minCount }}
-          </v-chip>
-          <v-switch v-model="bypassVal" color="error" hide-details density="compact" class="ml-4">
-            <template #label>
-              <div class="bypass-label d-flex flex-column text-end">
-                <tooltipped-label
-                  label="Bypass"
-                  tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
-                />
-                <tooltipped-label
-                  label="minimum"
-                  tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
-                />
-              </div>
-            </template>
-          </v-switch>
-        </div>
+        <v-chip
+          v-if="useCameraSettingsStore().isCalibrationMode"
+          style="margin-inline: auto"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          label
+          :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'"
+        >
+          {{ useStateStore().calibrationData.imageCount }} of at least
+          {{ minCount }}
+        </v-chip>
+        <v-switch
+          v-if="useCameraSettingsStore().isCalibrationMode"
+          v-model="bypassVal"
+          color="error"
+          hide-details
+          density="compact"
+        >
+          <template #label>
+            <div class="bypass-label d-flex flex-column text-end">
+              <tooltipped-label
+                label="Bypass"
+                tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+              />
+              <tooltipped-label
+                label="minimum"
+                tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+              />
+            </div>
+          </template>
+        </v-switch>
       </div>
     </v-card-title>
     <v-card-text class="stream-container">
