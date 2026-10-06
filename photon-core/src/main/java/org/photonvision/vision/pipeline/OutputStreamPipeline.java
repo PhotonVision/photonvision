@@ -147,8 +147,6 @@ public class OutputStreamPipeline implements Releasable {
 
         if (settings.inputShouldShow) {
             var contextImage = inputAndOutputFrame.colorImage;
-            Mat dimmed = new Mat();
-            inputAndOutputFrame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
             cropPipe.setParams(new CropPipe.CropPipeParams(settings));
             Rect effectiveCrop =
                     CropPipe.clampCropToImage(
@@ -156,6 +154,8 @@ public class OutputStreamPipeline implements Releasable {
                             contextImage.getMat().cols(),
                             contextImage.getMat().rows());
             if (effectiveCrop != null) {
+                Mat dimmed = new Mat();
+                inputAndOutputFrame.colorImage.getMat().convertTo(dimmed, -1, CONTEXT_DIM_FACTOR, 0);
                 Mat srcRoi = inputAndOutputFrame.colorImage.getMat().submat(effectiveCrop);
                 Mat dstRoi = dimmed.submat(effectiveCrop);
                 srcRoi.copyTo(dstRoi);
