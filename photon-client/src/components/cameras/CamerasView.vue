@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
-import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 const theme = useTheme();
 
@@ -39,14 +39,12 @@ const autoCalibrationHint = computed(() => {
 
 const value = defineModel<number[]>({ required: true });
 
-const driverMode = computed<boolean>({
-  get: () => useCameraSettingsStore().isDriverMode,
-  set: (v) =>
-    useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? WebsocketPipelineType.DriverMode : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
-      true
-    )
+const bypassVal = computed<boolean>({
+  get: () => useStateStore().bypassMinCalibrationImages,
+  set: (v) => (useStateStore().bypassMinCalibrationImages = v)
 });
+const minCount = computed(() => (bypassVal.value ? 10 : 100));
+const hasEnoughImages = computed(() => useStateStore().calibrationData.imageCount >= minCount.value);
 
 const fpsTooLow = computed<boolean>(() => {
   const currFPS = useStateStore().currentPipelineResults?.fps || 0;
@@ -83,7 +81,13 @@ const fpsTooLow = computed<boolean>(() => {
             {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
           </span>
         </v-chip>
-        <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
+        <v-chip
+          v-if="!useCameraSettingsStore().currentCameraSettings.isConnected"
+          label
+          color="red"
+          variant="text"
+          style="font-size: 1rem; padding: 0; margin: 0"
+        >
           <span class="pr-1">Camera not connected</span>
         </v-chip>
         <v-chip
@@ -95,15 +99,30 @@ const fpsTooLow = computed<boolean>(() => {
         >
           <span class="pr-1"> Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }} </span>
         </v-chip>
-        <v-switch
-          v-model="driverMode"
-          :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
-          label="Driver Mode"
-          style="margin-left: auto"
-          color="primary"
-          density="compact"
-          hide-details="auto"
-        />
+        <div v-if="useCameraSettingsStore().isCalibrationMode" class="d-flex align-center" style="margin-inline: auto">
+          <v-chip
+            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+            label
+            :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'"
+          >
+            {{ useStateStore().calibrationData.imageCount }} of at least
+            {{ minCount }}
+          </v-chip>
+          <v-switch v-model="bypassVal" color="error" hide-details density="compact" class="ml-4">
+            <template #label>
+              <div class="bypass-label d-flex flex-column text-end">
+                <tooltipped-label
+                  label="Bypass"
+                  tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+                />
+                <tooltipped-label
+                  label="minimum"
+                  tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+                />
+              </div>
+            </template>
+          </v-switch>
+        </div>
       </div>
     </v-card-title>
     <v-card-text class="stream-container">
@@ -165,6 +184,10 @@ const fpsTooLow = computed<boolean>(() => {
 </template>
 
 <style scoped>
+.bypass-label {
+  line-height: 1.15;
+  white-space: nowrap;
+}
 .v-btn-toggle.fill {
   width: 100%;
 }

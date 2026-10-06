@@ -45,6 +45,9 @@ interface StateStore {
     movedFarEnough: boolean | null;
   };
 
+  // UI-only flag to allow calibration with fewer than the recommended number of snapshots
+  bypassMinCalibrationImages: boolean;
+
   snackbarData: {
     show: boolean;
     progressBar: number;
@@ -94,6 +97,8 @@ export const useStateStore = defineStore("state", {
         autoCalibrate: false,
         movedFarEnough: null
       },
+
+      bypassMinCalibrationImages: false,
 
       snackbarData: {
         show: false,
