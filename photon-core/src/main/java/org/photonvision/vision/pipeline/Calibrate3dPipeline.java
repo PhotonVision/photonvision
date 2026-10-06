@@ -60,12 +60,13 @@ public class Calibrate3dPipeline
     // Getter methods have been set for calibrate and takeSnapshot
     private boolean takeSnapshot = false;
 
-    // In auto mode, snapshots are taken once the board has moved far enough from the last
-    // snapshot and been stable for a few frames, instead of on request from the UI.
+    // Percentage of the image diagonal the board must move before a new snapshot is captured
     private static final double MIN_MOVEMENT_FRACTION = 0.05;
 
+    // Percentage of the image diagonal that the board can move for it to be considered stable
     private static final double STABILITY_FRACTION = 0.01;
 
+    // Number of frames used to calculate stability
     private static final int STABILITY_WINDOW = 3;
 
     private final ArrayDeque<Point> recentCentroids = new ArrayDeque<>();
