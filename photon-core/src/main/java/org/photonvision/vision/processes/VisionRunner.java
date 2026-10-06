@@ -61,7 +61,6 @@ public class VisionRunner implements AutoCloseable {
     private final Supplier<Boolean> inputStreamConsumedSupplier;
 
     private final Alert croppedRawStreamAlert;
-    private boolean croppedRawStreamAlertShown = false;
 
     private long loopCount;
 
@@ -221,12 +220,6 @@ public class VisionRunner implements AutoCloseable {
         }
     }
 
-    private void updateCroppedRawStreamAlert(boolean shown) {
-        if (shown == croppedRawStreamAlertShown) return;
-        croppedRawStreamAlertShown = shown;
-        croppedRawStreamAlert.set(shown);
-    }
-
     private void update() {
         // wait for the camera to connect
         while (!frameSupplier.isConnected() && !Thread.interrupted()) {
@@ -271,8 +264,10 @@ public class VisionRunner implements AutoCloseable {
             var frame = frameSupplier.get();
             if (isCroppablePipeline) {
                 frame = frameSupplier.cropFrame(frame);
+                croppedRawStreamAlert.set(pipeline.getSettings().inputShouldShow);
+            } else {
+                croppedRawStreamAlert.set(false);
             }
-            updateCroppedRawStreamAlert(pipeline.getSettings().inputShouldShow);
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
