@@ -343,16 +343,25 @@ const interactiveCols = computed(() =>
       :items="streamResolutions"
       :select-cols="interactiveCols"
     />
-    <pv-switch
-      v-if="showStaticCrop"
-      v-model="useCameraSettingsStore().currentPipelineSettings.staticCropEnabled"
-      label="Static Crop"
-      :switch-cols="interactiveCols"
-      tooltip="Crops the camera frame to a fixed region before processing. Camera calibration is adjusted so 3D pose estimation stays accurate."
-      @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropEnabled: args }, false)
-      "
-    />
+    <v-row v-if="showStaticCrop" class="ma-0" style="flex-wrap: nowrap">
+      <v-col class="pa-0">
+        <pv-switch
+          v-model="useCameraSettingsStore().currentPipelineSettings.staticCropEnabled"
+          label="Static Crop"
+          :switch-cols="interactiveCols"
+          tooltip="Crops the camera frame to a fixed region before processing. Camera calibration is adjusted so 3D pose estimation stays accurate."
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropEnabled: args }, false)
+          "
+        />
+      </v-col>
+      <v-col cols="auto" class="d-flex align-center pl-3 pr-0">
+        <v-btn size="small" color="primary" class="text-black" @click="resetCrop">
+          <v-icon start size="large"> mdi-restore </v-icon>
+          Reset Crop
+        </v-btn>
+      </v-col>
+    </v-row>
     <pv-range-slider
       v-if="showStaticCrop"
       v-model="staticCropX"
@@ -381,12 +390,6 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropY: value }, false)
       "
     />
-    <v-row v-if="showStaticCrop" class="pt-2 pb-2 ma-0">
-      <v-btn size="small" color="primary" class="text-black" @click="resetCrop">
-        <v-icon start size="large"> mdi-restore </v-icon>
-        Reset Crop
-      </v-btn>
-    </v-row>
     <pv-switch
       v-if="useCameraSettingsStore().isDriverMode"
       v-model="useCameraSettingsStore().currentPipelineSettings.crosshair"
