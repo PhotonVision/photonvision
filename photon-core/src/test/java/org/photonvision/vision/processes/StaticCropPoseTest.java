@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -51,7 +51,7 @@ public class StaticCropPoseTest {
     @BeforeEach
     public void setup() {
         LoadJNI.loadLibraries();
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
     }
 
     private static AprilTagPipeline pipelineWithDecimate(int decimate) {
