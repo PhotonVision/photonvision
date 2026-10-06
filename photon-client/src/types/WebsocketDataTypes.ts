@@ -90,6 +90,7 @@ export interface WebsocketCalibrationData {
   squareSizeMm: number;
   markerSizeMm: number;
   autoCalibrate?: boolean;
+  movedFarEnough?: boolean | null;
 }
 
 export interface IncomingWebsocketData {

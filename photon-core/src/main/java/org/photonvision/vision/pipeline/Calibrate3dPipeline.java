@@ -22,6 +22,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -70,6 +71,9 @@ public class Calibrate3dPipeline
     private final ArrayDeque<Point> recentCentroids = new ArrayDeque<>();
 
     private Point lastSnapshotCentroid = null;
+
+    // Progress hint for the UI during auto calibration: null when no board is visible
+    private Boolean movedFarEnough = null;
 
     // Output of the corners
     public final List<FindBoardCornersPipeResult> foundCornersList;
@@ -139,7 +143,9 @@ public class Calibrate3dPipeline
             if (findBoardResult != null) {
                 captureSnapshot(findBoardResult, inputColorMat);
             }
+            broadcastState();
         } else if (settings.autoCalibrate) {
+            // We don't call broadcast state since the function broadcasts user hints
             autoTakeSnapshot(findBoardResult, inputColorMat);
         }
 
@@ -169,42 +175,57 @@ public class Calibrate3dPipeline
         findBoardResult.inputImage = inputColorMat.clone();
 
         foundCornersList.add(findBoardResult);
-
-        // update the UI
-        broadcastState();
     }
 
     /**
      * In auto mode, takes a snapshot if the board has moved far enough from the last snapshot and has
-     * been stable over the last {@link #STABILITY_WINDOW} detections.
+     * been stable over the last {@link #STABILITY_WINDOW} detections. Also updates the UI with a hint
+     * for when users ought to move the board.
      */
     private void autoTakeSnapshot(FindBoardCornersPipeResult findBoardResult, Mat inputColorMat) {
+        Boolean newMovedFarEnough;
+        boolean captured = false;
+
         if (findBoardResult == null) {
             // No board visible -- don't let stale positions count towards stability
             recentCentroids.clear();
-            return;
+            newMovedFarEnough = null;
+        } else {
+            Point centroid = computeCentroid(findBoardResult.imagePoints.toList());
+            double frameDiagonal = Math.hypot(findBoardResult.size.width, findBoardResult.size.height);
+
+            recentCentroids.addLast(centroid);
+            while (recentCentroids.size() > STABILITY_WINDOW) {
+                recentCentroids.removeFirst();
+            }
+
+            double minMovementPx = MIN_MOVEMENT_FRACTION * frameDiagonal;
+            boolean movedEnough =
+                    lastSnapshotCentroid == null || distance(centroid, lastSnapshotCentroid) >= minMovementPx;
+            if (!movedEnough) {
+                newMovedFarEnough = false;
+            } else if (!isStable(STABILITY_FRACTION * frameDiagonal)) {
+                newMovedFarEnough = true;
+            } else {
+                newMovedFarEnough = false;
+                movedFarEnough = newMovedFarEnough;
+                captured = true;
+
+                captureSnapshot(findBoardResult, inputColorMat);
+                lastSnapshotCentroid = centroid;
+                recentCentroids.clear();
+
+                logger.info("Automatically took calibration snapshot " + foundCornersList.size());
+            }
         }
 
-        Point centroid = computeCentroid(findBoardResult.imagePoints.toList());
-        double frameDiagonal = Math.hypot(findBoardResult.size.width, findBoardResult.size.height);
-
-        recentCentroids.addLast(centroid);
-        while (recentCentroids.size() > STABILITY_WINDOW) {
-            recentCentroids.removeFirst();
+        if (captured) {
+            // The snapshot count changed even if the hint didn't
+            broadcastState();
+        } else if (!Objects.equals(newMovedFarEnough, movedFarEnough)) {
+            movedFarEnough = newMovedFarEnough;
+            broadcastState();
         }
-
-        double minMovementPx = MIN_MOVEMENT_FRACTION * frameDiagonal;
-        boolean movedEnough =
-                lastSnapshotCentroid == null || distance(centroid, lastSnapshotCentroid) >= minMovementPx;
-        if (!movedEnough || !isStable(STABILITY_FRACTION * frameDiagonal)) {
-            return;
-        }
-
-        captureSnapshot(findBoardResult, inputColorMat);
-        lastSnapshotCentroid = centroid;
-        recentCentroids.clear();
-
-        logger.info("Automatically took calibration snapshot " + foundCornersList.size());
     }
 
     /**
@@ -247,6 +268,10 @@ public class Calibrate3dPipeline
         return Math.hypot(a.x - b.x, a.y - b.y);
     }
 
+    Boolean getMovedFarEnough() {
+        return movedFarEnough;
+    }
+
     List<List<Point>> getCornersList() {
         return foundCornersList.stream().map(it -> it.imagePoints.toList()).toList();
     }
@@ -282,6 +307,7 @@ public class Calibrate3dPipeline
 
         recentCentroids.clear();
         lastSnapshotCentroid = null;
+        movedFarEnough = null;
 
         broadcastState();
     }
@@ -299,7 +325,8 @@ public class Calibrate3dPipeline
                                 settings.boardType,
                                 settings.useOldPattern,
                                 settings.tagFamily,
-                                settings.autoCalibrate));
+                                settings.autoCalibrate,
+                                movedFarEnough));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));

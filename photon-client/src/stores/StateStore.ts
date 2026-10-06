@@ -41,6 +41,8 @@ interface StateStore {
     imageCount: number;
     videoFormatIndex: number;
     autoCalibrate: boolean;
+    // Null when the backend reports no board visible during auto calibration
+    movedFarEnough: boolean | null;
   };
 
   snackbarData: {
@@ -89,7 +91,8 @@ export const useStateStore = defineStore("state", {
       calibrationData: {
         imageCount: 0,
         videoFormatIndex: 0,
-        autoCalibrate: false
+        autoCalibrate: false,
+        movedFarEnough: null
       },
 
       snackbarData: {
@@ -161,7 +164,8 @@ export const useStateStore = defineStore("state", {
       this.calibrationData = {
         imageCount: data.count,
         videoFormatIndex: data.videoModeIndex,
-        autoCalibrate: data.autoCalibrate ?? false
+        autoCalibrate: data.autoCalibrate ?? false,
+        movedFarEnough: data.movedFarEnough ?? null
       };
     },
     updateDiscoveredCameras(data: VsmState) {

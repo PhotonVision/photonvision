@@ -33,6 +33,10 @@ public class UICalibrationData {
     public TagFamily tagFamily;
     public boolean autoCalibrate = false;
 
+    // Null when no board is visible; otherwise whether the board has moved far enough from the last
+    // snapshot and the user should hold still
+    public Boolean movedFarEnough = null;
+
     public UICalibrationData() {}
 
     public UICalibrationData(
@@ -45,7 +49,8 @@ public class UICalibrationData {
             BoardType boardType,
             boolean useOldPattern,
             TagFamily tagFamily,
-            boolean autoCalibrate) {
+            boolean autoCalibrate,
+            Boolean movedFarEnough) {
         this.count = count;
         this.videoModeIndex = videoModeIndex;
         this.squareSizeMeters = squareSizeMeters;
@@ -56,6 +61,7 @@ public class UICalibrationData {
         this.useOldPattern = useOldPattern;
         this.tagFamily = tagFamily;
         this.autoCalibrate = autoCalibrate;
+        this.movedFarEnough = movedFarEnough;
     }
 
     @Json

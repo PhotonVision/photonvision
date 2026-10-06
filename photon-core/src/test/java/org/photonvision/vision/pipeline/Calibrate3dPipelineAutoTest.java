@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
@@ -94,38 +95,56 @@ public class Calibrate3dPipelineAutoTest {
         double minMovementPx = 0.05 * Math.hypot(RESOLUTION.width, RESOLUTION.height);
 
         try (Calibrate3dPipeline pipeline = createPipeline()) {
-            // A single frame must not snapshot: the board has not been stable for STABILITY_WINDOW frames
+            // A single frame must not snapshot: the board has not been stable for STABILITY_WINDOW
+            // frames. The UI is told to hold still.
             runFrame(pipeline, 0);
             runFrame(pipeline, 0);
             assertEquals(0, pipeline.foundCornersList.size());
+            assertEquals(Boolean.TRUE, pipeline.getMovedFarEnough());
 
-            // Three stable frames at the first position -> first snapshot
+            // Three stable frames at the first position -> first snapshot, then the user must move
+            // again
             runFrame(pipeline, 0);
             assertEquals(1, pipeline.foundCornersList.size());
+            assertEquals(Boolean.FALSE, pipeline.getMovedFarEnough());
 
             // Holding still at the same position must not take more snapshots
             runFrame(pipeline, 0);
             runFrame(pipeline, 0);
             runFrame(pipeline, 0);
             assertEquals(1, pipeline.foundCornersList.size());
+            assertEquals(Boolean.FALSE, pipeline.getMovedFarEnough());
 
-            // Move the board far enough, but keep it moving between frames -> still no snapshot
+            // Move the board far enough, but keep it moving between frames -> still no snapshot, and
+            // the UI alternates between hold-still and move-farther
             double shift = minMovementPx + 50;
             runFrame(pipeline, shift);
+            assertEquals(Boolean.TRUE, pipeline.getMovedFarEnough());
             runFrame(pipeline, 0);
+            assertEquals(Boolean.FALSE, pipeline.getMovedFarEnough());
             runFrame(pipeline, shift);
             assertEquals(1, pipeline.foundCornersList.size());
+            assertEquals(Boolean.TRUE, pipeline.getMovedFarEnough());
 
             // Settle at the new position -> snapshot
             runFrame(pipeline, shift);
             runFrame(pipeline, shift);
             assertEquals(2, pipeline.foundCornersList.size());
+            assertEquals(Boolean.FALSE, pipeline.getMovedFarEnough());
 
             // Settle back at the original position -> snapshot
             runFrame(pipeline, 0);
             runFrame(pipeline, 0);
             runFrame(pipeline, 0);
             assertEquals(3, pipeline.foundCornersList.size());
+            assertEquals(Boolean.FALSE, pipeline.getMovedFarEnough());
+
+            // Board leaves the frame entirely -> the UI is told no board is visible
+            runFrame(pipeline, -2000);
+            assertNull(pipeline.getMovedFarEnough());
+
+            pipeline.finishCalibration();
+            assertNull(pipeline.getMovedFarEnough());
         }
     }
 }

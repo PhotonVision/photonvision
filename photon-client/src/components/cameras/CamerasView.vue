@@ -10,6 +10,33 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 const theme = useTheme();
 
+const showAutoCalibrationHint = computed(
+  () => useCameraSettingsStore().isCalibrationMode && useStateStore().calibrationData.autoCalibrate
+);
+
+const autoCalibrationHint = computed(() => {
+  const movedFarEnough = useStateStore().calibrationData.movedFarEnough;
+  if (movedFarEnough === null) {
+    return {
+      type: "warning" as const,
+      icon: "mdi-chessboard",
+      message: "No calibration board detected -- point the camera at the calibration board"
+    };
+  }
+  if (movedFarEnough) {
+    return {
+      type: "success" as const,
+      icon: "mdi-hand-back-right",
+      message: "Moved far enough -- hold still while the snapshot is taken"
+    };
+  }
+  return {
+    type: "info" as const,
+    icon: "mdi-arrow-expand",
+    message: "Move the calibration board farther from where the last snapshot was taken"
+  };
+});
+
 const value = defineModel<number[]>({ required: true });
 
 const driverMode = computed<boolean>({
@@ -98,6 +125,11 @@ const fpsTooLow = computed<boolean>(() => {
           style="max-width: 100%"
         />
       </div>
+    </v-card-text>
+    <v-card-text v-if="showAutoCalibrationHint" class="pt-0">
+      <v-alert :type="autoCalibrationHint.type" variant="tonal" density="compact" :icon="autoCalibrationHint.icon">
+        {{ autoCalibrationHint.message }}
+      </v-alert>
     </v-card-text>
     <v-card-text class="pt-0">
       <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill" style="width: 100%">
