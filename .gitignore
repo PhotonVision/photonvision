@@ -137,8 +137,8 @@ photonlib-cpp-examples/*/vendordeps/*
 */networktables.json.bck
 photonlib-cpp-examples/*/networktables.json.bck
 photonlib-java-examples/*/networktables.json.bck
-*.sqlite
 venv
+
 .venv/*
 .venv
 networktables.json
@@ -167,3 +167,7 @@ photon-serde-tests/src/
 photon-serde-tests/py/
 
 /workspace
+
+# SQLite files, except those in test-resources
+*.sqlite*
+!test-resources/**/*.sqlite*
