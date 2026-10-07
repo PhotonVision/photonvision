@@ -37,6 +37,8 @@ const props = defineProps<{
   cameraUniqueName: string;
   resolution: { width: number; height: number };
   title: string;
+  // This calibration is used when present instead of fetching from the backend
+  calibration?: CameraCalibrationResult | null;
 }>();
 
 let scene: SceneType | undefined;
@@ -125,6 +127,13 @@ const error: Ref<string | null> = ref(null);
 const fetchCalibrationData = async () => {
   isLoading.value = true;
   error.value = null;
+
+  // A calibration provided via props (e.g. preliminary) takes precedence over fetching the saved one
+  if (props.calibration) {
+    calibrationData.value = props.calibration;
+    isLoading.value = false;
+    return;
+  }
 
   try {
     const response = await axios.get("/settings/camera/getCalibration", {
@@ -335,7 +344,8 @@ watch(
     props.cameraUniqueName,
     props.resolution.width,
     props.resolution.height,
-    useCameraSettingsStore().getCalibrationCoeffs(props.resolution)
+    useCameraSettingsStore().getCalibrationCoeffs(props.resolution),
+    props.calibration
   ],
   async () => {
     console.log("Camera or resolution changed, refetching calibration");

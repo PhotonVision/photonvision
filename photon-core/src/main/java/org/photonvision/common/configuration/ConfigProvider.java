@@ -254,6 +254,24 @@ public class ConfigProvider {
         return imgFilePath.toPath();
     }
 
+    /**
+     * Snapshot image directory for preliminary calibrations, kept separate from {@link
+     * #getCalibrationImageSavePathWithRes} so that generating a preliminary calibration doesn't
+     * overwrite the snapshot images referenced by a previously saved calibration.
+     */
+    public Path getPreliminaryCalibrationImageSavePathWithRes(Size frameSize, String uniqueCameraName) {
+        var imgFilePath =
+                Path.of(
+                                configDirectoryFile.toString(),
+                                "calibration",
+                                uniqueCameraName,
+                                "preliminary_imgs",
+                                frameSize.toString())
+                        .toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        return imgFilePath.toPath();
+    }
+
     public void requestSave() {
         logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();

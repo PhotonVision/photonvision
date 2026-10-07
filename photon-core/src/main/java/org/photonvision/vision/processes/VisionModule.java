@@ -375,6 +375,10 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void startCalibration(UICalibrationData data) {
+        // Any preliminary result from a previous session no longer matches the snapshots being
+        // collected
+        preliminaryCalibration = null;
+
         var settings = pipelineManager.calibration3dPipeline.getSettings();
 
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
@@ -423,7 +427,42 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
+    // The most recently generated preliminary calibration, kept so the UI can fetch its snapshot
+    // images and uncertainty estimate even though it was never saved to the camera configuration
+    private volatile CameraCalibrationCoefficients preliminaryCalibration = null;
+
+    /**
+     * Computes a calibration from the currently collected snapshots without saving it to the camera
+     * configuration, leaving the calibration session untouched. Snapshot images are still written to
+     * the usual calibration image directory so they can be inspected from the UI.
+     *
+     * @return The preliminary calibration result, or null if the computation failed
+     */
+    public CameraCalibrationCoefficients generatePreliminaryCalibration() {
+        if (pipelineManager.getCurrentPipelineIndex() != PipelineManager.CAL_3D_INDEX) {
+            throw new IllegalStateException("Camera is not in calibration mode");
+        }
+
+        var ret =
+                pipelineManager.calibration3dPipeline.tryCalibration(
+                        // Use a separate image directory so we don't clobber the snapshot images of a
+                        // previously saved calibration
+                        ConfigProvider.getInstance()
+                                .getPreliminaryCalibrationImageSavePathWithRes(
+                                        pipelineManager.calibration3dPipeline.getSettings().resolution,
+                                        visionSource.getCameraConfiguration().uniqueName));
+        if (ret != null) {
+            preliminaryCalibration = ret;
+        }
+        return ret;
+    }
+
+    public CameraCalibrationCoefficients getPreliminaryCalibration() {
+        return preliminaryCalibration;
+    }
+
     public CameraCalibrationCoefficients endCalibration(boolean cancel) {
+        preliminaryCalibration = null;
         CameraCalibrationCoefficients ret = null;
         if (!cancel) {
             ret =

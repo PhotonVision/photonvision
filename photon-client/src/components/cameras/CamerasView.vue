@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import PreliminaryCalibrationCard from "@/components/cameras/PreliminaryCalibrationCard.vue";
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { useTheme } from "vuetify";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-
-const theme = useTheme();
 
 const value = defineModel<number[]>({ required: true });
 
@@ -99,47 +97,13 @@ const fpsTooLow = computed<boolean>(() => {
         />
       </div>
     </v-card-text>
-    <v-card-text class="pt-0">
-      <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill" style="width: 100%">
-        <v-btn
-          color="buttonPassive"
-          class="fill"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          :disabled="
-            useCameraSettingsStore().isDriverMode ||
-            useCameraSettingsStore().isCalibrationMode ||
-            useCameraSettingsStore().isFocusMode
-          "
-        >
-          <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
-          <span class="mode-btn-label">Raw</span>
-        </v-btn>
-        <v-btn
-          color="buttonPassive"
-          class="fill"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          :disabled="
-            useCameraSettingsStore().isDriverMode ||
-            useCameraSettingsStore().isCalibrationMode ||
-            useCameraSettingsStore().isFocusMode
-          "
-        >
-          <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
-          <span class="mode-btn-label">Processed</span>
-        </v-btn>
-      </v-btn-toggle>
+    <v-card-text v-if="useCameraSettingsStore().isCalibrationMode" class="pt-0">
+      <PreliminaryCalibrationCard />
     </v-card-text>
   </v-card>
 </template>
 
 <style scoped>
-.v-btn-toggle.fill {
-  width: 100%;
-}
-.v-btn-toggle.fill > .v-btn {
-  width: 50%;
-  height: 100%;
-}
 th {
   width: 80px;
   text-align: center;
@@ -173,14 +137,6 @@ th {
 
   .stream {
     max-width: 50%;
-  }
-}
-@media only screen and (max-width: 351px) {
-  .mode-btn-icon {
-    margin: 0 !important;
-  }
-  .mode-btn-label {
-    display: none;
   }
 }
 </style>

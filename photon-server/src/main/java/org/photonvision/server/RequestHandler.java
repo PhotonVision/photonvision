@@ -536,6 +536,44 @@ public class RequestHandler {
         }
     }
 
+    public static void onPreliminaryCalibrationGenerateRequest(Context ctx) {
+        try {
+            CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
+
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404);
+                ctx.result(
+                        "No vision module was found with cameraUniqueName (" + request.cameraUniqueName + ")");
+                return;
+            }
+
+            var calData = module.generatePreliminaryCalibration();
+            if (calData == null) {
+                ctx.status(500);
+                ctx.result("The preliminary calibration process failed");
+                logger.error(
+                        "The preliminary calibration process failed for module at cameraUniqueName ("
+                                + request.cameraUniqueName
+                                + ")");
+                return;
+            }
+
+            ctx.contentType("application/json");
+            ctx.json(calData);
+            ctx.status(200);
+            logger.info("Generated preliminary calibration for camera " + request.cameraUniqueName);
+        } catch (IllegalStateException | JsonException e) {
+            ctx.status(400);
+            ctx.result("The provided calibration data was malformed.");
+            logger.error("The provided calibration data was malformed.", e);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("There was an error while generating the preliminary calibration");
+            logger.error("There was an error while generating the preliminary calibration", e);
+        }
+    }
+
     @Json
     record DataCalibrationImportRequest(
             String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
@@ -1081,14 +1119,24 @@ public class RequestHandler {
             return;
         }
 
-        CameraCalibrationCoefficients calList =
-                module.getStateAsCameraConfig().calibrations.stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
+        // While actively calibrating, a generated preliminary calibration takes precedence -- it is
+        // cleared when the calibration session ends, so fall back to the saved calibrations
+        CameraCalibrationCoefficients calList = null;
+        var preliminary = module.getPreliminaryCalibration();
+        if (preliminary != null
+                && Math.abs(preliminary.resolution.width - width) < 1e-4
+                && Math.abs(preliminary.resolution.height - height) < 1e-4) {
+            calList = preliminary;
+        } else {
+            calList =
+                    module.getStateAsCameraConfig().calibrations.stream()
+                            .filter(
+                                    it ->
+                                            Math.abs(it.resolution.width - width) < 1e-4
+                                                    && Math.abs(it.resolution.height - height) < 1e-4)
+                            .findFirst()
+                            .orElse(null);
+        }
 
         if (calList == null) {
             ctx.status(404);
@@ -1160,19 +1208,26 @@ public class RequestHandler {
         var height = Integer.parseInt(ctx.queryParam("height"));
         Integer observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
-        CameraCalibrationCoefficients calList =
-                VisionSourceManager.getInstance()
-                        .vmm
-                        .getModule(cameraUniqueName)
-                        .getStateAsCameraConfig()
-                        .calibrations
-                        .stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+
+        // While actively calibrating, a generated preliminary calibration takes precedence -- it is
+        // cleared when the calibration session ends, so fall back to the saved calibrations
+        CameraCalibrationCoefficients calList = null;
+        var preliminary = module.getPreliminaryCalibration();
+        if (preliminary != null
+                && Math.abs(preliminary.resolution.width - width) < 1e-4
+                && Math.abs(preliminary.resolution.height - height) < 1e-4) {
+            calList = preliminary;
+        } else {
+            calList =
+                    module.getStateAsCameraConfig().calibrations.stream()
+                            .filter(
+                                    it ->
+                                            Math.abs(it.resolution.width - width) < 1e-4
+                                                    && Math.abs(it.resolution.height - height) < 1e-4)
+                            .findFirst()
+                            .orElse(null);
+        }
 
         if (calList == null || calList.observations.size() < observationIdx) {
             ctx.status(404);

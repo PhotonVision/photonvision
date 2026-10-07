@@ -398,6 +398,18 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     endPnPCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName, cancel: boolean = false) {
       return axios.post("/calibration/end", { cameraUniqueName: cameraUniqueName, cancel: cancel });
     },
+    /**
+     * Generate a preliminary calibration from the currently collected calibration snapshots, without
+     * saving it to the camera configuration.
+     *
+     * @param cameraUniqueName the unique name of the camera that is currently in the calibration process
+     * @return HTTP request promise resolving to the preliminary calibration data
+     */
+    generatePreliminaryCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      return axios.post<CameraCalibrationResult>("/calibration/generatePreliminary", {
+        cameraUniqueName: cameraUniqueName
+      });
+    },
 
     importCalibrationFromData(
       data: { calibration: CameraCalibrationResult },

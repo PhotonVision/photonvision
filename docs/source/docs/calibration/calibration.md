@@ -63,6 +63,7 @@ If you have a [calib.io](https://calib.io/) ChArUco Target you will have to ente
 
 Now, we'll capture images of our board from various angles. It's important to check that the board overlay matches the board in your image. The further the overdrawn points are from the true position of the chessboard corners, the less accurate the final calibration will be. We'll want to capture enough images to cover the whole camera's FOV (with a minimum of 12). Once we've got our images, we'll click "Finish calibration" and wait for the calibration process to complete. If all goes well, the mean error and FOVs will be shown in the table on the right. The FOV should be close to the camera's specified FOV (usually found in a datasheet) usually within + or - 10 degrees. The mean error should also be low, usually less than 1 pixel.
 
+Before finishing a calibration, the "Generate Preliminary" button below the camera stream can be used to compute a calibration from the snapshots collected so far without finishing the current calibration. The "View Preliminary" button can then be used to view the information listed below.
 ```{raw} html
 <video width="85%" controls>
     <source src="../../_static/assets/calibration_small.mp4" type="video/mp4">

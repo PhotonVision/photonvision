@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
-import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
+import type { BoardObservation, CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref, useTemplateRef } from "vue";
@@ -12,6 +12,9 @@ import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-vis
 const theme = useTheme();
 const props = defineProps<{
   videoFormat: VideoFormat;
+  // When provided (e.g. a preliminary calibration), this calibration is displayed instead of the
+  // saved calibration for the video format
+  calibration?: CameraCalibrationResult;
 }>();
 
 const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
@@ -86,19 +89,43 @@ interface ObservationDetails {
   numMissing: number;
 }
 
-const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(() =>
-  useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
+const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(
+  () => props.calibration ?? useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
+
+// Mirrors BoardObservation::meanReprojectionError on the backend -- mean error over the corners
+// actually used in the solve
+const meanReprojectionError = (obs: BoardObservation): number => {
+  const used = obs.reprojectionErrors.filter((_, i) => obs.cornersUsed[i]);
+  if (used.length === 0) return NaN;
+  return used.reduce((sum, pt) => sum + Math.hypot(pt.x, pt.y), 0) / used.length;
+};
 
 const getObservationDetails = (): ObservationDetails[] | undefined => {
   const coefficients = currentCalibrationCoeffs.value;
+  if (!coefficients) return undefined;
 
-  return coefficients?.meanErrors.map((m, i) => ({
-    index: i,
-    mean: parseFloat(m.toFixed(2)),
-    numOutliers: coefficients.numOutliers[i],
-    numMissing: coefficients.numMissing[i]
-  }));
+  // Full calibrations (fetched from the backend) include meanErrors precomputed, but preliminary
+  // calibrations only include raw observations
+  if (coefficients.meanErrors !== undefined) {
+    return coefficients.meanErrors.map((m, i) => ({
+      index: i,
+      mean: parseFloat(m.toFixed(2)),
+      numOutliers: coefficients.numOutliers[i],
+      numMissing: coefficients.numMissing[i]
+    }));
+  }
+
+  return coefficients.observations?.map((obs, i) => {
+    const numMissing = obs.locationInImageSpace.filter((pt) => pt.x < 0 || pt.y < 0).length;
+    return {
+      index: i,
+      mean: parseFloat(meanReprojectionError(obs).toFixed(2)),
+      // Mirrors UICameraCalibrationCoefficients -- outliers exclude corners that were never detected
+      numOutliers: obs.cornersUsed.filter((used) => !used).length - numMissing,
+      numMissing
+    };
+  });
 };
 
 const exportCalibrationURL = computed<string>(() =>
@@ -184,55 +211,35 @@ const viewingImg = ref(0);
                   <tr>
                     <td>Fx</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[0].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[0].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Fy</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[4].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[4].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Cx</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[2].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[2].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Cy</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[5].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[5].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Distortion</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || []
-                      }}
+                      {{ currentCalibrationCoeffs?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || [] }}
                     </td>
                   </tr>
                   <tr>
@@ -345,6 +352,7 @@ const viewingImg = ref(0);
             <PhotonCalibrationVisualizer
               :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
               :resolution="props.videoFormat.resolution"
+              :calibration="calibration"
               title="Camera to Board Transforms"
             />
             <template #fallback>Loading...</template>
