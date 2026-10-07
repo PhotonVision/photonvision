@@ -2,8 +2,6 @@ import telemetry
 import wpilib
 from robotpy_fields import Field
 from wpilib import Field2d
-
-# TODO(auscompgeek): update import path when RobotPy re-exports are fixed
 from wpimath import Pose2d, Pose3d, TimeInterpolatablePose3dBuffer, Transform3d
 from wpimath.units import seconds
 
