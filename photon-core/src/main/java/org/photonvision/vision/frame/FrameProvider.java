@@ -89,7 +89,8 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     }
 
     public final Frame cropFrame(Frame frame) {
-        var frameToCrop = (frame.processedImage != null) ? frame.processedImage : frame.colorImage;
+        var frameToCrop =
+                !frame.processedImage.getMat().empty() ? frame.processedImage : frame.colorImage;
         Rect effectiveCrop =
                 CropPipe.clampCropToImage(
                         cropPipe.getParams().rect(), frameToCrop.getMat().cols(), frameToCrop.getMat().rows());
