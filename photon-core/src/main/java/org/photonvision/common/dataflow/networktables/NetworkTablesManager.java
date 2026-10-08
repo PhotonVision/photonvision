@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -195,13 +195,14 @@ public class NetworkTablesManager {
         try {
             System.out.println("Got new field layout!");
             var field = Jsonb.instance().type(Field.class).fromJson(field_json);
-            ConfigManager.getInstance().getConfig().setFieldLayout(field);
-            ConfigManager.getInstance().requestSave();
+            ConfigProvider.getInstance().getConfig().setFieldLayout(field);
+            ConfigProvider.getInstance().requestSave();
             DataChangeService.getInstance()
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(
+                                            ConfigProvider.getInstance().getConfig())));
         } catch (IllegalStateException | JsonException e) {
             logger.error("Error deserializing field layout!");
             logger.error(field_json);
@@ -253,7 +254,7 @@ public class NetworkTablesManager {
             return;
         }
 
-        var config = ConfigManager.getInstance().getConfig();
+        var config = ConfigProvider.getInstance().getConfig();
         String hostname;
         if (config.getNetworkConfig().shouldManage) {
             hostname = config.getNetworkConfig().hostname;
@@ -266,7 +267,7 @@ public class NetworkTablesManager {
         }
 
         Map<String, CameraConfiguration> cameraConfigs =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations();
+                ConfigProvider.getInstance().getConfig().getCameraConfigurations();
         String[] cameraNames =
                 cameraConfigs.entrySet().stream()
                         .map(entry -> entry.getValue().nickname)
@@ -319,7 +320,8 @@ public class NetworkTablesManager {
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
-                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                    UIPhotonConfiguration.programStateToUi(
+                                            ConfigProvider.getInstance().getConfig())));
         }
         if (conflictingHostname) {
             conflictAlert.setText("Hostname conflict detected for " + hostname + "!");
