@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
-import type { BoardObservation, CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
+import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref, useTemplateRef } from "vue";
-import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import {
+  axiosPost,
+  getCalibrationSummaryStatistics,
+  getResolutionString,
+  meanReprojectionError,
+  parseJsonFile
+} from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-visualizer.vue";
@@ -93,14 +99,6 @@ const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(
   () => props.calibration ?? useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
 
-// Mirrors BoardObservation::meanReprojectionError on the backend -- mean error over the corners
-// actually used in the solve
-const meanReprojectionError = (obs: BoardObservation): number => {
-  const used = obs.reprojectionErrors.filter((_, i) => obs.cornersUsed[i]);
-  if (used.length === 0) return NaN;
-  return used.reduce((sum, pt) => sum + Math.hypot(pt.x, pt.y), 0) / used.length;
-};
-
 const getObservationDetails = (): ObservationDetails[] | undefined => {
   const coefficients = currentCalibrationCoeffs.value;
   if (!coefficients) return undefined;
@@ -127,6 +125,20 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
     };
   });
 };
+
+// Summary statistics derived from the calibration itself -- the video format's fields are only
+// used by the calibrations table, not here
+const summaryStatistics = computed(() => {
+  const c = currentCalibrationCoeffs.value;
+  return c ? getCalibrationSummaryStatistics(c) : undefined;
+});
+const displayMeanError = computed(() => summaryStatistics.value?.mean);
+const displayHorizontalFOV = computed(() => summaryStatistics.value?.horizontalFOV);
+const displayVerticalFOV = computed(() => summaryStatistics.value?.verticalFOV);
+const displayDiagonalFOV = computed(() => summaryStatistics.value?.diagonalFOV);
+
+const formatStat = (value: number | undefined, unit: string): string =>
+  value !== undefined ? (isNaN(value) ? "NaN" : value.toFixed(2) + unit) : "-";
 
 const exportCalibrationURL = computed<string>(() =>
   useCameraSettingsStore().getCalJSONUrl(inject("backendHost") as string, props.videoFormat.resolution)
@@ -244,33 +256,19 @@ const viewingImg = ref(0);
                   </tr>
                   <tr>
                     <td>Mean Err</td>
-                    <td>
-                      {{
-                        videoFormat.mean !== undefined
-                          ? isNaN(videoFormat.mean)
-                            ? "NaN"
-                            : videoFormat.mean.toFixed(2) + "px"
-                          : "-"
-                      }}
-                    </td>
+                    <td>{{ formatStat(displayMeanError, "px") }}</td>
                   </tr>
                   <tr>
                     <td>Horizontal FOV</td>
-                    <td>
-                      {{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(displayHorizontalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Vertical FOV</td>
-                    <td>
-                      {{ videoFormat.verticalFOV !== undefined ? videoFormat.verticalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(displayVerticalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Diagonal FOV</td>
-                    <td>
-                      {{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(displayDiagonalFOV, "°") }}</td>
                   </tr>
                   <!-- Board warp, only shown for mrcal-calibrated cameras -->
                   <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">

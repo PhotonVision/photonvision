@@ -19,6 +19,7 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import {
   arucoTagDictionaryFor,
   arucoTagFamilyNameFor,
+  getCalibrationSummaryStatistics,
   getResolutionString,
   paperDimensionsFor,
   resolutionsAreEqual
@@ -61,26 +62,11 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
       const resArea = format.resolution.width * format.resolution.height;
 
       if (calib !== undefined) {
-        // Mean overall reprojection error
-        // Calculated as average of each observation's mean error
-        if (calib.meanErrors.length)
-          format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
-        else format.mean = NaN;
-
-        format.horizontalFOV =
-          2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
-        format.verticalFOV =
-          2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
-        format.diagonalFOV =
-          2 *
-          Math.atan2(
-            Math.sqrt(
-              format.resolution.width ** 2 +
-                (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
-            ) / 2,
-            calib.cameraIntrinsics.data[0]
-          ) *
-          (180 / Math.PI);
+        const stats = getCalibrationSummaryStatistics(calib);
+        format.mean = stats.mean;
+        format.horizontalFOV = stats.horizontalFOV;
+        format.verticalFOV = stats.verticalFOV;
+        format.diagonalFOV = stats.diagonalFOV;
       }
 
       if (resArea >= minPixelCount) {
@@ -334,39 +320,11 @@ const generatingPending = ref(false);
 const pendingCalibration = ref<CameraCalibrationResult | null>(null);
 const showPendingDialog = ref(false);
 
-// The video format currently being calibrated, annotated with summary statistics from the
-// pending result so the info card can show mean error and FOVs
-const pendingVideoFormat = computed<VideoFormat | undefined>(() => {
-  const format =
-    useCameraSettingsStore().currentCameraSettings.validVideoFormats[useStateStore().calibrationData.videoFormatIndex];
-  if (!format || !pendingCalibration.value) return format;
-
-  const cal = pendingCalibration.value;
-  const intrinsics = cal.cameraIntrinsics.data;
-  const fx = intrinsics[0];
-  const fy = intrinsics[4];
-  const { width, height } = cal.resolution;
-
-  const fov = (sensorSize: number, focalLength: number): number =>
-    (2 * Math.atan2(sensorSize, 2 * focalLength) * 180) / Math.PI;
-
-  const meanErrors =
-    cal.meanErrors ??
-    cal.observations?.map((obs) => {
-      const used = obs.reprojectionErrors.filter((_, i) => obs.cornersUsed[i]);
-      if (used.length === 0) return NaN;
-      return used.reduce((sum, pt) => sum + Math.hypot(pt.x, pt.y), 0) / used.length;
-    });
-
-  return {
-    ...format,
-    resolution: cal.resolution,
-    mean: meanErrors?.length ? meanErrors.reduce((a, b) => a + b, 0) / meanErrors.length : undefined,
-    horizontalFOV: fov(width, fx),
-    verticalFOV: fov(height, fy),
-    diagonalFOV: fov(Math.hypot(width, height), Math.hypot(fx, fy))
-  };
-});
+// The video format currently being calibrated
+const calibratingVideoFormat = computed<VideoFormat | undefined>(
+  () =>
+    useCameraSettingsStore().currentCameraSettings.validVideoFormats[useStateStore().calibrationData.videoFormatIndex]
+);
 
 const viewPendingCalibration = async () => {
   // Only run the solve once -- subsequent clicks just reopen the existing pending result
@@ -847,8 +805,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     </v-dialog>
     <v-dialog v-model="showPendingDialog" width="80em">
       <CameraCalibrationInfoCard
-        v-if="pendingVideoFormat && pendingCalibration"
-        :video-format="pendingVideoFormat"
+        v-if="calibratingVideoFormat && pendingCalibration"
+        :video-format="calibratingVideoFormat"
         :calibration="pendingCalibration"
       />
     </v-dialog>
