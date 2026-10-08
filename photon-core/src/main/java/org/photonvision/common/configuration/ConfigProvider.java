@@ -255,32 +255,11 @@ public class ConfigProvider {
     }
 
     /**
-     * Snapshot image directory for preliminary calibrations, kept separate from {@link
-     * #getCalibrationImageSavePathWithRes} so that generating a preliminary calibration doesn't
-     * overwrite the snapshot images referenced by a previously saved calibration.
+     * Creates a fresh temporary directory for preliminary calibration snapshot images.
+     * The Path isn't tracked, so the caller is responsible for cleaning it up.
      */
-    public Path getPreliminaryCalibrationImageSavePathWithRes(
-            Size frameSize, String uniqueCameraName) {
-        var imgFilePath =
-                Path.of(
-                                configDirectoryFile.toString(),
-                                "calibration",
-                                uniqueCameraName,
-                                "preliminary_imgs",
-                                frameSize.toString())
-                        .toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
-        return imgFilePath.toPath();
-    }
-
-    /** Deletes all preliminary calibration snapshot images for a camera, across all resolutions. */
-    public void deletePreliminaryCalibrationImages(String uniqueCameraName) {
-        var path =
-                Path.of(
-                        configDirectoryFile.toString(), "calibration", uniqueCameraName, "preliminary_imgs");
-        if (path.toFile().exists()) {
-            FileUtils.deleteDirectory(path);
-        }
+    public Path createPreliminaryCalibrationImageDir(String uniqueCameraName) throws IOException {
+        return Files.createTempDirectory("photonvision_preliminary_" + uniqueCameraName);
     }
 
     public void requestSave() {

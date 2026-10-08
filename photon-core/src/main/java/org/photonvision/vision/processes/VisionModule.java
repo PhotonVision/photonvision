@@ -18,6 +18,8 @@
 package org.photonvision.vision.processes;
 
 import io.javalin.websocket.WsContext;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,6 +43,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
@@ -431,10 +434,13 @@ public class VisionModule implements AutoCloseable {
     // images and uncertainty estimate even though it was never saved to the camera configuration
     private volatile CameraCalibrationCoefficients preliminaryCalibration = null;
 
+    private volatile Path preliminaryImageDir = null;
+
     /**
      * Computes a calibration from the currently collected snapshots without saving it to the camera
-     * configuration, leaving the calibration session untouched. Snapshot images are still written to
-     * the usual calibration image directory so they can be inspected from the UI.
+     * configuration, leaving the calibration session untouched. Snapshot images are written to a
+     * fresh temporary directory so they can be inspected from the UI without touching the images of
+     * a previously saved calibration.
      *
      * @return The preliminary calibration result, or null if the computation failed
      */
@@ -443,18 +449,33 @@ public class VisionModule implements AutoCloseable {
             throw new IllegalStateException("Camera is not in calibration mode");
         }
 
-        var ret =
-                pipelineManager.calibration3dPipeline.tryCalibration(
-                        // Use a separate image directory so we don't clobber the snapshot images of a
-                        // previously saved calibration
-                        ConfigProvider.getInstance()
-                                .getPreliminaryCalibrationImageSavePathWithRes(
-                                        pipelineManager.calibration3dPipeline.getSettings().resolution,
-                                        visionSource.getCameraConfiguration().uniqueName));
+        deletePreliminaryImageDir();
+
+        final Path imageSavePath;
+        try {
+            imageSavePath =
+                    ConfigProvider.getInstance()
+                            .createPreliminaryCalibrationImageDir(
+                                    visionSource.getCameraConfiguration().uniqueName);
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Could not create a temporary directory for preliminary calibration images", e);
+        }
+        preliminaryImageDir = imageSavePath;
+
+        var ret = pipelineManager.calibration3dPipeline.tryCalibration(imageSavePath);
         if (ret != null) {
             preliminaryCalibration = ret;
         }
         return ret;
+    }
+
+    private void deletePreliminaryImageDir() {
+        var dir = preliminaryImageDir;
+        preliminaryImageDir = null;
+        if (dir != null) {
+            FileUtils.deleteDirectory(dir);
+        }
     }
 
     public CameraCalibrationCoefficients getPreliminaryCalibration() {
@@ -462,11 +483,10 @@ public class VisionModule implements AutoCloseable {
     }
 
     public CameraCalibrationCoefficients endCalibration(boolean cancel) {
+        // The preliminary result (if any) is discarded when the session ends, along with its
+        // snapshot images
         preliminaryCalibration = null;
-        // The preliminary result (if any) is discarded when the session ends, so its snapshot images
-        // across all resolutions can be removed
-        ConfigProvider.getInstance()
-                .deletePreliminaryCalibrationImages(visionSource.getCameraConfiguration().uniqueName);
+        deletePreliminaryImageDir();
         CameraCalibrationCoefficients ret = null;
         if (!cancel) {
             ret =
