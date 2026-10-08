@@ -128,7 +128,6 @@ const fetchCalibrationData = async () => {
   isLoading.value = true;
   error.value = null;
 
-  // A calibration provided via props (e.g. preliminary) takes precedence over fetching the saved one
   if (props.calibration) {
     calibrationData.value = props.calibration;
     isLoading.value = false;

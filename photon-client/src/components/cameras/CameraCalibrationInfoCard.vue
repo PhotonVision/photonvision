@@ -12,8 +12,8 @@ import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-vis
 const theme = useTheme();
 const props = defineProps<{
   videoFormat: VideoFormat;
-  // When provided (e.g. a preliminary calibration), this calibration is displayed instead of the
-  // saved calibration for the video format
+  // When provided (e.g. a pending calibration), this calibration is displayed instead of the saved
+  // calibration for the video format
   calibration?: CameraCalibrationResult;
 }>();
 
@@ -105,7 +105,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
   const coefficients = currentCalibrationCoeffs.value;
   if (!coefficients) return undefined;
 
-  // Full calibrations (fetched from the backend) include meanErrors precomputed, but preliminary
+  // Full calibrations (fetched from the backend) include meanErrors precomputed, but pending
   // calibrations only include raw observations
   if (coefficients.meanErrors !== undefined) {
     return coefficients.meanErrors.map((m, i) => ({

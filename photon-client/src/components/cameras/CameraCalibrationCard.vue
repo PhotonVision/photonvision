@@ -330,18 +330,18 @@ const endCalibration = () => {
     });
 };
 
-const generatingPreliminary = ref(false);
-const preliminaryCalibration = ref<CameraCalibrationResult | null>(null);
-const showPreliminaryDialog = ref(false);
+const generatingPending = ref(false);
+const pendingCalibration = ref<CameraCalibrationResult | null>(null);
+const showPendingDialog = ref(false);
 
 // The video format currently being calibrated, annotated with summary statistics from the
-// preliminary result so the info card can show mean error and FOVs
-const preliminaryVideoFormat = computed<VideoFormat | undefined>(() => {
+// pending result so the info card can show mean error and FOVs
+const pendingVideoFormat = computed<VideoFormat | undefined>(() => {
   const format =
     useCameraSettingsStore().currentCameraSettings.validVideoFormats[useStateStore().calibrationData.videoFormatIndex];
-  if (!format || !preliminaryCalibration.value) return format;
+  if (!format || !pendingCalibration.value) return format;
 
-  const cal = preliminaryCalibration.value;
+  const cal = pendingCalibration.value;
   const intrinsics = cal.cameraIntrinsics.data;
   const fx = intrinsics[0];
   const fy = intrinsics[4];
@@ -368,28 +368,28 @@ const preliminaryVideoFormat = computed<VideoFormat | undefined>(() => {
   };
 });
 
-const viewPreliminaryCalibration = async () => {
-  // Only run the solve once -- subsequent clicks just reopen the existing preliminary result
-  if (!preliminaryCalibration.value) {
-    generatingPreliminary.value = true;
+const viewPendingCalibration = async () => {
+  // Only run the solve once -- subsequent clicks just reopen the existing pending result
+  if (!pendingCalibration.value) {
+    generatingPending.value = true;
     try {
       const response = await useCameraSettingsStore().computeCalibration();
-      preliminaryCalibration.value = response.data;
+      pendingCalibration.value = response.data;
     } catch (error) {
-      preliminaryCalibration.value = null;
+      pendingCalibration.value = null;
       const responseData = axios.isAxiosError(error) ? error.response?.data : undefined;
       useStateStore().showSnackbarMessage({
         color: "error",
         message:
-          typeof responseData === "string" && responseData ? responseData : "Failed to generate preliminary calibration"
+          typeof responseData === "string" && responseData ? responseData : "Failed to compute pending calibration"
       });
       return;
     } finally {
-      generatingPreliminary.value = false;
+      generatingPending.value = false;
     }
   }
 
-  showPreliminaryDialog.value = true;
+  showPendingDialog.value = true;
 };
 
 const drawAllSnapshots = ref(true);
@@ -784,12 +784,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             block
             color="buttonPassive"
             :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            :loading="generatingPreliminary"
+            :loading="generatingPending"
             :disabled="useStateStore().calibrationData.imageCount === 0"
-            @click="viewPreliminaryCalibration"
+            @click="viewPendingCalibration"
           >
             <v-icon start class="calib-btn-icon" size="large">mdi-eye-outline</v-icon>
-            <span class="calib-btn-label">View Preliminary Calibration</span>
+            <span class="calib-btn-label">View Pending Calibration</span>
           </v-btn>
         </div>
       </v-card-text>
@@ -845,11 +845,11 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     <v-dialog v-model="showCalDialog" width="80em">
       <CameraCalibrationInfoCard v-if="selectedVideoFormat" :video-format="selectedVideoFormat" />
     </v-dialog>
-    <v-dialog v-model="showPreliminaryDialog" width="80em">
+    <v-dialog v-model="showPendingDialog" width="80em">
       <CameraCalibrationInfoCard
-        v-if="preliminaryVideoFormat && preliminaryCalibration"
-        :video-format="preliminaryVideoFormat"
-        :calibration="preliminaryCalibration"
+        v-if="pendingVideoFormat && pendingCalibration"
+        :video-format="pendingVideoFormat"
+        :calibration="pendingCalibration"
       />
     </v-dialog>
   </div>

@@ -391,8 +391,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     /**
      * Compute a calibration from the currently collected calibration snapshots, without committing
-     * it to the camera configuration. This is the shared compute path used both for the
-     * preliminary view and for finishing a calibration (see commitCalibration).
+     * it to the camera configuration. This is the shared compute path used both for the pending
+     * calibration view and for finishing a calibration (see commitCalibration).
      *
      * @param cameraUniqueName the unique name of the camera that is currently in the calibration process
      * @return HTTP request promise resolving to the computed calibration data
