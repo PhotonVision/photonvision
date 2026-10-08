@@ -145,7 +145,7 @@ const viewingImg = ref(0);
         <v-col cols="12" md="6" class="pa-0">
           <v-card-title class="pa-0"> Calibration Details </v-card-title>
         </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
+        <v-col v-if="!calibration" cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
           <v-btn
             color="buttonPassive"
             style="width: 100%"
@@ -163,7 +163,7 @@ const viewingImg = ref(0);
             @change="importCalibration"
           />
         </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
+        <v-col v-if="!calibration" cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
           <v-btn
             color="buttonPassive"
             :disabled="!currentCalibrationCoeffs"
