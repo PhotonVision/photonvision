@@ -39,6 +39,8 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.ArucoPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.wpilib.util.Alert;
+import org.wpilib.util.Alert.Level;
 
 /**
  * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer; it must be closed
@@ -56,6 +58,9 @@ public class VisionRunner implements AutoCloseable {
     private final QuirkyCamera cameraQuirks;
     private final Supplier<Integer> fpsLimitSupplier;
     private final Supplier<Boolean> enabledSupplier;
+    private final Supplier<Boolean> inputStreamConsumedSupplier;
+
+    private final Alert croppedRawStreamAlert;
 
     private long loopCount;
 
@@ -79,7 +84,8 @@ public class VisionRunner implements AutoCloseable {
             QuirkyCamera cameraQuirks,
             VisionModuleChangeSubscriber changeSubscriber,
             Supplier<Integer> fpsLimitSupplier,
-            Supplier<Boolean> enabledSupplier) {
+            Supplier<Boolean> enabledSupplier,
+            Supplier<Boolean> inputStreamConsumedSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
@@ -87,6 +93,17 @@ public class VisionRunner implements AutoCloseable {
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.enabledSupplier = enabledSupplier;
+        this.inputStreamConsumedSupplier = inputStreamConsumedSupplier;
+
+        croppedRawStreamAlert =
+                new Alert(
+                        "PhotonAlerts",
+                        frameSupplier.getName(),
+                        "Raw stream open with static cropping enabled on "
+                                + frameSupplier.getName()
+                                + " -- extra processing is used to compose the uncropped preview",
+                        Level.MEDIUM);
+        croppedRawStreamAlert.set(false);
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -94,7 +111,9 @@ public class VisionRunner implements AutoCloseable {
         changeSubscriber.processSettingChanges();
     }
 
-    static void configureFrameProviderForPipeline(FrameProvider frameSupplier, CVPipeline pipeline) {
+    static boolean configureFrameProviderForPipeline(
+            FrameProvider frameSupplier, CVPipeline pipeline) {
+        boolean isCroppablePipeline = false;
         var wantedProcessType = pipeline.getThresholdType();
 
         frameSupplier.requestFrameThresholdType(wantedProcessType);
@@ -104,6 +123,9 @@ public class VisionRunner implements AutoCloseable {
                     new HSVPipe.HSVParams(
                             advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
             frameSupplier.requestHsvSettings(hsvParams);
+
+            frameSupplier.setCropParams(advanced);
+            isCroppablePipeline = true;
         }
 
         // Use the pipeline threshold type to determine whether a color image is required,
@@ -119,6 +141,8 @@ public class VisionRunner implements AutoCloseable {
                 settings.inputShouldShow || needsColor,
                 settings.outputShouldShow || wantedProcessType != FrameThresholdType.NONE);
         frameSupplier.requestBlockForFrames(settings.blockForFrames);
+
+        return isCroppablePipeline;
     }
 
     public void startProcess() {
@@ -234,10 +258,16 @@ public class VisionRunner implements AutoCloseable {
             // be doing
             // (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
-            configureFrameProviderForPipeline(frameSupplier, pipeline);
+            boolean isCroppablePipeline = configureFrameProviderForPipeline(frameSupplier, pipeline);
 
-            // Grab the new camera frame
+            // Grab the new camera frame, and statically crop it if required.
             var frame = frameSupplier.get();
+            if (isCroppablePipeline) {
+                frame = frameSupplier.cropFrame(frame);
+                croppedRawStreamAlert.set(pipeline.getSettings().inputShouldShow);
+            } else {
+                croppedRawStreamAlert.set(false);
+            }
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {

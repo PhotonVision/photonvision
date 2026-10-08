@@ -18,12 +18,23 @@
 package org.photonvision.vision.frame;
 
 import java.util.function.Supplier;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
+import org.photonvision.vision.pipe.impl.CropPipe;
 import org.photonvision.vision.pipe.impl.HSVPipe;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
+
+    private final CropPipe cropPipe = new CropPipe();
+
+    {
+        cropPipe.setParams(new CropPipe.CropPipeParams(null, null));
+    }
 
     // Escape hatch to allow us to synchronously (from the main vision thread) run
     // extra
@@ -72,4 +83,50 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
 
     /** Ask the camera to block for new frames (true) or use latest available (false) */
     public abstract void requestBlockForFrames(boolean blockForFrames);
+
+    public final void setCropParams(AdvancedPipelineSettings settings) {
+        cropPipe.setParams(new CropPipe.CropPipeParams(settings));
+    }
+
+    public final Frame cropFrame(Frame frame) {
+        var frameToCrop =
+                !frame.processedImage.getMat().empty() ? frame.processedImage : frame.colorImage;
+        Rect effectiveCrop =
+                CropPipe.clampCropToImage(
+                        cropPipe.getParams().rect(), frameToCrop.getMat().cols(), frameToCrop.getMat().rows());
+        if (effectiveCrop == null) {
+            cropPipe.releaseCachedProperties();
+            return frame;
+        }
+
+        boolean cropped = cropInPlace(frameToCrop);
+        if (!cropped) {
+            return frame;
+        }
+
+        var croppedFrame =
+                new Frame(
+                        frame.sequenceID,
+                        frame.colorImage,
+                        frame.processedImage,
+                        frame.type,
+                        frame.timestampNanos,
+                        frame.frameStaticProperties != null
+                                ? cropPipe.croppedProperties(frame.frameStaticProperties, effectiveCrop)
+                                : null);
+        return croppedFrame;
+    }
+
+    private boolean cropInPlace(CVMat image) {
+        var result = cropPipe.run(image);
+        if (result.output == null) {
+            return false;
+        }
+
+        Mat cropped = result.output.getMat().clone();
+        result.output.release();
+        cropped.copyTo(image.getMat());
+        cropped.release();
+        return true;
+    }
 }

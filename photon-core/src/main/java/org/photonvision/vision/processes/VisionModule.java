@@ -143,7 +143,8 @@ public class VisionModule implements AutoCloseable {
                         this.cameraQuirks,
                         getChangeSubscriber(),
                         this::getFPSLimit,
-                        this::getEnabled);
+                        this::getEnabled,
+                        () -> inputVideoStreamer != null && inputVideoStreamer.isStreamConsumed());
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 

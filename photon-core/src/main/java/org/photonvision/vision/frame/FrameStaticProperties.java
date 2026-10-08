@@ -18,6 +18,7 @@
 package org.photonvision.vision.frame;
 
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ImageRotationMode;
@@ -88,6 +89,49 @@ public class FrameStaticProperties {
             horizontalFocalLength = (this.imageWidth / 2.0) / Math.tan(horizFOV / 2.0);
             verticalFocalLength = (this.imageHeight / 2.0) / Math.tan(vertFOV / 2.0);
         }
+    }
+
+    private FrameStaticProperties(
+            int imageWidth,
+            int imageHeight,
+            double fov,
+            double horizontalFocalLength,
+            double verticalFocalLength,
+            double centerX,
+            double centerY,
+            CameraCalibrationCoefficients cal) {
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
+        this.fov = fov;
+        this.imageArea = imageWidth * imageHeight;
+        this.horizontalFocalLength = horizontalFocalLength;
+        this.verticalFocalLength = verticalFocalLength;
+        this.centerX = centerX;
+        this.centerY = centerY;
+        this.centerPoint = new Point(centerX, centerY);
+        this.cameraCalibration = cal;
+    }
+
+    /** Create frame static properties adjusted to match a cropped frame. */
+    public FrameStaticProperties crop(Rect cropRect) {
+        if (cropRect == null) {
+            return this;
+        }
+
+        if (cameraCalibration != null) {
+            return new FrameStaticProperties(
+                    cropRect.width, cropRect.height, fov, cameraCalibration.cropCoefficients(cropRect));
+        }
+
+        return new FrameStaticProperties(
+                cropRect.width,
+                cropRect.height,
+                fov,
+                horizontalFocalLength,
+                verticalFocalLength,
+                centerX - cropRect.x,
+                centerY - cropRect.y,
+                null);
     }
 
     public FrameStaticProperties rotate(ImageRotationMode rotation) {
