@@ -278,6 +278,8 @@ const startCalibration = () => {
   // isCalibrating.value = true;
   calibCanceled.value = false;
   requestedVideoFormatIndex.value = useStateStore().calibrationData.videoFormatIndex;
+  pendingCalibration.value = null;
+  showPendingDialog.value = false;
 };
 const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
@@ -286,6 +288,9 @@ const calibEndpointFail = ref(false);
 const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
+
+  pendingCalibration.value = null;
+  showPendingDialog.value = false;
 
   const cancel = !hasEnoughImages.value;
   if (cancel) {
