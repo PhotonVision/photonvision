@@ -380,7 +380,6 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void startCalibration(UICalibrationData data) {
-        // Any pending result from a previous session no longer matches the snapshots being collected
         pendingCalibration = null;
         deletePendingImageDir();
 
@@ -432,20 +431,13 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
-    // The most recently computed calibration, kept (with its snapshot images) so it can be inspected
-    // from the UI and later committed without recomputing
+    // The most recently computed calibration, kept for inspection from the UI
     private volatile CameraCalibrationCoefficients pendingCalibration = null;
 
-    // Temp directory holding the pending calibration's snapshot images; deleted when the pending
-    // calibration is discarded or committed
     private volatile Path pendingImageDir = null;
 
     /**
-     * Computes a calibration from the currently collected snapshots without committing it. This is
-     * the single compute path used both for the preliminary UI view and for finishing a calibration
-     * (see {@link #commitCalibration()}). Snapshot images are written to a fresh temporary directory
-     * so they can be inspected from the UI without touching the images of a previously saved
-     * calibration.
+     * Computes a calibration from the currently collected snapshots without committing it.
      *
      * @return The computed calibration result, or null if the computation failed
      */
@@ -478,17 +470,13 @@ public class VisionModule implements AutoCloseable {
     }
 
     /**
-     * Finishes the calibration session: computes a fresh calibration from the collected snapshots
-     * (via {@link #computeCalibration()}) and, if it succeeds, persists it to the camera
-     * configuration. The session ends either way.
+     * Calls {@link #computeCalibration()} and commits the calibration.
      *
      * @return The committed calibration, or null if the computation failed
      */
     public CameraCalibrationCoefficients commitCalibration() {
         var ret = computeCalibration();
 
-        // Whether or not the solve succeeded, the calibration session is over and the pending
-        // result is discarded
         pendingCalibration = null;
         var imageDir = pendingImageDir;
         pendingImageDir = null;
@@ -536,10 +524,7 @@ public class VisionModule implements AutoCloseable {
         }
     }
 
-    /**
-     * Aborts the calibration session without computing or saving a result, discarding any pending
-     * calibration.
-     */
+    /** Aborts the calibration session and discards pending information. */
     public void cancelCalibration() {
         logger.info("Calibration canceled -- not computing or saving a result");
         pendingCalibration = null;
@@ -558,10 +543,6 @@ public class VisionModule implements AutoCloseable {
         }
     }
 
-    /**
-     * The most recently computed but uncommitted calibration, or null if none. Only non-null while a
-     * calibration session is active.
-     */
     public CameraCalibrationCoefficients getPendingCalibration() {
         return pendingCalibration;
     }

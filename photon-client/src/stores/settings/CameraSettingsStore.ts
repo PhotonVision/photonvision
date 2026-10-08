@@ -391,9 +391,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     /**
      * Compute a calibration from the currently collected calibration snapshots, without committing
-     * it to the camera configuration. This is the shared compute path used both for the pending
-     * calibration view and for finishing a calibration (see commitCalibration).
-     *
+     * it to the camera configuration.
      * @param cameraUniqueName the unique name of the camera that is currently in the calibration process
      * @return HTTP request promise resolving to the computed calibration data
      */
@@ -403,9 +401,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       });
     },
     /**
-     * Finish the 3D calibration process for the provided camera: compute a calibration from the
-     * collected snapshots and commit it to the camera configuration.
-     *
+     * Save the 3D calibration for the provided camera.
      * @param cameraUniqueName the unique name of the camera.
      * @return HTTP request promise to the backend
      */
@@ -413,7 +409,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return axios.post("/calibration/commit", { cameraUniqueName: cameraUniqueName });
     },
     /**
-     * Cancel the 3D calibration process for the provided camera, discarding the collected snapshots.
+     * Cancel the 3D calibration process for the provided camera.
      *
      * @param cameraUniqueName the unique name of the camera.
      * @return HTTP request promise to the backend

@@ -5,7 +5,6 @@ import {
   CalibrationBoardTypes,
   CalibrationPaperTypes,
   CalibrationTagFamilies,
-  type CameraCalibrationResult,
   type VideoFormat
 } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -274,13 +273,11 @@ const startCalibration = () => {
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
-  // isCalibrating.value = true;
   calibCanceled.value = false;
   requestedVideoFormatIndex.value = useStateStore().calibrationData.videoFormatIndex;
-  pendingCalibration.value = null;
-  showPendingDialog.value = false;
+  showCalDialog.value = false;
 };
-const showCalibEndDialog = ref(false);
+const calibEndDialogOpen = ref(false);
 const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
 const calibEndpointFail = ref(false);
@@ -288,12 +285,9 @@ const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
-  pendingCalibration.value = null;
-  showPendingDialog.value = false;
-
   calibCanceled.value = !hasEnoughImages.value;
 
-  showCalibEndDialog.value = true;
+  calibEndDialogOpen.value = true;
   // Check if calibration finished cleanly or was canceled
   const request = calibCanceled.value
     ? useCameraSettingsStore().cancelCalibration(useStateStore().currentCameraUniqueName)
@@ -303,29 +297,15 @@ const endCalibration = () => {
       calibSuccess.value = true;
     })
     .catch((e) => {
-      if (e.response) {
-        // Server returned a status code
-      } else if (e.request) {
-        // Something went wrong. Unsure if calibration actually worked
+      // A request that got no response means the calibration result is unknown
+      if (e.request && !e.response) {
         calibEndpointFail.value = true;
       }
       calibSuccess.value = false;
-    })
-    .finally(() => {
-      // isCalibrating.value = false;
-      // backend deals with this for us
     });
 };
 
 const generatingPending = ref(false);
-const pendingCalibration = ref<CameraCalibrationResult | null>(null);
-const showPendingDialog = ref(false);
-
-// Open the end-calibration dialog once calibration finishes, or while a pending calibration is being computed
-const calibEndDialogOpen = computed({
-  get: () => showCalibEndDialog.value || generatingPending.value,
-  set: (value: boolean) => (showCalibEndDialog.value = value)
-});
 
 // The video format currently being calibrated
 const calibratingVideoFormat = computed<VideoFormat | undefined>(
@@ -333,16 +313,25 @@ const calibratingVideoFormat = computed<VideoFormat | undefined>(
     useCameraSettingsStore().currentCameraSettings.validVideoFormats[useStateStore().calibrationData.videoFormatIndex]
 );
 
+// Resolution string shown in the end-calibration success message
+const calibratedResolutionString = computed(() => {
+  const format = useCameraSettingsStore().currentCameraSettings.validVideoFormats[requestedVideoFormatIndex.value];
+  return format ? getResolutionString(format.resolution) : "";
+});
+
+// Compute a pending calibration from the collected snapshots and view it in the same calibration
+// details dialog used for saved calibrations -- the dialog's data fetches serve the pending
+// calibration while one exists. The end dialog shows the processing state in the meantime.
 const viewPendingCalibration = () => {
   generatingPending.value = true;
+  calibEndDialogOpen.value = true;
   useCameraSettingsStore()
     .computeCalibration()
-    .then((response) => {
-      pendingCalibration.value = response.data;
-      showPendingDialog.value = true;
+    .then(() => {
+      selectedVideoFormat.value = calibratingVideoFormat.value;
+      showCalDialog.value = true;
     })
     .catch(() => {
-      pendingCalibration.value = null;
       useStateStore().showSnackbarMessage({
         color: "error",
         message: "Failed to compute pending calibration"
@@ -350,6 +339,7 @@ const viewPendingCalibration = () => {
     })
     .finally(() => {
       generatingPending.value = false;
+      calibEndDialogOpen.value = false;
     });
 };
 
@@ -757,7 +747,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     </v-card>
     <v-dialog v-model="calibEndDialogOpen" width="500px" :persistent="true">
       <v-card color="surface" dark>
-        <v-card-title> Camera Calibration </v-card-title>
+        <v-card-title>Camera Calibration</v-card-title>
         <div style="text-align: center">
           <template v-if="calibCanceled">
             <v-icon color="primary" size="70"> mdi-cancel </v-icon>
@@ -773,14 +763,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           <!-- Got positive result -->
           <template v-else-if="calibSuccess">
             <v-icon color="#00ff00" size="70"> mdi-check </v-icon>
-            <v-card-text>
-              Camera has been successfully calibrated for
-              {{
-                useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
-                  getResolutionString(f.resolution)
-                )[requestedVideoFormatIndex]
-              }}!
-            </v-card-text>
+            <v-card-text> Camera has been successfully calibrated for {{ calibratedResolutionString }}! </v-card-text>
           </template>
           <template v-else-if="calibEndpointFail">
             <v-icon color="gray" size="70"> mdi-help-circle-outline </v-icon>
@@ -799,19 +782,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <v-card-actions class="pa-5 pt-0">
           <v-spacer />
-          <v-btn v-if="!isCalibrating" color="white" variant="text" @click="showCalibEndDialog = false"> OK </v-btn>
+          <v-btn v-if="!isCalibrating" color="white" variant="text" @click="calibEndDialogOpen = false"> OK </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <v-dialog v-model="showCalDialog" width="80em">
       <CameraCalibrationInfoCard v-if="selectedVideoFormat" :video-format="selectedVideoFormat" />
-    </v-dialog>
-    <v-dialog v-model="showPendingDialog" width="80em">
-      <CameraCalibrationInfoCard
-        v-if="calibratingVideoFormat && pendingCalibration"
-        :video-format="calibratingVideoFormat"
-        :calibration="pendingCalibration"
-      />
     </v-dialog>
   </div>
 </template>

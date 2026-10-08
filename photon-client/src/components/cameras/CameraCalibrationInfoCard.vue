@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, inject, ref, useTemplateRef } from "vue";
+import { computed, inject, ref, useTemplateRef, watch } from "vue";
+import axios from "axios";
 import {
   axiosPost,
   getCalibrationSummaryStatistics,
@@ -18,10 +20,36 @@ import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-vis
 const theme = useTheme();
 const props = defineProps<{
   videoFormat: VideoFormat;
-  // When provided (e.g. a pending calibration), this calibration is displayed instead of the saved
-  // calibration for the video format
-  calibration?: CameraCalibrationResult;
 }>();
+
+// While a calibration session is active this card only ever shows the pending calibration, which
+// cannot be imported over or exported -- the backend only supports those for saved calibrations
+const isCalibrating = computed(
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
+);
+
+// The full calibration (with observations) for this resolution. The backend serves the pending
+// calibration while one exists, falling back to the saved calibration.
+const fetchedCalibration = ref<CameraCalibrationResult | null>(null);
+
+watch(
+  () => props.videoFormat.resolution,
+  async () => {
+    try {
+      const response = await axios.get("/settings/camera/getCalibration", {
+        params: {
+          cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
+          width: props.videoFormat.resolution.width,
+          height: props.videoFormat.resolution.height
+        }
+      });
+      fetchedCalibration.value = response.data;
+    } catch {
+      fetchedCalibration.value = null;
+    }
+  },
+  { immediate: true }
+);
 
 const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
@@ -95,16 +123,20 @@ interface ObservationDetails {
   numMissing: number;
 }
 
+// The fetched calibration takes precedence: while a calibration session is active the backend
+// serves the pending calibration, otherwise the saved one. The websocket-sent calibration is only
+// a fallback for if the fetch fails -- it carries the same saved data minus observations.
 const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(
-  () => props.calibration ?? useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
+  () => fetchedCalibration.value ?? useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
 
 const getObservationDetails = (): ObservationDetails[] | undefined => {
   const coefficients = currentCalibrationCoeffs.value;
   if (!coefficients) return undefined;
 
-  // Full calibrations (fetched from the backend) include meanErrors precomputed, but pending
-  // calibrations only include raw observations
+  // UICameraCalibrationCoefficients (sent over the websocket) carries precomputed per-observation
+  // stats; the full calibration fetched from the backend only has raw observations, so derive the
+  // stats client-side
   if (coefficients.meanErrors !== undefined) {
     return coefficients.meanErrors.map((m, i) => ({
       index: i,
@@ -132,11 +164,6 @@ const summaryStatistics = computed(() => {
   const c = currentCalibrationCoeffs.value;
   return c ? getCalibrationSummaryStatistics(c) : undefined;
 });
-const displayMeanError = computed(() => summaryStatistics.value?.mean);
-const displayHorizontalFOV = computed(() => summaryStatistics.value?.horizontalFOV);
-const displayVerticalFOV = computed(() => summaryStatistics.value?.verticalFOV);
-const displayDiagonalFOV = computed(() => summaryStatistics.value?.diagonalFOV);
-
 const formatStat = (value: number | undefined, unit: string): string =>
   value !== undefined ? (isNaN(value) ? "NaN" : value.toFixed(2) + unit) : "-";
 
@@ -157,7 +184,7 @@ const viewingImg = ref(0);
         <v-col cols="12" md="6" class="pa-0">
           <v-card-title class="pa-0"> Calibration Details </v-card-title>
         </v-col>
-        <v-col v-if="!calibration" cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
+        <v-col v-if="!isCalibrating" cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
           <v-btn
             color="buttonPassive"
             style="width: 100%"
@@ -175,7 +202,7 @@ const viewingImg = ref(0);
             @change="importCalibration"
           />
         </v-col>
-        <v-col v-if="!calibration" cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
+        <v-col v-if="!isCalibrating" cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
           <v-btn
             color="buttonPassive"
             :disabled="!currentCalibrationCoeffs"
@@ -256,19 +283,19 @@ const viewingImg = ref(0);
                   </tr>
                   <tr>
                     <td>Mean Err</td>
-                    <td>{{ formatStat(displayMeanError, "px") }}</td>
+                    <td>{{ formatStat(summaryStatistics?.mean, "px") }}</td>
                   </tr>
                   <tr>
                     <td>Horizontal FOV</td>
-                    <td>{{ formatStat(displayHorizontalFOV, "°") }}</td>
+                    <td>{{ formatStat(summaryStatistics?.horizontalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Vertical FOV</td>
-                    <td>{{ formatStat(displayVerticalFOV, "°") }}</td>
+                    <td>{{ formatStat(summaryStatistics?.verticalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Diagonal FOV</td>
-                    <td>{{ formatStat(displayDiagonalFOV, "°") }}</td>
+                    <td>{{ formatStat(summaryStatistics?.diagonalFOV, "°") }}</td>
                   </tr>
                   <!-- Board warp, only shown for mrcal-calibrated cameras -->
                   <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">
@@ -350,7 +377,6 @@ const viewingImg = ref(0);
             <PhotonCalibrationVisualizer
               :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
               :resolution="props.videoFormat.resolution"
-              :calibration="calibration"
               title="Camera to Board Transforms"
             />
             <template #fallback>Loading...</template>

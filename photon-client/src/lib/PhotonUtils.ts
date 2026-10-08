@@ -13,8 +13,6 @@ export const resolutionsAreEqual = (a: Resolution, b?: Resolution) => {
   return a.height === b?.height && a.width === b?.width;
 };
 
-// Mirrors BoardObservation::meanReprojectionError on the backend -- mean error over the corners
-// actually used in the solve
 export const meanReprojectionError = (obs: BoardObservation): number => {
   const used = obs.reprojectionErrors.filter((_, i) => obs.cornersUsed[i]);
   if (used.length === 0) return NaN;
@@ -22,18 +20,13 @@ export const meanReprojectionError = (obs: BoardObservation): number => {
 };
 
 export interface CalibrationSummaryStatistics {
-  /** Mean overall reprojection error in pixels, averaged over each observation's mean error */
+  // Mean overall reprojection error in pixels, averaged over each observation's mean error
   mean: number;
   horizontalFOV: number;
   verticalFOV: number;
   diagonalFOV: number;
 }
 
-/**
- * Derives the summary statistics (mean reprojection error and FOVs) from a calibration's intrinsics
- * and observations. Shared by the calibrations table and the calibration details card, and works
- * for both saved calibrations and pending (uncommitted) ones.
- */
 export const getCalibrationSummaryStatistics = (cal: CameraCalibrationResult): CalibrationSummaryStatistics => {
   const fx = cal.cameraIntrinsics.data[0];
   const fy = cal.cameraIntrinsics.data[4];

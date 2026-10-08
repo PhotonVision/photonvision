@@ -581,7 +581,9 @@ public class RequestHandler {
             }
 
             ctx.contentType("application/json");
-            ctx.json(calData);
+            // Send the UI variant without observations -- the client fetches the full pending
+            // calibration on demand (see onCalibrationJsonRequest) to draw them
+            ctx.json(calData.cloneWithoutObservations());
             ctx.status(200);
             logger.info("Computed calibration for camera " + request.cameraUniqueName);
         } catch (IllegalStateException | JsonException e) {
@@ -1094,6 +1096,32 @@ public class RequestHandler {
     }
 
     /**
+     * The calibration to serve for a resolution: the pending calibration while a calibration session
+     * is active (it is cleared when the session ends), otherwise the saved calibration.
+     */
+    private static CameraCalibrationCoefficients getActiveCalibration(
+            String cameraUniqueName, double width, double height) {
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+        if (module == null) {
+            return null;
+        }
+
+        var pending = module.getPendingCalibration();
+        if (pending != null
+                && Math.abs(pending.resolution.width - width) < 1e-4
+                && Math.abs(pending.resolution.height - height) < 1e-4) {
+            return pending;
+        }
+        return module.getStateAsCameraConfig().calibrations.stream()
+                .filter(
+                        it ->
+                                Math.abs(it.resolution.width - width) < 1e-4
+                                        && Math.abs(it.resolution.height - height) < 1e-4)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Get the calibration JSON for a specific observation. Excludes camera image data
      *
      * <p>This is excluded from UICalibrationCoefficients by default to save bandwidth on large
@@ -1104,21 +1132,7 @@ public class RequestHandler {
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
-        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
-        if (module == null) {
-            ctx.status(404);
-            return;
-        }
-
-        CameraCalibrationCoefficients calList =
-                module.getStateAsCameraConfig().calibrations.stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
-
+        var calList = getActiveCalibration(cameraUniqueName, width, height);
         if (calList == null) {
             ctx.status(404);
             return;
@@ -1134,31 +1148,7 @@ public class RequestHandler {
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
-        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
-        if (module == null) {
-            ctx.status(404);
-            return;
-        }
-
-        // While actively calibrating, a generated preliminary calibration takes precedence -- it is
-        // cleared when the calibration session ends, so fall back to the saved calibrations
-        CameraCalibrationCoefficients calList = null;
-        var pending = module.getPendingCalibration();
-        if (pending != null
-                && Math.abs(pending.resolution.width - width) < 1e-4
-                && Math.abs(pending.resolution.height - height) < 1e-4) {
-            calList = pending;
-        } else {
-            calList =
-                    module.getStateAsCameraConfig().calibrations.stream()
-                            .filter(
-                                    it ->
-                                            Math.abs(it.resolution.width - width) < 1e-4
-                                                    && Math.abs(it.resolution.height - height) < 1e-4)
-                            .findFirst()
-                            .orElse(null);
-        }
-
+        var calList = getActiveCalibration(cameraUniqueName, width, height);
         if (calList == null) {
             ctx.status(404);
             return;
@@ -1229,27 +1219,7 @@ public class RequestHandler {
         var height = Integer.parseInt(ctx.queryParam("height"));
         Integer observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
-        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
-
-        // While actively calibrating, a generated preliminary calibration takes precedence -- it is
-        // cleared when the calibration session ends, so fall back to the saved calibrations
-        CameraCalibrationCoefficients calList = null;
-        var pending = module.getPendingCalibration();
-        if (pending != null
-                && Math.abs(pending.resolution.width - width) < 1e-4
-                && Math.abs(pending.resolution.height - height) < 1e-4) {
-            calList = pending;
-        } else {
-            calList =
-                    module.getStateAsCameraConfig().calibrations.stream()
-                            .filter(
-                                    it ->
-                                            Math.abs(it.resolution.width - width) < 1e-4
-                                                    && Math.abs(it.resolution.height - height) < 1e-4)
-                            .findFirst()
-                            .orElse(null);
-        }
-
+        var calList = getActiveCalibration(cameraUniqueName, width, height);
         if (calList == null || calList.observations.size() < observationIdx) {
             ctx.status(404);
             return;
