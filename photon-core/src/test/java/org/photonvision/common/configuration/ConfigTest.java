@@ -198,4 +198,24 @@ public class ConfigTest {
 
         assertEquals(json, FieldLayoutMigration.migrateFieldLayoutJson(json));
     }
+
+    @Test
+    public void testNumberedPinIdentifierJson() {
+        var expected = PinIdentifier.numbered(2);
+        var jsonb = Jsonb.instance().type(PinIdentifier.class);
+        var json = jsonb.toJson(expected);
+        assertEquals(json, "2");
+        var actual = jsonb.fromJson(json);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testNamedPinIdentifierJson() {
+        var expected = PinIdentifier.named("D6");
+        var jsonb = Jsonb.instance().type(PinIdentifier.class);
+        var json = jsonb.toJson(expected);
+        assertEquals(json, "\"D6\"");
+        var actual = jsonb.fromJson(json);
+        assertEquals(expected, actual);
+    }
 }

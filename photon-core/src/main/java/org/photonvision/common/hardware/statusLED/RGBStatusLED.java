@@ -17,8 +17,11 @@
 
 package org.photonvision.common.hardware.statusLED;
 
+import com.diozero.api.NoSuchDeviceException;
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import org.jetbrains.annotations.Nullable;
+import org.photonvision.common.configuration.PinIdentifier;
 import org.photonvision.common.configuration.StatusLedConfig;
 import org.photonvision.common.hardware.PhotonStatus;
 import org.photonvision.common.util.TimedTaskManager;
@@ -26,9 +29,9 @@ import org.photonvision.common.util.TimedTaskManager;
 /** Basic RGB LED with individual control over each pin */
 public class RGBStatusLED implements StatusLED {
     public static class Config implements StatusLedConfig {
-        public int redPin = -1;
-        public int greenPin = -1;
-        public int bluePin = -1;
+        public PinIdentifier redPin = PinIdentifier.STUB;
+        public PinIdentifier greenPin = PinIdentifier.STUB;
+        public PinIdentifier bluePin = PinIdentifier.STUB;
         public boolean activeHigh = false;
 
         @Override
@@ -37,8 +40,8 @@ public class RGBStatusLED implements StatusLED {
         }
 
         @Override
-        public int[] pins() {
-            return new int[] {redPin, greenPin, bluePin};
+        public PinIdentifier[] pins() {
+            return new PinIdentifier[] {redPin, greenPin, bluePin};
         }
 
         @Override
@@ -64,16 +67,32 @@ public class RGBStatusLED implements StatusLED {
 
     public RGBStatusLED(
             NativeDeviceFactoryInterface deviceFactory,
-            int redPin,
-            int greenPin,
-            int bluePin,
-            boolean activeHigh) {
+            PinIdentifier redPin,
+            PinIdentifier greenPin,
+            PinIdentifier bluePin,
+            boolean activeHigh)
+            throws NoSuchDeviceException {
         // Outputs are active-low for a common-anode RGB LED
-        redLED = new LED(deviceFactory, redPin, activeHigh, false);
-        greenLED = new LED(deviceFactory, greenPin, activeHigh, false);
-        blueLED = new LED(deviceFactory, bluePin, activeHigh, false);
+        redLED =
+                new LED(deviceFactory, redPin.info(deviceFactory).getDeviceNumber(), activeHigh, false);
+        greenLED =
+                new LED(deviceFactory, greenPin.info(deviceFactory).getDeviceNumber(), activeHigh, false);
+        blueLED =
+                new LED(deviceFactory, bluePin.info(deviceFactory).getDeviceNumber(), activeHigh, false);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
+    }
+
+    @Nullable
+    static StatusLED create(
+            NativeDeviceFactoryInterface deviceFactory,
+            List<PinIdentifier> statusLedPins,
+            boolean activeHigh) {
+        try {
+            return new StatusLED(deviceFactory, statusLedPins, activeHigh);
+        } catch (NoSuchDeviceException e) {
+            return null;
+        }
     }
 
     protected void setRGB(boolean r, boolean g, boolean b) {

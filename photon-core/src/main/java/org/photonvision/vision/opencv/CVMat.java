@@ -173,7 +173,7 @@ public class CVMat implements Releasable {
     }
 
     public static void enablePrint(boolean enabled) {
-        shouldPrint = enabled;
+        shouldPrint = true;
     }
 
     // todo move to somewhere else
