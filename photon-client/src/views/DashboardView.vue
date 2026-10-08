@@ -4,7 +4,6 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
-import IconAlertOutline from "~icons/mdi/alert-outline";
 
 import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
@@ -87,15 +86,6 @@ const disabledCameras = computed<string>(() => {
     .join(", ");
 });
 
-// Cameras whose raw stream is shown while static cropping is enabled: composing the uncropped
-// preview for the raw stream costs extra processing per frame.
-const croppedRawStreamCameras = computed<string>(() => {
-  return Object.values(useCameraSettingsStore().cameras)
-    .filter((c) => c.pipelineSettings.staticCropEnabled && c.pipelineSettings.inputShouldShow)
-    .map((c) => c.nickname)
-    .join(", ");
-});
-
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
 </script>
 
@@ -109,12 +99,6 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     <pv-alert v-if="conflictingHostnameShown" class="mb-3" color="error" :icon="IconAlertCircleOutline">
       <span>
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
-      </span>
-    </pv-alert>
-    <pv-alert v-if="croppedRawStreamCameras" class="mb-3" color="warning" :icon="IconAlertOutline">
-      <span>
-        {{ croppedRawStreamCameras }} have static cropping enabled while the raw stream is open! Composing the uncropped
-        preview uses extra processing per frame -- close the raw stream when you're done adjusting the crop.
       </span>
     </pv-alert>
     <pv-alert v-if="fpsLimitedCameras" class="mb-3" color="error" :icon="IconAlertCircleOutline">

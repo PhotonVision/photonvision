@@ -3,8 +3,8 @@ import math
 import ntcore as nt
 import pytest
 from photonlibpy.estimation import RotTrlTransform3d, TargetModel
-from photonlibpy.estimation.openCVHelp import OpenCVHelp
-from photonlibpy.photonCamera import setVersionCheckEnabled
+from photonlibpy.estimation.open_cv_help import OpenCVHelp
+from photonlibpy.photon_camera import setVersionCheckEnabled
 from photonlibpy.simulation import SimCameraProperties, VisionTargetSim
 from wpimath import Pose3d, Rotation3d, Translation3d
 
@@ -53,7 +53,7 @@ def test_Projection():
 
     # find circulation (counter/clockwise-ness)
     circulation = 0.0
-    for i in range(0, len(imagePoints)):
+    for i in range(len(imagePoints)):
         xDiff = imagePoints[(i + 1) % 4][0][0] - imagePoints[i][0][0]
         ySum = imagePoints[(i + 1) % 4][0][1] + imagePoints[i][0][1]
         circulation += xDiff * ySum

@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
@@ -143,9 +143,7 @@ public class VisionModule implements AutoCloseable {
                         this.cameraQuirks,
                         getChangeSubscriber(),
                         this::getFPSLimit,
-                        this::getEnabled,
-                        // Streams are created after the runner, so read the field lazily
-                        () -> inputVideoStreamer != null && inputVideoStreamer.isStreamConsumed());
+                        this::getEnabled);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
@@ -180,7 +178,7 @@ public class VisionModule implements AutoCloseable {
 
         // Set vendor FOV
         if (isVendorCamera()) {
-            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
+            var fov = ConfigProvider.getInstance().getConfig().getHardwareConfig().vendorFOV;
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
         }
@@ -238,11 +236,7 @@ public class VisionModule implements AutoCloseable {
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    // When cropping, stream the full frame with the cropped-away area dimmed so the
-                    // crop can be seen in context; the pipeline itself only ever sees the cropped image.
-                    if (frame != null)
-                        inputVideoStreamer.accept(
-                                frame.contextColorImage != null ? frame.contextColorImage : frame.colorImage);
+                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
@@ -429,13 +423,18 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
-    public CameraCalibrationCoefficients endCalibration() {
-        var ret =
-                pipelineManager.calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(
-                                        pipelineManager.calibration3dPipeline.getSettings().resolution,
-                                        visionSource.getCameraConfiguration().uniqueName));
+    public CameraCalibrationCoefficients endCalibration(boolean cancel) {
+        CameraCalibrationCoefficients ret = null;
+        if (!cancel) {
+            ret =
+                    pipelineManager.calibration3dPipeline.tryCalibration(
+                            ConfigProvider.getInstance()
+                                    .getCalibrationImageSavePathWithRes(
+                                            pipelineManager.calibration3dPipeline.getSettings().resolution,
+                                            visionSource.getCameraConfiguration().uniqueName));
+        } else {
+            logger.info("Calibration canceled -- not computing or saving a result");
+        }
         pipelineManager.setCalibrationMode(false);
 
         setPipeline(pipelineManager.getRequestedIndex());
@@ -443,17 +442,11 @@ public class VisionModule implements AutoCloseable {
         if (ret != null) {
             logger.debug("Saving calibration...");
             visionSource.getSettables().addCalibration(ret);
-        } else {
+        } else if (!cancel) {
             logger.error("Calibration failed...");
         }
         saveAndBroadcastAll();
         return ret;
-    }
-
-    public void cancelCalibration() {
-        pipelineManager.setCalibrationMode(false);
-        setPipeline(pipelineManager.getRequestedIndex());
-        saveAndBroadcastAll();
     }
 
     boolean setPipeline(int index) {
@@ -535,7 +528,7 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void saveModule() {
-        ConfigManager.getInstance()
+        ConfigProvider.getInstance()
                 .saveModule(
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
     }
@@ -546,7 +539,7 @@ public class VisionModule implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
@@ -632,7 +625,7 @@ public class VisionModule implements AutoCloseable {
                         .toList();
 
         ret.isFovConfigurable =
-                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
+                !(ConfigProvider.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
