@@ -14,27 +14,18 @@ const showAutoCalibrationHint = computed(
   () => useCameraSettingsStore().isCalibrationMode && useStateStore().calibrationData.autoCalibrate
 );
 
-const autoCalibrationHint = computed(() => {
+const calibrationAlertState = computed<"missing" | "moved" | "tooClose">(() => {
   const movedFarEnough = useStateStore().calibrationData.movedFarEnough;
+
   if (movedFarEnough === null) {
-    return {
-      type: "warning" as const,
-      icon: "mdi-chessboard",
-      message: "No calibration board detected -- point the camera at the calibration board"
-    };
+    return "missing";
   }
+
   if (movedFarEnough) {
-    return {
-      type: "success" as const,
-      icon: "mdi-hand-back-right",
-      message: "Moved far enough -- hold still while the snapshot is taken"
-    };
+    return "moved";
   }
-  return {
-    type: "info" as const,
-    icon: "mdi-arrow-expand",
-    message: "Move the calibration board farther from where the last snapshot was taken"
-  };
+
+  return "tooClose";
 });
 
 const value = defineModel<number[]>({ required: true });
@@ -151,9 +142,36 @@ const fpsTooLow = computed<boolean>(() => {
         />
       </div>
     </v-card-text>
-    <v-card-text v-if="showAutoCalibrationHint" class="pt-0">
-      <v-alert :type="autoCalibrationHint.type" variant="tonal" density="compact" :icon="autoCalibrationHint.icon">
-        {{ autoCalibrationHint.message }}
+    <v-card-text v-if="showAutoCalibrationHint" class="pt-0 d-flex flex-column ga-2">
+      <v-alert
+        :type="'warning'"
+        :disabled="calibrationAlertState !== 'missing'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-chessboard"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'missing' }"
+      >
+        No calibration board detected -- point the camera at the calibration board
+      </v-alert>
+      <v-alert
+        :type="'success'"
+        :disabled="calibrationAlertState !== 'moved'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-hand-back-right"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'moved' }"
+      >
+        Moved far enough -- hold still while the snapshot is taken
+      </v-alert>
+      <v-alert
+        :type="'info'"
+        :disabled="calibrationAlertState !== 'tooClose'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-arrow-expand"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'tooClose' }"
+      >
+        Move the calibration board farther from where the last snapshot was taken
       </v-alert>
     </v-card-text>
     <v-card-text class="pt-0">
@@ -236,6 +254,12 @@ th {
     max-width: 50%;
   }
 }
+.calibration-alert--inactive {
+  opacity: 0.45;
+  filter: grayscale(0.8);
+  pointer-events: none;
+}
+
 @media only screen and (max-width: 351px) {
   .mode-btn-icon {
     margin: 0 !important;
