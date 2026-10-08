@@ -174,36 +174,6 @@ const fpsTooLow = computed<boolean>(() => {
         Move the calibration board farther from where the last snapshot was taken
       </v-alert>
     </v-card-text>
-    <v-card-text class="pt-0">
-      <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill" style="width: 100%">
-        <v-btn
-          color="buttonPassive"
-          class="fill"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          :disabled="
-            useCameraSettingsStore().isDriverMode ||
-            useCameraSettingsStore().isCalibrationMode ||
-            useCameraSettingsStore().isFocusMode
-          "
-        >
-          <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
-          <span class="mode-btn-label">Raw</span>
-        </v-btn>
-        <v-btn
-          color="buttonPassive"
-          class="fill"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          :disabled="
-            useCameraSettingsStore().isDriverMode ||
-            useCameraSettingsStore().isCalibrationMode ||
-            useCameraSettingsStore().isFocusMode
-          "
-        >
-          <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
-          <span class="mode-btn-label">Processed</span>
-        </v-btn>
-      </v-btn-toggle>
-    </v-card-text>
   </v-card>
 </template>
 

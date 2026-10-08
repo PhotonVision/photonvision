@@ -9,28 +9,16 @@ import CameraControlCard from "@/components/cameras/CameraControlCard.vue";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
-    // Only show the input stream in Color Picking Mode
-    if (useStateStore().colorPickingMode) return [0];
-
     // Only show the output stream in Driver Mode or Calibration Mode or Focus Mode
     if (
       useCameraSettingsStore().isDriverMode ||
       useCameraSettingsStore().isCalibrationMode ||
       useCameraSettingsStore().isFocusMode
-    )
+    ) {
       return [1];
-
-    const ret: number[] = [];
-    if (useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {
-      ret.push(0);
-    }
-    if (useCameraSettingsStore().currentPipelineSettings.outputShouldShow) {
-      ret.push(1);
     }
 
-    if (ret.length === 0) return [0];
-
-    return ret;
+    return [0];
   },
   set: (v) => {
     useCameraSettingsStore().currentPipelineSettings.inputShouldShow = v.includes(0);
