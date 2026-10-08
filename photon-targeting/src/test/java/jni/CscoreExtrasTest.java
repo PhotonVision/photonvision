@@ -78,7 +78,7 @@ public class CscoreExtrasTest {
             final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;
             long time =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                            cvSink.getHandle(), frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
+                            cvSink.getHandle(), frame, frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
 
             if (time != 0) {
                 var mat = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
