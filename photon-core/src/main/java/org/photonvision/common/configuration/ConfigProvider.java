@@ -255,8 +255,8 @@ public class ConfigProvider {
     }
 
     /**
-     * Creates a fresh temporary directory for preliminary calibration snapshot images.
-     * The Path isn't tracked, so the caller is responsible for cleaning it up.
+     * Creates a fresh temporary directory for preliminary calibration snapshot images. The Path isn't
+     * tracked, so the caller is responsible for cleaning it up.
      */
     public Path createPreliminaryCalibrationImageDir(String uniqueCameraName) throws IOException {
         return Files.createTempDirectory("photonvision_preliminary_" + uniqueCameraName);

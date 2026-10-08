@@ -301,14 +301,17 @@ const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
-  if (!hasEnoughImages.value) {
+  const cancel = !hasEnoughImages.value;
+  if (cancel) {
     calibCanceled.value = true;
   }
 
   showCalibEndDialog.value = true;
   // Check if calibration finished cleanly or was canceled
-  useCameraSettingsStore()
-    .endPnPCalibration(useStateStore().currentCameraUniqueName, !hasEnoughImages.value)
+  const request = cancel
+    ? useCameraSettingsStore().cancelCalibration(useStateStore().currentCameraUniqueName)
+    : useCameraSettingsStore().commitCalibration(useStateStore().currentCameraUniqueName);
+  request
     .then(() => {
       calibSuccess.value = true;
     })
@@ -370,7 +373,7 @@ const viewPreliminaryCalibration = async () => {
   if (!preliminaryCalibration.value) {
     generatingPreliminary.value = true;
     try {
-      const response = await useCameraSettingsStore().generatePreliminaryCalibration();
+      const response = await useCameraSettingsStore().computeCalibration();
       preliminaryCalibration.value = response.data;
     } catch (error) {
       preliminaryCalibration.value = null;

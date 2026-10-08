@@ -390,25 +390,36 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       useStateStore().websocket?.send(payload);
     },
     /**
-     * End the 3D calibration process for the provided camera.
+     * Compute a calibration from the currently collected calibration snapshots, without committing
+     * it to the camera configuration. This is the shared compute path used both for the
+     * preliminary view and for finishing a calibration (see commitCalibration).
+     *
+     * @param cameraUniqueName the unique name of the camera that is currently in the calibration process
+     * @return HTTP request promise resolving to the computed calibration data
+     */
+    computeCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      return axios.post<CameraCalibrationResult>("/calibration/compute", {
+        cameraUniqueName: cameraUniqueName
+      });
+    },
+    /**
+     * Finish the 3D calibration process for the provided camera: compute a calibration from the
+     * collected snapshots and commit it to the camera configuration.
      *
      * @param cameraUniqueName the unique name of the camera.
      * @return HTTP request promise to the backend
      */
-    endPnPCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName, cancel: boolean = false) {
-      return axios.post("/calibration/end", { cameraUniqueName: cameraUniqueName, cancel: cancel });
+    commitCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      return axios.post("/calibration/commit", { cameraUniqueName: cameraUniqueName });
     },
     /**
-     * Generate a preliminary calibration from the currently collected calibration snapshots, without
-     * saving it to the camera configuration.
+     * Cancel the 3D calibration process for the provided camera, discarding the collected snapshots.
      *
-     * @param cameraUniqueName the unique name of the camera that is currently in the calibration process
-     * @return HTTP request promise resolving to the preliminary calibration data
+     * @param cameraUniqueName the unique name of the camera.
+     * @return HTTP request promise to the backend
      */
-    generatePreliminaryCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
-      return axios.post<CameraCalibrationResult>("/calibration/generatePreliminary", {
-        cameraUniqueName: cameraUniqueName
-      });
+    cancelCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      return axios.post("/calibration/cancel", { cameraUniqueName: cameraUniqueName });
     },
 
     importCalibrationFromData(

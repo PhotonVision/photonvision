@@ -19,7 +19,9 @@ package org.photonvision.vision.processes;
 
 import io.javalin.websocket.WsContext;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -378,9 +380,9 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void startCalibration(UICalibrationData data) {
-        // Any preliminary result from a previous session no longer matches the snapshots being
-        // collected
-        preliminaryCalibration = null;
+        // Any pending result from a previous session no longer matches the snapshots being collected
+        pendingCalibration = null;
+        deletePendingImageDir();
 
         var settings = pipelineManager.calibration3dPipeline.getSettings();
 
@@ -430,26 +432,27 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
-    // The most recently generated preliminary calibration, kept so the UI can fetch its snapshot
-    // images and uncertainty estimate even though it was never saved to the camera configuration
-    private volatile CameraCalibrationCoefficients preliminaryCalibration = null;
+    // The most recently computed calibration, kept (with its snapshot images) so it can be inspected
+    // from the UI and later committed without recomputing
+    private volatile CameraCalibrationCoefficients pendingCalibration = null;
 
-    private volatile Path preliminaryImageDir = null;
+    // Temp directory holding the pending calibration's snapshot images; deleted when the pending
+    // calibration is discarded or committed
+    private volatile Path pendingImageDir = null;
 
     /**
-     * Computes a calibration from the currently collected snapshots without saving it to the camera
-     * configuration, leaving the calibration session untouched. Snapshot images are written to a
-     * fresh temporary directory so they can be inspected from the UI without touching the images of
-     * a previously saved calibration.
+     * Computes a calibration from the currently collected snapshots without committing it. This is
+     * the single compute path used both for the preliminary UI view and for finishing a calibration
+     * (see {@link #commitCalibration()}). Snapshot images are written to a fresh temporary directory
+     * so they can be inspected from the UI without touching the images of a previously saved
+     * calibration.
      *
-     * @return The preliminary calibration result, or null if the computation failed
+     * @return The computed calibration result, or null if the computation failed
      */
-    public CameraCalibrationCoefficients generatePreliminaryCalibration() {
+    public CameraCalibrationCoefficients computeCalibration() {
         if (pipelineManager.getCurrentPipelineIndex() != PipelineManager.CAL_3D_INDEX) {
             throw new IllegalStateException("Camera is not in calibration mode");
         }
-
-        deletePreliminaryImageDir();
 
         final Path imageSavePath;
         try {
@@ -461,55 +464,106 @@ public class VisionModule implements AutoCloseable {
             throw new IllegalStateException(
                     "Could not create a temporary directory for preliminary calibration images", e);
         }
-        preliminaryImageDir = imageSavePath;
 
         var ret = pipelineManager.calibration3dPipeline.tryCalibration(imageSavePath);
         if (ret != null) {
-            preliminaryCalibration = ret;
+            // Only replace the previous pending result once the new solve has succeeded
+            deletePendingImageDir();
+            pendingImageDir = imageSavePath;
+            pendingCalibration = ret;
+        } else {
+            FileUtils.deleteDirectory(imageSavePath);
         }
         return ret;
     }
 
-    private void deletePreliminaryImageDir() {
-        var dir = preliminaryImageDir;
-        preliminaryImageDir = null;
+    /**
+     * Finishes the calibration session: computes a fresh calibration from the collected snapshots
+     * (via {@link #computeCalibration()}) and, if it succeeds, persists it to the camera
+     * configuration. The session ends either way.
+     *
+     * @return The committed calibration, or null if the computation failed
+     */
+    public CameraCalibrationCoefficients commitCalibration() {
+        var ret = computeCalibration();
+
+        // Whether or not the solve succeeded, the calibration session is over and the pending
+        // result is discarded
+        pendingCalibration = null;
+        var imageDir = pendingImageDir;
+        pendingImageDir = null;
+
+        if (ret != null) {
+            logger.debug("Saving calibration...");
+            movePendingSnapshotImages(ret, imageDir);
+            visionSource.getSettables().addCalibration(ret);
+        } else {
+            logger.error("Calibration failed...");
+        }
+        if (imageDir != null) {
+            FileUtils.deleteDirectory(imageDir);
+        }
+
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
+        saveAndBroadcastAll();
+        return ret;
+    }
+
+    /**
+     * Moves a committed calibration's snapshot images from their temporary directory to the
+     * persistent calibration image directory, updating the observations to point at the new
+     * locations.
+     */
+    private void movePendingSnapshotImages(CameraCalibrationCoefficients cal, Path tempImageDir) {
+        if (tempImageDir == null) return;
+
+        var persistentDir =
+                ConfigProvider.getInstance()
+                        .getCalibrationImageSavePathWithRes(
+                                cal.resolution, visionSource.getCameraConfiguration().uniqueName);
+
+        for (var observation : cal.observations) {
+            if (observation.snapshotDataLocation == null) continue;
+
+            var target = persistentDir.resolve(observation.snapshotName);
+            try {
+                Files.move(observation.snapshotDataLocation, target, StandardCopyOption.REPLACE_EXISTING);
+                observation.snapshotDataLocation = target;
+            } catch (IOException e) {
+                logger.error("Failed to move calibration snapshot image to " + target, e);
+            }
+        }
+    }
+
+    /**
+     * Aborts the calibration session without computing or saving a result, discarding any pending
+     * calibration.
+     */
+    public void cancelCalibration() {
+        logger.info("Calibration canceled -- not computing or saving a result");
+        pendingCalibration = null;
+        deletePendingImageDir();
+
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
+        saveAndBroadcastAll();
+    }
+
+    private void deletePendingImageDir() {
+        var dir = pendingImageDir;
+        pendingImageDir = null;
         if (dir != null) {
             FileUtils.deleteDirectory(dir);
         }
     }
 
-    public CameraCalibrationCoefficients getPreliminaryCalibration() {
-        return preliminaryCalibration;
-    }
-
-    public CameraCalibrationCoefficients endCalibration(boolean cancel) {
-        // The preliminary result (if any) is discarded when the session ends, along with its
-        // snapshot images
-        preliminaryCalibration = null;
-        deletePreliminaryImageDir();
-        CameraCalibrationCoefficients ret = null;
-        if (!cancel) {
-            ret =
-                    pipelineManager.calibration3dPipeline.tryCalibration(
-                            ConfigProvider.getInstance()
-                                    .getCalibrationImageSavePathWithRes(
-                                            pipelineManager.calibration3dPipeline.getSettings().resolution,
-                                            visionSource.getCameraConfiguration().uniqueName));
-        } else {
-            logger.info("Calibration canceled -- not computing or saving a result");
-        }
-        pipelineManager.setCalibrationMode(false);
-
-        setPipeline(pipelineManager.getRequestedIndex());
-
-        if (ret != null) {
-            logger.debug("Saving calibration...");
-            visionSource.getSettables().addCalibration(ret);
-        } else if (!cancel) {
-            logger.error("Calibration failed...");
-        }
-        saveAndBroadcastAll();
-        return ret;
+    /**
+     * The most recently computed but uncommitted calibration, or null if none. Only non-null while a
+     * calibration session is active.
+     */
+    public CameraCalibrationCoefficients getPendingCalibration() {
+        return pendingCalibration;
     }
 
     boolean setPipeline(int index) {
