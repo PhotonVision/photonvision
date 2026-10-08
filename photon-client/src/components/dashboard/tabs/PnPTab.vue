@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { TargetModel } from "@/types/PipelineTypes";
-import PvSlider from "@/components/common/pv-slider.vue";
+
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { useDisplay } from "vuetify";
-const { mdAndDown } = useDisplay();
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
@@ -30,7 +30,7 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)
+        (value: TargetModel) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)
       "
     />
     <pv-slider
@@ -41,7 +41,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       @update:modelValue="
-        (value) =>
+        (value: number) =>
           useCameraSettingsStore().changeCurrentPipelineSetting({ cornerDetectionAccuracyPercentage: value }, false)
       "
     />

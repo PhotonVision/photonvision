@@ -23,7 +23,7 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
   while (pollLimit > 0) {
     try {
       pollLimit--;
-      await axios.get(ip ? `http://${ip}/api/status` : "/status");
+      await axios.get(ip ? `http://${ip}/api/status` : "status");
       return true;
     } catch {
       // Backend not ready yet, wait and retry

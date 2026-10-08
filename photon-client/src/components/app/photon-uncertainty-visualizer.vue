@@ -3,7 +3,8 @@ import { onBeforeUnmount, onMounted, ref, useTemplateRef, watch, type Ref } from
 import type { CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
+import { useTheme } from "@/composables/useTheme";
+import IconClose from "~icons/mdi/close";
 
 const theme = useTheme();
 
@@ -21,38 +22,25 @@ const containerRef = useTemplateRef<HTMLDivElement | null>("containerRef");
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let plotly: any = null;
 
-const getThemeTextColor = (): string => {
-  const styles = getComputedStyle(document.documentElement);
-  const onBackground = styles.getPropertyValue("--v-theme-on-background").trim();
-  const onSurface = styles.getPropertyValue("--v-theme-on-surface").trim();
-  const onSurfaceVariant = styles.getPropertyValue("--v-theme-on-surface-variant").trim();
-  const raw = onBackground || onSurface || onSurfaceVariant;
+// Plotly can't parse CSS variables or modern color functions, so resolve theme tokens to plain rgb()
+const resolveThemeColor = (cssVar: string, fallback: string): string => {
+  const probe = document.createElement("span");
+  probe.style.color = `var(${cssVar})`;
+  document.body.appendChild(probe);
+  const computed = getComputedStyle(probe).color;
+  probe.remove();
 
-  if (!raw) {
-    return theme.global.current.value.dark ? "#ffffff" : "#000000";
-  }
-
-  if (raw.startsWith("#") || raw.startsWith("rgb") || raw.startsWith("hsl")) {
-    return raw;
-  }
-
-  return `rgb(${raw})`;
+  const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  if (!computed || !ctx) return fallback;
+  ctx.fillStyle = computed;
+  ctx.fillRect(0, 0, 1, 1);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  return `rgb(${r}, ${g}, ${b})`;
 };
 
-const getThemeSurfaceColor = (): string => {
-  const styles = getComputedStyle(document.documentElement);
-  const surface = styles.getPropertyValue("--v-theme-surface").trim();
+const getThemeTextColor = (): string => resolveThemeColor("--pv-on-surface", "#ffffff");
 
-  if (!surface) {
-    return theme.global.current.value.colors.surface ?? (theme.global.current.value.dark ? "#1e1e1e" : "#ffffff");
-  }
-
-  if (surface.startsWith("#") || surface.startsWith("rgb") || surface.startsWith("hsl")) {
-    return surface;
-  }
-
-  return `rgb(${surface})`;
-};
+const getThemeSurfaceColor = (): string => resolveThemeColor("--pv-surface", theme.colors.value.surface);
 
 const drawUncertainty = (data: CvPoint3[] | null) => {
   const container = containerRef.value;
@@ -178,7 +166,7 @@ const fetchUncertaintyData = async () => {
   error.value = null;
 
   try {
-    const response = await axios.get("/settings/camera/getUncertainty", {
+    const response = await axios.get("settings/camera/getUncertainty", {
       params: {
         cameraUniqueName: props.cameraUniqueName,
         width: props.resolution.width,
@@ -266,46 +254,21 @@ if (import.meta.hot) {
   });
 }
 
-watch(
-  () => uncertaintyData.value,
-  () => {
-    void drawUncertainty(uncertaintyData.value);
-  }
-);
+watch([() => uncertaintyData.value, () => theme.colors.value], () => {
+  void drawUncertainty(uncertaintyData.value);
+});
 </script>
 
 <template>
-  <div style="width: 100%; min-height: 400px; display: flex; justify-content: center; align-items: center">
-    <div
-      v-if="error"
-      style="
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 1rem;
-        max-width: 85%;
-      "
-    >
-      <v-icon color="red" size="70">mdi-close</v-icon>
-      <v-card-text>{{ error }}</v-card-text>
+  <div class="flex min-h-100 w-full items-center justify-center">
+    <div v-if="error" class="flex max-w-[85%] flex-col items-center justify-center p-4 text-center">
+      <IconClose class="text-pv-error size-[70px]" aria-hidden="true" />
+      <div class="p-4">{{ error }}</div>
     </div>
-    <div
-      v-else-if="isLoading"
-      style="
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 1rem;
-        width: 100%;
-      "
-    >
-      <v-progress-circular indeterminate size="70" width="8" color="primary" />
-      <v-card-text class="pt-3">Loading uncertainty data...</v-card-text>
+    <div v-else-if="isLoading" class="flex w-full flex-col items-center justify-center p-4 text-center">
+      <pv-loading class="size-[70px]" />
+      <div class="p-4 pt-3">Loading uncertainty data...</div>
     </div>
-    <div v-else ref="containerRef" style="width: 100%; min-height: 400px; flex: 1 1 auto"></div>
+    <div v-else ref="containerRef" class="min-h-100 w-full flex-auto"></div>
   </div>
 </template>

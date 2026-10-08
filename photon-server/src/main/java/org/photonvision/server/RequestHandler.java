@@ -28,8 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.imageio.ImageIO;
@@ -87,6 +87,12 @@ public class RequestHandler {
 
     @Json
     record CommonCameraUniqueName(String cameraUniqueName) {}
+
+    @Json
+    record ImageSnapshot(String snapshotName, String cameraUniqueName, byte[] snapshotData) {}
+
+    @Json
+    record ImageSnapshotsResponse(List<ImageSnapshot> snapshots) {}
 
     @Json
     record CalibrationEndRequest(String cameraUniqueName, boolean cancel) {}
@@ -1227,7 +1233,7 @@ public class RequestHandler {
     }
 
     public static void onImageSnapshotsRequest(Context ctx) {
-        var snapshots = new ArrayList<Map<String, Object>>();
+        List<ImageSnapshot> snapshots = new ArrayList<>();
         var cameraDirs = ConfigProvider.getInstance().getImageSavePath().toFile().listFiles();
 
         if (cameraDirs != null) {
@@ -1239,73 +1245,24 @@ public class RequestHandler {
                     String cameraUniqueName = cameraDir.getName();
 
                     for (File snapshot : cameraSnapshots) {
-                        var snapshotData = new HashMap<String, Object>();
-
                         var bufferedImage = ImageIO.read(snapshot);
                         var buffer = new ByteArrayOutputStream();
                         ImageIO.write(bufferedImage, "jpg", buffer);
                         byte[] data = buffer.toByteArray();
 
-                        snapshotData.put("snapshotName", snapshot.getName());
-                        snapshotData.put("cameraUniqueName", cameraUniqueName);
-                        snapshotData.put("snapshotData", data);
-
-                        snapshots.add(snapshotData);
+                        snapshots.add(new ImageSnapshot(snapshot.getName(), cameraUniqueName, data));
                     }
                 }
             } catch (IOException e) {
                 ctx.status(500);
                 ctx.result("Unable to read saved images");
+                return;
             }
         }
 
         ctx.status(200);
         ctx.contentType("application/json");
-        ctx.json(snapshots);
-    }
-
-    public static void onCameraCalibImagesRequest(Context ctx) {
-        try {
-            Map<String, Map<String, ArrayList<Map<String, Object>>>> snapshots = new HashMap<>();
-
-            var cameraDirs = ConfigProvider.getInstance().getCalibDir().toFile().listFiles();
-            if (cameraDirs != null) {
-                var camData = new HashMap<String, ArrayList<Map<String, Object>>>();
-                for (var cameraDir : cameraDirs) {
-                    var resolutionDirs = cameraDir.listFiles();
-                    if (resolutionDirs == null) continue;
-                    for (var resolutionDir : resolutionDirs) {
-                        var calibImages = resolutionDir.listFiles();
-                        if (calibImages == null) continue;
-                        var resolutionImages = new ArrayList<Map<String, Object>>();
-                        for (var calibImg : calibImages) {
-                            var snapshotData = new HashMap<String, Object>();
-
-                            var bufferedImage = ImageIO.read(calibImg);
-                            var buffer = new ByteArrayOutputStream();
-                            ImageIO.write(bufferedImage, "png", buffer);
-                            byte[] data = buffer.toByteArray();
-
-                            snapshotData.put("snapshotData", data);
-                            snapshotData.put("snapshotFilename", calibImg.getName());
-
-                            resolutionImages.add(snapshotData);
-                        }
-                        camData.put(resolutionDir.getName(), resolutionImages);
-                    }
-
-                    var cameraName = cameraDir.getName();
-                    snapshots.put(cameraName, camData);
-                }
-            }
-
-            ctx.contentType("application/json");
-            ctx.json(snapshots);
-        } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("An error occurred while getting calib data");
-            logger.error("An error occurred while getting calib data", e);
-        }
+        ctx.json(new ImageSnapshotsResponse(snapshots));
     }
 
     /**

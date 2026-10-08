@@ -52,7 +52,6 @@ public class HardwareManager implements AutoCloseable {
 
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
-
     private final Optional<StatusLED> statusLED;
 
     private final IntegerSubscriber ledModeRequest;
