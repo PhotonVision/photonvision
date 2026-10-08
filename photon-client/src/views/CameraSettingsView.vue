@@ -4,7 +4,6 @@ import CalibrationCard from "@/components/cameras/CameraCalibrationCard.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed } from "vue";
 import CamerasView from "@/components/cameras/CamerasView.vue";
-import { useStateStore } from "@/stores/StateStore";
 import CameraControlCard from "@/components/cameras/CameraControlCard.vue";
 
 const cameraViewType = computed<number[]>({

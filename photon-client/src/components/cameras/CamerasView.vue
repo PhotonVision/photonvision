@@ -144,7 +144,7 @@ const fpsTooLow = computed<boolean>(() => {
     </v-card-text>
     <v-card-text v-if="showAutoCalibrationHint" class="pt-0 d-flex flex-column ga-2">
       <v-alert
-        :type="'warning'"
+        type="warning"
         :disabled="calibrationAlertState !== 'missing'"
         variant="tonal"
         density="compact"
@@ -154,7 +154,7 @@ const fpsTooLow = computed<boolean>(() => {
         No calibration board detected -- point the camera at the calibration board
       </v-alert>
       <v-alert
-        :type="'success'"
+        type="success"
         :disabled="calibrationAlertState !== 'moved'"
         variant="tonal"
         density="compact"
@@ -164,7 +164,7 @@ const fpsTooLow = computed<boolean>(() => {
         Moved far enough -- hold still while the snapshot is taken
       </v-alert>
       <v-alert
-        :type="'info'"
+        type="info"
         :disabled="calibrationAlertState !== 'tooClose'"
         variant="tonal"
         density="compact"
