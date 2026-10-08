@@ -259,7 +259,8 @@ public class ConfigProvider {
      * #getCalibrationImageSavePathWithRes} so that generating a preliminary calibration doesn't
      * overwrite the snapshot images referenced by a previously saved calibration.
      */
-    public Path getPreliminaryCalibrationImageSavePathWithRes(Size frameSize, String uniqueCameraName) {
+    public Path getPreliminaryCalibrationImageSavePathWithRes(
+            Size frameSize, String uniqueCameraName) {
         var imgFilePath =
                 Path.of(
                                 configDirectoryFile.toString(),
@@ -272,11 +273,11 @@ public class ConfigProvider {
         return imgFilePath.toPath();
     }
 
-    /**
-     * Deletes all preliminary calibration snapshot images for a camera, across all resolutions.
-     */
+    /** Deletes all preliminary calibration snapshot images for a camera, across all resolutions. */
     public void deletePreliminaryCalibrationImages(String uniqueCameraName) {
-        var path = Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName, "preliminary_imgs");
+        var path =
+                Path.of(
+                        configDirectoryFile.toString(), "calibration", uniqueCameraName, "preliminary_imgs");
         if (path.toFile().exists()) {
             FileUtils.deleteDirectory(path);
         }
