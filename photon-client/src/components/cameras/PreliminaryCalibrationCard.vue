@@ -47,63 +47,45 @@ const calibrationVideoFormat = computed<VideoFormat | undefined>(() => {
   };
 });
 
-const generatePreliminaryCalibration = async () => {
-  generating.value = true;
-  try {
-    const response = await useCameraSettingsStore().generatePreliminaryCalibration();
-    preliminaryCalibration.value = response.data;
-    useStateStore().showSnackbarMessage({
-      color: "success",
-      message: "Preliminary calibration generated! Review it, then finish calibration to save."
-    });
-  } catch (error) {
-    preliminaryCalibration.value = null;
-    const responseData = axios.isAxiosError(error) ? error.response?.data : undefined;
-    useStateStore().showSnackbarMessage({
-      color: "error",
-      message:
-        typeof responseData === "string" && responseData ? responseData : "Failed to generate preliminary calibration"
-    });
-  } finally {
-    generating.value = false;
+const viewPreliminaryCalibration = async () => {
+  // Only run the solve once -- subsequent clicks just reopen the existing preliminary result
+  if (!preliminaryCalibration.value) {
+    generating.value = true;
+    try {
+      const response = await useCameraSettingsStore().generatePreliminaryCalibration();
+      preliminaryCalibration.value = response.data;
+    } catch (error) {
+      preliminaryCalibration.value = null;
+      const responseData = axios.isAxiosError(error) ? error.response?.data : undefined;
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message:
+          typeof responseData === "string" && responseData ? responseData : "Failed to generate preliminary calibration"
+      });
+      return;
+    } finally {
+      generating.value = false;
+    }
   }
+
+  showDialog.value = true;
 };
 </script>
 
 <template>
   <div>
-    <v-card-subtitle class="pa-0 opacity-100">
-      Generate a calibration from the snapshots collected so far to preview the results.
-    </v-card-subtitle>
-    <div class="d-flex pt-3">
-      <v-col cols="6" class="pa-0 pr-2">
-        <v-btn
-          size="small"
-          block
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          :loading="generating"
-          :disabled="!hasSnapshots"
-          @click="generatePreliminaryCalibration"
-        >
-          <v-icon start class="calib-btn-icon" size="large">mdi-calculator</v-icon>
-          <span class="calib-btn-label">Generate Preliminary</span>
-        </v-btn>
-      </v-col>
-      <v-col cols="6" class="pa-0 pl-2">
-        <v-btn
-          size="small"
-          block
-          color="buttonPassive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          :disabled="!preliminaryCalibration"
-          @click="showDialog = true"
-        >
-          <v-icon start class="calib-btn-icon" size="large">mdi-eye-outline</v-icon>
-          <span class="calib-btn-label">View Preliminary</span>
-        </v-btn>
-      </v-col>
-    </div>
+    <v-btn
+      size="small"
+      block
+      color="buttonPassive"
+      :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+      :loading="generating"
+      :disabled="!hasSnapshots"
+      @click="viewPreliminaryCalibration"
+    >
+      <v-icon start class="calib-btn-icon" size="large">mdi-eye-outline</v-icon>
+      <span class="calib-btn-label">View Preliminary Calibration</span>
+    </v-btn>
   </div>
   <v-dialog v-model="showDialog" width="80em">
     <CameraCalibrationInfoCard
