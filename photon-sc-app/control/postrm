@@ -1,0 +1,17 @@
+#!/bin/sh
+PACKAGE_NAME="photon-sc-app"
+
+echo "Cleaning up socket activation for $PACKAGE_NAME"
+
+systemctl daemon-reload
+systemctl reset-failed $PACKAGE_NAME.socket 2>/dev/null || true
+systemctl reset-failed $PACKAGE_NAME.service 2>/dev/null || true
+
+if systemctl list-units --all | grep -q "$PACKAGE_NAME"; then
+    echo "Some $PACKAGE_NAME units may still be present (this is normal until reboot)"
+else
+    echo "All $PACKAGE_NAME units cleaned up"
+fi
+
+echo "Socket activation cleanup completed"
+exit 0
