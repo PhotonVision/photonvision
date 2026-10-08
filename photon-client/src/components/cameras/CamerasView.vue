@@ -1,25 +1,41 @@
 <script setup lang="ts">
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
-import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 const theme = useTheme();
 
+const showAutoCalibrationHint = computed(
+  () => useCameraSettingsStore().isCalibrationMode && useStateStore().calibrationData.autoCalibrate
+);
+
+const calibrationAlertState = computed<"missing" | "moved" | "tooClose">(() => {
+  const movedFarEnough = useStateStore().calibrationData.movedFarEnough;
+
+  if (movedFarEnough === null) {
+    return "missing";
+  }
+
+  if (movedFarEnough) {
+    return "moved";
+  }
+
+  return "tooClose";
+});
+
 const value = defineModel<number[]>({ required: true });
 
-const driverMode = computed<boolean>({
-  get: () => useCameraSettingsStore().isDriverMode,
-  set: (v) =>
-    useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? WebsocketPipelineType.DriverMode : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
-      true
-    )
+const bypassVal = computed<boolean>({
+  get: () => useStateStore().bypassMinCalibrationImages,
+  set: (v) => (useStateStore().bypassMinCalibrationImages = v)
 });
+const minCount = computed(() => (bypassVal.value ? 10 : 100));
+const hasEnoughImages = computed(() => useStateStore().calibrationData.imageCount >= minCount.value);
 
 const fpsTooLow = computed<boolean>(() => {
   const currFPS = useStateStore().currentPipelineResults?.fps || 0;
@@ -56,7 +72,13 @@ const fpsTooLow = computed<boolean>(() => {
             {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
           </span>
         </v-chip>
-        <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
+        <v-chip
+          v-if="!useCameraSettingsStore().currentCameraSettings.isConnected"
+          label
+          color="red"
+          variant="text"
+          style="font-size: 1rem; padding: 0; margin: 0"
+        >
           <span class="pr-1">Camera not connected</span>
         </v-chip>
         <v-chip
@@ -68,15 +90,36 @@ const fpsTooLow = computed<boolean>(() => {
         >
           <span class="pr-1"> Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }} </span>
         </v-chip>
+        <v-chip
+          v-if="useCameraSettingsStore().isCalibrationMode"
+          style="margin-inline: auto"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          label
+          :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'"
+        >
+          {{ useStateStore().calibrationData.imageCount }} of at least
+          {{ minCount }}
+        </v-chip>
         <v-switch
-          v-model="driverMode"
-          :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
-          label="Driver Mode"
-          style="margin-left: auto"
-          color="primary"
+          v-if="useCameraSettingsStore().isCalibrationMode"
+          v-model="bypassVal"
+          color="error"
+          hide-details
           density="compact"
-          hide-details="auto"
-        />
+        >
+          <template #label>
+            <div class="bypass-label d-flex flex-column text-end">
+              <tooltipped-label
+                label="Bypass"
+                tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+              />
+              <tooltipped-label
+                label="minimum"
+                tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+              />
+            </div>
+          </template>
+        </v-switch>
       </div>
     </v-card-title>
     <v-card-text class="stream-container">
@@ -99,40 +142,46 @@ const fpsTooLow = computed<boolean>(() => {
         />
       </div>
     </v-card-text>
-    <v-card-text class="pt-0">
-      <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill" style="width: 100%">
-        <v-btn
-          color="buttonPassive"
-          class="fill"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          :disabled="
-            useCameraSettingsStore().isDriverMode ||
-            useCameraSettingsStore().isCalibrationMode ||
-            useCameraSettingsStore().isFocusMode
-          "
-        >
-          <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
-          <span class="mode-btn-label">Raw</span>
-        </v-btn>
-        <v-btn
-          color="buttonPassive"
-          class="fill"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          :disabled="
-            useCameraSettingsStore().isDriverMode ||
-            useCameraSettingsStore().isCalibrationMode ||
-            useCameraSettingsStore().isFocusMode
-          "
-        >
-          <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
-          <span class="mode-btn-label">Processed</span>
-        </v-btn>
-      </v-btn-toggle>
+    <v-card-text v-if="showAutoCalibrationHint" class="pt-0 d-flex flex-column ga-2">
+      <v-alert
+        type="warning"
+        :disabled="calibrationAlertState !== 'missing'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-chessboard"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'missing' }"
+      >
+        No calibration board detected -- point the camera at the calibration board
+      </v-alert>
+      <v-alert
+        type="success"
+        :disabled="calibrationAlertState !== 'moved'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-hand-back-right"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'moved' }"
+      >
+        Moved far enough -- hold still while the snapshot is taken
+      </v-alert>
+      <v-alert
+        type="info"
+        :disabled="calibrationAlertState !== 'tooClose'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-arrow-expand"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'tooClose' }"
+      >
+        Move the calibration board farther from where the last snapshot was taken
+      </v-alert>
     </v-card-text>
   </v-card>
 </template>
 
 <style scoped>
+.bypass-label {
+  line-height: 1.15;
+  white-space: nowrap;
+}
 .v-btn-toggle.fill {
   width: 100%;
 }
@@ -175,6 +224,12 @@ th {
     max-width: 50%;
   }
 }
+.calibration-alert--inactive {
+  opacity: 0.45;
+  filter: grayscale(0.8);
+  pointer-events: none;
+}
+
 @media only screen and (max-width: 351px) {
   .mode-btn-icon {
     margin: 0 !important;
