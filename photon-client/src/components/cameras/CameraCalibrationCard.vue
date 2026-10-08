@@ -321,6 +321,12 @@ const generatingPending = ref(false);
 const pendingCalibration = ref<CameraCalibrationResult | null>(null);
 const showPendingDialog = ref(false);
 
+// Open the end-calibration dialog once calibration finishes, or while a pending calibration is being computed
+const calibEndDialogOpen = computed({
+  get: () => showCalibEndDialog.value || generatingPending.value,
+  set: (value: boolean) => (showCalibEndDialog.value = value)
+});
+
 // The video format currently being calibrated
 const calibratingVideoFormat = computed<VideoFormat | undefined>(
   () =>
@@ -749,7 +755,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
       </v-card-text>
     </v-card>
-    <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
+    <v-dialog v-model="calibEndDialogOpen" width="500px" :persistent="true">
       <v-card color="surface" dark>
         <v-card-title> Camera Calibration </v-card-title>
         <div style="text-align: center">
@@ -759,8 +765,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               Camera calibration has been canceled. The backend is attempting to cleanly cancel the calibration process.
             </v-card-text>
           </template>
-          <!-- No result reported yet -->
-          <template v-else-if="calibSuccess === undefined">
+          <!-- No result reported yet, or a pending calibration is being computed -->
+          <template v-else-if="generatingPending || calibSuccess === undefined">
             <v-progress-circular indeterminate :size="70" :width="8" color="primary" />
             <v-card-text>Camera is being calibrated. This process may take several minutes...</v-card-text>
           </template>
