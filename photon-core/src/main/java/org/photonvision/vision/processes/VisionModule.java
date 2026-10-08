@@ -380,21 +380,14 @@ public class VisionModule implements AutoCloseable {
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
         var resolution = new Size(videoMode.width, videoMode.height);
 
-        settings.cameraVideoModeIndex = data.videoModeIndex;
+        settings.importUIData(data);
         visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
         logger.info(
                 "Starting calibration at resolution index "
                         + data.videoModeIndex
                         + " and settings "
                         + data);
-        settings.gridSize = data.squareSizeMeters;
-        settings.markerSize = data.markerSizeMeters;
-        settings.boardHeight = data.patternHeight;
-        settings.boardWidth = data.patternWidth;
-        settings.boardType = data.boardType;
         settings.resolution = resolution;
-        settings.useOldPattern = data.useOldPattern;
-        settings.tagFamily = data.tagFamily;
 
         // Disable gain if not applicable
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
