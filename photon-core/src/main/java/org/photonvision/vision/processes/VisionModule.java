@@ -463,6 +463,10 @@ public class VisionModule implements AutoCloseable {
 
     public CameraCalibrationCoefficients endCalibration(boolean cancel) {
         preliminaryCalibration = null;
+        // The preliminary result (if any) is discarded when the session ends, so its snapshot images
+        // across all resolutions can be removed
+        ConfigProvider.getInstance()
+                .deletePreliminaryCalibrationImages(visionSource.getCameraConfiguration().uniqueName);
         CameraCalibrationCoefficients ret = null;
         if (!cancel) {
             ret =

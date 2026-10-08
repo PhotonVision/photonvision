@@ -272,6 +272,16 @@ public class ConfigProvider {
         return imgFilePath.toPath();
     }
 
+    /**
+     * Deletes all preliminary calibration snapshot images for a camera, across all resolutions.
+     */
+    public void deletePreliminaryCalibrationImages(String uniqueCameraName) {
+        var path = Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName, "preliminary_imgs");
+        if (path.toFile().exists()) {
+            FileUtils.deleteDirectory(path);
+        }
+    }
+
     public void requestSave() {
         logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();
