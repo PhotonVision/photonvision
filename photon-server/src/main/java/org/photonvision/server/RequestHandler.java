@@ -546,7 +546,7 @@ public class RequestHandler {
             ctx.status(200);
             logger.info(
                     "Calibration canceled for module at cameraUniqueName (" + request.cameraUniqueName + ")");
-        } catch (IllegalStateException | JsonException e) {
+        } catch (JsonException e) {
             ctx.status(400);
             ctx.result("The provided calibration data was malformed.");
             logger.error("The provided calibration data was malformed.", e);
