@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from "vue";
+import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
   CalibrationBoardTypes,
   CalibrationPaperTypes,
   CalibrationTagFamilies,
+  type CameraCalibrationResult,
   type VideoFormat
 } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -323,6 +325,68 @@ const endCalibration = () => {
       // isCalibrating.value = false;
       // backend deals with this for us
     });
+};
+
+const generatingPreliminary = ref(false);
+const preliminaryCalibration = ref<CameraCalibrationResult | null>(null);
+const showPreliminaryDialog = ref(false);
+
+// The video format currently being calibrated, annotated with summary statistics from the
+// preliminary result so the info card can show mean error and FOVs
+const preliminaryVideoFormat = computed<VideoFormat | undefined>(() => {
+  const format =
+    useCameraSettingsStore().currentCameraSettings.validVideoFormats[useStateStore().calibrationData.videoFormatIndex];
+  if (!format || !preliminaryCalibration.value) return format;
+
+  const cal = preliminaryCalibration.value;
+  const intrinsics = cal.cameraIntrinsics.data;
+  const fx = intrinsics[0];
+  const fy = intrinsics[4];
+  const { width, height } = cal.resolution;
+
+  const fov = (sensorSize: number, focalLength: number): number =>
+    (2 * Math.atan2(sensorSize, 2 * focalLength) * 180) / Math.PI;
+
+  const meanErrors =
+    cal.meanErrors ??
+    cal.observations?.map((obs) => {
+      const used = obs.reprojectionErrors.filter((_, i) => obs.cornersUsed[i]);
+      if (used.length === 0) return NaN;
+      return used.reduce((sum, pt) => sum + Math.hypot(pt.x, pt.y), 0) / used.length;
+    });
+
+  return {
+    ...format,
+    resolution: cal.resolution,
+    mean: meanErrors?.length ? meanErrors.reduce((a, b) => a + b, 0) / meanErrors.length : undefined,
+    horizontalFOV: fov(width, fx),
+    verticalFOV: fov(height, fy),
+    diagonalFOV: fov(Math.hypot(width, height), Math.hypot(fx, fy))
+  };
+});
+
+const viewPreliminaryCalibration = async () => {
+  // Only run the solve once -- subsequent clicks just reopen the existing preliminary result
+  if (!preliminaryCalibration.value) {
+    generatingPreliminary.value = true;
+    try {
+      const response = await useCameraSettingsStore().generatePreliminaryCalibration();
+      preliminaryCalibration.value = response.data;
+    } catch (error) {
+      preliminaryCalibration.value = null;
+      const responseData = axios.isAxiosError(error) ? error.response?.data : undefined;
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message:
+          typeof responseData === "string" && responseData ? responseData : "Failed to generate preliminary calibration"
+      });
+      return;
+    } finally {
+      generatingPreliminary.value = false;
+    }
+  }
+
+  showPreliminaryDialog.value = true;
 };
 
 const drawAllSnapshots = ref(true);
@@ -711,6 +775,20 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             </v-btn>
           </v-col>
         </div>
+        <div v-if="isCalibrating" class="pt-3">
+          <v-btn
+            size="small"
+            block
+            color="buttonPassive"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+            :loading="generatingPreliminary"
+            :disabled="useStateStore().calibrationData.imageCount === 0"
+            @click="viewPreliminaryCalibration"
+          >
+            <v-icon start class="calib-btn-icon" size="large">mdi-eye-outline</v-icon>
+            <span class="calib-btn-label">View Preliminary Calibration</span>
+          </v-btn>
+        </div>
       </v-card-text>
     </v-card>
     <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
@@ -763,6 +841,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     </v-dialog>
     <v-dialog v-model="showCalDialog" width="80em">
       <CameraCalibrationInfoCard v-if="selectedVideoFormat" :video-format="selectedVideoFormat" />
+    </v-dialog>
+    <v-dialog v-model="showPreliminaryDialog" width="80em">
+      <CameraCalibrationInfoCard
+        v-if="preliminaryVideoFormat && preliminaryCalibration"
+        :video-format="preliminaryVideoFormat"
+        :calibration="preliminaryCalibration"
+      />
     </v-dialog>
   </div>
 </template>

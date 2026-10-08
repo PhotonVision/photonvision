@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import PreliminaryCalibrationCard from "@/components/cameras/PreliminaryCalibrationCard.vue";
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
@@ -96,9 +95,6 @@ const fpsTooLow = computed<boolean>(() => {
           style="max-width: 100%"
         />
       </div>
-    </v-card-text>
-    <v-card-text v-if="useCameraSettingsStore().isCalibrationMode" class="pt-0">
-      <PreliminaryCalibrationCard />
     </v-card-text>
   </v-card>
 </template>
