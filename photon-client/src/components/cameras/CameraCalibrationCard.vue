@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from "vue";
-import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
   CalibrationBoardTypes,
@@ -292,14 +291,11 @@ const endCalibration = () => {
   pendingCalibration.value = null;
   showPendingDialog.value = false;
 
-  const cancel = !hasEnoughImages.value;
-  if (cancel) {
-    calibCanceled.value = true;
-  }
+  calibCanceled.value = !hasEnoughImages.value;
 
   showCalibEndDialog.value = true;
   // Check if calibration finished cleanly or was canceled
-  const request = cancel
+  const request = calibCanceled.value
     ? useCameraSettingsStore().cancelCalibration(useStateStore().currentCameraUniqueName)
     : useCameraSettingsStore().commitCalibration(useStateStore().currentCameraUniqueName);
   request
@@ -331,28 +327,24 @@ const calibratingVideoFormat = computed<VideoFormat | undefined>(
     useCameraSettingsStore().currentCameraSettings.validVideoFormats[useStateStore().calibrationData.videoFormatIndex]
 );
 
-const viewPendingCalibration = async () => {
-  // Only run the solve once -- subsequent clicks just reopen the existing pending result
-  if (!pendingCalibration.value) {
-    generatingPending.value = true;
-    try {
-      const response = await useCameraSettingsStore().computeCalibration();
+const viewPendingCalibration = () => {
+  generatingPending.value = true;
+  useCameraSettingsStore()
+    .computeCalibration()
+    .then((response) => {
       pendingCalibration.value = response.data;
-    } catch (error) {
+      showPendingDialog.value = true;
+    })
+    .catch(() => {
       pendingCalibration.value = null;
-      const responseData = axios.isAxiosError(error) ? error.response?.data : undefined;
       useStateStore().showSnackbarMessage({
         color: "error",
-        message:
-          typeof responseData === "string" && responseData ? responseData : "Failed to compute pending calibration"
+        message: "Failed to compute pending calibration"
       });
-      return;
-    } finally {
+    })
+    .finally(() => {
       generatingPending.value = false;
-    }
-  }
-
-  showPendingDialog.value = true;
+    });
 };
 
 const drawAllSnapshots = ref(true);
