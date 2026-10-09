@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, inject, ref, useTemplateRef } from "vue";
-import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import { computed, inject, ref, useTemplateRef, watch } from "vue";
+import axios from "axios";
+import {
+  axiosPost,
+  getCalibrationSummaryStatistics,
+  getResolutionString,
+  meanReprojectionError,
+  parseJsonFile
+} from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-visualizer.vue";
@@ -13,6 +21,35 @@ const theme = useTheme();
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
+
+// While a calibration session is active this card only ever shows the pending calibration, which
+// cannot be imported over or exported -- the backend only supports those for saved calibrations
+const isCalibrating = computed(
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
+);
+
+// The full calibration (with observations) for this resolution. The backend serves the pending
+// calibration while one exists, falling back to the saved calibration.
+const fetchedCalibration = ref<CameraCalibrationResult | null>(null);
+
+watch(
+  () => props.videoFormat.resolution,
+  async () => {
+    try {
+      const response = await axios.get("/settings/camera/getCalibration", {
+        params: {
+          cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
+          width: props.videoFormat.resolution.width,
+          height: props.videoFormat.resolution.height
+        }
+      });
+      fetchedCalibration.value = response.data;
+    } catch {
+      fetchedCalibration.value = null;
+    }
+  },
+  { immediate: true }
+);
 
 const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
@@ -86,20 +123,49 @@ interface ObservationDetails {
   numMissing: number;
 }
 
-const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(() =>
-  useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
+// The fetched calibration takes precedence: while a calibration session is active the backend
+// serves the pending calibration, otherwise the saved one. The websocket-sent calibration is only
+// a fallback for if the fetch fails -- it carries the same saved data minus observations.
+const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(
+  () => fetchedCalibration.value ?? useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
 
 const getObservationDetails = (): ObservationDetails[] | undefined => {
   const coefficients = currentCalibrationCoeffs.value;
+  if (!coefficients) return undefined;
 
-  return coefficients?.meanErrors.map((m, i) => ({
-    index: i,
-    mean: parseFloat(m.toFixed(2)),
-    numOutliers: coefficients.numOutliers[i],
-    numMissing: coefficients.numMissing[i]
-  }));
+  // UICameraCalibrationCoefficients (sent over the websocket) carries precomputed per-observation
+  // stats; the full calibration fetched from the backend only has raw observations, so derive the
+  // stats client-side
+  if (coefficients.meanErrors !== undefined) {
+    return coefficients.meanErrors.map((m, i) => ({
+      index: i,
+      mean: parseFloat(m.toFixed(2)),
+      numOutliers: coefficients.numOutliers[i],
+      numMissing: coefficients.numMissing[i]
+    }));
+  }
+
+  return coefficients.observations?.map((obs, i) => {
+    const numMissing = obs.locationInImageSpace.filter((pt) => pt.x < 0 || pt.y < 0).length;
+    return {
+      index: i,
+      mean: parseFloat(meanReprojectionError(obs).toFixed(2)),
+      // Mirrors UICameraCalibrationCoefficients -- outliers exclude corners that were never detected
+      numOutliers: obs.cornersUsed.filter((used) => !used).length - numMissing,
+      numMissing
+    };
+  });
 };
+
+// Summary statistics derived from the calibration itself -- the video format's fields are only
+// used by the calibrations table, not here
+const summaryStatistics = computed(() => {
+  const c = currentCalibrationCoeffs.value;
+  return c ? getCalibrationSummaryStatistics(c) : undefined;
+});
+const formatStat = (value: number | undefined, unit: string): string =>
+  value !== undefined ? (isNaN(value) ? "NaN" : value.toFixed(2) + unit) : "-";
 
 const exportCalibrationURL = computed<string>(() =>
   useCameraSettingsStore().getCalJSONUrl(inject("backendHost") as string, props.videoFormat.resolution)
@@ -118,7 +184,7 @@ const viewingImg = ref(0);
         <v-col cols="12" md="6" class="pa-0">
           <v-card-title class="pa-0"> Calibration Details </v-card-title>
         </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
+        <v-col v-if="!isCalibrating" cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
           <v-btn
             color="buttonPassive"
             style="width: 100%"
@@ -136,7 +202,7 @@ const viewingImg = ref(0);
             @change="importCalibration"
           />
         </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
+        <v-col v-if="!isCalibrating" cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
           <v-btn
             color="buttonPassive"
             :disabled="!currentCalibrationCoeffs"
@@ -184,86 +250,52 @@ const viewingImg = ref(0);
                   <tr>
                     <td>Fx</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[0].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[0].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Fy</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[4].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[4].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Cx</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[2].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[2].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Cy</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[5].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[5].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Distortion</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || []
-                      }}
+                      {{ currentCalibrationCoeffs?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || [] }}
                     </td>
                   </tr>
                   <tr>
                     <td>Mean Err</td>
-                    <td>
-                      {{
-                        videoFormat.mean !== undefined
-                          ? isNaN(videoFormat.mean)
-                            ? "NaN"
-                            : videoFormat.mean.toFixed(2) + "px"
-                          : "-"
-                      }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.mean, "px") }}</td>
                   </tr>
                   <tr>
                     <td>Horizontal FOV</td>
-                    <td>
-                      {{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.horizontalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Vertical FOV</td>
-                    <td>
-                      {{ videoFormat.verticalFOV !== undefined ? videoFormat.verticalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.verticalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Diagonal FOV</td>
-                    <td>
-                      {{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.diagonalFOV, "°") }}</td>
                   </tr>
                   <!-- Board warp, only shown for mrcal-calibrated cameras -->
                   <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">

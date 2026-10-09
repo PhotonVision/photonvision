@@ -18,6 +18,10 @@
 package org.photonvision.vision.processes;
 
 import io.javalin.websocket.WsContext;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,6 +45,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
@@ -375,6 +380,9 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void startCalibration(UICalibrationData data) {
+        pendingCalibration = null;
+        deletePendingImageDir();
+
         var settings = pipelineManager.calibration3dPipeline.getSettings();
 
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
@@ -423,30 +431,120 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
-    public CameraCalibrationCoefficients endCalibration(boolean cancel) {
-        CameraCalibrationCoefficients ret = null;
-        if (!cancel) {
-            ret =
-                    pipelineManager.calibration3dPipeline.tryCalibration(
-                            ConfigProvider.getInstance()
-                                    .getCalibrationImageSavePathWithRes(
-                                            pipelineManager.calibration3dPipeline.getSettings().resolution,
-                                            visionSource.getCameraConfiguration().uniqueName));
-        } else {
-            logger.info("Calibration canceled -- not computing or saving a result");
-        }
-        pipelineManager.setCalibrationMode(false);
+    // The most recently computed calibration, kept for inspection from the UI
+    private volatile CameraCalibrationCoefficients pendingCalibration = null;
 
-        setPipeline(pipelineManager.getRequestedIndex());
+    private volatile Path pendingImageDir = null;
+
+    /**
+     * Computes a calibration from the currently collected snapshots without committing it.
+     *
+     * @return The computed calibration result, or null if the computation failed
+     */
+    public CameraCalibrationCoefficients computeCalibration() {
+        if (pipelineManager.getCurrentPipelineIndex() != PipelineManager.CAL_3D_INDEX) {
+            throw new IllegalStateException("Camera is not in calibration mode");
+        }
+
+        final Path imageSavePath;
+        try {
+            imageSavePath =
+                    ConfigProvider.getInstance()
+                            .createPreliminaryCalibrationImageDir(
+                                    visionSource.getCameraConfiguration().uniqueName);
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Could not create a temporary directory for preliminary calibration images", e);
+        }
+
+        var ret = pipelineManager.calibration3dPipeline.tryCalibration(imageSavePath);
+        if (ret != null) {
+            // Only replace the previous pending result once the new solve has succeeded
+            deletePendingImageDir();
+            pendingImageDir = imageSavePath;
+            pendingCalibration = ret;
+        } else {
+            FileUtils.deleteDirectory(imageSavePath);
+        }
+        return ret;
+    }
+
+    /**
+     * Calls {@link #computeCalibration()} and commits the calibration.
+     *
+     * @return The committed calibration, or null if the computation failed
+     */
+    public CameraCalibrationCoefficients commitCalibration() {
+        var ret = computeCalibration();
+
+        pendingCalibration = null;
+        var imageDir = pendingImageDir;
+        pendingImageDir = null;
 
         if (ret != null) {
             logger.debug("Saving calibration...");
+            movePendingSnapshotImages(ret, imageDir);
             visionSource.getSettables().addCalibration(ret);
-        } else if (!cancel) {
+        } else {
             logger.error("Calibration failed...");
         }
+        if (imageDir != null) {
+            FileUtils.deleteDirectory(imageDir);
+        }
+
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
         return ret;
+    }
+
+    /**
+     * Moves a committed calibration's snapshot images from their temporary directory to the
+     * persistent calibration image directory, updating the observations to point at the new
+     * locations.
+     */
+    private void movePendingSnapshotImages(CameraCalibrationCoefficients cal, Path tempImageDir) {
+        if (tempImageDir == null) return;
+
+        var persistentDir =
+                ConfigProvider.getInstance()
+                        .getCalibrationImageSavePathWithRes(
+                                cal.resolution, visionSource.getCameraConfiguration().uniqueName);
+
+        for (var observation : cal.observations) {
+            if (observation.snapshotDataLocation == null) continue;
+
+            var target = persistentDir.resolve(observation.snapshotName);
+            try {
+                Files.move(observation.snapshotDataLocation, target, StandardCopyOption.REPLACE_EXISTING);
+                observation.snapshotDataLocation = target;
+            } catch (IOException e) {
+                logger.error("Failed to move calibration snapshot image to " + target, e);
+            }
+        }
+    }
+
+    /** Aborts the calibration session and discards pending information. */
+    public void cancelCalibration() {
+        logger.info("Calibration canceled -- not computing or saving a result");
+        pendingCalibration = null;
+        deletePendingImageDir();
+
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
+        saveAndBroadcastAll();
+    }
+
+    private void deletePendingImageDir() {
+        var dir = pendingImageDir;
+        pendingImageDir = null;
+        if (dir != null) {
+            FileUtils.deleteDirectory(dir);
+        }
+    }
+
+    public CameraCalibrationCoefficients getPendingCalibration() {
+        return pendingCalibration;
     }
 
     boolean setPipeline(int index) {

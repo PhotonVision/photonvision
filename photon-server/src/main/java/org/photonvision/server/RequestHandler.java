@@ -88,9 +88,6 @@ public class RequestHandler {
     @Json
     record CommonCameraUniqueName(String cameraUniqueName) {}
 
-    @Json
-    record CalibrationEndRequest(String cameraUniqueName, boolean cancel) {}
-
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
@@ -489,27 +486,22 @@ public class RequestHandler {
         }
     }
 
-    public static void onCalibrationEndRequest(Context ctx) {
+    public static void onCalibrationCommitRequest(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
 
         try {
-            CalibrationEndRequest request = ctx.bodyAsClass(CalibrationEndRequest.class);
+            CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
 
-            var calData =
-                    VisionSourceManager.getInstance()
-                            .vmm
-                            .getModule(request.cameraUniqueName)
-                            .endCalibration(request.cancel);
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404);
+                ctx.result(
+                        "No vision module was found with cameraUniqueName (" + request.cameraUniqueName + ")");
+                return;
+            }
+
+            var calData = module.commitCalibration();
             if (calData == null) {
-                if (request.cancel) {
-                    ctx.result("The calibration process was canceled");
-                    ctx.status(200);
-                    logger.info(
-                            "Calibration canceled for module at cameraUniqueName ("
-                                    + request.cameraUniqueName
-                                    + ")");
-                    return;
-                }
                 ctx.result("The calibration process failed");
                 ctx.status(500);
                 logger.error(
@@ -525,14 +517,83 @@ public class RequestHandler {
         } catch (IllegalStateException | JsonException e) {
             ctx.status(400);
             ctx.result(
-                    "The 'cameraUniqueName' field was not found in the request. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.");
+                    "The 'cameraUniqueName' field was not found in the request, or the camera is not in calibration mode. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.");
             logger.error(
-                    "The 'cameraUniqueName' field was not found in the request. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.",
+                    "The 'cameraUniqueName' field was not found in the request, or the camera is not in calibration mode.",
                     e);
         } catch (Exception e) {
             ctx.status(500);
-            ctx.result("There was an error while ending calibration");
-            logger.error("There was an error while ending calibration", e);
+            ctx.result("There was an error while committing the calibration");
+            logger.error("There was an error while committing the calibration", e);
+        }
+    }
+
+    public static void onCalibrationCancelRequest(Context ctx) {
+        try {
+            CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
+
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404);
+                ctx.result(
+                        "No vision module was found with cameraUniqueName (" + request.cameraUniqueName + ")");
+                return;
+            }
+
+            module.cancelCalibration();
+
+            ctx.result("The calibration process was canceled");
+            ctx.status(200);
+            logger.info(
+                    "Calibration canceled for module at cameraUniqueName (" + request.cameraUniqueName + ")");
+        } catch (JsonException e) {
+            ctx.status(400);
+            ctx.result("The provided calibration data was malformed.");
+            logger.error("The provided calibration data was malformed.", e);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("There was an error while canceling the calibration");
+            logger.error("There was an error while canceling the calibration", e);
+        }
+    }
+
+    public static void onCalibrationComputeRequest(Context ctx) {
+        try {
+            CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
+
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404);
+                ctx.result(
+                        "No vision module was found with cameraUniqueName (" + request.cameraUniqueName + ")");
+                return;
+            }
+
+            var calData = module.computeCalibration();
+            if (calData == null) {
+                ctx.status(500);
+                ctx.result("The calibration computation failed");
+                logger.error(
+                        "The calibration computation failed for module at cameraUniqueName ("
+                                + request.cameraUniqueName
+                                + ")");
+                return;
+            }
+
+            ctx.contentType("application/json");
+            // Send the UI variant without observations -- the client fetches the full pending
+            // calibration on demand (see onCalibrationJsonRequest) to draw them
+            ctx.json(calData.cloneWithoutObservations());
+            ctx.status(200);
+            logger.info("Computed calibration for camera " + request.cameraUniqueName);
+        } catch (IllegalStateException | JsonException e) {
+            ctx.status(400);
+            ctx.result("The provided calibration data was malformed.");
+            logger.error("The provided calibration data was malformed.", e);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("There was an error while computing the calibration");
+            logger.error("There was an error while computing the calibration", e);
         }
     }
 
@@ -1035,6 +1096,32 @@ public class RequestHandler {
     }
 
     /**
+     * The calibration to serve for a resolution: the pending calibration while a calibration session
+     * is active (it is cleared when the session ends), otherwise the saved calibration.
+     */
+    private static CameraCalibrationCoefficients getActiveCalibration(
+            String cameraUniqueName, double width, double height) {
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+        if (module == null) {
+            return null;
+        }
+
+        var pending = module.getPendingCalibration();
+        if (pending != null
+                && Math.abs(pending.resolution.width - width) < 1e-4
+                && Math.abs(pending.resolution.height - height) < 1e-4) {
+            return pending;
+        }
+        return module.getStateAsCameraConfig().calibrations.stream()
+                .filter(
+                        it ->
+                                Math.abs(it.resolution.width - width) < 1e-4
+                                        && Math.abs(it.resolution.height - height) < 1e-4)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Get the calibration JSON for a specific observation. Excludes camera image data
      *
      * <p>This is excluded from UICalibrationCoefficients by default to save bandwidth on large
@@ -1045,21 +1132,7 @@ public class RequestHandler {
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
-        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
-        if (module == null) {
-            ctx.status(404);
-            return;
-        }
-
-        CameraCalibrationCoefficients calList =
-                module.getStateAsCameraConfig().calibrations.stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
-
+        var calList = getActiveCalibration(cameraUniqueName, width, height);
         if (calList == null) {
             ctx.status(404);
             return;
@@ -1075,21 +1148,7 @@ public class RequestHandler {
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
-        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
-        if (module == null) {
-            ctx.status(404);
-            return;
-        }
-
-        CameraCalibrationCoefficients calList =
-                module.getStateAsCameraConfig().calibrations.stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
-
+        var calList = getActiveCalibration(cameraUniqueName, width, height);
         if (calList == null) {
             ctx.status(404);
             return;
@@ -1160,20 +1219,7 @@ public class RequestHandler {
         var height = Integer.parseInt(ctx.queryParam("height"));
         Integer observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
-        CameraCalibrationCoefficients calList =
-                VisionSourceManager.getInstance()
-                        .vmm
-                        .getModule(cameraUniqueName)
-                        .getStateAsCameraConfig()
-                        .calibrations
-                        .stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.resolution.width - width) < 1e-4
-                                                && Math.abs(it.resolution.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
-
+        var calList = getActiveCalibration(cameraUniqueName, width, height);
         if (calList == null || calList.observations.size() < observationIdx) {
             ctx.status(404);
             return;

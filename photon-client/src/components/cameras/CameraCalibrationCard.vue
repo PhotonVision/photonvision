@@ -17,6 +17,7 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import {
   arucoTagDictionaryFor,
   arucoTagFamilyNameFor,
+  getCalibrationSummaryStatistics,
   getResolutionString,
   paperDimensionsFor,
   resolutionsAreEqual
@@ -59,26 +60,11 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
       const resArea = format.resolution.width * format.resolution.height;
 
       if (calib !== undefined) {
-        // Mean overall reprojection error
-        // Calculated as average of each observation's mean error
-        if (calib.meanErrors.length)
-          format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
-        else format.mean = NaN;
-
-        format.horizontalFOV =
-          2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
-        format.verticalFOV =
-          2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
-        format.diagonalFOV =
-          2 *
-          Math.atan2(
-            Math.sqrt(
-              format.resolution.width ** 2 +
-                (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
-            ) / 2,
-            calib.cameraIntrinsics.data[0]
-          ) *
-          (180 / Math.PI);
+        const stats = getCalibrationSummaryStatistics(calib);
+        format.mean = stats.mean;
+        format.horizontalFOV = stats.horizontalFOV;
+        format.verticalFOV = stats.verticalFOV;
+        format.diagonalFOV = stats.diagonalFOV;
       }
 
       if (resArea >= minPixelCount) {
@@ -287,11 +273,11 @@ const startCalibration = () => {
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
-  // isCalibrating.value = true;
   calibCanceled.value = false;
   requestedVideoFormatIndex.value = useStateStore().calibrationData.videoFormatIndex;
+  showCalDialog.value = false;
 };
-const showCalibEndDialog = ref(false);
+const calibEndDialogOpen = ref(false);
 const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
 const calibEndpointFail = ref(false);
@@ -299,29 +285,61 @@ const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
-  if (!hasEnoughImages.value) {
-    calibCanceled.value = true;
-  }
+  calibCanceled.value = !hasEnoughImages.value;
 
-  showCalibEndDialog.value = true;
+  calibEndDialogOpen.value = true;
   // Check if calibration finished cleanly or was canceled
-  useCameraSettingsStore()
-    .endPnPCalibration(useStateStore().currentCameraUniqueName, !hasEnoughImages.value)
+  const request = calibCanceled.value
+    ? useCameraSettingsStore().cancelCalibration(useStateStore().currentCameraUniqueName)
+    : useCameraSettingsStore().commitCalibration(useStateStore().currentCameraUniqueName);
+  request
     .then(() => {
       calibSuccess.value = true;
     })
     .catch((e) => {
-      if (e.response) {
-        // Server returned a status code
-      } else if (e.request) {
-        // Something went wrong. Unsure if calibration actually worked
+      // A request that got no response means the calibration result is unknown
+      if (e.request && !e.response) {
         calibEndpointFail.value = true;
       }
       calibSuccess.value = false;
+    });
+};
+
+const generatingPending = ref(false);
+
+// The video format currently being calibrated
+const calibratingVideoFormat = computed<VideoFormat | undefined>(
+  () =>
+    useCameraSettingsStore().currentCameraSettings.validVideoFormats[useStateStore().calibrationData.videoFormatIndex]
+);
+
+// Resolution string shown in the end-calibration success message
+const calibratedResolutionString = computed(() => {
+  const format = useCameraSettingsStore().currentCameraSettings.validVideoFormats[requestedVideoFormatIndex.value];
+  return format ? getResolutionString(format.resolution) : "";
+});
+
+// Compute a pending calibration from the collected snapshots and view it in the same calibration
+// details dialog used for saved calibrations -- the dialog's data fetches serve the pending
+// calibration while one exists. The end dialog shows the processing state in the meantime.
+const viewPendingCalibration = () => {
+  generatingPending.value = true;
+  calibEndDialogOpen.value = true;
+  useCameraSettingsStore()
+    .computeCalibration()
+    .then(() => {
+      selectedVideoFormat.value = calibratingVideoFormat.value;
+      showCalDialog.value = true;
+    })
+    .catch(() => {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: "Failed to compute pending calibration"
+      });
     })
     .finally(() => {
-      // isCalibrating.value = false;
-      // backend deals with this for us
+      generatingPending.value = false;
+      calibEndDialogOpen.value = false;
     });
 };
 
@@ -711,11 +729,25 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             </v-btn>
           </v-col>
         </div>
+        <div v-if="isCalibrating" class="pt-3">
+          <v-btn
+            size="small"
+            block
+            color="buttonPassive"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+            :loading="generatingPending"
+            :disabled="useStateStore().calibrationData.imageCount === 0"
+            @click="viewPendingCalibration"
+          >
+            <v-icon start class="calib-btn-icon" size="large">mdi-eye-outline</v-icon>
+            <span class="calib-btn-label">View Pending Calibration</span>
+          </v-btn>
+        </div>
       </v-card-text>
     </v-card>
-    <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
+    <v-dialog v-model="calibEndDialogOpen" width="500px" :persistent="true">
       <v-card color="surface" dark>
-        <v-card-title> Camera Calibration </v-card-title>
+        <v-card-title>Camera Calibration</v-card-title>
         <div style="text-align: center">
           <template v-if="calibCanceled">
             <v-icon color="primary" size="70"> mdi-cancel </v-icon>
@@ -723,22 +755,15 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               Camera calibration has been canceled. The backend is attempting to cleanly cancel the calibration process.
             </v-card-text>
           </template>
-          <!-- No result reported yet -->
-          <template v-else-if="calibSuccess === undefined">
+          <!-- No result reported yet, or a pending calibration is being computed -->
+          <template v-else-if="generatingPending || calibSuccess === undefined">
             <v-progress-circular indeterminate :size="70" :width="8" color="primary" />
             <v-card-text>Camera is being calibrated. This process may take several minutes...</v-card-text>
           </template>
           <!-- Got positive result -->
           <template v-else-if="calibSuccess">
             <v-icon color="#00ff00" size="70"> mdi-check </v-icon>
-            <v-card-text>
-              Camera has been successfully calibrated for
-              {{
-                useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
-                  getResolutionString(f.resolution)
-                )[requestedVideoFormatIndex]
-              }}!
-            </v-card-text>
+            <v-card-text> Camera has been successfully calibrated for {{ calibratedResolutionString }}! </v-card-text>
           </template>
           <template v-else-if="calibEndpointFail">
             <v-icon color="gray" size="70"> mdi-help-circle-outline </v-icon>
@@ -757,7 +782,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <v-card-actions class="pa-5 pt-0">
           <v-spacer />
-          <v-btn v-if="!isCalibrating" color="white" variant="text" @click="showCalibEndDialog = false"> OK </v-btn>
+          <v-btn v-if="!isCalibrating" color="white" variant="text" @click="calibEndDialogOpen = false"> OK </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
