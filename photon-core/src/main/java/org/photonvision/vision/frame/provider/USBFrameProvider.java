@@ -106,6 +106,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             // - Call GrabSinkFrameTimeoutLastTime lastTime = lastTime
             // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is whatever epoch
             // std::steady_clock is      long captureTimeNs =
+            var props = settables.getFrameStaticProperties();
             long captureTimeNs =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
                             cvSink.getHandle(),
@@ -117,28 +118,43 @@ public class USBFrameProvider extends CpuImageProcessor {
             // 0 means capture error
             if (captureTimeNs == 0) {
                 logger.error("Error grabbing image: " + cvSink.getError());
-                return new CapturedFrame(new CVMat(), settables.getFrameStaticProperties(), 0);
+                return new CapturedFrame(new CVMat(), props, 0);
             }
 
             lastTime = captureTimeNs;
-
             wrapped = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
 
             if (decodeMjpeg) {
-                // Convert wrapped+frame from MJPEG to grayscale. Gray is a new mat with its own
-                // heap-allocated buffer
-                gray = mjpegToGray(wrapped, frame, cameraMode);
+                if (frame.getPixelFormat() != PixelFormat.MJPEG || wrapped.empty()) {
+                    logger.error("Expected a non-empty MJPEG frame");
+                    return new CapturedFrame(new CVMat(), props, captureTimeNs);
+                }
+
+                // gray gets its own heap-allocated buffer
+                // finally() releases wrapped and frame for all `return`s here
+                try {
+                    gray = Imgcodecs.imdecode(wrapped, Imgcodecs.IMREAD_GRAYSCALE);
+                } catch (CvException e) {
+                    logger.error("Could not decode MJPEG frame", e);
+                    return new CapturedFrame(new CVMat(), props, captureTimeNs);
+                }
+
+                // gray is non-null here; finally() releases it if we bail out below
+                if (gray.empty() || gray.cols() != cameraMode.width || gray.rows() != cameraMode.height) {
+                    logger.error("MJPEG decode failed or size does not match camera mode");
+                    return new CapturedFrame(new CVMat(), props, captureTimeNs);
+                }
+
                 var result = new CVMat(gray);
                 gray = null; // ownership moved to result
-                return new CapturedFrame(result, settables.getFrameStaticProperties(), captureTimeNs);
-                // finally() will release wrapped and frame for us
+                return new CapturedFrame(result, props, captureTimeNs);
             }
 
             // CVMat will take ownership of the frame + mat, so we don't release it in finally()
             var result = new CVMat(wrapped, frame);
             wrapped = null;
             frame = null;
-            return new CapturedFrame(result, settables.getFrameStaticProperties(), captureTimeNs);
+            return new CapturedFrame(result, props, captureTimeNs);
         } finally {
             // Release in reverse order
             // Note release does not free header data: see https://github.com/opencv/opencv/pull/29627
@@ -146,32 +162,6 @@ public class USBFrameProvider extends CpuImageProcessor {
             if (wrapped != null) wrapped.release();
             if (frame != null) frame.close();
         }
-    }
-
-    /**
-     * Decodes an MJPEG frame to a grayscale Mat that owns its data (caller must release it). Inputs
-     * are not released. Returns an empty Mat on any failure.
-     */
-    private Mat mjpegToGray(Mat mat, RawFrame frame, VideoMode cameraMode) {
-        if (frame.getPixelFormat() != PixelFormat.MJPEG || mat.empty()) {
-            logger.error("mjpegToGray got a non-MJPEG or empty input");
-            return new Mat();
-        }
-
-        Mat gray;
-        try {
-            gray = Imgcodecs.imdecode(mat, Imgcodecs.IMREAD_GRAYSCALE);
-        } catch (CvException e) {
-            logger.error("Could not decode MJPEG frame", e);
-            return new Mat();
-        }
-
-        if (!gray.empty() && (gray.cols() != cameraMode.width || gray.rows() != cameraMode.height)) {
-            logger.error("MJPEG frame size does not match camera mode");
-            gray.release();
-            return new Mat();
-        }
-        return gray;
     }
 
     @Override
