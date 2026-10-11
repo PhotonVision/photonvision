@@ -32,24 +32,22 @@ const isCalibrating = computed(
 // calibration while one exists, falling back to the saved calibration.
 const fetchedCalibration = ref<CameraCalibrationResult | null>(null);
 
-watch(
-  () => props.videoFormat.resolution,
-  async () => {
-    try {
-      const response = await axios.get("/settings/camera/getCalibration", {
-        params: {
-          cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
-          width: props.videoFormat.resolution.width,
-          height: props.videoFormat.resolution.height
-        }
-      });
-      fetchedCalibration.value = response.data;
-    } catch {
-      fetchedCalibration.value = null;
-    }
-  },
-  { immediate: true }
-);
+const fetchCalibration = async () => {
+  try {
+    const response = await axios.get("/settings/camera/getCalibration", {
+      params: {
+        cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
+        width: props.videoFormat.resolution.width,
+        height: props.videoFormat.resolution.height
+      }
+    });
+    fetchedCalibration.value = response.data;
+  } catch {
+    fetchedCalibration.value = null;
+  }
+};
+
+watch(() => props.videoFormat.resolution, fetchCalibration, { immediate: true });
 
 const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
@@ -90,11 +88,13 @@ const importCalibration = async () => {
 
   useCameraSettingsStore()
     .importCalibrationFromData({ calibration: data })
-    .then((response) => {
+    .then(async (response) => {
       useStateStore().showSnackbarMessage({
         color: "success",
         message: response.data.text || response.data
       });
+      // We need to refetch the calibration since the cache will be outdated
+      await fetchCalibration();
     })
     .catch((error) => {
       if (error.response) {
