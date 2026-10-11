@@ -63,108 +63,115 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;
 
+    private PixelFormat requestedPixelFormat(boolean decodeMjpeg) {
+        if (!wantsGreyscaleOutput) {
+            return PixelFormat.BGR;
+        }
+
+        // Cscore will decode MJPEG to BGR, but we want grayscale, so we have to decode it ourselves
+        if (decodeMjpeg) {
+            return PixelFormat.UNKNOWN;
+        } else {
+            return PixelFormat.GRAY;
+        }
+    }
+
     @Override
     public CapturedFrame getInputMat() {
         if (!cameraPropertiesCached && camera.isConnected()) {
             onCameraConnected();
         }
 
-        // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
-        // TODO - consider a frame pool
-        // TODO - getCurrentVideoMode is a JNI call for us, but profiling indicates it's fast
         var cameraMode = settables.getCurrentVideoMode();
         boolean decodeMjpeg = wantsGreyscaleOutput && cameraMode.pixelFormat == PixelFormat.MJPEG;
-        var frame = new RawFrame();
 
-        // MJPEG: cscore mutates stride to zero
-        // GRAY: cscore sets stride to 1 byte/pixel
-        // BGR: cscore sets stride to 3 byte/pixel
-        // We leave as zero, let cscore tell us
-        int stride = 0;
-        PixelFormat pixelFormat;
-        if (wantsGreyscaleOutput) {
-            if (decodeMjpeg) {
-                pixelFormat = PixelFormat.UNKNOWN;
-            } else {
-                pixelFormat = PixelFormat.GRAY;
-            }
-        } else {
-            pixelFormat = PixelFormat.BGR;
-        }
-        frame.setInfo(cameraMode.width, cameraMode.height, stride, pixelFormat);
-
-        // if m_blockForFrames :
-        // - start waiting for the cvSink to get a new image delivered
-        // - Call GrabSinkFrameTimeoutLastTime lastTime = 0
-        // otherwise:
-        // - get the next frame with a capture timestamp larger than lastTime
-        // - Call GrabSinkFrameTimeoutLastTime lastTime = lastTime
-        // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is whatever epoch
-        // std::steady_clock is      long captureTimeNs =
-        long lastFrameTime;
-        if (m_blockForFrames) {
-            lastFrameTime = 0;
-        } else {
-            lastFrameTime = lastTime;
-        }
-
-        long captureTimeNs =
-                CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                        cvSink.getHandle(),
-                        frame,
-                        frame.getNativeObj(),
-                        CSCORE_DEFAULT_FRAME_TIMEOUT,
-                        lastFrameTime);
-        lastTime = captureTimeNs;
-
-        // 0 means capture error
-        if (captureTimeNs == 0) {
-            var error = cvSink.getError();
-            logger.error("Error grabbing image: " + error);
-
-            frame.close();
-
-            return new CapturedFrame(new CVMat(), settables.getFrameStaticProperties(), captureTimeNs);
-        }
-
-        // This mat does not own frame data, releasing it just releases headers. Release frame to
-        // release image data. Users must track frame + mat together
-        var mat = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
-
-        CVMat colorImage = null;
-
-        if (decodeMjpeg) {
-            colorImage = mjpegToGray(mat, frame, cameraMode);
-        } else {
-            // Not MJPEG, no decoding
-            colorImage = new CVMat(mat, frame);
-        }
-
-        return new CapturedFrame(colorImage, settables.getFrameStaticProperties(), captureTimeNs);
-    }
-
-    private CVMat mjpegToGray(Mat mat, RawFrame frame, VideoMode cameraMode) {
-        Mat grayMat = null;
+        // Declare these outside so that finally() can deal with releasing anything left over. Null
+        // means "not allocated yet" or "ownership moved to CVMat".
+        RawFrame frame = new RawFrame();
+        Mat wrapped = null; // header only, points into frame
+        Mat gray = null; // owns its own decoded data
 
         try {
-            if (frame.getPixelFormat() == PixelFormat.MJPEG && !mat.empty()) {
-                grayMat = Imgcodecs.imdecode(mat, Imgcodecs.IMREAD_GRAYSCALE);
-                if (!grayMat.empty()
-                        && (grayMat.cols() != cameraMode.width || grayMat.rows() != cameraMode.height)) {
-                    // This shoulldn't happen
-                    logger.error("Got MJPG frame that does not match size of cameramode. Returning none");
-                    grayMat.release();
-                    return new CVMat();
-                }
-            }
-        } catch (CvException e) {
-            logger.error("Could not decode MJPEG frame", e);
+            // MJPEG: cscore mutates stride to zero
+            // GRAY: cscore sets stride to 1 byte/pixel
+            // BGR: cscore sets stride to 3 byte/pixel
+            // We leave stride as zero, let cscore tell us
+            frame.setInfo(cameraMode.width, cameraMode.height, 0, requestedPixelFormat(decodeMjpeg));
 
-            grayMat.release();
-            return new CVMat();
+            // if m_blockForFrames :
+            // - start waiting for the cvSink to get a new image delivered
+            // - Call GrabSinkFrameTimeoutLastTime lastTime = 0
+            // otherwise:
+            // - get the next frame with a capture timestamp larger than lastTime
+            // - Call GrabSinkFrameTimeoutLastTime lastTime = lastTime
+            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is whatever epoch
+            // std::steady_clock is      long captureTimeNs =
+            long captureTimeNs =
+                    CscoreExtras.grabRawSinkFrameTimeoutLastTime(
+                            cvSink.getHandle(),
+                            frame,
+                            frame.getNativeObj(),
+                            CSCORE_DEFAULT_FRAME_TIMEOUT,
+                            m_blockForFrames ? 0 : lastTime);
+
+            // 0 means capture error
+            if (captureTimeNs == 0) {
+                logger.error("Error grabbing image: " + cvSink.getError());
+                return new CapturedFrame(new CVMat(), settables.getFrameStaticProperties(), 0);
+            }
+
+            lastTime = captureTimeNs;
+
+            wrapped = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
+
+            if (decodeMjpeg) {
+                // Convert wrapped+frame from MJPEG to grayscale. Gray is a new mat with its own
+                // heap-allocated buffer
+                gray = mjpegToGray(wrapped, frame, cameraMode);
+                var result = new CVMat(gray);
+                gray = null; // ownership moved to result
+                return new CapturedFrame(result, settables.getFrameStaticProperties(), captureTimeNs);
+                // finally() will release wrapped and frame for us
+            }
+
+            // CVMat will take ownership of the frame + mat, so we don't release it in finally()
+            var result = new CVMat(wrapped, frame);
+            wrapped = null;
+            frame = null;
+            return new CapturedFrame(result, settables.getFrameStaticProperties(), captureTimeNs);
+        } finally {
+            // Release in reverse order
+            // Note release does not free header data: see https://github.com/opencv/opencv/pull/29627
+            if (gray != null) gray.release();
+            if (wrapped != null) wrapped.release();
+            if (frame != null) frame.close();
+        }
+    }
+
+    /**
+     * Decodes an MJPEG frame to a grayscale Mat that owns its data (caller must release it). Inputs
+     * are not released. Returns an empty Mat on any failure.
+     */
+    private Mat mjpegToGray(Mat mat, RawFrame frame, VideoMode cameraMode) {
+        if (frame.getPixelFormat() != PixelFormat.MJPEG || mat.empty()) {
+            logger.error("mjpegToGray got a non-MJPEG or empty input");
+            return new Mat();
         }
 
-        return new CVMat(grayMat);
+        Mat gray;
+        try {
+            gray = Imgcodecs.imdecode(mat, Imgcodecs.IMREAD_GRAYSCALE);
+        } catch (CvException e) {
+            logger.error("Could not decode MJPEG frame", e);
+            return new Mat();
+        }
+
+        if (!gray.empty() && (gray.cols() != cameraMode.width || gray.rows() != cameraMode.height)) {
+            logger.error("MJPEG frame size does not match camera mode");
+            gray.release();
+            return new Mat();
+        }
+        return gray;
     }
 
     @Override
