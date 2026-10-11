@@ -478,7 +478,6 @@ public class VisionModule implements AutoCloseable {
     public CameraCalibrationCoefficients commitCalibration() {
         var ret = computeCalibration();
 
-        if (pendingCalibration != null) pendingCalibration.release();
         pendingCalibration = null;
         var imageDir = pendingImageDir;
         pendingImageDir = null;
@@ -489,6 +488,9 @@ public class VisionModule implements AutoCloseable {
             visionSource.getSettables().addCalibration(ret);
         } else {
             logger.error("Calibration failed...");
+            // We only want to release the pending calibration when compute fails
+            // since the endingCalibration and the ret object are the same
+            if (pendingCalibration != null) pendingCalibration.release();
         }
         if (imageDir != null) {
             FileUtils.deleteDirectory(imageDir);
@@ -879,7 +881,7 @@ public class VisionModule implements AutoCloseable {
         outputFrameSaver.close();
 
         deletePendingImageDir();
-        pendingCalibration.release();
+        if (pendingCalibration != null) pendingCalibration.release();
 
         changeSubscriberHandle.stop();
         setVisionLEDs(false);
