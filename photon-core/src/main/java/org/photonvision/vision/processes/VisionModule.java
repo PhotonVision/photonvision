@@ -384,6 +384,7 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void startCalibration(UICalibrationData data) {
+        if (pendingCalibration != null) pendingCalibration.release();
         pendingCalibration = null;
         deletePendingImageDir();
 
@@ -461,6 +462,7 @@ public class VisionModule implements AutoCloseable {
             // Only replace the previous pending result once the new solve has succeeded
             deletePendingImageDir();
             pendingImageDir = imageSavePath;
+            if (pendingCalibration != null) pendingCalibration.release();
             pendingCalibration = ret;
         } else {
             FileUtils.deleteDirectory(imageSavePath);
@@ -476,6 +478,7 @@ public class VisionModule implements AutoCloseable {
     public CameraCalibrationCoefficients commitCalibration() {
         var ret = computeCalibration();
 
+        if (pendingCalibration != null) pendingCalibration.release();
         pendingCalibration = null;
         var imageDir = pendingImageDir;
         pendingImageDir = null;
@@ -526,6 +529,7 @@ public class VisionModule implements AutoCloseable {
     /** Aborts the calibration session and discards pending information. */
     public void cancelCalibration() {
         logger.info("Calibration canceled -- not computing or saving a result");
+        if (pendingCalibration != null) pendingCalibration.release();
         pendingCalibration = null;
         deletePendingImageDir();
 
@@ -873,6 +877,9 @@ public class VisionModule implements AutoCloseable {
         outputVideoStreamer.close();
         inputFrameSaver.close();
         outputFrameSaver.close();
+
+        deletePendingImageDir();
+        pendingCalibration.release();
 
         changeSubscriberHandle.stop();
         setVisionLEDs(false);
