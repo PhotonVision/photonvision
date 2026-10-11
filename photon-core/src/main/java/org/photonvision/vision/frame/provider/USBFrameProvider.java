@@ -85,8 +85,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         var cameraMode = settables.getCurrentVideoMode();
         boolean decodeMjpeg = wantsGreyscaleOutput && cameraMode.pixelFormat == PixelFormat.MJPEG;
 
-        // Declare these outside so that finally() can deal with releasing anything left over. Null
-        // means "not allocated yet" or "ownership moved to CVMat".
+        // Declare these outside so that finally() can deal with releasing anything left over.
+        // Null means "not allocated yet" or "ownership moved to CVMat".
         RawFrame frame = new RawFrame();
         Mat wrapped = null; // header only, points into frame
         Mat gray = null; // owns its own decoded data
