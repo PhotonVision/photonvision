@@ -275,7 +275,17 @@ const isCalibrating = computed(
   () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
 );
 
-const startCalibration = () => {
+const calibrationMode = ref<"normal" | "auto">("normal");
+
+const activeCalibrationMode = computed<"normal" | "auto">(() =>
+  isCalibrating.value ? (useStateStore().calibrationData.autoCalibrate ? "auto" : "normal") : calibrationMode.value
+);
+
+// Keep the dropdown preference in sync with the backend while calibrating
+watch(activeCalibrationMode, (mode) => (calibrationMode.value = mode));
+
+const startCalibration = (mode: "normal" | "auto" = "normal") => {
+  calibrationMode.value = mode;
   useCameraSettingsStore().startPnPCalibration({
     squareSizeMeters: length[dimensionUnit.value](squareSize.value).m.value,
     markerSizeMeters: length[dimensionUnit.value](markerSize.value).m.value,
@@ -283,7 +293,8 @@ const startCalibration = () => {
     patternWidth: patternWidth.value,
     boardType: boardType.value,
     useOldPattern: useOldPattern.value,
-    tagFamily: tagFamily.value
+    tagFamily: tagFamily.value,
+    autoCalibrate: mode === "auto"
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
@@ -327,7 +338,10 @@ const endCalibration = () => {
 
 const drawAllSnapshots = ref(true);
 
-const bypassVal = ref(false);
+const bypassVal = computed<boolean>({
+  get: () => useStateStore().bypassMinCalibrationImages,
+  set: (v) => (useStateStore().bypassMinCalibrationImages = v)
+});
 const minCount = computed(() => (bypassVal.value ? 10 : 100));
 const hasEnoughImages = computed(() => useStateStore().calibrationData.imageCount >= minCount.value);
 
@@ -636,27 +650,6 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               : 'MrCal failed to load, check journalctl logs for details.'
           "
         />
-        <div v-if="isCalibrating" class="d-flex justify-center align-center pb-5">
-          <v-chip
-            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
-            label
-            :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'"
-          >
-            Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-            {{ minCount }}
-          </v-chip>
-          <v-spacer />
-          <pv-switch
-            v-model="bypassVal"
-            color="error"
-            hide-details
-            class="ml-4"
-            label="Bypass minimum"
-            :label-cols="6"
-            :switch-cols="6"
-            tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
-          />
-        </div>
         <div>
           <v-btn
             color="buttonPassive"
@@ -681,18 +674,73 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         />
         <div class="d-flex pt-5">
           <v-col cols="6" class="pa-0 pr-2">
+            <div v-if="!isCalibrating" class="d-flex">
+              <v-btn
+                size="small"
+                class="flex-grow-1"
+                style="border-top-right-radius: 0; border-bottom-right-radius: 0"
+                color="buttonActive"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+                :disabled="!settingsValid || tooManyPoints"
+                @click="startCalibration(calibrationMode)"
+              >
+                <v-icon start class="calib-btn-icon" size="large"> mdi-flag-outline </v-icon>
+                <span class="calib-btn-label">
+                  Start Calibration ({{ calibrationMode === "auto" ? "Auto" : "Manual" }})
+                </span>
+              </v-btn>
+              <v-menu location="bottom end">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    size="small"
+                    style="border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 4px"
+                    color="buttonActive"
+                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+                    :disabled="!settingsValid || tooManyPoints"
+                  >
+                    <v-icon> mdi-chevron-down </v-icon>
+                  </v-btn>
+                </template>
+                <v-list density="compact">
+                  <v-list-item @click="calibrationMode = 'normal'">
+                    <template #prepend>
+                      <v-icon> mdi-camera-iris </v-icon>
+                    </template>
+                    <v-list-item-title>Manual Calibration</v-list-item-title>
+                    <v-list-item-subtitle>Take each snapshot yourself</v-list-item-subtitle>
+                    <template #append>
+                      <v-icon v-if="calibrationMode === 'normal'"> mdi-check </v-icon>
+                    </template>
+                  </v-list-item>
+                  <v-list-item @click="calibrationMode = 'auto'">
+                    <template #prepend>
+                      <v-icon> mdi-camera-burst </v-icon>
+                    </template>
+                    <v-list-item-title>Auto Calibration</v-list-item-title>
+                    <v-list-item-subtitle>Snapshots are taken automatically as you move the board</v-list-item-subtitle>
+                    <template #append>
+                      <v-icon v-if="calibrationMode === 'auto'"> mdi-check </v-icon>
+                    </template>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </div>
             <v-btn
+              v-else
               size="small"
               block
               color="buttonActive"
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              :disabled="!settingsValid || tooManyPoints"
-              @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
+              :disabled="!settingsValid || tooManyPoints || activeCalibrationMode === 'auto'"
+              @click="useCameraSettingsStore().takeCalibrationSnapshot()"
             >
               <v-icon start class="calib-btn-icon" size="large">
-                {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }}
+                {{ activeCalibrationMode === "auto" ? "mdi-camera-burst" : "mdi-camera" }}
               </v-icon>
-              <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
+              <span class="calib-btn-label">{{
+                activeCalibrationMode === "auto" ? "Auto Capturing" : "Take Snapshot"
+              }}</span>
             </v-btn>
           </v-col>
           <v-col cols="6" class="pa-0 pl-2">
@@ -711,6 +759,15 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             </v-btn>
           </v-col>
         </div>
+        <v-alert
+          v-if="isCalibrating && activeCalibrationMode === 'auto'"
+          class="mt-3"
+          color="info"
+          density="compact"
+          icon="mdi-information-outline"
+          text="Hold the board still in view. Snapshots are taken automatically once the board has moved far enough from the last snapshot."
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+        />
       </v-card-text>
     </v-card>
     <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">

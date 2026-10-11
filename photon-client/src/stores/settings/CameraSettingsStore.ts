@@ -375,6 +375,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         boardType: CalibrationBoardTypes;
         useOldPattern: boolean;
         tagFamily: CalibrationTagFamilies;
+        autoCalibrate: boolean;
       },
       cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
