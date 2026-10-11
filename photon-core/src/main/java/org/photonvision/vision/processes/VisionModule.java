@@ -104,6 +104,10 @@ public class VisionModule implements AutoCloseable {
 
     boolean mismatch;
 
+    // The most recently computed calibration, kept for inspection from the UI
+    private volatile CameraCalibrationCoefficients pendingCalibration = null;
+    private volatile Path pendingImageDir = null;
+
     public VisionModule(
             PipelineManager pipelineManager,
             VisionSource visionSource,
@@ -430,11 +434,6 @@ public class VisionModule implements AutoCloseable {
     public void takeCalibrationSnapshot() {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
-
-    // The most recently computed calibration, kept for inspection from the UI
-    private volatile CameraCalibrationCoefficients pendingCalibration = null;
-
-    private volatile Path pendingImageDir = null;
 
     /**
      * Computes a calibration from the currently collected snapshots without committing it.
