@@ -143,6 +143,12 @@ public class Calibrate3dPipeline
 
             if (findBoardResult != null) {
                 captureSnapshot(findBoardResult, inputColorMat);
+
+                if (settings.autoCalibrate) {
+                    // Keep auto calibration from immediately re-capturing at this pose
+                    lastSnapshotCentroid = computeCentroid(findBoardResult.imagePoints.toList());
+                    recentCentroids.clear();
+                }
             }
             broadcastState();
         } else if (settings.autoCalibrate) {
