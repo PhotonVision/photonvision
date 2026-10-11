@@ -29,7 +29,6 @@ import org.wpilib.util.PixelFormat;
 import org.wpilib.util.RawFrame;
 import org.wpilib.vision.camera.CvSink;
 import org.wpilib.vision.camera.UsbCamera;
-import org.wpilib.vision.camera.VideoMode;
 import org.wpilib.vision.stream.CameraServer;
 
 public class USBFrameProvider extends CpuImageProcessor {
