@@ -144,7 +144,6 @@ public class Server {
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
-        app.post("/api/calibration/cancel", RequestHandler::onCalibrationCancelRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
         app.post("/api/calibration/remove", RequestHandler::onCalibrationRemoveRequest);
 
