@@ -17,18 +17,24 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.awt.Color;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.ColorHelper;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -62,6 +68,9 @@ public class Calibrate3dPipeline
 
     // Percentage of the image diagonal the board must move before a new snapshot is captured
     private static final double MIN_MOVEMENT_FRACTION = 0.05;
+
+    // Opacity of the red tint drawn over the exclusion zone's interior
+    private static final double TINT_ALPHA = 0.3;
 
     // Percentage of the image diagonal that the board can move for it to be considered stable
     private static final double STABILITY_FRACTION = 0.01;
@@ -156,6 +165,16 @@ public class Calibrate3dPipeline
             autoTakeSnapshot(findBoardResult, inputColorMat);
         }
 
+        if (settings.showExclusionZone) {
+            if (lastSnapshotCentroid != null) {
+                drawExclusionZone(outputColorCVMat.getMat());
+            }
+            if (findBoardResult != null) {
+                Point centroid = computeCentroid(findBoardResult.imagePoints.toList());
+                drawCurrentCentroid(outputColorCVMat.getMat(), centroid);
+            }
+        }
+
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
@@ -174,6 +193,73 @@ public class Calibrate3dPipeline
                         FrameThresholdType.NONE,
                         frame.frameStaticProperties),
                 getCornersList());
+    }
+
+    /**
+     * Draws the last snapshot's centroid and the exclusion zone that the next snapshot's centroid
+     * must be outside of for auto-calibration to capture it.
+     */
+    private void drawExclusionZone(Mat image) {
+        var imgSz = image.size();
+        double frameDiagonal = Math.hypot(imgSz.width, imgSz.height);
+
+        var color = ColorHelper.colorToScalar(Color.RED);
+        // Match the thickness/crosshair heuristics used by DrawCalibrationPipe
+        int thickness = (int) Math.max(frameDiagonal * 1.0 / 600.0, 1);
+        int crosshair = (int) Math.max(frameDiagonal * 4.0 / 750.0, 3);
+        int radius = (int) Math.round(MIN_MOVEMENT_FRACTION * frameDiagonal);
+
+        Point center = lastSnapshotCentroid;
+
+        // Tint the zone's interior red so the excluded area is clearly visible
+        Mat mask = Mat.zeros(image.size(), CvType.CV_8UC1);
+        Mat tint = new Mat(image.size(), image.type(), color);
+        Mat blended = new Mat();
+        try {
+            Imgproc.circle(mask, center, radius, new Scalar(255), Imgproc.FILLED);
+            Core.addWeighted(tint, TINT_ALPHA, image, 1.0 - TINT_ALPHA, 0, blended);
+            blended.copyTo(image, mask);
+        } finally {
+            mask.release();
+            tint.release();
+            blended.release();
+        }
+
+        Imgproc.circle(image, center, radius, color, thickness);
+        Imgproc.line(
+                image,
+                new Point(center.x - crosshair, center.y),
+                new Point(center.x + crosshair, center.y),
+                color,
+                thickness);
+        Imgproc.line(
+                image,
+                new Point(center.x, center.y - crosshair),
+                new Point(center.x, center.y + crosshair),
+                color,
+                thickness);
+    }
+
+    /** Draws the detected centroid of the board in the current frame as a bright green crosshair. */
+    private void drawCurrentCentroid(Mat image, Point centroid) {
+        double frameDiagonal = Math.hypot(image.size().width, image.size().height);
+
+        var color = ColorHelper.colorToScalar(Color.GREEN);
+        int thickness = (int) Math.max(frameDiagonal * 1.0 / 600.0, 1);
+        int crosshair = (int) Math.max(frameDiagonal * 4.0 / 750.0, 3);
+
+        Imgproc.line(
+                image,
+                new Point(centroid.x - crosshair, centroid.y),
+                new Point(centroid.x + crosshair, centroid.y),
+                color,
+                thickness);
+        Imgproc.line(
+                image,
+                new Point(centroid.x, centroid.y - crosshair),
+                new Point(centroid.x, centroid.y + crosshair),
+                color,
+                thickness);
     }
 
     /** Adds a detected board to the snapshot list and updates the UI. */

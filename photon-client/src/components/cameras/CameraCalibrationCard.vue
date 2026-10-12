@@ -344,7 +344,27 @@ const endCalibration = () => {
     });
 };
 
-const drawAllSnapshots = ref(true);
+// Calibration stream overlay: 0 = collected corners, 1 = off, 2 = exclusion zone
+const overlayMode = ref(1);
+// Exclusion zone is only needed when autoCalibration is on
+const maxOverlayMode = computed(() => (autoCalibration.value ? 2 : 1));
+const overlayTicks = computed<Record<number, string>>(() => ({
+  0: "Corners",
+  1: "Off",
+  ...(autoCalibration.value ? { 2: "Exclusion" } : {})
+}));
+watch(autoCalibration, (enabled) => {
+  if (!enabled && overlayMode.value === 2) {
+    overlayMode.value = 1;
+    handleOverlayModeChange(1);
+  }
+});
+const handleOverlayModeChange = (mode: number) => {
+  useCameraSettingsStore().changeCurrentPipelineSetting(
+    { drawAllSnapshots: mode === 0, showExclusionZone: mode === 2 },
+    false
+  );
+};
 
 const bypassVal = computed<boolean>({
   get: () => useStateStore().bypassMinCalibrationImages,
@@ -573,15 +593,27 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-form>
         </div>
         <div v-if="isCalibrating">
-          <pv-switch
-            v-model="drawAllSnapshots"
-            label="Draw Collected Corners"
-            :switch-cols="8"
-            tooltip="Draw all snapshots"
-            @update:modelValue="
-              (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ drawAllSnapshots: args }, false)
-            "
-          />
+          <div class="d-flex">
+            <v-col :cols="4" class="pl-0 pt-10px pb-10px d-flex align-center">
+              <tooltipped-label
+                label="Calibration Overlay"
+                tooltip="What to draw on the calibration stream: collected corners, nothing, or the last snapshot centroid with the exclusion zone the next snapshot must be outside of"
+              />
+            </v-col>
+            <v-col :cols="8" class="pl-0 pt-10px pb-10px">
+              <v-slider
+                v-model="overlayMode"
+                :min="0"
+                :max="maxOverlayMode"
+                :step="1"
+                show-ticks="always"
+                :ticks="overlayTicks"
+                hide-details
+                color="primary"
+                @update:modelValue="handleOverlayModeChange"
+              />
+            </v-col>
+          </div>
           <pv-switch
             v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
             label="Auto Exposure"

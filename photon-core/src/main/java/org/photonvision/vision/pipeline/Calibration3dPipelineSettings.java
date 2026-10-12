@@ -34,6 +34,7 @@ public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public boolean useOldPattern = false;
     public boolean autoCalibrate = false;
     public boolean drawAllSnapshots;
+    public boolean showExclusionZone = false;
 
     public Calibration3dPipelineSettings() {
         super();
