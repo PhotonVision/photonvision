@@ -147,4 +147,23 @@ public class Calibrate3dPipelineAutoTest {
             assertNull(pipeline.getMovedFarEnough());
         }
     }
+
+    @Test
+    public void exclusionZoneOverlayDrawsWithoutErrors() {
+        try (Calibrate3dPipeline pipeline = createPipeline()) {
+            pipeline.getSettings().showExclusionZone = true;
+
+            // No snapshots yet: only the current centroid is drawn
+            runFrame(pipeline, 0);
+
+            // Three stable frames -> snapshot, after which both the exclusion zone around the last
+            // snapshot centroid and the current centroid are drawn
+            runFrame(pipeline, 0);
+            runFrame(pipeline, 0);
+            assertEquals(1, pipeline.foundCornersList.size());
+
+            // Board leaves the frame: exclusion zone is still drawn, current centroid is not
+            runFrame(pipeline, -2000);
+        }
+    }
 }
