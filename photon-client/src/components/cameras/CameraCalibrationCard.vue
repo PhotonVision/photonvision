@@ -380,11 +380,8 @@ const endCalibration = () => {
   calibCancelRequested.value = canceling;
 
   showCalibEndDialog.value = true;
-  const request = canceling
-    ? useCameraSettingsStore().cancelPnPCalibration()
-    : useCameraSettingsStore().endPnPCalibration();
-
-  request
+  useCameraSettingsStore()
+    .endPnPCalibration(useStateStore().currentCameraUniqueName, canceling)
     .then(() => {
       if (canceling) {
         calibCanceled.value = true;

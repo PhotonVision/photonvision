@@ -34,7 +34,7 @@ const openOfflineUpdatePrompt = () => {
   offlineUpdate.value?.click();
 };
 
-const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar");
+const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)[\\w-]+)\\.jar");
 const majorVersionRegex = new RegExp("(?:dev-)?(\\d+)\\.\\d+\\.\\d+");
 
 const offlineUpdateDialog = ref({ show: false, confirmString: "" });

@@ -10,6 +10,7 @@ import IconImport from "~icons/mdi/import";
 import IconExport from "~icons/mdi/export";
 import IconEye from "~icons/mdi/eye";
 import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
+import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-visualizer.vue";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -363,10 +364,24 @@ const tabItems: TabItem[] = [
               </template>
             </pv-data-table>
           </div>
-        </div>
-      </div>
-      <div class="w-2/3 p-0 pl-6">
-        <div class="flex h-full items-center justify-center p-0">
+          <div v-else-if="tab === 2" class="flex flex-col gap-3">
+            <p>Calibration uncertainty, in pixels, looking out to infinity. Lower numbers are better.</p>
+            <p>
+              Uncertainty measures how sure we are about the pixel location that a ray entering our camera would fall
+              onto. Lower numbers imply higher certainty. To decrease uncertainty, capture more varied pictures across
+              the full field of view of your camera.
+            </p>
+            <p>
+              A lower uncertainty doesn't necesarrily mean that the calibration is more accurate -- just that our solver
+              had more information that seemed to correspond. Confounding factors (like incorrect square size) can still
+              lead to inaccurate results.
+            </p>
+            <p>
+              For more information, review
+              <a href="https://mrcal.secretsauce.net/uncertainty.html" target="_blank" class="text-pv-primary underline">
+                Mrcal's uncertainty documentation
+              </a>
+            </p>
           <div v-if="!currentCalibrationCoeffs">
             <pv-alert
               class="pt-3 pb-3"
@@ -382,8 +397,17 @@ const tabItems: TabItem[] = [
               :resolution="props.videoFormat.resolution"
               title="Camera to Board Transforms"
             />
-            <template #fallback> Loading... </template>
+            <template #fallback>Loading...</template>
           </Suspense>
+          <!-- <Suspense v-else-if="tab === 'uncertainty'" style="display: flex; justify-content: center; width: 100%"> -->
+          <PhotonUncertaintyVisualizer
+            v-else-if="tab === 'uncertainty'"
+            :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
+            :resolution="props.videoFormat.resolution"
+            title="Camera reprojection uncertainty"
+          />
+          <!-- <template #fallback>Loading...</template> -->
+          <!-- </Suspense> -->
           <div v-else style="display: flex; justify-content: center; width: 100%">
             <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="max-h-full max-w-full py-2" />
           </div>

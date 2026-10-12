@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
@@ -34,7 +34,7 @@ public class MaxDetectionsTest {
     @Test
     public void testMaxDetections() {
         LoadJNI.loadLibraries();
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
 
         Path path =
                 TestUtils.getResourcesFolderPath(false).resolve("testimages/polygons/ColoredShapeTest.png");

@@ -20,7 +20,7 @@ package org.photonvision.server;
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
 import io.javalin.http.Context;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -36,8 +36,8 @@ public class TestRequestHandler {
     public static void handleResetRequest(Context ctx) {
         logger.info("Resetting Backend");
         // Reset backend
-        ConfigManager.nukeConfigDirectory();
-        ConfigManager.getInstance().load();
+        ConfigProvider.nukeConfigDirectory();
+        ConfigProvider.getInstance().load();
     }
 
     @Json

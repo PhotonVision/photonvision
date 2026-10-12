@@ -319,7 +319,7 @@ public class NeuralNetworkModelManager {
         }
 
         ModelProperties properties =
-                ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().getModel(path);
+                ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties().getModel(path);
 
         if (properties == null) {
             logger.warn(
@@ -331,7 +331,7 @@ public class NeuralNetworkModelManager {
 
                 // At this point this property is not serialized or known to our configuration. add to
                 // NeuralNetworkModelsSettings
-                ConfigManager.getInstance()
+                ConfigProvider.getInstance()
                         .getConfig()
                         .getNeuralNetworkProperties()
                         .addModelProperties(properties);
@@ -383,7 +383,7 @@ public class NeuralNetworkModelManager {
     public void discoverModels() {
         logger.info("Supported backends: " + supportedBackends);
 
-        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
+        File modelsDirectory = ConfigProvider.getInstance().getModelsDirectory();
 
         if (!modelsDirectory.exists()) {
             logger.error("Models folder " + modelsDirectory.getAbsolutePath() + " does not exist.");
@@ -425,7 +425,7 @@ public class NeuralNetworkModelManager {
      * Extracts models from the JAR and copies them to disk. Also copies properties into the database.
      */
     public void extractModels() {
-        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
+        File modelsDirectory = ConfigProvider.getInstance().getModelsDirectory();
 
         // Filter shippedProprties by supportedBackends
         NeuralNetworkModelsSettings supportedProperties = new NeuralNetworkModelsSettings();
@@ -484,15 +484,15 @@ public class NeuralNetworkModelManager {
         }
 
         // Combine with existing properties
-        ConfigManager.getInstance()
+        ConfigProvider.getInstance()
                 .getConfig()
                 .setNeuralNetworkProperties(
                         supportedProperties.sum(
-                                ConfigManager.getInstance().getConfig().getNeuralNetworkProperties()));
+                                ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties()));
     }
 
     public boolean clearModels() {
-        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
+        File modelsDirectory = ConfigProvider.getInstance().getModelsDirectory();
 
         if (modelsDirectory.exists()) {
             try (Stream<Path> files = Files.walk(modelsDirectory.toPath())) {
@@ -513,7 +513,7 @@ public class NeuralNetworkModelManager {
         }
 
         // Delete model info
-        return ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().clear();
+        return ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties().clear();
     }
 
     public File exportSingleModel(String modelPath) {
@@ -525,7 +525,7 @@ public class NeuralNetworkModelManager {
             }
 
             ModelProperties properties =
-                    ConfigManager.getInstance()
+                    ConfigProvider.getInstance()
                             .getConfig()
                             .getNeuralNetworkProperties()
                             .getModel(Path.of(modelPath));

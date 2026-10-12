@@ -44,10 +44,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public boolean outputShouldDraw = true;
     public int outputMaximumTargets = 20;
 
-    public boolean staticCropEnabled = false;
-    public IntegerCouple staticCropX = new IntegerCouple(0, Integer.MAX_VALUE);
-    public IntegerCouple staticCropY = new IntegerCouple(0, Integer.MAX_VALUE);
-
     public DoubleCouple contourArea = new DoubleCouple(0.0, 100.0);
     public DoubleCouple contourRatio = new DoubleCouple(0.0, 20.0);
     public DoubleCouple contourFullness = new DoubleCouple(0.0, 100.0);
@@ -116,9 +112,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
         AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
         return outputShouldDraw == that.outputShouldDraw
                 && outputMaximumTargets == that.outputMaximumTargets
-                && staticCropEnabled == that.staticCropEnabled
-                && Objects.equals(staticCropX, that.staticCropX)
-                && Objects.equals(staticCropY, that.staticCropY)
                 && contourSpecklePercentage == that.contourSpecklePercentage
                 && Double.compare(that.offsetDualPointAArea, offsetDualPointAArea) == 0
                 && Double.compare(that.offsetDualPointBArea, offsetDualPointBArea) == 0
@@ -158,9 +151,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 hueInverted,
                 outputShouldDraw,
                 outputMaximumTargets,
-                staticCropEnabled,
-                staticCropX,
-                staticCropY,
                 contourArea,
                 contourRatio,
                 contourFullness,

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -259,7 +259,7 @@ public class NetworkUtils {
      * @return The MAC address.
      */
     public static String getMacAddress() {
-        var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
+        var config = ConfigProvider.getInstance().getConfig().getNetworkConfig();
         try {
             // Not managed? See if we're connected to a network. General assumption is one interface in
             // use at a time

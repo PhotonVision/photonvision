@@ -28,7 +28,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.util.TestUtils;
@@ -165,9 +165,9 @@ public class VisionModuleManagerTest {
 
     @Test
     public void setupManager() {
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
 
-        var config_manager_conf = ConfigManager.getInstance().getConfig();
+        var config_manager_conf = ConfigProvider.getInstance().getConfig();
         HardwareManager.initialize(
                 config_manager_conf.getHardwareConfig(), config_manager_conf.getHardwareSettings());
 
@@ -192,7 +192,7 @@ public class VisionModuleManagerTest {
 
     @Test
     public void testMultipleStreamIndex() {
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
 
         try (var vmm = new VisionModuleManager()) {
             var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));

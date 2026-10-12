@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -211,7 +211,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         // random guess at size of the array
         ts.resultPublisher.set(simplified, 1024);
-        if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
+        if (ConfigProvider.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
             ts.protoResultPublisher.set(simplified);
         }
 
