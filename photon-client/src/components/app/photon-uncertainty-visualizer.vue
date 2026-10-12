@@ -3,7 +3,8 @@ import { onBeforeUnmount, onMounted, ref, useTemplateRef, watch, type Ref } from
 import type { CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
+import { useTheme } from "@/composables/useTheme";
+import IconClose from "~icons/mdi/close";
 
 const theme = useTheme();
 
@@ -21,45 +22,12 @@ const containerRef = useTemplateRef<HTMLDivElement | null>("containerRef");
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let plotly: any = null;
 
-const getThemeTextColor = (): string => {
-  const styles = getComputedStyle(document.documentElement);
-  const onBackground = styles.getPropertyValue("--v-theme-on-background").trim();
-  const onSurface = styles.getPropertyValue("--v-theme-on-surface").trim();
-  const onSurfaceVariant = styles.getPropertyValue("--v-theme-on-surface-variant").trim();
-  const raw = onBackground || onSurface || onSurfaceVariant;
-
-  if (!raw) {
-    return theme.global.current.value.dark ? "#ffffff" : "#000000";
-  }
-
-  if (raw.startsWith("#") || raw.startsWith("rgb") || raw.startsWith("hsl")) {
-    return raw;
-  }
-
-  return `rgb(${raw})`;
-};
-
-const getThemeSurfaceColor = (): string => {
-  const styles = getComputedStyle(document.documentElement);
-  const surface = styles.getPropertyValue("--v-theme-surface").trim();
-
-  if (!surface) {
-    return theme.global.current.value.colors.surface ?? (theme.global.current.value.dark ? "#1e1e1e" : "#ffffff");
-  }
-
-  if (surface.startsWith("#") || surface.startsWith("rgb") || surface.startsWith("hsl")) {
-    return surface;
-  }
-
-  return `rgb(${surface})`;
-};
-
 const drawUncertainty = (data: CvPoint3[] | null) => {
   const container = containerRef.value;
   if (!container || !data || data.length === 0 || !plotly) return;
 
-  const textColor = getThemeTextColor();
-  const backgroundColor = getThemeSurfaceColor();
+  const textColor = theme.isDark.value ? "#ddd" : "#fff";
+  const backgroundColor = theme.colors.value.surface;
 
   const xValues = Array.from(new Set(data.map((p) => p.x))).sort((a, b) => a - b);
   const yValues = Array.from(new Set(data.map((p) => p.y))).sort((a, b) => a - b);
@@ -131,8 +99,8 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
       font: { color: textColor }
     },
     margin: { t: 60, b: 60, l: 60, r: 120 },
-    paper_bgcolor: backgroundColor,
-    plot_bgcolor: backgroundColor,
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)",
     xaxis: {
       title: {
         text: "X (pixels)",
@@ -272,6 +240,13 @@ watch(
     void drawUncertainty(uncertaintyData.value);
   }
 );
+
+watch(
+  () => theme.isDark.value,
+  () => {
+    void drawUncertainty(uncertaintyData.value);
+  }
+);
 </script>
 
 <template>
@@ -288,8 +263,8 @@ watch(
         max-width: 85%;
       "
     >
-      <v-icon color="red" size="70">mdi-close</v-icon>
-      <v-card-text>{{ error }}</v-card-text>
+      <pv-icon color="red" size="70" :icon="IconClose" />
+      <div class="p-4">{{ error }}</div>
     </div>
     <div
       v-else-if="isLoading"
@@ -303,8 +278,8 @@ watch(
         width: 100%;
       "
     >
-      <v-progress-circular indeterminate size="70" width="8" color="primary" />
-      <v-card-text class="pt-3">Loading uncertainty data...</v-card-text>
+      <pv-loading style="width: 70px; height: 70px" />
+      <div class="p-4 pt-3">Loading uncertainty data...</div>
     </div>
     <div v-else ref="containerRef" style="width: 100%; min-height: 400px; flex: 1 1 auto"></div>
   </div>
