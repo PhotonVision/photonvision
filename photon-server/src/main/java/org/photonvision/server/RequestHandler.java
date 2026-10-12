@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -545,8 +544,7 @@ public class RequestHandler {
 
     public static void onCalibrationCancelRequest(Context ctx) {
         try {
-            CommonCameraUniqueName request =
-                    Jsonb.instance().type(CommonCameraUniqueName.class).fromJson(ctx.body());
+            CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
 
             VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName).cancelCalibration();
             ctx.status(200);
@@ -1282,10 +1280,7 @@ public class RequestHandler {
         }
 
         ctx.contentType("application/json");
-        ctx.result(
-                Jsonb.instance()
-                        .type(ImageSnapshotsResponse.class)
-                        .toJson(new ImageSnapshotsResponse(snapshots)));
+        ctx.json(new ImageSnapshotsResponse(snapshots));
         ctx.status(200);
     }
 

@@ -4,7 +4,6 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
-import IconAlertOutline from "~icons/mdi/alert-outline";
 
 import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 

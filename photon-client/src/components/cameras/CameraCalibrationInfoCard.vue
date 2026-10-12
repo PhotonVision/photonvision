@@ -155,7 +155,8 @@ const tab = ref(0);
 const viewingImg = ref(0);
 const tabItems: TabItem[] = [
   { label: "Details", value: "details" },
-  { label: "Observations", value: "observations" }
+  { label: "Observations", value: "observations" },
+  { label: "Uncertainty", value: "uncertainty" }
 ];
 </script>
 
@@ -378,10 +379,19 @@ const tabItems: TabItem[] = [
             </p>
             <p>
               For more information, review
-              <a href="https://mrcal.secretsauce.net/uncertainty.html" target="_blank" class="text-pv-primary underline">
+              <a
+                href="https://mrcal.secretsauce.net/uncertainty.html"
+                target="_blank"
+                class="text-pv-primary underline"
+              >
                 Mrcal's uncertainty documentation
               </a>
             </p>
+          </div>
+        </div>
+      </div>
+      <div class="w-2/3 p-0 pl-6">
+        <div class="flex h-full items-center justify-center p-0">
           <div v-if="!currentCalibrationCoeffs">
             <pv-alert
               class="pt-3 pb-3"
@@ -401,7 +411,7 @@ const tabItems: TabItem[] = [
           </Suspense>
           <!-- <Suspense v-else-if="tab === 'uncertainty'" style="display: flex; justify-content: center; width: 100%"> -->
           <PhotonUncertaintyVisualizer
-            v-else-if="tab === 'uncertainty'"
+            v-else-if="tab === 2"
             :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
             :resolution="props.videoFormat.resolution"
             title="Camera reprojection uncertainty"
