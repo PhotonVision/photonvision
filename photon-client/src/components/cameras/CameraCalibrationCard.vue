@@ -348,11 +348,11 @@ const endCalibration = () => {
 const overlayMode = ref(1);
 // Exclusion zone is only needed when autoCalibration is on
 const maxOverlayMode = computed(() => (autoCalibration.value ? 2 : 1));
-const overlayTicks = computed<Record<number, string>>(() => ({
-  0: "Corners",
-  1: "Off",
-  ...(autoCalibration.value ? { 2: "Exclusion" } : {})
-}));
+const overlayTicks = computed<Record<number, string>>(() => {
+  const ticks: Record<number, string> = { 0: "Corners", 1: "Off" };
+  if (autoCalibration.value) ticks[2] = "Exclusion";
+  return ticks;
+});
 watch(autoCalibration, (enabled) => {
   if (!enabled && overlayMode.value === 2) {
     overlayMode.value = 1;
