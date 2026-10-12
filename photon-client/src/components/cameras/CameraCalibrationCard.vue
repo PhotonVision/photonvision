@@ -696,6 +696,27 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               : 'MrCal failed to load, check journalctl logs for details.'
           "
         />
+        <div v-if="isCalibrating" class="d-flex justify-center align-center pb-5">
+          <v-chip
+            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+            label
+            :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'"
+          >
+            Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
+            {{ minCount }}
+          </v-chip>
+          <v-spacer />
+          <pv-switch
+            v-model="bypassVal"
+            color="error"
+            hide-details
+            class="ml-4"
+            label="Bypass minimum"
+            :label-cols="6"
+            :switch-cols="6"
+            tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+          />
+        </div>
         <div>
           <v-btn
             color="buttonPassive"
