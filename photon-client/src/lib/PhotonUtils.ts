@@ -38,7 +38,7 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
  * Forces a page reload after a brief delay and a status check.
  */
 export const forceReloadPage = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
   useStateStore().showSnackbarMessage({
     message: "Reloading the page to apply changes...",
