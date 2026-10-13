@@ -176,7 +176,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         quirksToChange: data.quirksToChange,
         cameraUniqueName: cameraUniqueName
       };
-      return axios.post("/settings/camera", payload);
+      return axios.post("settings/camera", payload);
     },
     /**
      * Create a new Pipeline for the provided camera.
@@ -358,7 +358,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       if (updateStore) {
         this.currentCameraSettings.nickname = newName;
       }
-      return axios.post("/settings/camera/setNickname", payload);
+      return axios.post("settings/camera/setNickname", payload);
     },
     /**
      * Start the 3D calibration process for the provided camera.
@@ -396,7 +396,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * @return HTTP request promise to the backend
      */
     endPnPCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName, cancel: boolean = false) {
-      return axios.post("/calibration/end", { cameraUniqueName: cameraUniqueName, cancel: cancel });
+      return axios.post("calibration/end", { cameraUniqueName: cameraUniqueName, cancel: cancel });
     },
 
     importCalibrationFromData(
@@ -407,7 +407,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         ...data,
         cameraUniqueName: cameraUniqueName
       };
-      return axios.post("/calibration/importFromData", payload);
+      return axios.post("calibration/importFromData", payload);
     },
     /**
      * Take a snapshot for the calibration processes

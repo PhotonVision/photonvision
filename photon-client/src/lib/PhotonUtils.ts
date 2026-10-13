@@ -23,7 +23,7 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
   while (pollLimit > 0) {
     try {
       pollLimit--;
-      await axios.get(ip ? `http://${ip}/api/status` : "/status");
+      await axios.get(ip ? `http://${ip}/api/status` : "status");
       return true;
     } catch {
       // Backend not ready yet, wait and retry
@@ -38,7 +38,7 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
  * Forces a page reload after a brief delay and a status check.
  */
 export const forceReloadPage = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
   useStateStore().showSnackbarMessage({
     message: "Reloading the page to apply changes...",

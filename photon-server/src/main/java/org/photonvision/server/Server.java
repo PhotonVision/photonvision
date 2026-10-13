@@ -125,7 +125,6 @@ public class Server {
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
-        app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
         app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
         app.get("/api/settings/camera/getUncertainty", RequestHandler::onUncertaintyJsonRequest);
 
@@ -166,6 +165,7 @@ public class Server {
 
         app.post("/api/test/activateTestMode", TestRequestHandler::testMode);
         app.post("/api/test/override/platform", TestRequestHandler::handlePlatformOverrideRequest);
+        app.post("/api/test/override/quirks", TestRequestHandler::handleQuirksOverrideRequest);
 
         app.start(port);
     }

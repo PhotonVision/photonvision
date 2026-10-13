@@ -177,7 +177,7 @@ export const useSettingsStore = defineStore("settings", {
       };
     },
     updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
-      return axios.post("/settings/general", payload);
+      return axios.post("settings/general", payload);
     },
     /**
      * Modify the brightness of the LEDs.

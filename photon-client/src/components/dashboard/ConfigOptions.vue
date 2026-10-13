@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { Component } from "vue";
 import { computed, ref } from "vue";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
+import type { PvTabItem } from "@/components/common/base/pv-tabs.vue";
+
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import InputTab from "@/components/dashboard/tabs/InputTab.vue";
@@ -15,9 +18,7 @@ import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import { useDisplay, useTheme } from "vuetify";
-
-const theme = useTheme();
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 interface ConfigOption {
   tabName: string;
@@ -38,12 +39,15 @@ const allTabs = Object.freeze({
 });
 
 const selectedTabs = ref([0, 0, 0, 0]);
-const { smAndDown, mdAndDown, lgAndDown, xl } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const lgAndDown = breakpoints.smaller("xl");
+const xlAndDown = breakpoints.smaller("2xl");
+const xxlAndUp = breakpoints.greaterOrEqual("2xl");
 
 const getTabGroups = (): ConfigOption[][] => {
-  if (smAndDown.value || useCameraSettingsStore().isDriverMode) {
+  if (lgAndDown.value || useCameraSettingsStore().isDriverMode) {
     return [Object.values(allTabs)];
-  } else if (mdAndDown.value || !useStateStore().sidebarFolded) {
+  } else if (xlAndDown.value || !useStateStore().sidebarFolded) {
     return [
       [
         allTabs.inputTab,
@@ -56,7 +60,7 @@ const getTabGroups = (): ConfigOption[][] => {
       ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
-  } else if (lgAndDown.value) {
+  } else if (xxlAndUp.value) {
     return [
       [allTabs.inputTab],
       [
@@ -67,13 +71,6 @@ const getTabGroups = (): ConfigOption[][] => {
         allTabs.objectDetectionTab,
         allTabs.outputTab
       ],
-      [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
-    ];
-  } else if (xl.value) {
-    return [
-      [allTabs.inputTab],
-      [allTabs.thresholdTab],
-      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   }
@@ -122,53 +119,53 @@ const onBeforeTabUpdate = () => {
   if (useCameraSettingsStore().isDriverMode) {
     selectedTabs.value[0] = 0;
   }
+  const tabGroupsValue = tabGroups.value;
+  selectedTabs.value = selectedTabs.value.map((selectedTabIndex, tabGroupIndex) => {
+    const tabGroup = tabGroupsValue[tabGroupIndex];
+    if (!tabGroup) return 0;
+    if (selectedTabIndex >= tabGroup.length) {
+      return 0;
+    }
+    return selectedTabIndex;
+  });
 };
+
+const getSelectedComponent = (tabGroupData: ConfigOption[], selectedTabName: number): Component => {
+  return tabGroupData[selectedTabName]?.component;
+};
+
+const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
+  tabGroupData.map((tabConfig) => ({ label: tabConfig.tabName, value: tabConfig.tabName }));
 </script>
 
 <template>
-  <v-row no-gutters class="tabGroups">
+  <div class="tabGroups flex flex-wrap">
     <template v-if="!useCameraSettingsStore().hasConnected">
-      <v-alert
+      <pv-alert
         color="error"
-        density="compact"
         text="Camera is not connected. Please check your connection and try again."
-        icon="mdi-alert-circle-outline"
-        :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+        :icon="IconAlertCircleOutline"
       />
     </template>
     <template v-else>
-      <v-col
+      <div
         v-for="(tabGroupData, tabGroupIndex) in tabGroups"
         :key="tabGroupIndex"
-        :cols="tabGroupIndex === 1 && shouldUseWideSecondTabGroup ? 7 : ''"
-        :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
+        :class="[
+          tabGroupIndex === 1 && shouldUseWideSecondTabGroup ? 'w-7/12' : 'flex-1',
+          tabGroupIndex !== tabGroups.length - 1 && 'pb-3 lg:pr-3 lg:pb-0'
+        ]"
         @vue:before-update="onBeforeTabUpdate"
       >
-        <v-card color="surface" height="100%" class="pr-5 pl-5 rounded-12">
-          <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="surface" height="48" slider-color="buttonActive">
-            <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
-              {{ tabConfig.tabName }}
-            </v-tab>
-          </v-tabs>
-          <div class="pt-10px pb-10px">
+        <pv-card class="h-full">
+          <pv-tabs v-model="selectedTabs[tabGroupIndex]" :items="getTabItems(tabGroupData)" />
+          <div class="py-3">
             <KeepAlive>
-              <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component" />
+              <Component :is="getSelectedComponent(tabGroupData, selectedTabs[tabGroupIndex])" />
             </KeepAlive>
           </div>
-        </v-card>
-      </v-col>
+        </pv-card>
+      </div>
     </template>
-  </v-row>
+  </div>
 </template>
-
-<style>
-.v-slide-group {
-  transition-duration: 0.28s;
-  transition-property: box-shadow, opacity, background;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-.v-slide-group__next--disabled,
-.v-slide-group__prev--disabled {
-  display: none !important;
-}
-</style>

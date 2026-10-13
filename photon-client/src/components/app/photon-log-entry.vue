@@ -7,23 +7,20 @@ const props = defineProps<{ source: LogMessage }>();
 const logColorClass = computed<string>(() => {
   switch (props.source.level) {
     case LogLevel.ERROR:
-      return "text-red";
+      return "text-red-500";
     case LogLevel.WARN:
-      return "text-yellow";
+      return "text-yellow-300";
     case LogLevel.INFO:
-      return "text-light-blue";
+      return "text-sky-500";
     case LogLevel.DEBUG:
-      return "text-white";
+      return "text-pv-on-surface";
   }
   return "";
 });
 </script>
 
 <template>
-  <div :class="logColorClass">[{{ source.timestamp.toTimeString().split(" ")[0] }}] {{ source.message }}</div>
+  <div class="whitespace-pre-wrap" :class="logColorClass">
+    [{{ source.timestamp.toTimeString().split(" ")[0] }}] {{ source.message }}
+  </div>
 </template>
-<style scoped>
-div {
-  white-space: pre-wrap;
-}
-</style>
