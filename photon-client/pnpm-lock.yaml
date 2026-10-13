@@ -14,9 +14,6 @@ importers:
       '@fontsource/lato':
         specifier: ^5.2.7
         version: 5.2.7
-      '@mdi/font':
-        specifier: ^7.4.47
-        version: 7.4.47
       '@msgpack/msgpack':
         specifier: ^3.1.2
         version: 3.1.2
@@ -41,12 +38,12 @@ importers:
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3))
-      reka-ui:
-        specifier: ^2.9.7
-        version: 2.9.7(vue@3.5.34(typescript@6.0.3))
       plotly.js-dist-min:
         specifier: ^3.5.1
         version: 3.5.1
+      reka-ui:
+        specifier: ^2.9.7
+        version: 2.9.7(vue@3.5.34(typescript@6.0.3))
       svg2pdf.js:
         specifier: ^2.7.0
         version: 2.7.0(jspdf@4.2.1)
@@ -295,9 +292,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
-
-  '@mdi/font@7.4.47':
-    resolution: {integrity: sha512-43MtGpd585SNzHZPcYowu/84Vz2a2g31TvPMTm9uTiCSWzaheQySUcSyUH/46fPnuPQWof2yd0pGBtzee/IQWw==}
 
   '@msgpack/msgpack@3.1.2':
     resolution: {integrity: sha512-JEW4DEtBzfe8HvUYecLU9e6+XJnKDlUAIve8FvPzF3Kzs6Xo/KuZkZJsDH0wJXl/qEZbeeE7edxDNY3kMs39hQ==}
@@ -2039,8 +2033,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
-
-  '@mdi/font@7.4.47': {}
 
   '@msgpack/msgpack@3.1.2': {}
 

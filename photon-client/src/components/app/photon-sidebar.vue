@@ -180,11 +180,11 @@ const activeItemClass = "bg-white/5 text-pv-on-background font-semibold";
         >
           <span v-if="useSettingsStore().network.runNTServer">
             NetworkTables server running for
-            <span class="text-primary">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
+            <span class="text-pv-primary">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
           </span>
           <span v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected">
             NetworkTables Server Connected!
-            <span class="text-primary">{{ useStateStore().ntConnectionStatus.address }}</span>
+            <span class="text-pv-primary">{{ useStateStore().ntConnectionStatus.address }}</span>
           </span>
           <span v-else>Not connected to NetworkTables Server!</span>
         </div>

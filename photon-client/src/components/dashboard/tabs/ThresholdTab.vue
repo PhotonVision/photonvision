@@ -41,7 +41,6 @@ const handleStreamClick = (event: MouseEvent) => {
   if (!useStateStore().colorPickingMode || selectedEventMode === 0) return;
 
   const cameraStream = document.getElementById("input-camera-stream");
-  console.log(cameraStream);
   if (cameraStream === null) return;
 
   const canvas = document.createElement("canvas");
@@ -120,7 +119,6 @@ const disableColorPicking = () => {
 
 onMounted(() => {
   const cameraStream = document.getElementById("input-camera-stream");
-  console.log(cameraStream);
   if (cameraStream === null) return;
   //
   cameraStream.addEventListener("click", handleStreamClick);

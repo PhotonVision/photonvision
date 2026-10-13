@@ -126,16 +126,18 @@ const inlierRatioPercent = computed<string>(() => {
   return ((totalInlierPoints.value / total) * 100).toFixed(2);
 });
 
-const getObservationDetails = (): ObservationDetails[] | undefined => {
+const observationDetails = computed<ObservationDetails[]>(() => {
   const coefficients = currentCalibrationCoeffs.value;
 
-  return coefficients?.meanErrors.map((m, i) => ({
-    index: i,
-    mean: parseFloat(m.toFixed(2)),
-    numOutliers: coefficients.numOutliers[i],
-    numMissing: coefficients.numMissing[i]
-  }));
-};
+  return (
+    coefficients?.meanErrors.map((m, i) => ({
+      index: i,
+      mean: parseFloat(m.toFixed(2)),
+      numOutliers: coefficients.numOutliers[i],
+      numMissing: coefficients.numMissing[i]
+    })) ?? []
+  );
+});
 
 const exportCalibrationURL = computed<string | undefined>(() =>
   props.videoFormat
@@ -345,7 +347,7 @@ const tabItems: TabItem[] = [
                 { header: 'Id', accessorKey: 'index' },
                 { header: 'Mean Reprojection Error', accessorKey: 'mean' }
               ]"
-              :data="getObservationDetails() ?? []"
+              :data="observationDetails"
               item-value="index"
               show-expand
             >

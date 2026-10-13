@@ -15,7 +15,11 @@ export const getSnapshotMetadataFromName = (snapshotName: string): SnapshotMetad
 
   const cameraNickname = match?.groups?.cameraNickname ?? normalizedSnapshotName;
   const streamType = (match?.groups?.streamType as "input" | "output" | undefined) ?? "input";
-  const dateStr = match?.groups?.dateStr ?? "";
+  const dateStr = match?.groups?.dateStr;
+
+  if (!dateStr) {
+    return { snapshotName: normalizedSnapshotName, cameraNickname, streamType, timeCreated: new Date(NaN) };
+  }
 
   const [datePart, timePart] = dateStr.split("T");
   const [year, month, day] = datePart.split("-").map((value) => parseInt(value, 10));

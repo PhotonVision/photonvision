@@ -58,12 +58,13 @@ const deletingCamera = ref<string | null>(null);
 const deleteThisCamera = async (cameraUniqueName: string) => {
   if (deletingCamera.value) return;
   deletingCamera.value = cameraUniqueName;
-  await axiosPost("utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName });
-  const cameraStore = useCameraSettingsStore();
-  delete cameraStore.cameras[cameraUniqueName];
-  if (useStateStore().currentCameraUniqueName === cameraUniqueName) {
-    useStateStore().currentCameraUniqueName =
-      Object.keys(cameraStore.cameras)[0] ?? PlaceholderCameraSettings.uniqueName;
+  if (await axiosPost("utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName })) {
+    const cameraStore = useCameraSettingsStore();
+    delete cameraStore.cameras[cameraUniqueName];
+    if (useStateStore().currentCameraUniqueName === cameraUniqueName) {
+      useStateStore().currentCameraUniqueName =
+        Object.keys(cameraStore.cameras)[0] ?? PlaceholderCameraSettings.uniqueName;
+    }
   }
   deletingCamera.value = null;
 };
@@ -195,7 +196,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             <div
               v-if="cameraConnected(module.matchedCameraInfo.uniquePath)"
               :id="`stream-container-${index}`"
-              class="d-flex flex-column align-center mt-3 justify-center"
+              class="mt-3 flex h-62.5 flex-col items-center justify-center"
             >
               <photon-camera-stream
                 :id="`output-camera-stream-${index}`"
@@ -363,7 +364,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 
       <!-- Info card -->
       <div class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
-        <pv-card variant="transparent" :bordered="false" class="flex h-full flex-col items-center justify-center">
+        <pv-card :bordered="false" class="flex h-full flex-col items-center justify-center bg-transparent!">
           <pv-icon size="64" color="primary" :icon="IconPlus" />
           <div class="pt-3 text-lg font-semibold">Additional plugged in cameras will display here!</div>
         </pv-card>

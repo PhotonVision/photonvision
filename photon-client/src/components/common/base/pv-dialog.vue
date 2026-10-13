@@ -25,10 +25,13 @@ const normalizeSize = (value?: number | string) => {
   return /^\d+(?:\.\d+)?$/.test(trimmed) ? `${trimmed}px` : value;
 };
 
-const contentStyle = computed(() => ({
-  "--dialog-width": normalizeSize(props.width),
-  maxWidth: normalizeSize(props.maxWidth)
-}));
+const contentStyle = computed(() => {
+  const maxWidth = normalizeSize(props.maxWidth);
+  return {
+    "--dialog-width": normalizeSize(props.width) ?? "max-content",
+    maxWidth: maxWidth ? `min(${maxWidth}, calc(100vw - 2rem))` : undefined
+  };
+});
 
 const preventDismiss = (event: Event) => {
   if (props.persistent) {

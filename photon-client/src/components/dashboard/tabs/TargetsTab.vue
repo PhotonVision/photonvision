@@ -384,7 +384,7 @@ th {
 }
 
 .cell-inner {
-  height: 32px;
+  height: calc(var(--target-row-height, 32px) - 1px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -397,6 +397,8 @@ th {
 }
 
 .pv-table {
+  /* Rows must match the height the wrapper budgets per target, or the list scrolls with nothing to scroll to */
+  --pv-table-row-height: var(--target-row-height, 32px);
   width: 100%;
   font-size: 1rem !important;
 

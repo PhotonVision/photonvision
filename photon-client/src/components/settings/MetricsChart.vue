@@ -203,9 +203,9 @@ const props = defineProps<{
 onMounted(async () => {
   const echarts = await import("echarts/core");
   const { LineChart } = await import("echarts/charts");
-  const { GridComponent, TooltipComponent, TitleComponent } = await import("echarts/components");
+  const { GridComponent, TooltipComponent, TitleComponent, MarkLineComponent } = await import("echarts/components");
   const { CanvasRenderer } = await import("echarts/renderers");
-  echarts.use([GridComponent, TooltipComponent, TitleComponent, LineChart, CanvasRenderer]);
+  echarts.use([GridComponent, TooltipComponent, TitleComponent, MarkLineComponent, LineChart, CanvasRenderer]);
 
   chart = echarts.init(chartRef.value);
   chart.setOption(getOptions(props.data));

@@ -6,8 +6,9 @@ const props = withDefaults(
   defineProps<{
     color?: string;
     showPercentage?: boolean;
+    indeterminate?: boolean;
   }>(),
-  { color: "primary", showPercentage: true }
+  { color: "primary", showPercentage: true, indeterminate: false }
 );
 const progressValue = defineModel<number>({
   default: 0
@@ -17,14 +18,14 @@ const { solid: themeColor } = useThemeColor(() => props.color);
 
 <template>
   <ProgressRoot
-    v-model="progressValue"
+    :model-value="indeterminate ? null : progressValue"
     class="border-pv-secondary bg-pv-surface relative h-4 w-75 overflow-hidden rounded-full border"
   >
     <ProgressIndicator
       class="indicator transition-width ease-[cubic-bezier(0.65, 0, 0.35, 1)] before:animate-progress relative z-1 flex h-full w-full items-center justify-center overflow-hidden rounded-full text-xs duration-660 before:absolute before:inset-0 before:-z-10 before:bg-[linear-gradient(-45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] before:bg-size-[30px_30px] before:content-['']"
-      :style="`width: ${progressValue}%; background-color: ${themeColor}; --progress-color: ${themeColor}`"
+      :style="`width: ${indeterminate ? 100 : progressValue}%; background-color: ${themeColor}; --progress-color: ${themeColor}`"
     >
-      <span v-if="showPercentage">{{ Math.ceil(progressValue) }}%</span>
+      <span v-if="showPercentage && !indeterminate">{{ Math.ceil(progressValue) }}%</span>
     </ProgressIndicator>
   </ProgressRoot>
 </template>

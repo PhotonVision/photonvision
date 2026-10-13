@@ -156,7 +156,7 @@ const handleBulkImport = async () => {
       timeout: -1
     });
   }
-  showImportDialog.value = false;
+  showBulkImportDialog.value = false;
   importFile.value = null;
 };
 </script>
@@ -393,7 +393,7 @@ const handleBulkImport = async () => {
                     variant="underlined"
                   />
                 </div>
-                <div class="d-flex justify-end pt-5 pr-0 pb-0">
+                <div class="flex justify-end pt-5 pr-0 pb-0">
                   <pv-button variant="danger" @click="showRenameDialog.show = false">Cancel</pv-button>
                   <pv-button variant="primary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
                     >Rename</pv-button

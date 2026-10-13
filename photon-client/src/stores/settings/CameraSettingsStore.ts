@@ -396,7 +396,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * @return HTTP request promise to the backend
      */
     endPnPCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName, cancel: boolean = false) {
-      return axios.post("calibration/end", { cameraUniqueName: cameraUniqueName, cancel: cancel }, { timeout: 20000 });
+      return axios.post("calibration/end", { cameraUniqueName: cameraUniqueName, cancel: cancel });
     },
 
     importCalibrationFromData(

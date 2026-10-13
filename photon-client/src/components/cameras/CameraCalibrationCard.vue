@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
   CalibrationBoardTypes,
@@ -40,8 +40,6 @@ const jspdf = import("jspdf").then(async (jspdf) => {
   return jspdf;
 });
 const arucoMarker = import("aruco-marker");
-
-const MM_PER_INCH = 25.4;
 
 type RuleValue = string | number | null;
 
@@ -168,9 +166,9 @@ watchEffect(() => {
     uniqueVideoResolutionIndex.value = currentIndex;
   }
 });
-const dimensionUnit = ref<"in" | "mm">("in");
-const squareSizeIn = ref(1);
-const markerSizeIn = ref(0.75);
+const dimensionUnit = ref<"in" | "mm">("mm");
+const squareSize = ref(25);
+const markerSize = ref(18);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.ChArUco);
@@ -180,32 +178,21 @@ const requestedVideoFormatIndex = ref(0);
 const paperType = ref<CalibrationPaperTypes>(CalibrationPaperTypes.Letter);
 const paperOrientation = ref<"portrait" | "landscape">("portrait");
 
-const convertInchesToDisplay = (valueInInches: number) =>
-  dimensionUnit.value === "mm" ? valueInInches * MM_PER_INCH : valueInInches;
+// Rounded so the float conversion doesn't leave noise in the inputs (2mm -> 0.07874015748031496in)
+const convertDimension = (value: number, from: "in" | "mm", to: "in" | "mm") =>
+  parseFloat(length[from](value)[to].value.toFixed(6));
 
-const convertDisplayToInches = (displayValue: number) =>
-  dimensionUnit.value === "mm" ? displayValue / MM_PER_INCH : displayValue;
-
-const squareSize = computed({
-  get: () => convertInchesToDisplay(squareSizeIn.value),
-  set(value) {
-    squareSizeIn.value = convertDisplayToInches(value);
-  }
-});
-
-const markerSize = computed({
-  get: () => convertInchesToDisplay(markerSizeIn.value),
-  set(value) {
-    markerSizeIn.value = convertDisplayToInches(value);
-  }
+watch(dimensionUnit, (value, oldValue) => {
+  squareSize.value = convertDimension(squareSize.value, oldValue, value);
+  markerSize.value = convertDimension(markerSize.value, oldValue, value);
 });
 
 const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
 
 const adaptivePaperDimensions = (): [Length, Length] => {
   return [
-    length[dimensionUnit.value](squareSize.value * patternWidth.value + convertInchesToDisplay(1)),
-    length[dimensionUnit.value](squareSize.value * patternHeight.value + convertInchesToDisplay(3))
+    length[dimensionUnit.value](squareSize.value * patternWidth.value + length.in(1)[dimensionUnit.value].value),
+    length[dimensionUnit.value](squareSize.value * patternHeight.value + length.in(3)[dimensionUnit.value].value)
   ];
 };
 
@@ -244,8 +231,8 @@ const downloadCalibBoard = async () => {
   const paperWidth = doc.internal.pageSize.getWidth();
   const paperHeight = doc.internal.pageSize.getHeight();
 
-  const squareSizeInches = squareSizeIn.value;
-  const markerSizeInches = markerSizeIn.value;
+  const squareSizeInches = length[dimensionUnit.value](squareSize.value).in.value;
+  const markerSizeInches = length[dimensionUnit.value](markerSize.value).in.value;
   const chessboardStartX = (paperWidth - patternWidth.value * squareSizeInches) / 2;
   const chessboardStartY = (paperHeight - patternHeight.value * squareSizeInches) / 2;
 
@@ -352,8 +339,8 @@ const isCalibrating = computed(
 
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
-    squareSizeMeters: squareSizeIn.value * 0.0254,
-    markerSizeMeters: markerSizeIn.value * 0.0254,
+    squareSizeMeters: length[dimensionUnit.value](squareSize.value).m.value,
+    markerSizeMeters: length[dimensionUnit.value](markerSize.value).m.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
@@ -425,7 +412,7 @@ const updateStreamingFrameDivisor = (value: number | string) => {
   const divisor = Number(value);
   const ordinal = [1, 2, 4, 6].indexOf(divisor);
   if (ordinal >= 0) {
-    useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: ordinal }, false);
+    useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: ordinal }, true);
   }
 };
 
@@ -511,7 +498,7 @@ const updateCameraBlueGain = (value: number) => {
             </tbody>
           </pv-table>
         </div>
-        <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
+        <div v-if="useCameraSettingsStore().isConnected" class="flex flex-col">
           <div class="pt-4 pb-3 pl-0 text-base font-semibold opacity-100">Configure New Calibration</div>
           <div>
             <pv-select
@@ -678,7 +665,7 @@ const updateCameraBlueGain = (value: number) => {
               variant="primary"
               :icon="isCalibrating ? IconCamera : IconFlagOutline"
               block
-              :disabled="!settingsValid || tooManyPoints || calibrationResolutionItems.length === 0"
+              :disabled="!settingsValid || tooManyPoints || getUniqueVideoResolutionStrings().length === 0"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
               <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
@@ -810,12 +797,12 @@ const updateCameraBlueGain = (value: number) => {
             </div>
           </template>
           <template v-else-if="calibCancelRequested && calibSuccess === undefined">
-            <pv-progress :show-percentage="false" color="primary" />
+            <pv-progress indeterminate class="mx-auto mb-2" color="primary" />
             <div>Camera calibration is being canceled...</div>
           </template>
           <!-- No result reported yet -->
           <template v-else-if="calibSuccess === undefined">
-            <pv-progress :show-percentage="false" color="primary" />
+            <pv-progress indeterminate class="mx-auto mb-2" color="primary" />
             <div>Camera is being calibrated. This process may take several minutes...</div>
           </template>
           <!-- Got positive result -->

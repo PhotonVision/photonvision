@@ -1,10 +1,17 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { ToastProvider, ToastRoot, ToastTitle, ToastDescription, ToastViewport } from "reka-ui";
 
 import { useThemeColor } from "../../lib/ComponentUtils";
 
-const { solid, border } = useThemeColor(useStateStore().snackbarData.color);
+const { solid, border } = useThemeColor(() => useStateStore().snackbarData.color);
+
+const MAX_TIMEOUT_MS = 2 ** 31 - 1;
+const duration = computed(() => {
+  const timeout = useStateStore().snackbarData.timeout;
+  return timeout > 0 ? timeout : MAX_TIMEOUT_MS;
+});
 </script>
 
 <template>
@@ -13,7 +20,7 @@ const { solid, border } = useThemeColor(useStateStore().snackbarData.color);
       v-model:open="useStateStore().snackbarData.show"
       :style="{ backgroundColor: solid, border: `1px solid ${border}`, '--snackbar-solid': solid }"
       class="data-[state=open]:animate-slideIn data-[state=closed]:animate-hide data-[swipe=end]:animate-swipeOut grid grid-cols-[auto_max-content] items-center gap-x-4 rounded-lg border p-4 shadow-sm [grid-template-areas:'title_action'_'description_action'] data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=move]:translate-x-(--reka-toast-swipe-move-x)"
-      :duration="useStateStore().snackbarData.timeout"
+      :duration="duration"
     >
       <ToastTitle class="snackbar-title mb-1.25 text-sm font-medium [grid-area:title]">
         {{ useStateStore().snackbarData.message }}
