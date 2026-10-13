@@ -1,7 +1,9 @@
 import { expect } from "@playwright/test";
 import { test } from "./fixtures.ts";
+import axios from "axios";
 
 test("Quirks should be able to be changed", async ({ page }) => {
+  await axios.post("/override/quirks", { quirks: { ArduCamCamera: true } });
   await page.goto("http://localhost:5800/#/cameras");
 
   await page.getByRole("combobox", { name: "Arducam Model" }).click();

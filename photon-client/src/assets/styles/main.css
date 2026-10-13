@@ -26,6 +26,9 @@
 
   --color-pv-surface-text: var(--pv-on-surface);
   --animate-progress: progress 1s infinite linear;
+  --animate-toast-in: toast-in 200ms ease-out;
+  --animate-toast-out: toast-out 150ms ease-in forwards;
+  --animate-toast-swipe-out: toast-swipe-out 150ms ease-out forwards;
 }
 
 :root {
@@ -64,6 +67,37 @@
   }
   to {
     background-position: 30px 30px;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes toast-swipe-out {
+  from {
+    opacity: 1;
+    transform: translateY(var(--reka-toast-swipe-end-y));
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
   }
 }
 

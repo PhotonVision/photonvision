@@ -165,6 +165,7 @@ public class Server {
 
         app.post("/api/test/activateTestMode", TestRequestHandler::testMode);
         app.post("/api/test/override/platform", TestRequestHandler::handlePlatformOverrideRequest);
+        app.post("/api/test/override/quirks", TestRequestHandler::handleQuirksOverrideRequest);
 
         app.start(port);
     }
