@@ -6,6 +6,9 @@ import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "th
 import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 import { computed, onBeforeUnmount, onMounted, useTemplateRef, watch, watchEffect } from "vue";
 import { useTheme } from "@/composables/useTheme";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { createPerspectiveCamera } from "@/lib/ThreeUtils";
+
 const {
   ArrowHelper,
   BoxGeometry,
@@ -23,8 +26,6 @@ const {
 } = await import("three");
 const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls.js");
 
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { createPerspectiveCamera } from "@/lib/ThreeUtils";
 const currentVideoFormat = computed(() => useCameraSettingsStore().currentVideoFormat);
 const calibrationCoeffs = computed(() => {
   const format = currentVideoFormat.value;
