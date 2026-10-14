@@ -144,7 +144,9 @@ public class Server {
         app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration
-        app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
+        app.post("/api/calibration/compute", RequestHandler::onCalibrationComputeRequest);
+        app.post("/api/calibration/commit", RequestHandler::onCalibrationCommitRequest);
+        app.post("/api/calibration/cancel", RequestHandler::onCalibrationCancelRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
         app.post("/api/calibration/remove", RequestHandler::onCalibrationRemoveRequest);
 
