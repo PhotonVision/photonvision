@@ -135,6 +135,11 @@ export const useSettingsStore = defineStore("settings", {
   },
   actions: {
     updateMetricsFromWebsocket(data: Required<MetricData>) {
+      const npuUsage =
+        data.npuUsage instanceof Map
+          ? new Map(data.npuUsage)
+          : new Map(Object.entries(data.npuUsage as Record<string, number>));
+
       this.metrics = {
         cpuTemp: data.cpuTemp || undefined,
         cpuUtil: data.cpuUtil || undefined,
@@ -145,7 +150,7 @@ export const useSettingsStore = defineStore("settings", {
         gpuMemUtil: data.gpuMemUtil || undefined,
         diskUtilPct: data.diskUtilPct || undefined,
         diskUsableSpace: data.diskUsableSpace || undefined,
-        npuUsage: data.npuUsage || undefined,
+        npuUsage,
         ipAddress: data.ipAddress || undefined,
         uptime: data.uptime || undefined,
         sentBitRate: data.sentBitRate || undefined,
