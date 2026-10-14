@@ -320,8 +320,7 @@ const calibratedResolutionString = computed(() => {
 });
 
 // Compute a pending calibration from the collected snapshots and view it in the same calibration
-// details dialog used for saved calibrations -- the dialog's data fetches serve the pending
-// calibration while one exists. The end dialog shows the processing state in the meantime.
+// details dialog used for saved calibrations
 const viewPendingCalibration = () => {
   generatingPending.value = true;
   calibEndDialogOpen.value = true;

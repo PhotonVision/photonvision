@@ -22,14 +22,12 @@ const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-// While a calibration session is active this card only ever shows the pending calibration, which
-// cannot be imported over or exported -- the backend only supports those for saved calibrations
+// While a calibration session is active this card only ever shows the pending calibration
 const isCalibrating = computed(
   () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
 );
 
-// The full calibration (with observations) for this resolution. The backend serves the pending
-// calibration while one exists, falling back to the saved calibration.
+// The full calibration (with observations) for this resolution.
 const fetchedCalibration = ref<CameraCalibrationResult | null>(null);
 
 const fetchCalibration = async () => {
@@ -123,9 +121,6 @@ interface ObservationDetails {
   numMissing: number;
 }
 
-// The fetched calibration takes precedence: while a calibration session is active the backend
-// serves the pending calibration, otherwise the saved one. The websocket-sent calibration is only
-// a fallback for if the fetch fails -- it carries the same saved data minus observations.
 const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(
   () => fetchedCalibration.value ?? useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
@@ -134,9 +129,7 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
   const coefficients = currentCalibrationCoeffs.value;
   if (!coefficients) return undefined;
 
-  // UICameraCalibrationCoefficients (sent over the websocket) carries precomputed per-observation
-  // stats; the full calibration fetched from the backend only has raw observations, so derive the
-  // stats client-side
+  // Re-derive stats if they're missing
   if (coefficients.meanErrors !== undefined) {
     return coefficients.meanErrors.map((m, i) => ({
       index: i,
@@ -158,8 +151,6 @@ const getObservationDetails = (): ObservationDetails[] | undefined => {
   });
 };
 
-// Summary statistics derived from the calibration itself -- the video format's fields are only
-// used by the calibrations table, not here
 const summaryStatistics = computed(() => {
   const c = currentCalibrationCoeffs.value;
   return c ? getCalibrationSummaryStatistics(c) : undefined;

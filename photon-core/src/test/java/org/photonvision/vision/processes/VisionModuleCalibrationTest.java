@@ -90,11 +90,6 @@ public class VisionModuleCalibrationTest {
         collectCalibrationSnapshots();
     }
 
-    /**
-     * Feeds every Charuco board image from the lifecam dataset through the module's calibration
-     * pipeline, following the same setup as {@link
-     * org.photonvision.vision.pipeline.Calibrate3dPipeTest#calibrateCommon}
-     */
     private void collectCalibrationSnapshots() throws IOException {
         var pipeline = pipelineManager.calibration3dPipeline;
         var settings = pipeline.getSettings();
@@ -123,13 +118,10 @@ public class VisionModuleCalibrationTest {
                                 FrameThresholdType.NONE,
                                 new FrameStaticProperties(
                                         (int) RESOLUTION.width, (int) RESOLUTION.height, 67, null));
-                try (var result = pipeline.run(frame, QuirkyCamera.DefaultCamera)) {
-                    // Nothing to inspect; the snapshot lives in foundCornersList
-                }
+                try (var result = pipeline.run(frame, QuirkyCamera.DefaultCamera)) {}
             }
         }
 
-        // Same sanity checks as Calibrate3dPipeTest.calibrateCommon
         assertFalse(pipeline.foundCornersList.isEmpty());
         assertTrue(
                 pipeline.foundCornersList.stream()
@@ -167,9 +159,8 @@ public class VisionModuleCalibrationTest {
     }
 
     /**
-     * The pipeline manager only applies a requested index change when the vision runner next pulls
-     * the current pipeline, so entering and leaving calibration mode is asynchronous from the
-     * caller's point of view. Poll until the mode switch lands (or fail after a timeout).
+     * The pipeline manager applies changes asynchronously so we poll until the mode switch lands (or
+     * fail after a timeout).
      */
     private void awaitCalibrationMode(boolean inCalibration) throws InterruptedException {
         long deadline = System.currentTimeMillis() + 5000;
