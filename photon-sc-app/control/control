@@ -1,0 +1,12 @@
+Package: photon-sc-app
+Version: 1.0.0
+Description: PhotonVision SystemCore App
+Section: development
+Priority: optional
+Maintainer: PhotonVision
+Architecture: all
+Source: local
+X-Port: 9042
+X-Has-UI: true
+X-Auto-Start: false
+X-Icon-Path: /usr/share/photon-sc-app.png

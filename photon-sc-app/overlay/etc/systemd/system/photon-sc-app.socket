@@ -1,0 +1,18 @@
+[Unit]
+Description=photon-sc-app Socket
+
+[Socket]
+ListenStream=9002
+Accept=no
+
+SocketUser=root
+SocketGroup=root
+SocketMode=0660
+
+NoDelay=true
+KeepAlive=true
+
+DefaultDependencies=no
+
+[Install]
+WantedBy=sockets.target
