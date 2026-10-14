@@ -1,11 +1,15 @@
 import { useStateStore } from "@/stores/StateStore";
 import { CalibrationPaperTypes, CalibrationTagFamilies, type Resolution } from "@/types/SettingTypes";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import axios, { type AxiosRequestConfig } from "axios";
 import { length, type Length } from "@adam-rocska/units-and-measurement/length";
 
 export const resolutionsAreEqual = (a: Resolution, b?: Resolution) => {
   return a.height === b?.height && a.width === b?.width;
 };
+
+export const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
+  Array.isArray(value) ? value : [value.first, value.second];
 
 /**
  * Checks the status of the backend by polling the "/status" endpoint.

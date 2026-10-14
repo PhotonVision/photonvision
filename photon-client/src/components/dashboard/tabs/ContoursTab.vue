@@ -14,6 +14,7 @@ import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
+import { normalizeNumberPair } from "@/lib/PhotonUtils";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -62,8 +63,6 @@ const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
 
-const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
-  Array.isArray(value) ? value : [value.first, value.second];
 </script>
 
 <template>

@@ -12,6 +12,7 @@ import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
+import { normalizeNumberPair } from "@/lib/PhotonUtils";
 import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 
@@ -37,9 +38,6 @@ const mdAndDown = breakpoints.smallerOrEqual("md");
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
 );
-
-const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
-  Array.isArray(value) ? value : [value.first, value.second];
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {

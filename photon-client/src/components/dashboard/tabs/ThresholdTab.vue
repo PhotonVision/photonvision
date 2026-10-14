@@ -8,6 +8,7 @@ import { computed, onBeforeUnmount, onMounted } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { ColorPicker, type HSV } from "@/lib/ColorPicker";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
+import { normalizeNumberPair } from "@/lib/PhotonUtils";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
@@ -32,9 +33,6 @@ const hsvValue = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvValue) as [number, number],
   set: (v) => (useCameraSettingsStore().currentPipelineSettings.hsvValue = v)
 });
-
-const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
-  Array.isArray(value) ? value : [value.first, value.second];
 
 let selectedEventMode: 0 | 1 | 2 | 3 = 0;
 const handleStreamClick = (event: MouseEvent) => {
