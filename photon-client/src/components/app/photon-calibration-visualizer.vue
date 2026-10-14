@@ -338,13 +338,10 @@ watchEffect(() => {
   void drawCalibration(calibrationData.value);
 });
 
-watch(
-  () => theme.isDark.value,
-  () => {
-    if (!scene) return;
-    scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
-  }
-);
+watch(theme.isDark, () => {
+  if (!scene) return;
+  scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
+});
 
 watch(
   () => [

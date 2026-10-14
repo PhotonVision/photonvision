@@ -234,19 +234,13 @@ if (import.meta.hot) {
   });
 }
 
-watch(
-  () => uncertaintyData.value,
-  () => {
-    void drawUncertainty(uncertaintyData.value);
-  }
-);
+watch(uncertaintyData, () => {
+  void drawUncertainty(uncertaintyData.value);
+});
 
-watch(
-  () => theme.isDark.value,
-  () => {
-    void drawUncertainty(uncertaintyData.value);
-  }
-);
+watch(theme.isDark, () => {
+  void drawUncertainty(uncertaintyData.value);
+});
 </script>
 
 <template>
