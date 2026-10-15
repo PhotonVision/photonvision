@@ -12,7 +12,7 @@ Produces `../build/sc-app/photon-sc-app_<version>.ipk`. The version comes from `
 
 ## How to develop
 
-A static single-page app is served by Python's `ThreadingHTTPServer`. It provides an explicit team-number input, live ping/probe status, a browser-side NT4 connection indicator, and verified PhotonVision iframe tabs. JavaScript owns all candidate and tab state.
+A static single-page app is served by Python's `ThreadingHTTPServer`. The FRC team number is detected automatically — no team entry field exists — and scanning starts on page load. It provides live ping/probe status, a browser-side NT4 connection indicator, and verified PhotonVision iframe tabs. JavaScript owns all candidate and tab state.
 
 The browser verifies each responding address using `GET http://<host>:5800/api/status`. A tab is created only for an HTTP 200 response whose body is `not dead yet`. The iframe URL is fixed to HTTP port 5800 and is never accepted from a discovery payload.
 
@@ -20,7 +20,7 @@ Same-origin endpoints served by the SC app:
 
 | Path | Method | Purpose |
 |------|--------|---------|
-| `/network_info?team=<number>` | GET | `{configured_team, team_number, subnet, nt_server, local_ips}` — validates the explicit team and reports the `10.TE.AM.0/24` subnet, default NT server, and local SystemCore addresses. |
+| `/network_info?team=<number>` | GET | `{configured_team, team_number, subnet, nt_server, local_ips}` — reports the `10.TE.AM.0/24` subnet, default NT server, and local SystemCore addresses. `team` is optional; when omitted the server guesses the team from the request's `Host` header and the device's local `10.TE.AM.X` addresses. |
 | `/scan` | POST | `text/event-stream` — body `{"team_number":"1736"}`. Streams `scan_started`, individual `ping`, and `scan_complete` events. |
 | `/status` or `/health` | GET | `{service, status, socket_activated, pid, timestamp}` — health check for monitoring. |
 
@@ -31,7 +31,7 @@ The Python process holds no discovery cache and writes no files. It streams boun
 ## Requirements
 
 ### Web UI
-Python requires an explicitly supplied team number, either through the UI or the `--team` / `PHOTONVISION_TEAM` defaults. The team string is padded to at least four decimal digits; all digits before the final two form TE and the final two form AM. Leading zeros are removed when formatting IPv4 octets, so `254` becomes `10.2.54.0/24` and `12345` becomes `10.123.45.0/24`.
+No team number is ever entered by the user. The server guesses it from two sources, in order: the HTTP `Host` header of the request (the address the browser used to reach the app) and the device's own interface addresses (via `ip -4 addr`, falling back to hostname resolution). The first address matching the `10.TE.AM.X` pattern determines the team, so browsing via `http://10.17.36.2:9002/` yields team 1736. An explicit team may still be supplied with `?team=<number>` for clients that know it. The team string is padded to at least four decimal digits; all digits before the final two form TE and the final two form AM. Leading zeros are removed when formatting IPv4 octets, so `254` becomes `10.2.54.0/24` and `12345` becomes `10.123.45.0/24`.
 
 The server pings 1-254 with ten concurrent probes and a 0.5-second per-probe deadline. Each result is streamed immediately. JavaScript separately checks the PhotonVision status endpoint and keeps only successful endpoints in its iframe tab list.
 

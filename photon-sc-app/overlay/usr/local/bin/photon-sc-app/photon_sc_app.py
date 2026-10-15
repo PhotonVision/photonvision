@@ -37,6 +37,7 @@ from urllib.parse import parse_qs, urlparse
 from discovery.network_scan_discovery import (
     discover_network_scan,
     local_ipv4_addresses,
+    parse_host_ipv4,
     team_from_local_ips,
     team_subnet_from_number,
 )
@@ -50,9 +51,6 @@ logger = logging.getLogger(__name__)
 
 # Global flag to track deployment mode (True for systemd, False for local)
 SOCKET_ACTIVATED: bool = False
-
-# Optional explicitly configured FRC team number.
-TEAM_NUMBER: Optional[str] = None
 
 # Service version, populated from VERSION file (written by build.sh at package time)
 VERSION: str = "unknown"
@@ -124,7 +122,7 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(400, {"error": "Expected a JSON object"})
             return
 
-        team_number = payload.get("team_number", TEAM_NUMBER)
+        team_number = payload.get("team_number")
         if team_number is None:
             self.send_json(400, {"error": "Enter an FRC team number to scan"})
             return
@@ -234,22 +232,33 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps(payload, indent=2).encode())
 
     def send_network_info(self, query: Dict[str, List[str]]) -> None:
-        requested_team = query.get("team", [TEAM_NUMBER])[0]
+        requested_team = query.get("team", [None])[0]
         if requested_team == "":
             requested_team = None
 
+        # The Host header is the address the browser used to reach this server,
+        # which is a reliable team signal even when hostname resolution on the
+        # device only yields loopback addresses.
+        candidates: List[str] = []
+        host_address = parse_host_ipv4(self.headers.get("Host", ""))
+        if host_address is not None:
+            candidates.append(host_address)
+        for address in local_ipv4_addresses():
+            if address not in candidates:
+                candidates.append(address)
+
         # If no explicit team, try to guess from local IP addresses (10.TE.AM.X)
         if requested_team is None:
-            guessed_team = team_from_local_ips()
+            guessed_team = team_from_local_ips(candidates)
             if guessed_team is not None:
                 requested_team = guessed_team
 
         network_info: Dict[str, object] = {
-            "configured_team": TEAM_NUMBER,
+            "configured_team": None,
             "team_number": str(requested_team) if requested_team is not None else None,
             "subnet": None,
             "nt_server": None,
-            "local_ips": [],
+            "local_ips": candidates,
         }
         if requested_team is not None:
             try:
@@ -258,15 +267,16 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json(400, {"error": str(error)})
                 return
             nt_server = str(subnet.network_address + 2)
+            for address in local_ipv4_addresses(nt_server):
+                if address not in candidates:
+                    candidates.append(address)
             network_info.update(
                 {
                     "subnet": str(subnet),
                     "nt_server": nt_server,
-                    "local_ips": local_ipv4_addresses(nt_server),
+                    "local_ips": candidates,
                 }
             )
-        else:
-            network_info["local_ips"] = local_ipv4_addresses()
 
         self.send_json(200, network_info)
 
@@ -439,9 +449,7 @@ def main() -> None:
        - Direct TCP server on localhost
        - Customizable host/port via --host and --port
 
-    Use --team to enable network scanning for your FRC team number.
     """
-    global TEAM_NUMBER
 
     parser = argparse.ArgumentParser(description="Photon SC App service")
     parser.add_argument(
@@ -457,18 +465,7 @@ def main() -> None:
     parser.add_argument(
         "--port", type=int, default=8080, help="Local port when running in local mode"
     )
-    parser.add_argument(
-        "--team",
-        type=str,
-        default=None,
-        help="Explicit FRC team number for network discovery (e.g., 1736 or 12345)",
-    )
     args = parser.parse_args()
-
-    TEAM_NUMBER = args.team or os.environ.get("PHOTONVISION_TEAM")
-    if TEAM_NUMBER is not None:
-        team_subnet_from_number(TEAM_NUMBER)
-        logger.info("Network discovery configured for team %s", TEAM_NUMBER)
 
     # Select deployment mode based on --local flag
     if not args.local:

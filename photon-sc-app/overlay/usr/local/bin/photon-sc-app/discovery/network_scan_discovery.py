@@ -97,9 +97,64 @@ def team_from_local_ips(local_ips: Optional[list[str]] = None) -> Optional[str]:
     return None
 
 
+def parse_host_ipv4(host_header: str) -> Optional[str]:
+    """Extract a non-loopback IPv4 literal from an HTTP ``Host`` header."""
+    host = host_header.strip()
+    if not host or host.startswith("["):
+        return None
+    candidate = host.split(":", 1)[0]
+    try:
+        parsed = ipaddress.IPv4Address(candidate)
+    except ipaddress.AddressValueError:
+        return None
+    if parsed.is_loopback:
+        return None
+    return str(parsed)
+
+
+def parse_ip_addr_output(output: str) -> Set[str]:
+    """Parse ``ip -4 -o addr show`` output into a set of IPv4 addresses."""
+    addresses: Set[str] = set()
+    for line in output.splitlines():
+        fields = line.split()
+        if "inet" not in fields:
+            continue
+        index = fields.index("inet")
+        if index + 1 >= len(fields):
+            continue
+        address = fields[index + 1].split("/", 1)[0]
+        if not address.startswith("127."):
+            addresses.add(address)
+    return addresses
+
+
+def _system_ipv4_addresses() -> Set[str]:
+    """Enumerate interface IPv4 addresses using the ``ip`` command.
+
+    Hostname resolution alone is unreliable on embedded Linux devices, where
+    the hostname frequently maps only to a loopback address. Returns an empty
+    set on platforms without the ``ip`` command (e.g. Windows).
+    """
+    try:
+        result = subprocess.run(
+            ["ip", "-4", "-o", "addr", "show"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=5,
+            check=False,
+            text=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return set()
+    if result.returncode != 0:
+        return set()
+    return parse_ip_addr_output(result.stdout)
+
+
 def local_ipv4_addresses(nt_server: str | None = None) -> list[str]:
     """Return local IPv4 addresses known to the hostname and selected route."""
     addresses: Set[str] = set()
+    addresses.update(_system_ipv4_addresses())
     try:
         addresses.update(
             result[4][0]

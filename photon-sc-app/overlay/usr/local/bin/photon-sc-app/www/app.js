@@ -378,6 +378,9 @@ async function initialize() {
     const info = await getNetworkInfo();
     if (info.team_number) {
       await runScan(info.team_number);
+    } else {
+      document.getElementById("discoveryLine").textContent =
+        "Could not determine FRC team number from this device. Team-based scanning is unavailable.";
     }
   } catch (error) {
     document.getElementById("discoveryLine").textContent = `Network info failed: ${error.message}`;
