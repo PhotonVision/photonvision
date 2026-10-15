@@ -127,8 +127,13 @@ compile_commands.json
 .gradle
 .gradle/*
 photonvision_config
-bin*/
+# Build output at repo root only
+/bin/
+/bin*/
 build*/
+
+# Runtime artifact (removed by build.sh)
+photon-sc-app/overlay/usr/local/bin/photon-sc-app/www/discovery_status.json
 
 photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*

@@ -11,24 +11,30 @@ external web content in iframes. It supports two deployment modes:
 2. Local development mode (--local flag): Direct HTTP server on localhost.
 
 Key Features:
-- Dynamic tab list via /tabs API endpoint
+- Network info endpoint at /network_info with team, subnet, NT server
+- Network scan endpoint at /scan with SSE streaming ping results
 - Service status endpoint at /status for health checks
 - Graceful shutdown via SIGINT/SIGTERM
 """
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import http.server
 import json
 import logging
 import os
+import queue
 import signal
 import socket
 import socketserver
 import sys
+import threading
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from urllib.parse import parse_qs, urlparse
 
-from discovery.cache import DiscoveryCache
+from discovery.network_scan_discovery import discover_network_scan, local_ipv4_addresses, team_subnet_from_number
 
 # Configure logging
 logging.basicConfig(
@@ -40,11 +46,8 @@ logger = logging.getLogger(__name__)
 # Global flag to track deployment mode (True for systemd, False for local)
 SOCKET_ACTIVATED: bool = False
 
-# Global team number for network discovery (set by main())
-TEAM_NUMBER: Optional[int] = None
-
-# Global discovery cache (initialized in main(), shared between request handlers)
-DISCOVERY_CACHE: Optional[DiscoveryCache] = None
+# Optional explicitly configured FRC team number.
+TEAM_NUMBER: Optional[str] = None
 
 
 class ServiceHandler(http.server.SimpleHTTPRequestHandler):
@@ -67,21 +70,115 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:
         """Route incoming GET requests to appropriate handlers."""
+        logger.debug("HTTP GET %s", self.path)
+        request_path = urlparse(self.path)
         # Serve index.html for root requests
-        if self.path in ("/", "/index.html", ""):
+        if request_path.path in ("/", "/index.html", ""):
             self.path = "/index.html"
             return super().do_GET()
 
         # Service status endpoint for health checks
-        if self.path in ("/status", "/health"):
+        if request_path.path in ("/status", "/health"):
             return self.send_status()
 
-        # Dynamic tab configuration endpoint
-        if self.path == "/tabs":
-            return self.send_tabs()
+        if request_path.path == "/network_info":
+            return self.send_network_info(parse_qs(request_path.query))
 
         # Default: serve static files from www directory
         return super().do_GET()
+
+    def do_POST(self) -> None:
+        """Handle discovery scans as a streamed Server-Sent Events response."""
+        logger.debug("HTTP POST %s", self.path)
+        if urlparse(self.path).path != "/scan":
+            self.send_error(404)
+            return
+
+        content_length = int(self.headers.get("Content-Length", "0"))
+        if content_length > 4096:
+            self.send_json(413, {"error": "Request body too large"})
+            return
+
+        request_body = self.rfile.read(content_length) if content_length else b"{}"
+        try:
+            payload = json.loads(request_body)
+        except json.JSONDecodeError:
+            self.send_json(400, {"error": "Expected a JSON request body"})
+            return
+        if not isinstance(payload, dict):
+            self.send_json(400, {"error": "Expected a JSON object"})
+            return
+
+        team_number = payload.get("team_number", TEAM_NUMBER)
+        if team_number is None:
+            self.send_json(400, {"error": "Enter an FRC team number to scan"})
+            return
+        try:
+            subnet = team_subnet_from_number(team_number)
+        except ValueError as error:
+            self.send_json(400, {"error": str(error)})
+            return
+
+        scan_id = uuid.uuid4().hex
+        nt_server = str(subnet.network_address + 2)
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache, no-transform")
+        self.send_header("Connection", "close")
+        self.send_header("X-Accel-Buffering", "no")
+        self.end_headers()
+
+        def write_event(event_name: str, event_data: Dict[str, object]) -> None:
+            encoded = json.dumps(event_data, separators=(",", ":"))
+            self.wfile.write(f"event: {event_name}\ndata: {encoded}\n\n".encode())
+            self.wfile.flush()
+
+        write_event("scan_started", {
+            "scan_id": scan_id,
+            "team_number": str(team_number),
+            "subnet": str(subnet),
+            "nt_server": nt_server,
+        })
+
+        events: queue.Queue[tuple[str, Dict[str, object]]] = queue.Queue()
+        completed_probes = 0
+        progress_lock = threading.Lock()
+
+        def on_ping_result(ip: str, responded: bool) -> None:
+            nonlocal completed_probes
+            with progress_lock:
+                completed_probes += 1
+                current_count = completed_probes
+            events.put(("ping", {
+                "scan_id": scan_id,
+                "ip": ip,
+                "responded": responded,
+                "completed": current_count,
+                "total": 254,
+            }))
+
+        client_connected = True
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="NetworkScan") as executor:
+            scan_future = executor.submit(discover_network_scan, str(team_number), on_ping_result)
+            while not scan_future.done() or not events.empty():
+                try:
+                    event_name, event_data = events.get(timeout=0.25)
+                except queue.Empty:
+                    continue
+                if client_connected:
+                    try:
+                        write_event(event_name, event_data)
+                    except (BrokenPipeError, ConnectionResetError):
+                        client_connected = False
+
+            responsive_ips = scan_future.result()
+
+        if client_connected:
+            write_event("scan_complete", {
+                "scan_id": scan_id,
+                "responsive_ips": sorted(responsive_ips),
+                "count": len(responsive_ips),
+            })
 
     def send_status(self) -> None:
         """Return service status as JSON for health monitoring."""
@@ -99,33 +196,40 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
 
         self.wfile.write(json.dumps(response, indent=2).encode())
 
-    def send_tabs(self) -> None:
-        """Return list of available tabs as JSON.
-
-        The frontend fetches this on startup and refresh to populate the tab bar.
-        Discovered tabs are served from the background discovery cache, which
-        periodically updates the list of available PhotonVision dashboards using:
-        1. mDNS (photonvision.local hostname)
-        2. Network scanning (10.TE.AM.0/24 for team network)
-        3. Port 5800 verification
-        4. NetworkTables client discovery
-
-        Tab format: {"title": "Display Name", "url": "http://..."}
-
-        Returns an empty list if no dashboards are discovered, allowing the
-        frontend to display a "No dashboards available" message gracefully.
-        """
-        # Return cached results from background discovery thread
-        if DISCOVERY_CACHE is not None:
-            tabs: List[Dict[str, str]] = DISCOVERY_CACHE.get_tabs()
-        else:
-            # Fallback if cache not initialized (should not happen in normal operation)
-            tabs = []
-
-        self.send_response(200)
+    def send_json(self, status_code: int, payload: Dict[str, object]) -> None:
+        self.send_response(status_code)
         self.send_header("Content-type", "application/json")
         self.end_headers()
-        self.wfile.write(json.dumps({"tabs": tabs}, indent=2).encode())
+        self.wfile.write(json.dumps(payload, indent=2).encode())
+
+    def send_network_info(self, query: Dict[str, List[str]]) -> None:
+        requested_team = query.get("team", [TEAM_NUMBER])[0]
+        if requested_team == "":
+            requested_team = None
+
+        network_info: Dict[str, object] = {
+            "configured_team": TEAM_NUMBER,
+            "team_number": str(requested_team) if requested_team is not None else None,
+            "subnet": None,
+            "nt_server": None,
+            "local_ips": [],
+        }
+        if requested_team is not None:
+            try:
+                subnet = team_subnet_from_number(requested_team)
+            except ValueError as error:
+                self.send_json(400, {"error": str(error)})
+                return
+            nt_server = str(subnet.network_address + 2)
+            network_info.update({
+                "subnet": str(subnet),
+                "nt_server": nt_server,
+                "local_ips": local_ipv4_addresses(nt_server),
+            })
+        else:
+            network_info["local_ips"] = local_ipv4_addresses()
+
+        self.send_json(200, network_info)
 
 
 class SocketActivatedService:
@@ -140,14 +244,12 @@ class SocketActivatedService:
     - Better integration with systemd security features and resource limits
     """
 
-    def __init__(self, discovery_cache: Optional[DiscoveryCache] = None) -> None:
+    def __init__(self) -> None:
         """Initialize the socket-activated service.
 
         Args:
-            discovery_cache: Optional DiscoveryCache for background discovery.
         """
         self.httpd: Optional[socketserver.ThreadingTCPServer] = None
-        self.discovery_cache = discovery_cache
 
     def get_systemd_socket(self) -> socket.socket:
         """Retrieve and validate the socket passed by systemd.
@@ -196,10 +298,6 @@ class SocketActivatedService:
         - daemon_threads=True: Allows quick shutdown (threads don't block exit)
         - poll_interval=0.5: Checks signals frequently for responsive Ctrl-C
         """
-        # Start background discovery if available
-        if self.discovery_cache:
-            self.discovery_cache.start()
-
         server_socket = self.get_systemd_socket()
 
         # Create threaded server WITHOUT calling bind() or listen()
@@ -216,10 +314,6 @@ class SocketActivatedService:
 
     def stop(self) -> None:
         """Cleanly shut down the server and release resources."""
-        # Stop background discovery
-        if self.discovery_cache:
-            self.discovery_cache.stop()
-
         if self.httpd:
             self.httpd.shutdown()
             self.httpd.server_close()
@@ -257,19 +351,16 @@ class LocalService:
         self,
         host: str = "127.0.0.1",
         port: int = 8080,
-        discovery_cache: Optional[DiscoveryCache] = None,
     ) -> None:
         """Initialize the local service.
 
         Args:
             host: Hostname to bind to. Defaults to '127.0.0.1'.
             port: Port to bind to. Defaults to 8080.
-            discovery_cache: Optional DiscoveryCache for background discovery.
         """
         self.httpd: Optional[http.server.ThreadingHTTPServer] = None
         self.host = host
         self.port = port
-        self.discovery_cache = discovery_cache
 
     def start(self) -> None:
         """Start the HTTP server on the specified host:port.
@@ -280,10 +371,6 @@ class LocalService:
         - allow_reuse_address=True: Allows quick restart without TIME_WAIT
         - poll_interval=0.5: Responsive to Ctrl-C and other signals
         """
-        # Start background discovery if available
-        if self.discovery_cache:
-            self.discovery_cache.start()
-
         self.httpd = http.server.ThreadingHTTPServer(
             (self.host, self.port), ServiceHandler
         )
@@ -295,17 +382,13 @@ class LocalService:
 
     def stop(self) -> None:
         """Cleanly shut down the server and release resources."""
-        # Stop background discovery
-        if self.discovery_cache:
-            self.discovery_cache.stop()
-
         if self.httpd:
             self.httpd.shutdown()
             self.httpd.server_close()
 
 
 def main() -> None:
-    """Entry point: parse arguments, select deployment mode, and start service.
+    """    Entry point: parse arguments, select deployment mode, and start service.
 
     Deployment modes:
 
@@ -317,16 +400,9 @@ def main() -> None:
        - Direct TCP server on localhost
        - Customizable host/port via --host and --port
 
-    Discovery Strategy:
-    The service automatically discovers PhotonVision dashboards via a background
-    thread running multiple strategies on different intervals:
-    - Fast strategies (mDNS, port checks): Default 10 seconds
-    - Slow strategies (network scan, NetworkTables): Default 60 seconds
-
     Use --team to enable network scanning for your FRC team number.
-    Use --discovery-fast-interval and --discovery-slow-interval to tune timing.
     """
-    global TEAM_NUMBER, DISCOVERY_CACHE
+    global TEAM_NUMBER
 
     parser = argparse.ArgumentParser(description="Photon SC App service")
     parser.add_argument(
@@ -344,47 +420,16 @@ def main() -> None:
     )
     parser.add_argument(
         "--team",
-        type=int,
+        type=str,
         default=None,
-        help="FRC team number for network discovery (e.g., 5123)",
-    )
-    parser.add_argument(
-        "--discovery-fast-interval",
-        type=float,
-        default=10.0,
-        help="Seconds between fast discovery cycles (mDNS, port checks). Default: 10s",
-    )
-    parser.add_argument(
-        "--discovery-slow-interval",
-        type=float,
-        default=60.0,
-        help="Seconds between slow discovery cycles (network scan, NetworkTables). Default: 60s",
-    )
-    parser.add_argument(
-        "--discovery-disable-fast",
-        action="store_true",
-        help="Disable fast discovery strategies (mDNS, port checks)",
-    )
-    parser.add_argument(
-        "--discovery-disable-slow",
-        action="store_true",
-        help="Disable slow discovery strategies (network scan, NetworkTables)",
+        help="Explicit FRC team number for network discovery (e.g., 1736 or 12345)",
     )
     args = parser.parse_args()
 
-    # Set team number for discovery
-    TEAM_NUMBER = args.team
-    if TEAM_NUMBER:
-        logger.info(f"Network discovery enabled for team {TEAM_NUMBER}")
-
-    # Create and start discovery cache
-    DISCOVERY_CACHE = DiscoveryCache(
-        team_number=TEAM_NUMBER,
-        fast_interval=args.discovery_fast_interval,
-        slow_interval=args.discovery_slow_interval,
-        enable_fast=not args.discovery_disable_fast,
-        enable_slow=not args.discovery_disable_slow,
-    )
+    TEAM_NUMBER = args.team or os.environ.get("PHOTONVISION_TEAM")
+    if TEAM_NUMBER is not None:
+        team_subnet_from_number(TEAM_NUMBER)
+        logger.info("Network discovery configured for team %s", TEAM_NUMBER)
 
     # Select deployment mode based on --local flag
     if not args.local:
@@ -395,15 +440,12 @@ def main() -> None:
                 "for development mode"
             )
             sys.exit(1)
-        service: SocketActivatedService | LocalService = SocketActivatedService(
-            discovery_cache=DISCOVERY_CACHE
-        )
+        service: SocketActivatedService | LocalService = SocketActivatedService()
     else:
         # Development: local server
         service = LocalService(
             host=args.host,
             port=args.port,
-            discovery_cache=DISCOVERY_CACHE,
         )
 
     # Register signal handlers for clean shutdown

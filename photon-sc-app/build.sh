@@ -2,6 +2,9 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 # Extract package info from control/control file
 if [ ! -f "control/control" ]; then
     echo "Error: control/control not found!"
@@ -9,20 +12,27 @@ if [ ! -f "control/control" ]; then
     exit 1
 fi
 
-# Parse package name and version from control file
+# Parse package name from control file
 PACKAGE_NAME=$(grep "^Package:" control/control | cut -d' ' -f2- | tr -d ' ')
-PACKAGE_VERSION=$(grep "^Version:" control/control | cut -d' ' -f2- | tr -d ' ')
 
-# Validate required fields
-if [ -z "$PACKAGE_NAME" ] || [ -z "$PACKAGE_VERSION" ]; then
-    echo "Err: Package and Version must be set in control/control"
+if [ -z "$PACKAGE_NAME" ]; then
+    echo "Err: Package must be set in control/control"
     echo "Package: my-package"
-    echo "Version: 1.0.0"
     exit 1
 fi
 
+GIT_DESCRIBE="$(git -C "$SCRIPT_DIR" describe --tags --always)"
+if [ -n "$(git -C "$SCRIPT_DIR" status --porcelain --untracked-files=all -- .)" ]; then
+    PACKAGE_VERSION="${GIT_DESCRIBE}-$(date +%y%m%d%H%M%S)"
+else
+    PACKAGE_VERSION="$GIT_DESCRIBE"
+fi
+
 PACKAGE_DIR="${PACKAGE_NAME}_${PACKAGE_VERSION}"
-BUILD_DIR="build"
+BUILD_DIR="$(mktemp -d)"
+OUTPUT_DIR="$SCRIPT_DIR/../build/sc-app"
+OUTPUT_IPK="$OUTPUT_DIR/${PACKAGE_NAME}_${PACKAGE_VERSION}.ipk"
+trap 'rm -rf "$BUILD_DIR"' EXIT
 
 echo "Building IPK package from overlay structure..."
 echo "Package: ${PACKAGE_NAME}_${PACKAGE_VERSION}.ipk"
@@ -38,16 +48,32 @@ if [ ! -d "control" ]; then
     exit 1
 fi
 
-echo "Cleaning previous build..."
-rm -rf "$BUILD_DIR"
+echo "Preparing temporary build..."
 mkdir -p "$BUILD_DIR/$PACKAGE_DIR"
 
 echo "Copying overlay structure..."
 cp -r overlay/* "$BUILD_DIR/$PACKAGE_DIR/"
+find "$BUILD_DIR/$PACKAGE_DIR" -type d -name __pycache__ -prune -exec rm -rf {} +
+rm -f "$BUILD_DIR/$PACKAGE_DIR/usr/local/bin/photon-sc-app/www/discovery_status.json"
 
 echo "Copying CONTROL files..."
 mkdir -p "$BUILD_DIR/$PACKAGE_DIR/CONTROL"
 cp control/* "$BUILD_DIR/$PACKAGE_DIR/CONTROL/"
+
+awk -v version="$PACKAGE_VERSION" '
+    /^Version:/ { print "Version: " version; version_written = 1; next }
+    { print }
+    END { if (!version_written) print "Version: " version }
+' "$BUILD_DIR/$PACKAGE_DIR/CONTROL/control" > "$BUILD_DIR/$PACKAGE_DIR/CONTROL/control.tmp"
+mv "$BUILD_DIR/$PACKAGE_DIR/CONTROL/control.tmp" "$BUILD_DIR/$PACKAGE_DIR/CONTROL/control"
+
+echo "Normalizing text file line endings..."
+while IFS= read -r -d '' file; do
+    if grep -Iq . "$file"; then
+        awk '{ sub(/\r$/, ""); print }' "$file" > "$file.normalized"
+        mv "$file.normalized" "$file"
+    fi
+done < <(find "$BUILD_DIR/$PACKAGE_DIR" -type f -print0)
 
 echo "Setting file permissions..."
 
@@ -64,31 +90,39 @@ echo "Building IPK dir structure"
 cd "$BUILD_DIR"
 
 echo "Creating data.tar.gz"
-tar --exclude='CONTROL' -czf data.tar.gz -C "$PACKAGE_DIR" .
+(
+    cd "$PACKAGE_DIR"
+    find . -mindepth 1 ! -path './CONTROL' ! -path './CONTROL/*' -print0 |
+        tar --null --files-from=- -czf "$BUILD_DIR/data.tar.gz"
+)
 
 echo "Creating control.tar.gz"
-tar -czf control.tar.gz -C "$PACKAGE_DIR/CONTROL" .
+(
+    cd "$PACKAGE_DIR/CONTROL"
+    find . -mindepth 1 -print0 |
+        tar --null --files-from=- -czf "$BUILD_DIR/control.tar.gz"
+)
 
 echo "Creating IPK..."
-ar r "../${PACKAGE_NAME}_${PACKAGE_VERSION}.ipk" control.tar.gz data.tar.gz
+mkdir -p "$OUTPUT_DIR"
+rm -f "$OUTPUT_IPK"
+ar r "$OUTPUT_IPK" control.tar.gz data.tar.gz
 
-cd ..
+cd "$SCRIPT_DIR"
 
 echo ""
 echo "IPK package created."
-echo "Package: ${PACKAGE_NAME}_${PACKAGE_VERSION}.ipk"
+echo "Package: $OUTPUT_IPK"
 echo ""
 echo "Package structure:"
 echo "  CONTROL files:"
 find control -type f | sort | sed 's/^/    /'
 echo "  Overlay files (will be installed):"
-find overlay -type f | sort | sed 's/^overlay/    /' | head -15
+find overlay -type f ! -path '*/__pycache__/*' ! -path '*/www/discovery_status.json' | sort | sed 's/^overlay/    /' | head -15
 
-if [ $(find overlay -type f | wc -l) -gt 15 ]; then
-    echo "    ... and $(($(find overlay -type f | wc -l) - 15)) more files"
+if [ $(find overlay -type f ! -path '*/__pycache__/*' ! -path '*/www/discovery_status.json' | wc -l) -gt 15 ]; then
+    echo "    ... and $(($(find overlay -type f ! -path '*/__pycache__/*' ! -path '*/www/discovery_status.json' | wc -l) - 15)) more files"
 fi
-
-rm -rf "$BUILD_DIR"
 
 echo ""
 echo "Build complete"

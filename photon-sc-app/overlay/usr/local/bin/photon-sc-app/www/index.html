@@ -8,18 +8,51 @@
 </head>
 <body>
   <main>
+    <section class="connection-row">
+      <div class="connection-pill"><strong>SC:</strong> <span id="scConnection">Unknown</span></div>
+      <div class="connection-pill"><strong>NT:</strong> <span id="ntConnection">Disconnected</span></div>
+      <div class="connection-pill"><strong>NT cameras:</strong> <span id="ntCameraCount">0</span></div>
+    </section>
+
     <section class="tabs-row">
       <div class="tab-bar" id="tabList"></div>
-      <button class="refresh-button" id="refreshButton">Update Clients</button>
     </section>
 
     <section class="panel-section">
       <div class="iframe-wrapper">
         <iframe id="tabFrame" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        <div id="discoveryPanel" class="discovery-panel" style="display:none">
+            <div class="discovery-header">
+              <div class="discovery-title">
+                <h2>Discovery</h2>
+                <div id="discoveryLine" aria-live="polite">Enter your team number to scan.</div>
+                <div id="networkLine" class="small"></div>
+              </div>
+              <form id="scanForm" class="scan-form">
+                <label for="teamNumber">Team number</label>
+                <input id="teamNumber" name="teamNumber" type="text" inputmode="numeric" pattern="[0-9]+" maxlength="5" placeholder="1736" required>
+                <button id="rescanButton" class="toggle-button" type="submit">Scan</button>
+              </form>
+          </div>
+
+          <div class="discovery-table-wrapper">
+            <table id="discoveryTable">
+              <thead>
+                <tr>
+                  <th>IP / Host</th>
+                  <th>Ping</th>
+                  <th>Serving Photon UI</th>
+                  <th>NT source</th>
+                </tr>
+              </thead>
+              <tbody id="discoveryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
