@@ -96,7 +96,7 @@ echo "Creating data.tar.gz"
 (
     cd "$PACKAGE_DIR"
     find . -mindepth 1 ! -path './CONTROL' ! -path './CONTROL/*' -print0 |
-        tar --null --files-from=- -czf "$BUILD_DIR/data.tar.gz"
+        tar --null --hard-dereference --files-from=- -czf "$BUILD_DIR/data.tar.gz"
 )
 
 echo "Creating control.tar.gz"

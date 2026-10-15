@@ -19,7 +19,10 @@ sys.path.insert(
     ),
 )
 
-from discovery.network_scan_discovery import team_subnet_from_number  # noqa: E402
+from discovery.network_scan_discovery import (  # noqa: E402
+    team_from_local_ips,
+    team_subnet_from_number,
+)
 
 
 def test_team_1736():
@@ -96,3 +99,28 @@ def test_team_whitespace_rejected():
         assert False, "Expected ValueError for whitespace-only team"
     except ValueError:
         pass
+
+
+def test_team_from_local_ips_10_octet():
+    assert team_from_local_ips(["10.17.36.5"]) == "1736"
+
+
+def test_team_from_local_ips_254():
+    assert team_from_local_ips(["10.2.54.100"]) == "254"
+
+
+def test_team_from_local_ips_12345():
+    assert team_from_local_ips(["10.123.45.200"]) == "12345"
+
+
+def test_team_from_local_ips_non_10_network():
+    assert team_from_local_ips(["192.168.1.5", "172.16.0.1"]) is None
+
+
+def test_team_from_local_ips_empty():
+    assert team_from_local_ips([]) is None
+
+
+def test_team_from_local_ips_te_zero():
+    # 10.0.1.X → TE=0, AM=1 → team "1" → padded "0001" → TE=0, AM=1 → 10.0.1.0/24
+    assert team_from_local_ips(["10.0.1.50"]) == "1"

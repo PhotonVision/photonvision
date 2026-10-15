@@ -20,7 +20,7 @@ import logging
 import socket
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable, Set
+from typing import Callable, Optional, Set
 
 logger = logging.getLogger(__name__)
 PING_WORKERS = 10
@@ -71,6 +71,30 @@ def team_subnet_from_number(team_number: str | int) -> ipaddress.IPv4Network:
         raise ValueError("Team number TE octet exceeds 255")
 
     return ipaddress.IPv4Network(f"10.{te}.{am}.0/24")
+
+
+def team_from_local_ips(local_ips: Optional[list[str]] = None) -> Optional[str]:
+    """Guess the FRC team number from local IP addresses.
+
+    Looks for a local IP in the ``10.TE.AM.X`` range and reconstructs
+    the team number from the TE and AM octets.
+    """
+    if local_ips is None:
+        local_ips = local_ipv4_addresses()
+
+    for ip in local_ips:
+        parts = ip.split(".")
+        if len(parts) == 4 and parts[0] == "10":
+            try:
+                te = int(parts[1])
+                am = int(parts[2])
+                team_str = str(te) + str(am).zfill(2)
+                if team_str and int(team_str) > 0:
+                    return str(int(team_str))
+            except (ValueError, IndexError):
+                continue
+
+    return None
 
 
 def local_ipv4_addresses(nt_server: str | None = None) -> list[str]:

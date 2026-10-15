@@ -37,6 +37,7 @@ from urllib.parse import parse_qs, urlparse
 from discovery.network_scan_discovery import (
     discover_network_scan,
     local_ipv4_addresses,
+    team_from_local_ips,
     team_subnet_from_number,
 )
 
@@ -236,6 +237,12 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
         requested_team = query.get("team", [TEAM_NUMBER])[0]
         if requested_team == "":
             requested_team = None
+
+        # If no explicit team, try to guess from local IP addresses (10.TE.AM.X)
+        if requested_team is None:
+            guessed_team = team_from_local_ips()
+            if guessed_team is not None:
+                requested_team = guessed_team
 
         network_info: Dict[str, object] = {
             "configured_team": TEAM_NUMBER,

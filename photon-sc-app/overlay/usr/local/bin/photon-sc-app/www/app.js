@@ -3,9 +3,6 @@ import {NT4_Client} from "./vendor/nt4/nt4.js";
 const tabList = document.getElementById("tabList");
 const tabFrame = document.getElementById("tabFrame");
 const discoveryPanel = document.getElementById("discoveryPanel");
-const scanForm = document.getElementById("scanForm");
-const teamInput = document.getElementById("teamNumber");
-const scanButton = document.getElementById("rescanButton");
 const candidates = new Map();
 const verifiedTabs = new Map();
 const ntCameraTopics = new Set();
@@ -333,12 +330,6 @@ async function consumeScanStream(response, scan) {
 }
 
 async function runScan(teamNumber) {
-  if (!/^\d{1,5}$/.test(teamNumber)) {
-    document.getElementById("discoveryLine").textContent = "Enter a valid team number.";
-    return;
-  }
-
-  scanButton.disabled = true;
   const scan = {id: null, teamNumber, subnet: "", completed: 0, responding: new Set(), pending: [], complete: false};
   currentScan = scan;
   candidates.clear();
@@ -364,8 +355,6 @@ async function runScan(teamNumber) {
     console.error("Discovery scan failed", error);
     document.getElementById("discoveryLine").textContent = `Scan failed: ${error.message}`;
     if (scan.id === null) renderCandidates("Scan could not start.");
-  } finally {
-    if (currentScan === scan) scanButton.disabled = false;
   }
 }
 
@@ -387,17 +376,12 @@ async function initialize() {
 
   try {
     const info = await getNetworkInfo();
-    if (info.configured_team) {
-      teamInput.value = info.configured_team;
-      await runScan(info.configured_team);
+    if (info.team_number) {
+      await runScan(info.team_number);
     }
   } catch (error) {
     document.getElementById("discoveryLine").textContent = `Network info failed: ${error.message}`;
   }
 }
 
-scanForm.addEventListener("submit", event => {
-  event.preventDefault();
-  runScan(teamInput.value.trim());
-});
 window.addEventListener("load", initialize);
