@@ -56,6 +56,9 @@ cp -r overlay/* "$BUILD_DIR/$PACKAGE_DIR/"
 find "$BUILD_DIR/$PACKAGE_DIR" -type d -name __pycache__ -prune -exec rm -rf {} +
 rm -f "$BUILD_DIR/$PACKAGE_DIR/usr/local/bin/photon-sc-app/www/discovery_status.json"
 
+echo "Writing VERSION file..."
+echo "$PACKAGE_VERSION" > "$BUILD_DIR/$PACKAGE_DIR/usr/local/bin/photon-sc-app/VERSION"
+
 echo "Copying CONTROL files..."
 mkdir -p "$BUILD_DIR/$PACKAGE_DIR/CONTROL"
 cp control/* "$BUILD_DIR/$PACKAGE_DIR/CONTROL/"

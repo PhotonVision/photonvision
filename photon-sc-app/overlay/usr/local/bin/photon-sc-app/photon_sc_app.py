@@ -49,6 +49,16 @@ SOCKET_ACTIVATED: bool = False
 # Optional explicitly configured FRC team number.
 TEAM_NUMBER: Optional[str] = None
 
+# Service version, populated from VERSION file (written by build.sh at package time)
+VERSION: str = "unknown"
+_version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+if os.path.exists(_version_path):
+    try:
+        with open(_version_path, "r", encoding="utf-8-sig") as _vf:
+            VERSION = _vf.read().strip()
+    except OSError as error:
+        logger.debug("Could not read VERSION file: %s", error)
+
 
 class ServiceHandler(http.server.SimpleHTTPRequestHandler):
     """HTTP request handler for the Photon SC App.
@@ -192,6 +202,7 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
             "socket_activated": SOCKET_ACTIVATED,
             "pid": os.getpid(),
             "timestamp": datetime.now().isoformat(),
+            "version": VERSION,
         }
 
         self.wfile.write(json.dumps(response, indent=2).encode())

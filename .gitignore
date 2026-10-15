@@ -134,6 +134,7 @@ build*/
 
 # Runtime artifact (removed by build.sh)
 photon-sc-app/overlay/usr/local/bin/photon-sc-app/www/discovery_status.json
+photon-sc-app/overlay/usr/local/bin/photon-sc-app/VERSION
 
 photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*

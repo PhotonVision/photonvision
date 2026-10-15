@@ -1,4 +1,5 @@
 Package: photon-sc-app
+Version: 0.0.0
 Description: PhotonVision SystemCore App
 Section: development
 Priority: optional

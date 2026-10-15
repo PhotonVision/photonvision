@@ -377,6 +377,10 @@ async function initialize() {
   try {
     const response = await fetch("/status", {cache: "no-store"});
     setConnectionStatus(response.ok, "Disconnected");
+    if (response.ok) {
+      const status = await response.json();
+      document.getElementById("scVersion").textContent = status.version || "unknown";
+    }
   } catch {
     setConnectionStatus(false, "Disconnected");
   }
