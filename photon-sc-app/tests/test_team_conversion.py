@@ -3,10 +3,21 @@
 These tests live outside overlay/ so they are not packaged into the IPK.
 """
 
-import sys
 import os
+import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "overlay", "usr", "local", "bin", "photon-sc-app"))
+sys.path.insert(
+    0,
+    os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "overlay",
+        "usr",
+        "local",
+        "bin",
+        "photon-sc-app",
+    ),
+)
 
 from discovery.network_scan_discovery import team_subnet_from_number  # noqa: E402
 

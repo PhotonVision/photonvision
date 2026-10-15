@@ -15,10 +15,10 @@ Returns:
     Set of IP addresses that respond to ping or reachability probes.
 """
 
-import logging
 import ipaddress
-import subprocess
+import logging
 import socket
+import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Callable, Set
 
@@ -46,7 +46,9 @@ def discover_network_scan(
             logger.debug("Network scan ping responded: %s", ip)
         return ip, responded
 
-    with ThreadPoolExecutor(max_workers=PING_WORKERS, thread_name_prefix="PingScan") as executor:
+    with ThreadPoolExecutor(
+        max_workers=PING_WORKERS, thread_name_prefix="PingScan"
+    ) as executor:
         futures = [executor.submit(_probe_host, host_id) for host_id in range(1, 255)]
         for future in as_completed(futures):
             ip, responded = future.result()
@@ -77,7 +79,9 @@ def local_ipv4_addresses(nt_server: str | None = None) -> list[str]:
     try:
         addresses.update(
             result[4][0]
-            for result in socket.getaddrinfo(socket.gethostname(), None, family=socket.AF_INET)
+            for result in socket.getaddrinfo(
+                socket.gethostname(), None, family=socket.AF_INET
+            )
             if not result[4][0].startswith("127.")
         )
     except OSError as error:
@@ -89,7 +93,9 @@ def local_ipv4_addresses(nt_server: str | None = None) -> list[str]:
                 probe.connect((nt_server, 5810))
                 addresses.add(probe.getsockname()[0])
         except OSError as error:
-            logger.debug("Could not determine route to NT server %s: %s", nt_server, error)
+            logger.debug(
+                "Could not determine route to NT server %s: %s", nt_server, error
+            )
 
     return sorted(addresses)
 
@@ -109,10 +115,10 @@ def _probe_ping(ip: str, timeout: float = 1.0) -> bool:
     """
     import platform
 
-    if platform.system().lower() == 'windows':
-        command = ['ping', '-n', '1', '-w', str(int(timeout * 1000)), ip]
+    if platform.system().lower() == "windows":
+        command = ["ping", "-n", "1", "-w", str(int(timeout * 1000)), ip]
     else:
-        command = ['ping', '-c', '1', '-W', str(timeout), ip]
+        command = ["ping", "-c", "1", "-W", str(timeout), ip]
 
     try:
         result = subprocess.run(

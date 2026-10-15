@@ -18,7 +18,6 @@ Key Features:
 """
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor
 import http.server
 import json
 import logging
@@ -30,11 +29,16 @@ import socketserver
 import sys
 import threading
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
-from discovery.network_scan_discovery import discover_network_scan, local_ipv4_addresses, team_subnet_from_number
+from discovery.network_scan_discovery import (
+    discover_network_scan,
+    local_ipv4_addresses,
+    team_subnet_from_number,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -143,12 +147,15 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(f"event: {event_name}\ndata: {encoded}\n\n".encode())
             self.wfile.flush()
 
-        write_event("scan_started", {
-            "scan_id": scan_id,
-            "team_number": str(team_number),
-            "subnet": str(subnet),
-            "nt_server": nt_server,
-        })
+        write_event(
+            "scan_started",
+            {
+                "scan_id": scan_id,
+                "team_number": str(team_number),
+                "subnet": str(subnet),
+                "nt_server": nt_server,
+            },
+        )
 
         events: queue.Queue[tuple[str, Dict[str, object]]] = queue.Queue()
         completed_probes = 0
@@ -159,17 +166,26 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
             with progress_lock:
                 completed_probes += 1
                 current_count = completed_probes
-            events.put(("ping", {
-                "scan_id": scan_id,
-                "ip": ip,
-                "responded": responded,
-                "completed": current_count,
-                "total": 254,
-            }))
+            events.put(
+                (
+                    "ping",
+                    {
+                        "scan_id": scan_id,
+                        "ip": ip,
+                        "responded": responded,
+                        "completed": current_count,
+                        "total": 254,
+                    },
+                )
+            )
 
         client_connected = True
-        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="NetworkScan") as executor:
-            scan_future = executor.submit(discover_network_scan, str(team_number), on_ping_result)
+        with ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="NetworkScan"
+        ) as executor:
+            scan_future = executor.submit(
+                discover_network_scan, str(team_number), on_ping_result
+            )
             while not scan_future.done() or not events.empty():
                 try:
                     event_name, event_data = events.get(timeout=0.25)
@@ -184,11 +200,14 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
             responsive_ips = scan_future.result()
 
         if client_connected:
-            write_event("scan_complete", {
-                "scan_id": scan_id,
-                "responsive_ips": sorted(responsive_ips),
-                "count": len(responsive_ips),
-            })
+            write_event(
+                "scan_complete",
+                {
+                    "scan_id": scan_id,
+                    "responsive_ips": sorted(responsive_ips),
+                    "count": len(responsive_ips),
+                },
+            )
 
     def send_status(self) -> None:
         """Return service status as JSON for health monitoring."""
@@ -232,11 +251,13 @@ class ServiceHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json(400, {"error": str(error)})
                 return
             nt_server = str(subnet.network_address + 2)
-            network_info.update({
-                "subnet": str(subnet),
-                "nt_server": nt_server,
-                "local_ips": local_ipv4_addresses(nt_server),
-            })
+            network_info.update(
+                {
+                    "subnet": str(subnet),
+                    "nt_server": nt_server,
+                    "local_ips": local_ipv4_addresses(nt_server),
+                }
+            )
         else:
             network_info["local_ips"] = local_ipv4_addresses()
 
@@ -399,7 +420,7 @@ class LocalService:
 
 
 def main() -> None:
-    """    Entry point: parse arguments, select deployment mode, and start service.
+    """Entry point: parse arguments, select deployment mode, and start service.
 
     Deployment modes:
 

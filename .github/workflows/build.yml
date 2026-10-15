@@ -429,6 +429,17 @@ jobs:
         working-directory: photon-sc-app
         run: |
           python -m pytest tests/ -v
+      - name: Install Python lint tools
+        run: pip install black isort mypy
+      - name: Check formatting (black)
+        working-directory: photon-sc-app
+        run: black --check overlay/usr/local/bin/photon-sc-app/photon_sc_app.py overlay/usr/local/bin/photon-sc-app/discovery/network_scan_discovery.py tests/
+      - name: Check import sorting (isort)
+        working-directory: photon-sc-app
+        run: isort --check --profile black overlay/usr/local/bin/photon-sc-app/photon_sc_app.py overlay/usr/local/bin/photon-sc-app/discovery/network_scan_discovery.py tests/
+      - name: Type check (mypy)
+        working-directory: photon-sc-app
+        run: mypy --show-column-numbers overlay/usr/local/bin/photon-sc-app/photon_sc_app.py overlay/usr/local/bin/photon-sc-app/discovery/network_scan_discovery.py
       - name: Make build script executable
         run: chmod +x photon-sc-app/build.sh
       - name: Build IPK
