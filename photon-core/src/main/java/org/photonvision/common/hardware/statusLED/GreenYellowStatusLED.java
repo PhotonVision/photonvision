@@ -19,6 +19,7 @@ package org.photonvision.common.hardware.statusLED;
 
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import org.photonvision.common.configuration.PinIdentifier;
 import org.photonvision.common.configuration.StatusLedConfig;
 import org.photonvision.common.hardware.PhotonStatus;
 import org.photonvision.common.util.TimedTaskManager;
@@ -26,8 +27,8 @@ import org.photonvision.common.util.TimedTaskManager;
 /** A pair of green and yellow LEDs, as used on the Limelight cameras */
 public class GreenYellowStatusLED implements StatusLED {
     public static class Config implements StatusLedConfig {
-        public int greenPin = -1;
-        public int yellowPin = -1;
+        public PinIdentifier greenPin = PinIdentifier.STUB;
+        public PinIdentifier yellowPin = PinIdentifier.STUB;
         public boolean activeHigh = false;
 
         @Override
@@ -36,8 +37,8 @@ public class GreenYellowStatusLED implements StatusLED {
         }
 
         @Override
-        public int[] pins() {
-            return new int[] {greenPin, yellowPin};
+        public PinIdentifier[] pins() {
+            return new PinIdentifier[] {greenPin, yellowPin};
         }
 
         @Override
@@ -59,10 +60,13 @@ public class GreenYellowStatusLED implements StatusLED {
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
     public GreenYellowStatusLED(
-            NativeDeviceFactoryInterface deviceFactory, int greenPin, int yellowPin, boolean activeHigh) {
+            NativeDeviceFactoryInterface deviceFactory,
+            PinIdentifier greenPin,
+            PinIdentifier yellowPin,
+            boolean activeHigh) {
         // Outputs are active-low for a common-anode RGB LED
-        greenLED = new LED(deviceFactory, greenPin, activeHigh, false);
-        yellowLED = new LED(deviceFactory, yellowPin, activeHigh, false);
+        greenLED = new LED(greenPin.info(deviceFactory), activeHigh, false);
+        yellowLED = new LED(yellowPin.info(deviceFactory), activeHigh, false);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 75);
     }

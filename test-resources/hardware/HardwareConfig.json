@@ -1,6 +1,6 @@
 {
   "deviceName": "PhotonVision",
-  "ledPins" : [2, 13],
+  "ledPins" : [2, 13, "GPIO1_B7"],
   "ledsCanDim" : true,
   "statusLEDConfig" : {
     "type": "RGB",

@@ -27,25 +27,28 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.configuration.PinIdentifier;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareConfigTest {
     @Test
-    public void loadJson() {
+    public void loadJson() throws IOException {
         System.out.println("Loading Hardware configs...");
         try (var stream = new FileInputStream(TestUtils.getHardwareConfigJson())) {
             var config = Jsonb.instance().type(HardwareConfig.class).fromJson(stream);
             assertEquals(config.deviceName, "PhotonVision");
             // Ensure defaults are not null
-            assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
+            assertArrayEquals(
+                    config.ledPins.toArray(),
+                    new PinIdentifier[] {
+                        PinIdentifier.numbered(2), PinIdentifier.numbered(13), PinIdentifier.named("GPIO1_B7")
+                    });
             try (NativeDeviceFactoryInterface deviceFactory =
                     HardwareManager.configureCustomGPIO(config)) {
                 assertTrue(deviceFactory instanceof CustomDeviceFactory);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

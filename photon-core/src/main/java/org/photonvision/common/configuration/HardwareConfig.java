@@ -28,7 +28,7 @@ public class HardwareConfig {
     public String deviceName;
 
     // LED control
-    public List<Integer> ledPins;
+    public List<PinIdentifier> ledPins;
     public boolean ledsCanDim;
     public List<Integer> ledBrightnessRange;
     public int ledPWMFrequency;
@@ -48,7 +48,7 @@ public class HardwareConfig {
 
     public HardwareConfig(
             String deviceName,
-            List<Integer> ledPins,
+            List<PinIdentifier> ledPins,
             boolean ledsCanDim,
             List<Integer> ledBrightnessRange,
             int ledPwmFrequency,
@@ -103,9 +103,9 @@ public class HardwareConfig {
         }
         if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
             var config = (RGBStatusLED.Config) statusLEDConfig.get();
-            config.redPin = statusRGBPins.get(0);
-            config.greenPin = statusRGBPins.get(1);
-            config.bluePin = statusRGBPins.get(2);
+            config.redPin = PinIdentifier.numbered(statusRGBPins.get(0));
+            config.greenPin = PinIdentifier.numbered(statusRGBPins.get(1));
+            config.bluePin = PinIdentifier.numbered(statusRGBPins.get(2));
         }
     }
 
