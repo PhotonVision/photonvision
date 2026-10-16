@@ -46,13 +46,16 @@ test("Camera Gain Slider won't go past max or min", async ({ page }) => {
   const increaseCameraGain = page.getByRole("button", { name: "Increase Camera Gain value" });
   const decreaseCameraGain = page.getByRole("button", { name: "Decrease Camera Gain value" });
 
+  // Fill in Camera Gain text field with 1000
   await cameraGainInput.fill("1000");
   await cameraGainInput.press("Enter");
   await expect(cameraGainInput).toHaveValue("100");
 
+  // Try using buttons to go past the max
   await increaseCameraGain.click();
   await expect(cameraGainInput).toHaveValue("100");
 
+  // Make sure the value is actually properly limited, not just visually
   await decreaseCameraGain.click();
   await expect(cameraGainInput).toHaveValue("99");
 
@@ -63,9 +66,12 @@ test("Camera Gain Slider won't go past max or min", async ({ page }) => {
   await decreaseCameraGain.click();
   await expect(cameraGainInput).toHaveValue("0");
 
+  // Make sure the value is actually properly limited, not just visually
   await increaseCameraGain.click();
   await expect(cameraGainInput).toHaveValue("1");
 
+  // Make sure that the guard actually prevents value setting, instead of just reverting the value
+  // This can be ensured by making sure the Camera Gain field doesn't disappear (disappears when the value is -1)
   await decreaseCameraGain.click();
   await decreaseCameraGain.click();
   await expect(cameraGainInput).toHaveValue("0");
