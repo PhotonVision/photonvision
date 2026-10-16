@@ -1,10 +1,7 @@
 import { onBeforeUnmount, onMounted, ref, type Ref } from "vue";
+import { themeDefaults, type ThemeBase } from "@/lib/ThemeManager";
 
-export type ThemeColors = {
-  background: string;
-  surface: string;
-  primary: string;
-  secondary: string;
+export type ThemeColors = ThemeBase & {
   onBackground?: string;
   onSurface?: string;
   accent?: string;
@@ -24,23 +21,9 @@ export type ThemeState = {
   refreshTheme: () => void;
 };
 
-const defaultDark: ThemeColors = {
-  background: "#151515",
-  surface: "#1c232c",
-  primary: "#39A4D5",
-  secondary: "#FFD843"
-};
-
-const defaultLight: ThemeColors = {
-  background: "#232C37",
-  surface: "#006492",
-  primary: "#FFD843",
-  secondary: "#39A4D5"
-};
-
 const themeState: ThemeState = {
   isDark: ref(false),
-  colors: ref({ ...defaultLight }),
+  colors: ref({ ...themeDefaults.LightTheme }),
   refreshTheme: () => undefined
 };
 
@@ -68,7 +51,7 @@ const readIsDark = () => {
 
 const refreshTheme = () => {
   const isDark = readIsDark();
-  const fallback = isDark ? defaultDark : defaultLight;
+  const fallback: ThemeColors = isDark ? themeDefaults.DarkTheme : themeDefaults.LightTheme;
 
   themeState.isDark.value = isDark;
   themeState.colors.value = {
