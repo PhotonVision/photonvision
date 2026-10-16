@@ -39,5 +39,5 @@ In order for settings, logs, etc. to be saved / take effect, ensure that PhotonV
 :::
 
 :::{attention}
-When using an older version of PhotonVision, the user interface and features may be different than what appears in the online documentation. The [Documentation](http://10.0.0.2:5800/#/docs) link in the User Interface will open a bundled version of the documentation that matches the PhotonVision version running on your coprocessor.
+When using an older version of PhotonVision, the user interface and features may be different than what appears in the online documentation. The [Documentation](http://10.0.0.2:5800/docs) link in the User Interface will open a bundled version of the documentation that matches the PhotonVision version running on your coprocessor.
 :::
