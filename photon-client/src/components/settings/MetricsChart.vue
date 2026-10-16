@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
 import { useTheme, type ThemeColors } from "@/composables/useTheme";
+
 // Color  -  original        (adjusted)
 // blue   -   59, 130, 246   (r:  92, g: 154, b: 255)
 // purple -  154, 100, 180   (r: 167, g: 104, b: 196)

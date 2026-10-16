@@ -10,6 +10,7 @@ import { ColorPicker, type HSV } from "@/lib/ColorPicker";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
 import { normalizeNumberPair } from "@/lib/PhotonUtils";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
   let val = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue).reduce((a, b) => a + b, 0);
@@ -118,7 +119,7 @@ const disableColorPicking = () => {
 onMounted(() => {
   const cameraStream = document.getElementById("input-camera-stream");
   if (cameraStream === null) return;
-  //
+
   cameraStream.addEventListener("click", handleStreamClick);
 });
 onBeforeUnmount(() => {
@@ -127,9 +128,9 @@ onBeforeUnmount(() => {
 
   cameraStream.removeEventListener("click", handleStreamClick);
 });
+
 const breakpoints = useCustomBreakpoints();
 const mdAndDown = breakpoints.smallerOrEqual("md");
-
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
 );
