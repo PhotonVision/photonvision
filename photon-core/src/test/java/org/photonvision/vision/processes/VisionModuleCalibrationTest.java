@@ -151,7 +151,9 @@ public class VisionModuleCalibrationTest {
                 (int) BOARD_SIZE.height,
                 BoardType.CHARUCOBOARD,
                 false,
-                TagFamily.Dict_4X4_1000);
+                TagFamily.Dict_4X4_1000,
+                false,
+                null);
     }
 
     private void startCalibration() {

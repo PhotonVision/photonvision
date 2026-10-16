@@ -389,6 +389,7 @@ public class VisionModule implements AutoCloseable {
         deletePendingImageDir();
 
         var settings = pipelineManager.calibration3dPipeline.getSettings();
+        settings.autoCalibrate = data.autoCalibrate;
 
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
         var resolution = new Size(videoMode.width, videoMode.height);

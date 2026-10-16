@@ -4,8 +4,8 @@ import CalibrationCard from "@/components/cameras/CameraCalibrationCard.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed } from "vue";
 import CamerasView from "@/components/cameras/CamerasView.vue";
-import { useStateStore } from "@/stores/StateStore";
 import CameraControlCard from "@/components/cameras/CameraControlCard.vue";
+import { useStateStore } from "@/stores/StateStore";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -17,8 +17,9 @@ const cameraViewType = computed<number[]>({
       useCameraSettingsStore().isDriverMode ||
       useCameraSettingsStore().isCalibrationMode ||
       useCameraSettingsStore().isFocusMode
-    )
+    ) {
       return [1];
+    }
 
     const ret: number[] = [];
     if (useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {
