@@ -53,7 +53,8 @@ public class DbMigration {
     public static final MigrationManager getMigration() {
         return new MigrationManager(2, schema02)
             .addStep(202701, update2026CameraConfig)
-            .addStep(202702, schema202702);
+            .addStep(202702, schema202702)
+            .addStep(202703, update2026StatusLEDs);
     }
 
     private static final String schema02 =
@@ -267,6 +268,66 @@ public class DbMigration {
             } catch (SQLException e) {
                 throw new MigrationException("Exception thrown writing migrated JSON to database for " + uniqueName, e);
             }
+        }
+    };
+
+    private static MigrationFunction update2026StatusLEDs = (conn) -> {
+        String hardwareConfigQuery = "SELECT contents FROM global WHERE config_name='hardwareConfig';";
+        String hardwareConfigJson = null;
+
+        try (var query = conn.prepareStatement(hardwareConfigQuery);
+             var result = query.executeQuery();) {
+            if (result.next()) {
+                hardwareConfigJson = result.getString("contents");
+            } else {
+                logger.info("No hardwareConfig found in global table. Skipping status LED migration.");
+                return;
+            }
+        } catch (SQLException e) {
+            throw new MigrationException("Failed to read configuration from existing database", e);
+        }
+
+        JsonObject hardwareConfig = Jsonb.instance().type(JsonObject.class).fromJson(hardwareConfigJson);
+        hardwareConfig = hardwareConfig.copy(); // Make the config mutable
+        if (hardwareConfig.containsKey("statusRGBPins") || hardwareConfig.containsKey("statusRGBActiveHigh")) {
+            logger.debug("Migrating legacy statusRGBPins to statusLEDConfig");
+            JsonObject statusLEDConfig = JsonObject.create();
+            statusLEDConfig.add("type", "RGB");
+            if (hardwareConfig.containsKey("statusRGBActiveHigh")) {
+                statusLEDConfig.add("activeHigh", hardwareConfig.extract("statusRGBActiveHigh", false));
+                hardwareConfig.remove("statusRGBActiveHigh");
+            } else {
+                statusLEDConfig.add("activeHigh", false);
+            }
+            statusLEDConfig.add("redPin", -1);
+            statusLEDConfig.add("greenPin", -1);
+            statusLEDConfig.add("bluePin", -1);
+            if (hardwareConfig.containsKey("statusRGBPins")) {
+                JsonArray statusRGBPins = (JsonArray) hardwareConfig.get("statusRGBPins");
+                if (statusRGBPins.size() >= 3) {
+                    statusLEDConfig.add("redPin", statusRGBPins.elements().get(0));
+                    statusLEDConfig.add("greenPin", statusRGBPins.elements().get(1));
+                    statusLEDConfig.add("bluePin", statusRGBPins.elements().get(2));
+                } else {
+                    logger.warn("Legacy statusRGBPins has less than 3 pins.");
+                }
+                hardwareConfig.remove("statusRGBPins");
+            }
+            hardwareConfig.add("statusLEDConfig", statusLEDConfig);
+
+            // update hardware config in database
+            var sqlString =
+                    "REPLACE INTO global (config_name, contents) VALUES ('hardwareConfig', ?);";
+            try (var statement = conn.prepareStatement(sqlString)) {
+                statement.setString(1, Jsonb.instance().type(JsonObject.class).toJson(hardwareConfig));
+                statement.executeUpdate();
+            } catch (JsonException | UncheckedIOException e) {
+                throw new MigrationException("Cannot serialize migrated JSON to database for hardwareConfig", e);
+            } catch (SQLException e) {
+                throw new MigrationException("Exception thrown writing migrated JSON to database for hardwareConfig", e);
+            }
+        } else {
+            logger.debug("No legacy statusRGBPins found. Skipping migration.");
         }
     };
 

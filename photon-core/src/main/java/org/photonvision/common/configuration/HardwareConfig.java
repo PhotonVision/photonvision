@@ -91,36 +91,6 @@ public class HardwareConfig {
         vendorFOV = -1;
     }
 
-    // MIGRATION: 2026
-    @Json.Property("statusRGBPins")
-    void importStatusRGBPins(List<Integer> statusRGBPins) {
-        if (statusRGBPins.size() < 3) {
-            // Missing pins are unsupported
-            return;
-        }
-        if (statusLEDConfig.isEmpty()) {
-            statusLEDConfig = Optional.of(new RGBStatusLED.Config());
-        }
-        if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
-            var config = (RGBStatusLED.Config) statusLEDConfig.get();
-            config.redPin = statusRGBPins.get(0);
-            config.greenPin = statusRGBPins.get(1);
-            config.bluePin = statusRGBPins.get(2);
-        }
-    }
-
-    // MIGRATION: 2026
-    @Json.Property("statusRGBActiveHigh")
-    void importStatusRGBActiveHigh(boolean statusRGBActiveHigh) {
-        if (statusLEDConfig.isEmpty()) {
-            statusLEDConfig = Optional.of(new RGBStatusLED.Config());
-        }
-        if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
-            var config = (RGBStatusLED.Config) statusLEDConfig.get();
-            config.activeHigh = statusRGBActiveHigh;
-        }
-    }
-
     /**
      * @return True if the FOV has been preset to a sane value, false otherwise
      */
