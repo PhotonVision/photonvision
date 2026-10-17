@@ -212,11 +212,24 @@ public class DbMigration {
                     for (JsonNode pipelineString : rawPipelineJsons.elements()) {
                         var pipelineJson = Jsonb.instance().type(JsonArray.class).fromJson(pipelineString.text());
                         String type = pipelineJson.elements().get(0).text();
-                        var pipeline = (JsonObject) pipelineJson.elements().get(1).copy();
+                        JsonObject pipeline = (JsonObject) pipelineJson.elements().get(1).copy();
                         logger.debug(
                                 String.format(
                                         "Migrating legacy %s, \"%s\"", type, pipeline.extract("pipelineNickname")));
                         pipeline.add("type", type);
+                        if (pipeline.containsKey("outputShowMultipleTargets")) {
+                            /**
+                             * Handles backward compatibility for the deprecated outputShowMultipleTargets property. When
+                             * outputShowMultipleTargets is encountered during deserialization, it sets outputMaximumTargets
+                             * appropriately. If outputShowMultipleTargets is false, outputMaximumTargets is set to 1.
+                             */
+                            if (pipeline.extract("outputShowMultipleTargets").strip().equals("false")) {
+                                pipeline.add("outputMaximumTargets", 1);
+                            } else {
+                                pipeline.add("outputMaximumTargets", 20);
+                            }
+                            pipeline.remove("outputShowMultipleTargets");
+                        }
                         pipelines.add(pipeline);
                     }
                     configJson.add("pipelineSettings", pipelines);
