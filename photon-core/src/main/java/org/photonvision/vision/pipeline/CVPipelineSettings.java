@@ -18,12 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import io.avaje.jsonb.Json;
-import io.avaje.jsonb.JsonType;
-import io.avaje.jsonb.Jsonb;
-import io.avaje.jsonb.Types;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.ImageRotationMode;
@@ -155,5 +149,4 @@ public class CVPipelineSettings implements Cloneable {
                 + outputShouldShow
                 + '}';
     }
-
 }

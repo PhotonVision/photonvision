@@ -425,14 +425,14 @@ public class ConfigProvider {
             logger.debug("No " + ref.getSimpleName() + " in database");
         }
         // either the config entry is empty or Jsonb threw an exception
-        // try {
+        try {
             configObj = factory.get();
             logger.info("Loaded default " + ref.getSimpleName());
             return configObj;
-        // } catch (Exception e) {
-        //     logger.error("Failed to construct a default instance of " + ref.getSimpleName(), e);
-        // }
-        // return null;
+        } catch (Exception e) {
+            logger.error("Failed to construct a default instance of " + ref.getSimpleName(), e);
+        }
+        return null;
     }
 
     private Field fieldDefault() {
@@ -469,7 +469,8 @@ public class ConfigProvider {
                             GlobalKeys.NEURAL_NETWORK_PROPERTIES,
                             NeuralNetworkModelsSettings.class,
                             NeuralNetworkModelsSettings::new);
-            var field = loadConfigOrDefault(conn, GlobalKeys.FIELD_CONFIG, Field.class, this::fieldDefault);
+            var field =
+                    loadConfigOrDefault(conn, GlobalKeys.FIELD_CONFIG, Field.class, this::fieldDefault);
             var cams = loadCameraConfigs(conn);
 
             try {
@@ -663,10 +664,10 @@ public class ConfigProvider {
 
     private boolean saveOneConfig(String config, String contents) {
         Connection conn = createConn();
-        String sqlString = String.format(
-                    "REPLACE INTO %s (%s, %s) VALUES (?,?);",
-                    Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS
-                );
+        String sqlString =
+                String.format(
+                        "REPLACE INTO %s (%s, %s) VALUES (?,?);",
+                        Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS);
 
         try (PreparedStatement pStatement = conn.prepareStatement(sqlString)) {
             pStatement.setString(1, config);

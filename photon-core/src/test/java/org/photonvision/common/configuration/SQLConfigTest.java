@@ -17,13 +17,11 @@
 
 package org.photonvision.common.configuration;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.photonvision.common.configuration.migrations.DbMigration.Columns;
-import static org.photonvision.common.configuration.migrations.DbMigration.Tables;
 
 import io.avaje.json.JsonDataException;
 import io.avaje.jsonb.Jsonb;
@@ -313,13 +311,14 @@ public class SQLConfigTest {
         assertTrue(provider.saveUploadedFieldLayout(upload));
 
         // TODO: Shouldn't we close the ConfigProvider before creating a new one?
-        // Need to make ConfigProvider implement AutoCloseable and close the database connection in close().
+        // Need to make ConfigProvider implement AutoCloseable and close the database connection in
+        // close().
         var reloaded = new ConfigProvider(folder);
         reloaded.load();
         assertEquals(field, reloaded.getConfig().getFieldLayout());
     }
 
-    @Test 
+    @Test
     public void testLegacyAprilTagFieldLayout() throws IOException {
         var folder = tmpDir.resolve("2026.3.4-apriltag");
         FileUtils.copyDirectory(
@@ -330,14 +329,14 @@ public class SQLConfigTest {
 
         var updatedField = provider.getConfig().getFieldLayout();
         var field = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
-        assertAll("Field layout checks",
-            // () -> assertEquals(field.tags, updatedField.tags),  // Works now, but will break when the tags in WPILib 2027 are updated for the new coordinate system
-            () -> assertEquals(field.tags.size(), updatedField.tags.size()),
-            () -> assertEquals(field.length, updatedField.length),
-            () -> assertEquals(field.width, updatedField.width)
-        );
+        assertAll(
+                "Field layout checks",
+                // () -> assertEquals(field.tags, updatedField.tags),  // Works now, but will break when the
+                // tags in WPILib 2027 are updated for the new coordinate system
+                () -> assertEquals(field.tags.size(), updatedField.tags.size()),
+                () -> assertEquals(field.length, updatedField.length),
+                () -> assertEquals(field.width, updatedField.width));
     }
-
 
     @Test
     public void testFieldLayoutDefaultsWhenAbsent() throws UncheckedIOException {

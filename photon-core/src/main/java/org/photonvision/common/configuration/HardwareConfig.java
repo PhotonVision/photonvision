@@ -21,7 +21,6 @@ import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.photonvision.common.hardware.statusLED.RGBStatusLED;
 
 @Json
 public class HardwareConfig {

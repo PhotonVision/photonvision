@@ -34,7 +34,6 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
@@ -151,7 +150,6 @@ public class ConfigTest {
         String ser = Jsonb.instance().toJson(result);
         System.out.println(ser);
     }
-
 
     @Test
     public void testMigrateOldFieldLayout() {
