@@ -54,7 +54,8 @@ public class DbMigration {
         return new MigrationManager(2, schema02)
             .addStep(202701, update2026CameraConfig)
             .addStep(202702, schema202702)
-            .addStep(202703, update2026StatusLEDs);
+            .addStep(202703, update2026StatusLEDs)
+            .addStep(202704, update2026ATFL);
     }
 
     private static final String schema02 =
@@ -328,6 +329,59 @@ public class DbMigration {
             }
         } else {
             logger.debug("No legacy statusRGBPins found. Skipping migration.");
+        }
+    };
+
+    private static MigrationFunction update2026ATFL = (conn) -> {
+        // 2026 and earlier used "apriltagFieldLayout" as the config_name for the field layout, but 2027 and later uses "fieldLayout"
+        String hardwareConfigQuery = "SELECT contents FROM global WHERE config_name='apriltagFieldLayout';";
+        String fieldLayoutJson = null;
+
+        try (var query = conn.prepareStatement(hardwareConfigQuery);
+             var result = query.executeQuery();) {
+            if (result.next()) {
+                fieldLayoutJson = result.getString("contents");
+            } else {
+                logger.info("No apriltagFieldLayout found in global table. Skipping status LED migration.");
+                return;
+            }
+        } catch (SQLException e) {
+            throw new MigrationException("Failed to read configuration from existing database", e);
+        }
+
+        JsonObject fieldLayout = Jsonb.instance().type(JsonObject.class).fromJson(fieldLayoutJson);
+        fieldLayout = fieldLayout.copy(); // Make the config mutable
+        if (fieldLayout.containsKey("field") || fieldLayout.containsKey("tags")) {
+            logger.debug("Migrating legacy AprilTagFieldLayout");
+            if (fieldLayout.containsKey("field")) {
+                fieldLayout.add("field-dimensions", fieldLayout.get("field"));
+                fieldLayout.remove("field");
+            }
+            if (fieldLayout.containsKey("tags")) {
+                fieldLayout.add("field-tags", fieldLayout.get("tags"));
+                fieldLayout.remove("tags");
+            }
+
+            // update hardware config in database
+            String sqlInsert =
+                    "REPLACE INTO global (config_name, contents) VALUES ('fieldLayout', ?);";
+            String sqlRemove =
+                    "DELETE FROM global WHERE config_name = 'apriltagFieldLayout';";
+            try (var statement = conn.prepareStatement(sqlInsert)) {
+                statement.setString(1, Jsonb.instance().type(JsonObject.class).toJson(fieldLayout));
+                statement.executeUpdate();
+            } catch (JsonException | UncheckedIOException e) {
+                throw new MigrationException("Cannot serialize migrated JSON to database for fieldLayout", e);
+            } catch (SQLException e) {
+                throw new MigrationException("Exception thrown writing migrated JSON to database for fieldLayout", e);
+            }
+            try (var statement = conn.prepareStatement(sqlRemove)) {
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                throw new MigrationException("Exception thrown deleting legacy configuration from database", e);
+            }
+        } else {
+            logger.debug("No legacy AprilTagFieldLayout found. Skipping migration.");
         }
     };
 
