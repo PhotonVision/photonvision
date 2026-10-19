@@ -42,6 +42,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.migrations.*;
+import org.photonvision.common.configuration.migrations.DbMigration.Columns;
+import org.photonvision.common.configuration.migrations.DbMigration.Tables;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -75,7 +77,7 @@ public class ConfigProvider {
         static final String NETWORK_CONFIG = "networkConfig";
         static final String HARDWARE_CONFIG = "hardwareConfig";
         static final String HARDWARE_SETTINGS = "hardwareSettings";
-        static final String FIELD_CONFIG_FILE = "fieldLayout";
+        static final String FIELD_CONFIG = "fieldLayout";
         static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
 
@@ -441,44 +443,9 @@ public class ConfigProvider {
         } catch (UncheckedIOException e) {
             logger.error("Error loading WPILib field", e);
             logger.info("Creating an empty field");
-            field = new Field("", "", "", null, 0, 0, "", null);
+            field = new Field("Unknown", "", "", null, 0, 0, "", null);
         }
         return field;
-    }
-
-    /**
-     * MIGRATION: 2026
-     *
-     * <p>Loads the stored AprilTag field layout, migrating any legacy {@code AprilTagFieldLayout}
-     * JSON to the newer {@link Field} format before deserializing. If a migration happened the
-     * upgraded JSON is written back to the database so the stored data self-upgrades.
-     */
-    private Field loadField(Connection conn) {
-        String configString = getOneConfigFile(conn, GlobalKeys.FIELD_CONFIG_FILE);
-        if (configString.isBlank()) {
-            // Fall back to the legacy key used by databases written before the Field migration
-            configString = getOneConfigFile(conn, "apriltagFieldLayout");
-        }
-        if (configString.isBlank()) {
-            logger.debug("No " + Field.class.getSimpleName() + " in database");
-            return fieldDefault();
-        }
-
-        try {
-            String migrated = FieldLayoutMigration.migrateFieldLayoutJson(configString);
-            if (!migrated.equals(configString)) {
-                logger.info("Migrated legacy AprilTagFieldLayout to Field format, persisting to database");
-                if (!saveOneFile(GlobalKeys.FIELD_CONFIG_FILE, migrated)) {
-                    logger.error("Could not persist migrated field layout to database!");
-                }
-            }
-            return Jsonb.instance().type(Field.class).fromJson(migrated);
-        } catch (RuntimeException e) {
-            logger.error("Could not deserialize " + Field.class.getSimpleName() + " from database!", e);
-        }
-
-        // either the config entry was corrupt or Jsonb threw an exception
-        return fieldDefault();
     }
 
     public void load() {
@@ -502,7 +469,8 @@ public class ConfigProvider {
                             GlobalKeys.NEURAL_NETWORK_PROPERTIES,
                             NeuralNetworkModelsSettings.class,
                             NeuralNetworkModelsSettings::new);
-            var field = loadField(conn);
+            var field =
+                    loadConfigOrDefault(conn, GlobalKeys.FIELD_CONFIG, Field.class, this::fieldDefault);
             var cams = loadCameraConfigs(conn);
 
             try {
@@ -685,85 +653,68 @@ public class ConfigProvider {
         }
     }
 
-    /**
-     * MIGRATION: 2026
-     *
-     * <p>When we migrate the field layout, we get the result as a string. Everything else has a path
-     * though, so we need this overload to maintain the prior behavior. To remove this migration,
-     * we'll want to delete this overload then make the other function accept a path again.
-     */
-    private boolean saveOneFile(String fname, Path path) {
+    private boolean saveOneConfig(String config, Path path) {
         try {
-            return saveOneFile(fname, Files.readString(path));
+            return saveOneConfig(config, Files.readString(path));
         } catch (IOException e) {
             logger.error("Error while reading file to save to global: ", e);
             return false;
         }
     }
 
-    private boolean saveOneFile(String fname, String contents) {
-        Connection conn = null;
-        PreparedStatement statement1 = null;
+    private boolean saveOneConfig(String config, String contents) {
+        Connection conn = createConn();
+        String sqlString =
+                String.format(
+                        "REPLACE INTO %s (%s, %s) VALUES (?,?);",
+                        Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS);
 
-        try {
-            conn = createConn();
-            if (conn == null) {
-                return false;
-            }
-
-            // Replace this camera's row with the new settings
-            var sqlString =
-                    String.format(
-                            "REPLACE INTO %s (%s, %s) VALUES (?,?);",
-                            Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS);
-
-            statement1 = conn.prepareStatement(sqlString);
-            addFile(statement1, fname, contents);
-            statement1.executeUpdate();
-
+        try (PreparedStatement pStatement = conn.prepareStatement(sqlString)) {
+            pStatement.setString(1, config);
+            pStatement.setString(2, contents);
+            pStatement.executeUpdate();
             conn.commit();
             return true;
         } catch (SQLException e) {
-            logger.error("Error while saving file to global: ", e);
+            logger.error("Error while saving configuration to global: ", e);
             try {
                 conn.rollback();
             } catch (SQLException e1) {
-                logger.error("Error rolling back changes: ", e);
+                logger.error("Error rolling back changes: ", e1);
             }
             return false;
         } finally {
             try {
-                if (statement1 != null) statement1.close();
                 conn.close();
             } catch (SQLException e) {
-                logger.error("SQL Error saving file " + fname, e);
+                logger.error("SQL Error saving configuration " + config, e);
             }
         }
     }
 
     public boolean saveUploadedHardwareConfig(Path uploadPath) {
         skipSavingHWCfg = true;
-        return saveOneFile(GlobalKeys.HARDWARE_CONFIG, uploadPath);
+        return saveOneConfig(GlobalKeys.HARDWARE_CONFIG, uploadPath);
     }
 
     public boolean saveUploadedHardwareSettings(Path uploadPath) {
         skipSavingHWSet = true;
-        return saveOneFile(GlobalKeys.HARDWARE_SETTINGS, uploadPath);
+        return saveOneConfig(GlobalKeys.HARDWARE_SETTINGS, uploadPath);
     }
 
     public boolean saveUploadedNetworkConfig(Path uploadPath) {
         skipSavingNWCfg = true;
-        return saveOneFile(GlobalKeys.NETWORK_CONFIG, uploadPath);
+        return saveOneConfig(GlobalKeys.NETWORK_CONFIG, uploadPath);
     }
 
     public boolean saveUploadedFieldLayout(Path uploadPath) {
         skipSavingAPRTG = true;
-        return saveOneFile(GlobalKeys.FIELD_CONFIG_FILE, uploadPath);
+        return saveOneConfig(GlobalKeys.FIELD_CONFIG, uploadPath);
     }
 
     public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
         skipSavingNNProps = true;
-        return saveOneFile(GlobalKeys.NEURAL_NETWORK_PROPERTIES, uploadPath);
+        return saveOneConfig(GlobalKeys.NEURAL_NETWORK_PROPERTIES, uploadPath);
     }
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {

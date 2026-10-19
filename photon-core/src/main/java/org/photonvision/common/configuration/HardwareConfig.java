@@ -21,7 +21,6 @@ import io.avaje.jsonb.Json;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.photonvision.common.hardware.statusLED.RGBStatusLED;
 
 @Json
 public class HardwareConfig {
@@ -89,36 +88,6 @@ public class HardwareConfig {
         releaseGPIOCommand = "";
         restartHardwareCommand = "";
         vendorFOV = -1;
-    }
-
-    // MIGRATION: 2026
-    @Json.Property("statusRGBPins")
-    void importStatusRGBPins(List<Integer> statusRGBPins) {
-        if (statusRGBPins.size() < 3) {
-            // Missing pins are unsupported
-            return;
-        }
-        if (statusLEDConfig.isEmpty()) {
-            statusLEDConfig = Optional.of(new RGBStatusLED.Config());
-        }
-        if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
-            var config = (RGBStatusLED.Config) statusLEDConfig.get();
-            config.redPin = statusRGBPins.get(0);
-            config.greenPin = statusRGBPins.get(1);
-            config.bluePin = statusRGBPins.get(2);
-        }
-    }
-
-    // MIGRATION: 2026
-    @Json.Property("statusRGBActiveHigh")
-    void importStatusRGBActiveHigh(boolean statusRGBActiveHigh) {
-        if (statusLEDConfig.isEmpty()) {
-            statusLEDConfig = Optional.of(new RGBStatusLED.Config());
-        }
-        if (statusLEDConfig.get() instanceof RGBStatusLED.Config) {
-            var config = (RGBStatusLED.Config) statusLEDConfig.get();
-            config.activeHigh = statusRGBActiveHigh;
-        }
     }
 
     /**

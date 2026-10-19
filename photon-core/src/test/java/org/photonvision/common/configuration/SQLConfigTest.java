@@ -17,12 +17,11 @@
 
 package org.photonvision.common.configuration;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.photonvision.common.configuration.migrations.DbMigration.Columns;
-import static org.photonvision.common.configuration.migrations.DbMigration.Tables;
 
 import io.avaje.json.JsonDataException;
 import io.avaje.jsonb.Jsonb;
@@ -47,6 +46,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.configuration.migrations.DbMigration.Columns;
+import org.photonvision.common.configuration.migrations.DbMigration.Tables;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -309,43 +310,32 @@ public class SQLConfigTest {
         Files.writeString(upload, Jsonb.instance().type(Field.class).toJson(field));
         assertTrue(provider.saveUploadedFieldLayout(upload));
 
+        // TODO: Shouldn't we close the ConfigProvider before creating a new one?
+        // Need to make ConfigProvider implement AutoCloseable and close the database connection in
+        // close().
         var reloaded = new ConfigProvider(folder);
         reloaded.load();
         assertEquals(field, reloaded.getConfig().getFieldLayout());
     }
 
     @Test
-    public void testFieldLayoutLegacyKeyFallback() throws SQLException {
-        var folder = tmpDir.resolve("field-legacy-key");
+    public void testLegacyAprilTagFieldLayout() throws IOException {
+        var folder = tmpDir.resolve("2026.3.4-apriltag");
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve("2026.3.4-apriltag").toFile(),
+                folder.toFile());
         var provider = new ConfigProvider(folder);
         provider.load();
 
-        var field = testField("LegacyKeyFallback");
-        writeGlobalKey(folder, "apriltagFieldLayout", Jsonb.instance().type(Field.class).toJson(field));
-
-        var reloaded = new ConfigProvider(folder);
-        reloaded.load();
-        assertEquals(field, reloaded.getConfig().getFieldLayout());
-    }
-
-    @Test
-    public void testFieldLayoutNewKeyPreferred() throws SQLException {
-        var folder = tmpDir.resolve("field-both-keys");
-        var provider = new ConfigProvider(folder);
-        provider.load();
-
-        var newKeyField = testField("NewKeyWins");
-        var legacyField = testField("LegacyKeyLoses");
-        writeGlobalKey(
-                folder,
-                ConfigProvider.GlobalKeys.FIELD_CONFIG_FILE,
-                Jsonb.instance().type(Field.class).toJson(newKeyField));
-        writeGlobalKey(
-                folder, "apriltagFieldLayout", Jsonb.instance().type(Field.class).toJson(legacyField));
-
-        var reloaded = new ConfigProvider(folder);
-        reloaded.load();
-        assertEquals(newKeyField, reloaded.getConfig().getFieldLayout());
+        var updatedField = provider.getConfig().getFieldLayout();
+        var field = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
+        assertAll(
+                "Field layout checks",
+                // () -> assertEquals(field.tags, updatedField.tags),  // Works now, but will break when the
+                // tags in WPILib 2027 are updated for the new coordinate system
+                () -> assertEquals(field.tags.size(), updatedField.tags.size()),
+                () -> assertEquals(field.length, updatedField.length),
+                () -> assertEquals(field.width, updatedField.width));
     }
 
     @Test
