@@ -425,14 +425,9 @@ public class ConfigProvider {
             logger.debug("No " + ref.getSimpleName() + " in database");
         }
         // either the config entry is empty or Jsonb threw an exception
-        try {
-            configObj = factory.get();
-            logger.info("Loaded default " + ref.getSimpleName());
-            return configObj;
-        } catch (Exception e) {
-            logger.error("Failed to construct a default instance of " + ref.getSimpleName(), e);
-        }
-        return null;
+        configObj = factory.get();
+        logger.info("Loaded default " + ref.getSimpleName());
+        return configObj;
     }
 
     private Field fieldDefault() {
