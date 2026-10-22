@@ -34,6 +34,7 @@
 #include <wpi/fields/FieldTag.hpp>
 #include <wpi/util/deprecated.hpp>
 
+#include "photon/PhotonPoseEstimator.h"
 #include "photon/PhotonUtils.h"
 #include "photon/estimation/VisionEstimation.h"
 
@@ -626,6 +627,74 @@ TEST_CASE_METHOD(VisionSystemSimTest, "TestPoseEstimationRotated",
   REQUIRE_THAT(pose2.Z().to<double>(), Catch::Matchers::WithinAbs(0, 0.01));
   REQUIRE_THAT(
       pose2.Rotation().Z().to<double>(),
+      Catch::Matchers::WithinAbs(
+          wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>(),
+          0.01));
+}
+
+TEST_CASE_METHOD(VisionSystemSimTest, "TestRioMultiTagRotatedCamera",
+                 "[photonlib]") {
+  // Regression test: the rotation returned by MULTI_TAG_PNP_ON_RIO must match
+  // the true robot pose even when the camera is pitched and rolled. A previous
+  // bug in the OpenCV rotation-vector conversion inverted the camera rotation,
+  // doubling any pitch/roll component (a 15-degree camera pitch produced a
+  // 30-degree rotation error).
+  wpi::math::Transform3d robotToCamera{
+      wpi::math::Translation3d{6_in, 6_in, 6_in},
+      wpi::math::Rotation3d{10_deg, -20_deg, 15_deg}};
+
+  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::PhotonCamera camera{"cameraRioMultiTag"};
+  photon::PhotonCameraSim cameraSim{&camera};
+  visionSysSim.AddCamera(&cameraSim, robotToCamera);
+  cameraSim.prop.SetCalibration(640, 480, wpi::math::Rotation2d{90_deg});
+  cameraSim.SetMinTargetAreaPixels(20.0);
+
+  std::vector<wpi::fields::FieldTag> tagList;
+  tagList.emplace_back(wpi::fields::FieldTag{
+      0, wpi::math::Pose3d{
+             10_m, 3_m, 1_m,
+             wpi::math::Rotation3d{0_rad, 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi}}}});
+  tagList.emplace_back(wpi::fields::FieldTag{
+      1, wpi::math::Pose3d{
+             10_m, 0.5_m, 0.4_m,
+             wpi::math::Rotation3d{0_rad, 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi}}}});
+  wpi::units::meter_t fieldLength{54};
+  wpi::units::meter_t fieldWidth{27};
+  wpi::fields::Field layout{"Test",      "Test",     "Test", std::nullopt,
+                            fieldLength, fieldWidth, "frc",  tagList};
+  wpi::math::Pose2d robotPose{wpi::math::Translation2d{6_m, 1.5_m},
+                              wpi::math::Rotation2d{-5_deg}};
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{tagList[0].pose, photon::kAprilTag36h11, 0},
+       photon::VisionTargetSim{tagList[1].pose, photon::kAprilTag36h11, 1}});
+  visionSysSim.Update(robotPose);
+
+  auto camResults = camera.GetLatestResult();
+  // The on-RIO multitag strategy needs at least two tags in the layout.
+  REQUIRE(camResults.GetTargets().size() >= static_cast<size_t>(2));
+
+  photon::PhotonPoseEstimator estimator(layout, robotToCamera);
+  auto estimatedPose = estimator.EstimateRioMultiTagPose(
+      camResults, camera.GetCameraMatrix().value(),
+      camera.GetDistCoeffs().value());
+  REQUIRE(estimatedPose.has_value());
+  CHECK(photon::MULTI_TAG_PNP_ON_RIO == estimatedPose.value().strategy);
+
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
+  REQUIRE_THAT(pose.X().to<double>(), Catch::Matchers::WithinAbs(6, 0.01));
+  REQUIRE_THAT(pose.Y().to<double>(), Catch::Matchers::WithinAbs(1.5, 0.01));
+  REQUIRE_THAT(pose.Z().to<double>(), Catch::Matchers::WithinAbs(0, 0.01));
+  // The robot itself is upright; all camera pitch/roll is in robotToCamera and
+  // must cancel out of the robot pose.
+  REQUIRE_THAT(pose.Rotation().X().to<double>(),
+               Catch::Matchers::WithinAbs(0, 0.01));
+  REQUIRE_THAT(pose.Rotation().Y().to<double>(),
+               Catch::Matchers::WithinAbs(0, 0.01));
+  REQUIRE_THAT(
+      pose.Rotation().Z().to<double>(),
       Catch::Matchers::WithinAbs(
           wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>(),
           0.01));

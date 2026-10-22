@@ -24,7 +24,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 
@@ -69,7 +69,7 @@ public class PipelineManagerTest {
     @Test
     public void testChangeType() {
         // hack since we try to publish to datachangeservice
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
 
         PipelineManager manager = new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
         // add a reflective pipeline

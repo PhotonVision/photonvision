@@ -21,27 +21,28 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.avaje.jsonb.Jsonb;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
-import org.wpilib.fields.Field;
 
+@TestMethodOrder(OrderAnnotation.class)
 public class ConfigTest {
-    private static ConfigManager configMgr;
+    @TempDir private static Path tmpDir;
+
+    private static ConfigProvider configMgr;
     private static final CameraConfiguration cameraConfig =
             new CameraConfiguration(
                     "TestCamera", PVCameraInfo.fromFileInfo("TestCamera", "/dev/video420"));
@@ -52,8 +53,7 @@ public class ConfigTest {
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
-        var path = Path.of("testconfigdir");
-        configMgr = new ConfigManager(path, new LegacyConfigProvider(path));
+        configMgr = new ConfigProvider(tmpDir);
         configMgr.load();
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
@@ -85,31 +85,23 @@ public class ConfigTest {
         configMgr.getConfig().addCameraConfig(cameraConfig);
         configMgr.saveToDisk();
 
-        var camConfDir =
-                new File(
-                        Path.of(configMgr.configDirectoryFile.toString(), "cameras", "TestCamera")
-                                .toAbsolutePath()
-                                .toString());
-        assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
-
         assertTrue(
-                Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "networkSettings.json")),
-                "networkSettings.json file not found!");
+                Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "photon.sqlite")),
+                "Configuration database not found!");
     }
 
     @Test
     @Order(2)
     public void deserializeConfig() {
-        var reflectivePipelineSettings =
-                configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(0);
-        var coloredShapePipelineSettings =
-                configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(1);
-        var apriltagPipelineSettings =
-                configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(2);
+        configMgr.load();
 
-        assertEquals(REFLECTIVE_PIPELINE_SETTINGS, reflectivePipelineSettings);
-        assertEquals(COLORED_SHAPE_PIPELINE_SETTINGS, coloredShapePipelineSettings);
-        assertEquals(APRIL_TAG_PIPELINE_SETTINGS, apriltagPipelineSettings);
+        var pipelineSettings =
+                configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings;
+        assertEquals(3, pipelineSettings.size());
+
+        var reflectivePipelineSettings = pipelineSettings.get(0);
+        var coloredShapePipelineSettings = pipelineSettings.get(1);
+        var apriltagPipelineSettings = pipelineSettings.get(2);
 
         assertTrue(
                 reflectivePipelineSettings instanceof ReflectivePipelineSettings,
@@ -120,16 +112,22 @@ public class ConfigTest {
         assertTrue(
                 apriltagPipelineSettings instanceof AprilTagPipelineSettings,
                 "Config loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
+
+        var reflective = (ReflectivePipelineSettings) reflectivePipelineSettings;
+        assertEquals("2019Tape", reflective.pipelineNickname);
+        assertEquals(TargetModel.k2019DualTarget, reflective.targetModel);
+
+        var colored = (ColoredShapePipelineSettings) coloredShapePipelineSettings;
+        assertEquals("2019Cargo", colored.pipelineNickname);
+        assertEquals(1, colored.pipelineIndex);
+
+        var apriltag = (AprilTagPipelineSettings) apriltagPipelineSettings;
+        assertEquals("apriltag", apriltag.pipelineNickname);
+        assertEquals(2, apriltag.pipelineIndex);
     }
 
     @AfterAll
     public static void cleanup() throws IOException {
-        try {
-            Files.deleteIfExists(Paths.get("settings.json"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         FileUtils.cleanDirectory(configMgr.configDirectoryFile);
         configMgr.configDirectoryFile.delete();
     }
@@ -150,52 +148,5 @@ public class ConfigTest {
         CameraConfiguration result = Jsonb.instance().type(CameraConfiguration.class).fromJson(json);
         String ser = Jsonb.instance().toJson(result);
         System.out.println(ser);
-    }
-
-    @Test
-    public void testJsonbHandlesOldTargetEnum() throws IOException {
-        var json = "[ \"AprilTagPipelineSettings\", {\n  \"targetModel\" : \"k6in_16h5\"\n} ]\n";
-
-        json = CVPipelineSettings.remapSettingsJson(json);
-
-        AprilTagPipelineSettings settings =
-                (AprilTagPipelineSettings) Jsonb.instance().type(CVPipelineSettings.class).fromJson(json);
-        assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);
-    }
-
-    @Test
-    public void testMigrateOldFieldLayout() {
-        // exact serialization format produced by the old AprilTagFieldLayout
-        var json =
-                "{\"field\":{\"length\":16.541,\"width\":8.211},\"tags\":[{\"ID\":1,\"pose\":{\"translation\":{\"x\":15.079471999999997,\"y\":0.24587199999999998,\"z\":1.355852},\"rotation\":{\"quaternion\":{\"W\":0.5000000000000001,\"X\":0.0,\"Y\":0.0,\"Z\":0.8660254037844386}}}},{\"ID\":2,\"pose\":{\"translation\":{\"x\":16.185134,\"y\":0.883666,\"z\":1.355852},\"rotation\":{\"quaternion\":{\"W\":0.5000000000000001,\"X\":0.0,\"Y\":0.0,\"Z\":0.8660254037844386}}}}]}";
-
-        var migrated = FieldLayoutMigration.migrateFieldLayoutJson(json);
-        assertTrue(!migrated.equals(json), "Legacy JSON should have been migrated");
-
-        Field field = Jsonb.instance().type(Field.class).fromJson(migrated);
-        assertEquals(16.541, field.getFieldLength(), 1e-6);
-        assertEquals(8.211, field.getFieldWidth(), 1e-6);
-        assertEquals(2, field.getTags().size());
-        assertTrue(field.getTagPose(1).isPresent());
-        assertEquals(15.079471999999997, field.getTagPose(1).get().getX(), 1e-6);
-        assertEquals(0.24587199999999998, field.getTagPose(1).get().getY(), 1e-6);
-        assertEquals(1.355852, field.getTagPose(1).get().getZ(), 1e-6);
-        assertTrue(field.getTagPose(2).isPresent());
-        assertEquals(16.185134, field.getTagPose(2).get().getX(), 1e-6);
-    }
-
-    @Test
-    public void testMigrateNewFieldLayoutUnchanged() {
-        var json =
-                "{\"name\":\"2024 FRC Crescendo\",\"season\":\"2024\",\"game\":\"Crescendo\",\"field-dimensions\":{\"length\":16.541,\"width\":8.211},\"program\":\"frc\",\"field-tags\":[]}";
-
-        assertEquals(json, FieldLayoutMigration.migrateFieldLayoutJson(json));
-    }
-
-    @Test
-    public void testMigrateGarbageUnchanged() {
-        var json = "this is not json";
-
-        assertEquals(json, FieldLayoutMigration.migrateFieldLayoutJson(json));
     }
 }

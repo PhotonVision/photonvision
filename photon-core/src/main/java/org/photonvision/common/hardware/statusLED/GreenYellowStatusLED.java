@@ -105,7 +105,7 @@ public class GreenYellowStatusLED implements StatusLED {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         greenLED.close();
         yellowLED.close();
     }

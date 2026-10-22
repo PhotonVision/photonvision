@@ -175,4 +175,4 @@ For more information on the `PhotonPoseEstimator` class, please see the API docu
 
 - [Java Documentation](https://javadocs.photonvision.org/release/org/photonvision/PhotonPoseEstimator.html)
 - [C++ Documentation](https://cppdocs.photonvision.org/release/classphoton_1_1_photon_pose_estimator.html)
-- [Python Documentation](https://pydocs.photonvision.org/release/reference/photonPoseEstimator/)
+- [Python Documentation](https://pydocs.photonvision.org/release/reference/photon_pose_estimator/)
