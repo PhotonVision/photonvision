@@ -197,4 +197,7 @@ RKDevTool is only being used here to update the U-Boot-based bootloader stored i
 ## Flashing the USB drive
 1. Download the PhotonVision image for your supported device and Raspberry Pi Imager.
 2. Use Raspberry Pi Imager to write the image to a USB drive.
-3. Connect the USB drive to a USB 3.0 port on the board.
+3. Connect the USB drive to a USB port (ideally USB 3.0) on the board.
+```{note}
+If your board has multiple USB ports, use the one specified in your board's documentation for booting.
+```
