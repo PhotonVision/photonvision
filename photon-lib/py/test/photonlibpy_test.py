@@ -19,7 +19,7 @@ from time import sleep
 
 import ntcore
 from photonlibpy import PhotonCamera
-from photonlibpy.photonCamera import setVersionCheckEnabled
+from photonlibpy.photon_camera import setVersionCheckEnabled
 
 
 def test_roundTrip():

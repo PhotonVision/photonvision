@@ -133,7 +133,7 @@ def __convert_cal_to_mrcal_cameramodel(
             # note that we expect row-major observations here. I think this holds
             np.array(
                 fill_missing_corners(
-                    list(map(lambda it: [it.x, it.y, WEIGHT], o.locationInImageSpace)),
+                    [[it.x, it.y, WEIGHT] for it in o.locationInImageSpace],
                     int(cal.calobjectSize.width),
                     int(cal.calobjectSize.height),
                 )
@@ -211,10 +211,12 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
         with open(f"{output_folder}/corners.vnl", "w+") as vnl_file:
             vnl_file.write("# filename x y level\n")
 
-            for obs in camera_cal_data.observations:
-                for corner in obs.locationInImageSpace:
-                    # Always level zero
-                    vnl_file.write(f"{obs.snapshotName} {corner.x} {corner.y} 0\n")
+            # Always level zero
+            vnl_file.writelines(
+                f"{obs.snapshotName} {corner.x} {corner.y} 0\n"
+                for obs in camera_cal_data.observations
+                for corner in obs.locationInImageSpace
+            )
 
             vnl_file.flush()
 

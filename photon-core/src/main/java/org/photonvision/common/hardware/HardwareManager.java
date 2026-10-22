@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.configuration.StatusLedConfig;
@@ -194,7 +194,7 @@ public class HardwareManager implements AutoCloseable {
         if (percent != hardwareSettings.ledBrightnessPercentage) {
             hardwareSettings.ledBrightnessPercentage = percent;
             visionLED.ifPresent(visionLED -> visionLED.setBrightness(percent));
-            ConfigManager.getInstance().requestSave();
+            ConfigProvider.getInstance().requestSave();
             logger.info("Setting led brightness to " + percent + "%");
         }
     }
@@ -203,7 +203,7 @@ public class HardwareManager implements AutoCloseable {
         logger.info("Shutting down LEDs...");
         visionLED.ifPresent(visionLED -> visionLED.setState(false));
 
-        ConfigManager.getInstance().onJvmExit();
+        ConfigProvider.getInstance().onJvmExit();
     }
 
     public boolean restartDevice() {
