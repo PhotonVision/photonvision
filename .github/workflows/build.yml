@@ -127,18 +127,14 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-26.04
-    container: wpilib/systemcore-cross-debian:trixie
+    container: wpilib/debian-base:trixie
     needs: [validation]
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      # Needed to make sure the version works properly in a container
       - run: git config --global --add safe.directory /__w/photonvision/photonvision
-      - run: git fetch --tags --force
-      - uses: actions/setup-java@v5
-        with:
-          java-version: 25
-          distribution: temurin
       - uses: pnpm/action-setup@v5
         with:
           version: 11
@@ -266,7 +262,7 @@ jobs:
           - container: wpilib/aarch64-cross-debian:trixie
             artifact-name: Aarch64
             build-options: "-Ponlylinuxarm64"
-          - container: wpilib/systemcore-cross-debian:trixie
+          - container: wpilib/debian-base:trixie
             artifact-name: Linux
             build-options: "-Ponlylinuxx86-64"
 
@@ -278,9 +274,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Config Git
-        run: |
-          git config --global --add safe.directory /__w/photonvision/photonvision
+      # Needed to make the version works properly in a container
+      - run: git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
         run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
@@ -331,21 +326,28 @@ jobs:
           - os: ubuntu-26.04
             artifact-name: Linux
             arch-override: linuxx86-64
+            container: wpilib/debian-base:trixie
           - os: ubuntu-26.04
             artifact-name: LinuxArm64
             arch-override: linuxarm64
+            container: wpilib/aarch64-cross-debian:trixie
 
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
 
     steps: &build-package-steps
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      # Needed to make sure the version works properly in a container
+      - run: git config --global --add safe.directory /__w/photonvision/photonvision
+        if: runner.os == 'Linux'
       - uses: actions/setup-java@v5
         with:
           java-version: 25
           distribution: temurin
+        if: runner.os != 'Linux'
       - uses: pnpm/action-setup@v5
         with:
           version: 11
@@ -354,22 +356,11 @@ jobs:
           node-version: 24
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
-      - name: Install Arm64 Toolchain
-        run: ./gradlew installArm64Toolchain
-        if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
-      - name: Make GCC 14 the default toolchain (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
       - uses: actions/download-artifact@v8
         with:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
-      - run: ./gradlew photon-targeting:jar photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }}
-        if: ${{ (matrix.arch-override != 'none') }}
-      - run: ./gradlew photon-server:shadowJar
-        if: ${{ (matrix.arch-override == 'none') }}
+      - run: ./gradlew photon-targeting:jar photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }} -Ponly${{ matrix.arch-override }}
       - uses: actions/upload-artifact@v7
         with:
           archive: false
