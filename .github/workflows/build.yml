@@ -360,7 +360,7 @@ jobs:
         with:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
-      - run: ./gradlew photon-targeting:jar photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }} -Ponly=${{ matrix.arch-override }}
+      - run: ./gradlew photon-targeting:jar photon-server:shadowJar -PArchOverride=${{ matrix.arch-override }} -Ponly${{ matrix.arch-override }}
       - uses: actions/upload-artifact@v7
         with:
           archive: false
