@@ -342,12 +342,12 @@ jobs:
           fetch-depth: 0
       # Needed to make sure the version works properly in a container
       - run: git config --global --add safe.directory /__w/photonvision/photonvision
-        if: ${{ (matrix.os == 'ubuntu-26.04') }}
+        if: runner.os == 'Linux'
       - uses: actions/setup-java@v5
         with:
           java-version: 25
           distribution: temurin
-        if: ${{ (matrix.os != 'ubuntu-26.04') }}
+        if: runner.os != 'Linux'
       - uses: pnpm/action-setup@v5
         with:
           version: 11
