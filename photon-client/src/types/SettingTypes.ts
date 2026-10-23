@@ -37,7 +37,7 @@ export interface MetricData {
   gpuMemUtil?: number;
   diskUtilPct?: number;
   diskUsableSpace?: number;
-  npuUsage?: number[];
+  npuUsage?: Map<string, number>;
   ipAddress?: string;
   uptime?: number;
   sentBitRate?: number;
