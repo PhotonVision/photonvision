@@ -111,6 +111,18 @@ public class Calibrate3dPipe
 
         var dt = System.nanoTime() - start;
 
+        // A negative focal length is physically impossible, so reject the calibration
+        if (ret != null && (ret.cameraIntrinsics.data[0] < 0 || ret.cameraIntrinsics.data[4] < 0)) {
+            logger.error(
+                    "Calibration produced a negative focal length (fx="
+                            + ret.cameraIntrinsics.data[0]
+                            + ", fy="
+                            + ret.cameraIntrinsics.data[4]
+                            + "); rejecting result");
+            ret.release();
+            ret = null;
+        }
+
         if (ret != null) {
             logger.info(
                     "CALIBRATION SUCCESS for res "
