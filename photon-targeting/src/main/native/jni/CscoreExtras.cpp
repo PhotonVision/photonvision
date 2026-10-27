@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define WPI_RAWFRAME_JNI 1
+
+#include <limits>
 #include <string>
 
 #include <opencv2/core/mat.hpp>
@@ -28,7 +31,7 @@
 using namespace wpi::util::java;
 static JException videoEx;
 static const JExceptionInit exceptions[] = {
-    {"edu/wpi/first/cscore/VideoException", &videoEx}};
+    {"org/wpilib/vision/camera/VideoException", &videoEx}};
 static void ReportError(JNIEnv* env, CS_Status status) {
   if (status == CS_OK) {
     return;
@@ -104,17 +107,75 @@ static inline int GetCVFormat(int wpiFormat) {
 
 #include <cstdio>
 
+static JavaVM* jvm = nullptr;
+static JClass rawFrameCls;
+
+static const JClassInit classes[] = {
+    {"org/wpilib/util/RawFrame", &rawFrameCls}};
+
+bool InitTimeSyncClientJNI(JNIEnv* env);
+void FreeTimeSyncClientJNI(JNIEnv* env);
+
 extern "C" {
+
+// From wpilib AprilTagJNI.cpp
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+  jvm = vm;
+
+  JNIEnv* env;
+  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+    return JNI_ERR;
+  }
+
+  // Cache references to classes
+  for (auto& c : classes) {
+    *c.cls = JClass(env, c.name);
+    if (!*c.cls) {
+      std::fprintf(stderr, "could not load class %s\n", c.name);
+      return JNI_ERR;
+    }
+  }
+
+  for (auto& c : exceptions) {
+    *c.cls = JException(env, c.name);
+    if (!*c.cls) {
+      std::fprintf(stderr, "could not load exception %s\n", c.name);
+      return JNI_ERR;
+    }
+  }
+
+  if (!InitTimeSyncClientJNI(env)) {
+    return JNI_ERR;
+  }
+
+  return JNI_VERSION_1_6;
+}
+
+JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved) {
+  JNIEnv* env;
+  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+    return;
+  }
+  // Delete global references
+  for (auto& c : classes) {
+    c.cls->free(env);
+  }
+  for (auto& c : exceptions) {
+    c.cls->free(env);
+  }
+  FreeTimeSyncClientJNI(env);
+  jvm = nullptr;
+}
 
 /*
  * Class:     org_photonvision_jni_CscoreExtras
  * Method:    grabRawSinkFrameTimeoutLastTime
- * Signature: (IJDJ)J
+ * Signature: (ILjava/lang/Object;JDJ)J
  */
 JNIEXPORT jlong JNICALL
 Java_org_photonvision_jni_CscoreExtras_grabRawSinkFrameTimeoutLastTime
-  (JNIEnv* env, jclass, jint sink, jlong framePtr, jdouble timeout,
-   jlong lastFrameTimeout)
+  (JNIEnv* env, jclass, jint sink, jobject frameObj, jlong framePtr,
+   jdouble timeout, jlong lastFrameTimeout)
 {
   auto* frame = reinterpret_cast<wpi::util::RawFrame*>(framePtr);
   CS_Status status = 0;
@@ -125,6 +186,8 @@ Java_org_photonvision_jni_CscoreExtras_grabRawSinkFrameTimeoutLastTime
   if (!CheckStatus(env, status)) {
     return 0;
   }
+
+  wpi::util::SetFrameData(env, rawFrameCls, frameObj, *frame, false);
 
   return rv;
 }
@@ -139,6 +202,15 @@ Java_org_photonvision_jni_CscoreExtras_wrapRawFrame
   (JNIEnv*, jclass, jlong framePtr)
 {
   auto* frame = reinterpret_cast<wpi::util::RawFrame*>(framePtr);
+
+  if (frame->pixelFormat == WPI_PIXFMT_MJPEG) {
+    if (!frame->data || frame->size == 0 || frame->size > frame->capacity ||
+        frame->size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+      return reinterpret_cast<jlong>(new cv::Mat());
+    }
+    return reinterpret_cast<jlong>(
+        new cv::Mat(1, static_cast<int>(frame->size), CV_8UC1, frame->data));
+  }
 
   return reinterpret_cast<jlong>(new cv::Mat(frame->height, frame->width,
                                              GetCVFormat(frame->pixelFormat),
