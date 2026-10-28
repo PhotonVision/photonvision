@@ -45,6 +45,10 @@ public class MJPGFrameConsumer implements AutoCloseable {
         this(name, 320, 240, port);
     }
 
+    public boolean isStreamConsumed() {
+        return cvSource != null && cvSource.isEnabled();
+    }
+
     public void accept(CVMat image) {
         long now = NetworkTablesJNI.now();
 
