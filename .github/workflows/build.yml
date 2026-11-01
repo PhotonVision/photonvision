@@ -215,7 +215,7 @@ jobs:
 
   build-photonlib-host:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 14
+      MACOSX_DEPLOYMENT_TARGET: 15
     strategy:
       fail-fast: false
       matrix:
