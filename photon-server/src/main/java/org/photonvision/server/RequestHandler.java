@@ -605,6 +605,23 @@ public class RequestHandler {
         try {
             DataCalibrationImportRequest request = ctx.bodyAsClass(DataCalibrationImportRequest.class);
 
+            // A negative focal length is physically impossible, so reject the calibration
+            var intrinsics =
+                    request.calibration != null && request.calibration.cameraIntrinsics != null
+                            ? request.calibration.cameraIntrinsics.data
+                            : null;
+            if (intrinsics == null || intrinsics.length < 5 || intrinsics[0] < 0 || intrinsics[4] < 0) {
+                ctx.status(400);
+                ctx.result("The provided calibration data was malformed: invalid camera intrinsics");
+                logger.error(
+                        "Rejected calibration import with invalid intrinsics (fx="
+                                + (intrinsics != null && intrinsics.length > 0 ? intrinsics[0] : "n/a")
+                                + ", fy="
+                                + (intrinsics != null && intrinsics.length > 4 ? intrinsics[4] : "n/a")
+                                + ")");
+                return;
+            }
+
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
                             DataChangeDestination.DCD_ACTIVEMODULE,
