@@ -3,7 +3,7 @@
 - For the following supported coprocessors
   - {ref}`Raspberry Pi 3,4,5 <docs/quick-start/quick-install:Raspberry Pi and Orange Pi Installation>`
   - {ref}`Orange Pi 5, 5B, 5 Pro <docs/quick-start/quick-install:Raspberry Pi and Orange Pi Installation>`
-  - {ref}`Limelight 2, 2+, 3, 3G, 4 <docs/quick-start/quick-install:LimeLight Installation>`
+  - {ref}`Limelight 2, 2+, 3, 3G, 4 <docs/quick-start/quick-install:Limelight Installation>`
   - {ref}`Rubik Pi 3 <docs/quick-start/quick-install:Rubik Pi 3 Installation>`
 
 For installing on non-supported devices {ref}`see here. <docs/advanced-installation/sw_install/index:Software Installation>`
@@ -26,7 +26,9 @@ Unless otherwise noted in release notes or if updating from the prior years vers
 
 ## Raspberry Pi and Orange Pi Installation
 
-Use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to flash the image onto the coprocessors microSD card. Select the downloaded `.img.xz` file, select your microSD card, and flash.
+### microSD Installation
+
+Use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to flash the image onto the coprocessor's microSD card. Select the downloaded `.img.xz` file, select your microSD card, and flash.
 
 :::{warning}
 Avoid using Raspberry Pi Imager version 2.0.2 or later. Those versions fail to write the image to an SD card. Versions 2.0.0 and earlier write images successfully. [GitHub issue 1489](https://github.com/raspberrypi/rpi-imager/issues/1489) was created for this problem.
@@ -35,6 +37,10 @@ Avoid using Raspberry Pi Imager version 2.0.2 or later. Those versions fail to w
 :::{warning}
 Balena Etcher has been recommended in the past, but should no longer be used due to instability and lack of ongoing support from developers.
 :::
+
+### USB Drive Installation
+
+PhotonVision can also boot from a USB drive or SSD. Some boards need a one-time bootloader update first. See the [USB Drive Installation guide](usb-install.md) for requirements and setup steps.
 
 ## Limelight Installation
 

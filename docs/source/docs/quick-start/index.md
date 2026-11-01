@@ -5,6 +5,7 @@
 
 common-setups
 quick-install
+usb-install
 wiring
 networking
 camera-matching
