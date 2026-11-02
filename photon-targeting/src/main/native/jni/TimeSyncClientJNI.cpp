@@ -62,28 +62,27 @@ class JClass {
 static JClass metadataClass;
 static jmethodID metadataCtor;
 
-// TODO - only one onload allowed
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
-  JNIEnv* env;
-  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-    return JNI_ERR;
-  }
-
+bool InitTimeSyncClientJNI(JNIEnv* env) {
   metadataClass =
       JClass(env, "org/photonvision/jni/TimeSyncClient$PingMetadata");
 
   if (!metadataClass) {
-    std::printf("Couldn't find class!");
-    return JNI_ERR;
+    std::printf("Couldn't find class!\n");
+    return false;
   }
 
   metadataCtor = env->GetMethodID(metadataClass, "<init>", "(JJJJJ)V");
   if (!metadataCtor) {
-    std::printf("Couldn't find constructor!");
-    return JNI_ERR;
+    std::printf("Couldn't find constructor!\n");
+    return false;
   }
 
-  return JNI_VERSION_1_6;
+  return true;
+}
+
+void FreeTimeSyncClientJNI(JNIEnv* env) {
+  metadataClass.free(env);
+  metadataCtor = nullptr;
 }
 
 extern "C" {
