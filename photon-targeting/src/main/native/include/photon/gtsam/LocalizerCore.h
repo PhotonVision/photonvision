@@ -99,12 +99,7 @@ class LocalizerCore {
    * If a given time is fully within the smoother history, find or interplate a
    * key for it
    */
-  Key InsertIntoSmoother(Key lower, Key upper, Key newKey, double newTime,
-                         gtsam::SharedNoiseModel odometryNoise);
-
-  // Claude Slop - For testing only, remove before shipping
-  Key ClaudeInsertIntoSmoother(Key lower, Key upper, Key newKey,
-                               double newTime);
+  Key InsertIntoSmoother(Key lower, Key upper, Key newKey, double newTime);
 
   Key GetOrInsertKey(Key newKey, double time);
 

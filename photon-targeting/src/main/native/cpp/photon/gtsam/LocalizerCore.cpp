@@ -92,24 +92,16 @@ void LocalizerCore::AddOdometry(OdometryObservation odom) {
 }
 
 Key LocalizerCore::InsertIntoSmoother(Key lower, Key upper, Key newKey,
-                                      double newTime,
-                                      SharedNoiseModel odometryNoise) {
-  /**
-   * Goal: find the FactorIndex that connects our lower/upper key, and replace
-   * it with 2 new factors and an intermediatestate
-   */
+                                      double newTime) {
+  const auto& isam = smootherISAM2.getISAM2();
+  const VariableIndex& variableIndex = isam.getVariableIndex();
+  const NonlinearFactorGraph& currentFactors = isam.getFactorsUnsafe();
 
-  const VariableIndex& variableIndex =
-      smootherISAM2.getISAM2().getVariableIndex();
-  const NonlinearFactorGraph& currentFactors =
-      smootherISAM2.getISAM2().getFactorsUnsafe();
-
-  // FastMap<Key, FactorIndices>::const_iterator
-  const auto& factorsConnectedToUpper = variableIndex.find(upper);
-  const auto& factorsConnectedToLower = variableIndex.find(lower);
+  const auto factorsConnectedToUpper = variableIndex.find(upper);
+  const auto factorsConnectedToLower = variableIndex.find(lower);
 
   if (factorsConnectedToUpper == variableIndex.end() ||
-      factorsConnectedToUpper == variableIndex.end()) {
+      factorsConnectedToLower == variableIndex.end()) {
     // unclear what to do lol
     return 0;
   }
@@ -119,39 +111,36 @@ Key LocalizerCore::InsertIntoSmoother(Key lower, Key upper, Key newKey,
     for (const FactorIndex& idxUpper : factorsConnectedToUpper->second) {
       if (idxLower == idxUpper) {
         // found our connecting factor
-        FactorIndex foundIndex = idxLower;
+        if (idxLower >= currentFactors.size() || !currentFactors[idxLower]) continue; // bail
+        
+        auto edge = std::dynamic_pointer_cast<BetweenFactor<Pose3>>(currentFactors[idxLower]);
+        if (!edge || edge->key1() != lower || edge->key2() != upper) continue; // bail
 
-        if (foundIndex > currentFactors.size()) {
-          // TODO bail somehow
-          return 0;
+        if (std::find(factorsToRemove.begin(), factorsToRemove.end(), idxLower) !=
+        factorsToRemove.end()) {
+          throw std::runtime_error("InsertIntoSmoother: edge already being split"); // bail
         }
 
-        // Find the robot motion from lower to upper
-        const auto& poseDeltaLowerToUpper = twistsFromPreviousKey.find(upper);
-        if (poseDeltaLowerToUpper == twistsFromPreviousKey.end()) {
-          // todo bail
-          return 0;
-        }
+        const auto& ts = smootherISAM2.timestamps();
+        const double tLower = ts.at(lower);
+        const double tUpper = ts.at(upper);
+        const double t = (newTime - tLower) / (tUpper - tLower);
+
+        const Pose3& delta = edge->measured();
+        const SharedNoiseModel& noise = edge->noiseModel();
 
         // mark this factor for removal
-        factorsToRemove.push_back(foundIndex);
+        factorsToRemove.push_back(idxLower);
 
-        const auto totalTwist = Pose3::Logmap(poseDeltaLowerToUpper->second);
-        const double t = (static_cast<double>(newKey - lower)) /
-                         (static_cast<double>(upper - lower));
-        const auto twistLowerToMid = totalTwist * t;
-        // const auto twistMidToHigh = totalTwist - twistLowerToMid; // this is
-        // unused
+        const Vector6 totalTwist = Pose3::Logmap(delta);
+        const Pose3 deltaLowerToMid = Pose3::Expmap(totalTwist * t);
+        const Pose3 deltaMidToHigh = Pose3::Expmap(totalTwist * (1.0 - t));
 
-        // And add odometry pose deltas
-        Pose3 deltaLowerToMid = Pose3::Expmap(twistLowerToMid);
-        Pose3 deltaMidToHigh = Pose3::Expmap(twistLowerToMid);
         graph.emplace_shared<BetweenFactor<Pose3>>(
-            lower, newKey, deltaLowerToMid, odometryNoise);
+            lower, newKey, deltaLowerToMid, noise);
         graph.emplace_shared<BetweenFactor<Pose3>>(
-            newKey, upper, deltaMidToHigh, odometryNoise);
-
-        // and add estimates
+            newKey, upper, deltaMidToHigh, noise);
+        
         Pose3 currentWorldToLower =
             smootherISAM2.calculateEstimate<Pose3>(lower);
         currentEstimate.insert(
@@ -164,82 +153,7 @@ Key LocalizerCore::InsertIntoSmoother(Key lower, Key upper, Key newKey,
       }
     }
   }
-
-  // TODO: bail somehow
-  return 0;
-}
-
-// Claude slop, FOR TESTING ONLY - Remove before shipping. If ts works, figure
-// out why and fix the real insertintosmoother function
-Key LocalizerCore::ClaudeInsertIntoSmoother(Key lower, Key upper, Key newKey,
-                                            double newTime) {
-  const auto& isam = smootherISAM2.getISAM2();
-  const VariableIndex& variableIndex = isam.getVariableIndex();
-  const NonlinearFactorGraph& currentFactors = isam.getFactorsUnsafe();
-
-  // Fix 1: check BOTH keys
-  const auto lowerIt = variableIndex.find(lower);
-  const auto upperIt = variableIndex.find(upper);
-  if (lowerIt == variableIndex.end() || upperIt == variableIndex.end()) {
-    throw std::runtime_error("InsertIntoSmoother: key missing from ISAM");
-  }
-
-  for (const FactorIndex idx : lowerIt->second) {
-    // Only factors touching both keys
-    if (std::find(upperIt->second.begin(), upperIt->second.end(), idx) ==
-        upperIt->second.end()) {
-      continue;
-    }
-
-    // Fix 4: correct bounds check, plus skip empty (reused) slots
-    if (idx >= currentFactors.size() || !currentFactors[idx]) continue;
-
-    // Fix 3: make sure it's the odometry edge, not a marginal factor
-    auto edge =
-        std::dynamic_pointer_cast<BetweenFactor<Pose3>>(currentFactors[idx]);
-    if (!edge || edge->key1() != lower || edge->key2() != upper) continue;
-
-    // Fix 7: don't split the same edge twice before Optimize()
-    if (std::find(factorsToRemove.begin(), factorsToRemove.end(), idx) !=
-        factorsToRemove.end()) {
-      throw std::runtime_error("InsertIntoSmoother: edge already being split");
-    }
-
-    // Fraction from timestamps, not key arithmetic
-    const auto& ts = smootherISAM2.timestamps();
-    const double tLower = ts.at(lower);
-    const double tUpper = ts.at(upper);
-    const double t = (newTime - tLower) / (tUpper - tLower);
-
-    // Read motion + noise from the edge itself (no side map needed)
-    const Pose3& delta = edge->measured();
-    const SharedNoiseModel& noise = edge->noiseModel();
-
-    // Fix 2: second half is the REMAINDER of the motion
-    const Vector6 totalTwist = Pose3::Logmap(delta);
-    const Pose3 deltaLowerToMid = Pose3::Expmap(totalTwist * t);
-    const Pose3 deltaMidToHigh = Pose3::Expmap(totalTwist * (1.0 - t));
-    // (equivalently: deltaLowerToMid.inverse() * delta)
-
-    factorsToRemove.push_back(idx);
-    graph.emplace_shared<BetweenFactor<Pose3>>(lower, newKey, deltaLowerToMid,
-                                               noise);
-    graph.emplace_shared<BetweenFactor<Pose3>>(newKey, upper, deltaMidToHigh,
-                                               noise);
-
-    const Pose3 worldTLower = smootherISAM2.calculateEstimate<Pose3>(lower);
-    currentEstimate.insert(newKey, worldTLower * deltaLowerToMid);
-    newTimestamps[newKey] = newTime;
-
-    // Keep the side map consistent if other code still reads it
-    twistsFromPreviousKey[newKey] = deltaLowerToMid;
-    twistsFromPreviousKey[upper] = deltaMidToHigh;
-
-    return newKey;
-  }
-
-  // Fix 5: fail loudly instead of returning key 0
-  throw std::runtime_error("InsertIntoSmoother: no odometry edge found");
+  return 0; // bail
 }
 
 using KeyTimeConstIt = FixedLagSmoother::KeyTimestampMap::const_iterator;
@@ -275,7 +189,7 @@ Key LocalizerCore::GetOrInsertKey(Key newKey, double time) {
     if (time - isamEntryBefore->second < kSnapUs) return isamEntryBefore->first;
     if (isamEntryAfter->second - time < kSnapUs) return isamEntryAfter->first;
 
-    return ClaudeInsertIntoSmoother(isamEntryBefore->first,
+    return InsertIntoSmoother(isamEntryBefore->first,
                                     isamEntryAfter->first, newKey, time);
   }
 
