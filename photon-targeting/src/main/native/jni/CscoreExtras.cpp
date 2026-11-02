@@ -118,7 +118,8 @@ void FreeTimeSyncClientJNI(JNIEnv* env);
 
 extern "C" {
 
-// From wpilib AprilTagJNI.cpp
+// Copied from
+// https://github.com/wpilibsuite/allwpilib/blob/34ef0d2a388fbc14974d6f9850ab57148d9cdfd1/apriltag/src/main/native/cpp/jni/AprilTagJNI.cpp#L53
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
   jvm = vm;
 
