@@ -78,9 +78,10 @@ export type ConfigurableNetworkSettings = Omit<
 export const PVUsbCamera = "PVCameraInfo.PVUsbCameraInfo";
 export const PVCSICamera = "PVCameraInfo.PVCSICameraInfo";
 export const PVFileCamera = "PVCameraInfo.PVFileCameraInfo";
+export const PVDuplicateCamera = "PVCameraInfo.PVDuplicateCameraInfo";
 
 interface PVCameraInfoBase {
-  type: typeof PVUsbCamera | typeof PVCSICamera | typeof PVFileCamera;
+  type: typeof PVUsbCamera | typeof PVCSICamera | typeof PVFileCamera | typeof PVDuplicateCamera;
   path: string;
   name: string;
   uniquePath: string;
@@ -101,7 +102,12 @@ export interface PVFileCameraInfo extends PVCameraInfoBase {
   type: typeof PVFileCamera;
 }
 
-export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
+export interface PVDuplicateCameraInfo extends PVCameraInfoBase {
+  type: "PVCameraInfo.PVDuplicateCameraInfo";
+  sourceUniqueName: string;
+}
+
+export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | PVDuplicateCameraInfo;
 
 export interface VsmState {
   disabledConfigs: WebsocketCameraSettingsUpdate[];
@@ -269,6 +275,11 @@ export interface UiCameraConfiguration {
   isConnected: boolean;
   hasConnected: boolean;
   mismatch: boolean;
+
+  isDuplicateCamera: boolean;
+  sourceUniqueName?: string;
+  sourceCameraNickname?: string;
+  inputSettingsReadOnly: boolean;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -435,7 +446,9 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   isEnabled: true,
   isConnected: true,
   hasConnected: true,
-  mismatch: false
+  mismatch: false,
+  isDuplicateCamera: false,
+  inputSettingsReadOnly: false
 });
 
 export enum CalibrationBoardTypes {

@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { PVUsbCamera, PVCSICamera, PVFileCamera, type PVCameraInfo } from "@/types/SettingTypes";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { PVUsbCamera, PVCSICamera, PVFileCamera, PVDuplicateCamera, type PVCameraInfo } from "@/types/SettingTypes";
 
 const { camera } = defineProps<{ camera: PVCameraInfo }>();
+
+const sourceCameraName = (sourceUniqueName: string): string => {
+  const sourceCamera = Object.values(useCameraSettingsStore().cameras).find(
+    (cam) => cam.uniqueName === sourceUniqueName
+  );
+  return sourceCamera?.nickname || "Unknown";
+};
 </script>
 
 <template>
@@ -21,7 +29,12 @@ const { camera } = defineProps<{ camera: PVCameraInfo }>();
           <td v-if="camera.type === PVUsbCamera" class="mb-3">USB Camera</td>
           <td v-else-if="camera.type === PVCSICamera" class="mb-3">CSI Camera</td>
           <td v-else-if="camera.type === PVFileCamera" class="mb-3">File Camera</td>
+          <td v-else-if="camera.type === PVDuplicateCamera" class="mb-3">Duplicate Camera</td>
           <td v-else>Unidentified Camera Type</td>
+        </tr>
+        <tr v-if="'sourceUniqueName' in camera && camera.sourceUniqueName !== null">
+          <td>Source Camera:</td>
+          <td>{{ sourceCameraName(camera.sourceUniqueName) }}</td>
         </tr>
         <tr v-if="'baseName' in camera && camera.baseName !== null">
           <td>Base Name:</td>
