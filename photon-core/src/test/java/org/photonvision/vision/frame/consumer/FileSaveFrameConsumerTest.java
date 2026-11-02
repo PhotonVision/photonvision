@@ -119,7 +119,7 @@ public class FileSaveFrameConsumerTest {
             var counterPublisher = consumer.saveFrameEntry.getTopic().publish();
             counterPublisher.accept(1);
             try (var frame = frameProvider.get()) {
-                consumer.accept(frame.colorImage, currentTime, () -> Map.of("targetCount", 0));
+                consumer.accept(frame.colorImage, currentTime, Map.of("targetCount", 0));
             }
         }
 

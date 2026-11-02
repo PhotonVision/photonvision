@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
@@ -50,11 +51,10 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
+import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
-import org.photonvision.vision.frame.consumer.SnapshotMetadata;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -81,7 +81,7 @@ public class VisionModule implements AutoCloseable {
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the
     // OutputStreamPipeline
-    private final LinkedList<BiConsumer<CVPipelineResult, CVPipelineSettings>> streamResultConsumers =
+    private final LinkedList<BiConsumer<Frame, List<TrackedTarget>>> streamResultConsumers =
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
@@ -180,6 +180,12 @@ public class VisionModule implements AutoCloseable {
         resultConsumers.add(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        resultConsumers.add(
+                (result) -> {
+                    var settings = pipelineManager.getCurrentPipelineSettings();
+                    inputFrameSaver.updateMetadata(result, settings);
+                    outputFrameSaver.updateMetadata(result, settings);
+                });
         resultConsumers.addAll(extraConsumers);
 
         // Sync VisionModule state with the first pipeline index
@@ -236,27 +242,19 @@ public class VisionModule implements AutoCloseable {
 
     private void recreateStreamResultConsumers() {
         streamResultConsumers.add(
-                (result, settings) -> {
-                    var frame = result.inputAndOutputFrame;
-                    if (frame != null)
-                        inputFrameSaver.accept(
-                                frame.colorImage, () -> SnapshotMetadata.create(result, settings));
+                (frame, tgts) -> {
+                    if (frame != null) inputFrameSaver.accept(frame.colorImage, frame.sequenceID);
                 });
         streamResultConsumers.add(
-                (result, settings) -> {
-                    var frame = result.inputAndOutputFrame;
-                    if (frame != null)
-                        outputFrameSaver.accept(
-                                frame.processedImage, () -> SnapshotMetadata.create(result, settings));
+                (frame, tgts) -> {
+                    if (frame != null) outputFrameSaver.accept(frame.processedImage, frame.sequenceID);
                 });
         streamResultConsumers.add(
-                (result, settings) -> {
-                    var frame = result.inputAndOutputFrame;
+                (frame, tgts) -> {
                     if (frame != null) inputVideoStreamer.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
-                (result, settings) -> {
-                    var frame = result.inputAndOutputFrame;
+                (frame, tgts) -> {
                     if (frame != null) outputVideoStreamer.accept(frame.processedImage);
                 });
     }
@@ -265,8 +263,9 @@ public class VisionModule implements AutoCloseable {
         private final OutputStreamPipeline outputStreamPipeline;
 
         private final Object frameLock = new Object();
-        private CVPipelineResult latestResult;
+        private Frame latestFrame;
         private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
+        private List<TrackedTarget> targets = new ArrayList<>();
 
         private boolean shouldRun = false;
 
@@ -274,45 +273,55 @@ public class VisionModule implements AutoCloseable {
             this.outputStreamPipeline = outputStreamPipeline;
         }
 
-        public void updateData(CVPipelineResult result, AdvancedPipelineSettings settings) {
+        public void updateData(
+                Frame inputOutputFrame, AdvancedPipelineSettings settings, List<TrackedTarget> targets) {
             synchronized (frameLock) {
-                if (shouldRun && this.latestResult != null) {
+                if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
-                    this.latestResult.release();
+                    this.latestFrame.release();
+                    if (this.targets != null) {
+                        this.targets.forEach(TrackedTarget::release);
+                    }
                 }
 
-                this.latestResult = result;
+                this.latestFrame = inputOutputFrame;
                 this.settings = settings;
+                this.targets = targets;
 
-                shouldRun = result != null && result.inputAndOutputFrame != null;
+                shouldRun = inputOutputFrame != null;
             }
         }
 
         @Override
         public void run() {
             while (!Thread.interrupted()) {
-                final CVPipelineResult result;
+                final Frame m_frame;
                 final AdvancedPipelineSettings settings;
+                final List<TrackedTarget> targets;
                 final boolean shouldRun;
                 synchronized (frameLock) {
-                    result = this.latestResult;
-                    this.latestResult = null;
+                    m_frame = this.latestFrame;
+                    this.latestFrame = null;
 
                     settings = this.settings;
+                    targets = this.targets;
                     shouldRun = this.shouldRun;
 
                     this.shouldRun = false;
                 }
                 if (shouldRun) {
                     try {
-                        outputStreamPipeline.process(result.inputAndOutputFrame, settings, result.targets);
-                        consumeResults(result, settings);
+                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
+                        consumeResults(m_frame, targets);
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
                     } finally {
+                        if (targets != null) {
+                            targets.forEach(TrackedTarget::release);
+                        }
                         try {
-                            result.release();
+                            m_frame.release();
                         } catch (Exception e) {
                             logger.error("Exception freeing frames", e);
                         }
@@ -787,14 +796,14 @@ public class VisionModule implements AutoCloseable {
     private void consumeResult(CVPipelineResult result) {
         consumePipelineResult(result);
 
-        var pipelineSettings = pipelineManager.getCurrentPipelineSettings();
         // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
         if (result.inputAndOutputFrame != null
-                && pipelineSettings instanceof AdvancedPipelineSettings settings) {
-            streamRunnable.updateData(result, settings);
+                && (pipelineManager.getCurrentPipelineSettings()
+                        instanceof AdvancedPipelineSettings settings)) {
+            streamRunnable.updateData(result.inputAndOutputFrame, settings, result.targets);
             // The streamRunnable manages releasing in this case
         } else {
-            consumeResults(result, pipelineSettings);
+            consumeResults(result.inputAndOutputFrame, result.targets);
 
             result.release();
             // In this case we don't bother with a separate streaming thread and we release
@@ -808,9 +817,9 @@ public class VisionModule implements AutoCloseable {
     }
 
     /** Consume stream/target results, no rate limiting applied */
-    private void consumeResults(CVPipelineResult result, CVPipelineSettings settings) {
+    private void consumeResults(Frame frame, List<TrackedTarget> targets) {
         for (var c : streamResultConsumers) {
-            c.accept(result, settings);
+            c.accept(frame, targets);
         }
     }
 
