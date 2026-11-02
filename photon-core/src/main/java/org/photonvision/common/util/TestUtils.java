@@ -259,13 +259,7 @@ public class TestUtils {
         // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
         // if it's wrong
         Path ret = Path.of("test-resources").toAbsolutePath();
-        if (Path.of("test-resources")
-                .toAbsolutePath()
-                .toString()
-                .replace("/", "")
-                .replace("\\", "")
-                .toLowerCase()
-                .matches(".*photon-[a-z]*test-resources")) {
+        if (ret.toString().toLowerCase().matches(".*[/\\\\]photon-[a-z-]*[/\\\\]test-resources")) {
             ret = Path.of("../test-resources").toAbsolutePath();
         }
         return ret;

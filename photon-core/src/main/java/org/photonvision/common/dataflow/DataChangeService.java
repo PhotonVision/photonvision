@@ -67,6 +67,7 @@ public class DataChangeService {
         subscribers = new CopyOnWriteArrayList<>();
         dispatchThread = new Thread(this::dispatchFromQueue);
         dispatchThread.setName("DataChangeEventDispatchThread");
+        dispatchThread.setDaemon(true);
         dispatchThread.start();
     }
 
