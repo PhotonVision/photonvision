@@ -46,6 +46,7 @@ interface Snapshot {
   streamType: "input" | "output";
   timeCreated: Date;
   snapshotSrc: string;
+  metadata?: string;
 }
 const imgData = ref<Snapshot[]>([]);
 const fetchSnapshots = () => {
@@ -53,7 +54,10 @@ const fetchSnapshots = () => {
     .get("/utils/getImageSnapshots")
     .then((response) => {
       imgData.value = response.data.map(
-        (snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string }, index: number) => {
+        (
+          snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string; metadata?: string },
+          index: number
+        ) => {
           const metadata = getSnapshotMetadataFromName(snapshotData.snapshotName);
 
           return {
@@ -64,7 +68,8 @@ const fetchSnapshots = () => {
             cameraNickname: metadata.cameraNickname,
             streamType: metadata.streamType,
             timeCreated: metadata.timeCreated,
-            snapshotSrc: "data:image/jpg;base64," + snapshotData.snapshotData
+            snapshotSrc: "data:image/jpg;base64," + snapshotData.snapshotData,
+            metadata: snapshotData.metadata
           };
         }
       );
@@ -91,6 +96,24 @@ const fetchSnapshots = () => {
 };
 const showSnapshotViewerDialog = ref(false);
 const expanded = ref([]);
+const includeMetadata = ref(true);
+
+const downloadFile = (filename: string, href: string) => {
+  const link = document.createElement("a");
+  link.download = filename;
+  link.href = href;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+const downloadSnapshot = (snapshot: Snapshot) => {
+  downloadFile(snapshot.snapshotName, snapshot.snapshotSrc);
+  if (includeMetadata.value && snapshot.metadata) {
+    const url = URL.createObjectURL(new Blob([snapshot.metadata], { type: "application/json" }));
+    downloadFile(snapshot.snapshotShortName + ".json", url);
+    setTimeout(() => URL.revokeObjectURL(url));
+  }
+};
 </script>
 
 <template>
@@ -126,6 +149,13 @@ const expanded = ref([]);
             text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
             icon="mdi-information-outline"
             :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          />
+          <v-switch
+            v-model="includeMetadata"
+            label="Download detection metadata (JSON) with snapshots"
+            color="primary"
+            density="compact"
+            hide-details
           />
           <v-data-table
             v-model:expanded="expanded"
@@ -165,9 +195,7 @@ const expanded = ref([]);
             <!-- eslint-disable-next-line vue/valid-v-slot-->
             <template #item.actions="{ item }">
               <div style="display: flex; justify-content: center">
-                <a :download="item.snapshotName" :href="item.snapshotSrc">
-                  <v-icon size="small"> mdi-download </v-icon>
-                </a>
+                <v-icon size="small" class="download-icon" @click="downloadSnapshot(item)"> mdi-download </v-icon>
               </div>
             </template>
           </v-data-table>
@@ -211,6 +239,9 @@ const expanded = ref([]);
 
 .snapshot-preview {
   max-width: 55%;
+}
+.download-icon {
+  cursor: pointer;
 }
 
 @media only screen and (max-width: 512px) {

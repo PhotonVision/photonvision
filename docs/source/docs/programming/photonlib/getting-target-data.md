@@ -238,6 +238,8 @@ A `PhotonCamera` can save still images from the input or output video streams to
 
 Images are stored within the PhotonVision configuration directory. Running the "Export" operation in the settings tab will download a .zip file which contains the image captures.
 
+Each image is saved alongside a `.json` file with the same name containing the pipeline result for that frame: pipeline info, camera calibration, every detected target (IDs, yaw/pitch/area, corners, and camera-to-target poses when 3D is enabled), and the multi-tag result if there was one. The snapshot viewer in the Camera tab can download this file with the image.
+
 ```{eval-rst}
 .. tab-set-code::
 
