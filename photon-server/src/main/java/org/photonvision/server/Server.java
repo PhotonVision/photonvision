@@ -127,6 +127,7 @@ public class Server {
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
         app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
         app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
+        app.get("/api/settings/camera/getUncertainty", RequestHandler::onUncertaintyJsonRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
@@ -143,7 +144,9 @@ public class Server {
         app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration
-        app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
+        app.post("/api/calibration/compute", RequestHandler::onCalibrationComputeRequest);
+        app.post("/api/calibration/commit", RequestHandler::onCalibrationCommitRequest);
+        app.post("/api/calibration/cancel", RequestHandler::onCalibrationCancelRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
         app.post("/api/calibration/remove", RequestHandler::onCalibrationRemoveRequest);
 

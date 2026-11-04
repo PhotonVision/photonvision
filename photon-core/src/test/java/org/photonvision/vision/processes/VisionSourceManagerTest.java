@@ -31,7 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.wpilib.vision.camera.UsbCameraInfo;
@@ -64,14 +64,14 @@ public class VisionSourceManagerTest {
         assertTrue(LoadJNI.loadLibraries());
 
         // Broadcast all still calls into configmanager (ew) so set that up here
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
     }
 
     private TestVsm vsm = null;
 
     @BeforeEach
     public void createVsm() {
-        ConfigManager.getInstance().clearConfig();
+        ConfigProvider.getInstance().clearConfig();
         vsm = new TestVsm();
     }
 
@@ -140,7 +140,7 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera1);
 
-        System.out.println(ConfigManager.getInstance().getConfig());
+        System.out.println(ConfigProvider.getInstance().getConfig());
 
         // And make assertions about the current matching state
         assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
@@ -269,7 +269,7 @@ public class VisionSourceManagerTest {
 
         vsm.assignUnmatchedCamera(fileCamera3);
 
-        System.out.println(ConfigManager.getInstance().getConfig());
+        System.out.println(ConfigProvider.getInstance().getConfig());
 
         // And make assertions about the current matching state
         assertEquals(3, vsm.getVsmState().allConnectedCameras.size());

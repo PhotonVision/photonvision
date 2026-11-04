@@ -20,7 +20,7 @@ package org.photonvision.vision.pipeline;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -123,7 +123,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                 settings.numIterations));
 
                 // TODO global state ew
-                var field = ConfigManager.getInstance().getConfig().getFieldLayout();
+                var field = ConfigProvider.getInstance().getConfig().getFieldLayout();
                 multiTagPNPPipe.setParams(
                         new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, field, tagModel));
             }
@@ -181,7 +181,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             // Clear target list that was used for multitag so we can add target transforms
             targetList.clear();
             // TODO global state again ew
-            var field = ConfigManager.getInstance().getConfig().getFieldLayout();
+            var field = ConfigProvider.getInstance().getConfig().getFieldLayout();
 
             for (AprilTagDetection detection : usedDetections) {
                 AprilTagPoseEstimate tagPoseEstimate = null;

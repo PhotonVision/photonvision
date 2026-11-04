@@ -31,7 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.LibraryLoader;
@@ -120,7 +120,7 @@ public class FileSaveFrameConsumerTest {
 
         // THEN an image will be created on disk
         File expectedSnapshot =
-                ConfigManager.getInstance()
+                ConfigProvider.getInstance()
                         .getImageSavePath()
                         .resolve(cameraUniqueName)
                         .resolve(

@@ -10,6 +10,24 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 const theme = useTheme();
 
+const showAutoCalibrationHint = computed(
+  () => useCameraSettingsStore().isCalibrationMode && useStateStore().calibrationData.autoCalibrate
+);
+
+const calibrationAlertState = computed<"missing" | "moved" | "tooClose">(() => {
+  const movedFarEnough = useStateStore().calibrationData.movedFarEnough;
+
+  if (movedFarEnough === null) {
+    return "missing";
+  }
+
+  if (movedFarEnough) {
+    return "moved";
+  }
+
+  return "tooClose";
+});
+
 const value = defineModel<number[]>({ required: true });
 
 const driverMode = computed<boolean>({
@@ -129,6 +147,38 @@ const fpsTooLow = computed<boolean>(() => {
         </v-btn>
       </v-btn-toggle>
     </v-card-text>
+    <v-card-text v-if="showAutoCalibrationHint" class="pt-0 d-flex flex-column ga-2">
+      <v-alert
+        type="warning"
+        :disabled="calibrationAlertState !== 'missing'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-chessboard"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'missing' }"
+      >
+        No calibration board detected -- point the camera at the calibration board
+      </v-alert>
+      <v-alert
+        type="success"
+        :disabled="calibrationAlertState !== 'moved'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-hand-back-right"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'moved' }"
+      >
+        Moved far enough -- hold still while the snapshot is taken
+      </v-alert>
+      <v-alert
+        type="info"
+        :disabled="calibrationAlertState !== 'tooClose'"
+        variant="tonal"
+        density="compact"
+        icon="mdi-arrow-expand"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'tooClose' }"
+      >
+        Move the calibration board farther from where the last snapshot was taken
+      </v-alert>
+    </v-card-text>
   </v-card>
 </template>
 
@@ -157,6 +207,12 @@ th {
   display: flex;
   justify-content: center;
   width: 100%;
+}
+
+.calibration-alert--inactive {
+  opacity: 0.45;
+  filter: grayscale(0.8);
+  pointer-events: none;
 }
 
 @media only screen and (min-width: 960px) {

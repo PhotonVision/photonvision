@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -137,7 +137,7 @@ public class SystemMonitor {
 
         // initialize network traffic monitoring
         selectNetworkIfByName(
-                ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
+                ConfigProvider.getInstance().getConfig().getNetworkConfig().networkManagerIface);
     }
 
     /**
@@ -471,7 +471,7 @@ public class SystemMonitor {
      * @return The IP address as a string, or an empty string if the command fails.
      */
     public String getIpAddress() {
-        String dev = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
+        String dev = ConfigProvider.getInstance().getConfig().getNetworkConfig().networkManagerIface;
         return NetworkUtils.getIPAddresses(dev);
     }
 
@@ -484,7 +484,7 @@ public class SystemMonitor {
      */
     private synchronized NetworkTraffic getNetworkTraffic() {
         String activeIFaceName =
-                ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
+                ConfigProvider.getInstance().getConfig().getNetworkConfig().networkManagerIface;
         var iFace = selectNetworkIfByName(activeIFaceName);
         if (iFace == null) {
             return new NetworkTraffic(-1, -1);

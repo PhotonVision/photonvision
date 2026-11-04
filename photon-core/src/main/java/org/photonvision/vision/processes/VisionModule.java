@@ -18,6 +18,10 @@
 package org.photonvision.vision.processes;
 
 import io.javalin.websocket.WsContext;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,7 +31,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
@@ -41,6 +45,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
@@ -99,6 +104,10 @@ public class VisionModule implements AutoCloseable {
 
     boolean mismatch;
 
+    // The most recently computed calibration, kept for inspection from the UI
+    private volatile CameraCalibrationCoefficients pendingCalibration = null;
+    private volatile Path pendingImageDir = null;
+
     public VisionModule(
             PipelineManager pipelineManager,
             VisionSource visionSource,
@@ -143,9 +152,7 @@ public class VisionModule implements AutoCloseable {
                         this.cameraQuirks,
                         getChangeSubscriber(),
                         this::getFPSLimit,
-                        this::getEnabled,
-                        // Streams are created after the runner, so read the field lazily
-                        () -> inputVideoStreamer != null && inputVideoStreamer.isStreamConsumed());
+                        this::getEnabled);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
@@ -180,7 +187,7 @@ public class VisionModule implements AutoCloseable {
 
         // Set vendor FOV
         if (isVendorCamera()) {
-            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
+            var fov = ConfigProvider.getInstance().getConfig().getHardwareConfig().vendorFOV;
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
         }
@@ -238,11 +245,7 @@ public class VisionModule implements AutoCloseable {
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    // When cropping, stream the full frame with the cropped-away area dimmed so the
-                    // crop can be seen in context; the pipeline itself only ever sees the cropped image.
-                    if (frame != null)
-                        inputVideoStreamer.accept(
-                                frame.contextColorImage != null ? frame.contextColorImage : frame.colorImage);
+                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
@@ -381,7 +384,12 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void startCalibration(UICalibrationData data) {
+        if (pendingCalibration != null) pendingCalibration.release();
+        pendingCalibration = null;
+        deletePendingImageDir();
+
         var settings = pipelineManager.calibration3dPipeline.getSettings();
+        settings.autoCalibrate = data.autoCalibrate;
 
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
         var resolution = new Size(videoMode.width, videoMode.height);
@@ -429,25 +437,120 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
-    public CameraCalibrationCoefficients endCalibration() {
-        var ret =
-                pipelineManager.calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(
-                                        pipelineManager.calibration3dPipeline.getSettings().resolution,
-                                        visionSource.getCameraConfiguration().uniqueName));
-        pipelineManager.setCalibrationMode(false);
+    /**
+     * Computes a calibration from the currently collected snapshots without committing it.
+     *
+     * @return The computed calibration result, or null if the computation failed
+     */
+    public CameraCalibrationCoefficients computeCalibration() {
+        if (pipelineManager.getCurrentPipelineIndex() != PipelineManager.CAL_3D_INDEX) {
+            throw new IllegalStateException("Camera is not in calibration mode");
+        }
 
-        setPipeline(pipelineManager.getRequestedIndex());
+        final Path imageSavePath;
+        try {
+            imageSavePath =
+                    ConfigProvider.getInstance()
+                            .createPreliminaryCalibrationImageDir(
+                                    visionSource.getCameraConfiguration().uniqueName);
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Could not create a temporary directory for preliminary calibration images", e);
+        }
+
+        var ret = pipelineManager.calibration3dPipeline.tryCalibration(imageSavePath);
+        if (ret != null) {
+            // Only replace the previous pending result once the new solve has succeeded
+            deletePendingImageDir();
+            pendingImageDir = imageSavePath;
+            if (pendingCalibration != null) pendingCalibration.release();
+            pendingCalibration = ret;
+        } else {
+            FileUtils.deleteDirectory(imageSavePath);
+        }
+        return ret;
+    }
+
+    /**
+     * Calls {@link #computeCalibration()} and commits the calibration.
+     *
+     * @return The committed calibration, or null if the computation failed
+     */
+    public CameraCalibrationCoefficients commitCalibration() {
+        var ret = computeCalibration();
+
+        pendingCalibration = null;
+        var imageDir = pendingImageDir;
+        pendingImageDir = null;
 
         if (ret != null) {
             logger.debug("Saving calibration...");
+            movePendingSnapshotImages(ret, imageDir);
             visionSource.getSettables().addCalibration(ret);
         } else {
             logger.error("Calibration failed...");
+            // We only want to release the pending calibration when compute fails
+            // since the endingCalibration and the ret object are the same
+            if (pendingCalibration != null) pendingCalibration.release();
         }
+        if (imageDir != null) {
+            FileUtils.deleteDirectory(imageDir);
+        }
+
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
         return ret;
+    }
+
+    /**
+     * Moves a committed calibration's snapshot images from their temporary directory to the
+     * persistent calibration image directory, updating the observations to point at the new
+     * locations.
+     */
+    private void movePendingSnapshotImages(CameraCalibrationCoefficients cal, Path tempImageDir) {
+        if (tempImageDir == null) return;
+
+        var persistentDir =
+                ConfigProvider.getInstance()
+                        .getCalibrationImageSavePathWithRes(
+                                cal.resolution, visionSource.getCameraConfiguration().uniqueName);
+
+        for (var observation : cal.observations) {
+            if (observation.snapshotDataLocation == null) continue;
+
+            var target = persistentDir.resolve(observation.snapshotName);
+            try {
+                Files.move(observation.snapshotDataLocation, target, StandardCopyOption.REPLACE_EXISTING);
+                observation.snapshotDataLocation = target;
+            } catch (IOException e) {
+                logger.error("Failed to move calibration snapshot image to " + target, e);
+            }
+        }
+    }
+
+    /** Aborts the calibration session and discards pending information. */
+    public void cancelCalibration() {
+        logger.info("Calibration canceled -- not computing or saving a result");
+        if (pendingCalibration != null) pendingCalibration.release();
+        pendingCalibration = null;
+        deletePendingImageDir();
+
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
+        saveAndBroadcastAll();
+    }
+
+    private void deletePendingImageDir() {
+        var dir = pendingImageDir;
+        pendingImageDir = null;
+        if (dir != null) {
+            FileUtils.deleteDirectory(dir);
+        }
+    }
+
+    public CameraCalibrationCoefficients getPendingCalibration() {
+        return pendingCalibration;
     }
 
     boolean setPipeline(int index) {
@@ -529,7 +632,7 @@ public class VisionModule implements AutoCloseable {
     }
 
     public void saveModule() {
-        ConfigManager.getInstance()
+        ConfigProvider.getInstance()
                 .saveModule(
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
     }
@@ -540,7 +643,7 @@ public class VisionModule implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
@@ -626,7 +729,7 @@ public class VisionModule implements AutoCloseable {
                         .toList();
 
         ret.isFovConfigurable =
-                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
+                !(ConfigProvider.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
@@ -777,6 +880,9 @@ public class VisionModule implements AutoCloseable {
         outputVideoStreamer.close();
         inputFrameSaver.close();
         outputFrameSaver.close();
+
+        deletePendingImageDir();
+        if (pendingCalibration != null) pendingCalibration.release();
 
         changeSubscriberHandle.stop();
         setVisionLEDs(false);

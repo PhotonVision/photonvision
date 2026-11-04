@@ -40,7 +40,13 @@ interface StateStore {
   calibrationData: {
     imageCount: number;
     videoFormatIndex: number;
+    autoCalibrate: boolean;
+    // Null when the backend reports no board visible during auto calibration
+    movedFarEnough: boolean | null;
   };
+
+  // UI-only flag to allow calibration with fewer than the recommended number of snapshots
+  bypassMinCalibrationImages: boolean;
 
   snackbarData: {
     show: boolean;
@@ -87,8 +93,12 @@ export const useStateStore = defineStore("state", {
 
       calibrationData: {
         imageCount: 0,
-        videoFormatIndex: 0
+        videoFormatIndex: 0,
+        autoCalibrate: false,
+        movedFarEnough: null
       },
+
+      bypassMinCalibrationImages: false,
 
       snackbarData: {
         show: false,
@@ -158,7 +168,9 @@ export const useStateStore = defineStore("state", {
     updateCalibrationStateValuesFromWebsocket(data: WebsocketCalibrationData) {
       this.calibrationData = {
         imageCount: data.count,
-        videoFormatIndex: data.videoModeIndex
+        videoFormatIndex: data.videoModeIndex,
+        autoCalibrate: data.autoCalibrate ?? false,
+        movedFarEnough: data.movedFarEnough ?? null
       };
     },
     updateDiscoveredCameras(data: VsmState) {
