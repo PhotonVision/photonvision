@@ -1377,9 +1377,7 @@ public class RequestHandler {
             }
 
             ctx.contentType("application/json");
-            ctx.json(
-                    snapshots,
-                    Types.mapOf(Types.mapOf(Types.listOf(Types.mapOf(Object.class)))));
+            ctx.json(snapshots, Types.mapOf(Types.mapOf(Types.listOf(Types.mapOf(Object.class)))));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("An error occurred while getting calib data");

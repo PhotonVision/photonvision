@@ -22,8 +22,7 @@ class SnapshotSerializationTest {
         snapshots.add(entry);
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> jsonb.type(ArrayList.class).toJson(snapshots));
+                IllegalArgumentException.class, () -> jsonb.type(ArrayList.class).toJson(snapshots));
     }
 
     @SuppressWarnings("unchecked")
