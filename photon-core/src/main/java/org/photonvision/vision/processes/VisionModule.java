@@ -180,6 +180,12 @@ public class VisionModule implements AutoCloseable {
         resultConsumers.add(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        resultConsumers.add(
+                (result) -> {
+                    var settings = pipelineManager.getCurrentPipelineSettings();
+                    inputFrameSaver.updateMetadata(result, settings);
+                    outputFrameSaver.updateMetadata(result, settings);
+                });
         resultConsumers.addAll(extraConsumers);
 
         // Sync VisionModule state with the first pipeline index
@@ -237,11 +243,11 @@ public class VisionModule implements AutoCloseable {
     private void recreateStreamResultConsumers() {
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) inputFrameSaver.accept(frame.colorImage);
+                    if (frame != null) inputFrameSaver.accept(frame.colorImage, frame.sequenceID);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) outputFrameSaver.accept(frame.processedImage);
+                    if (frame != null) outputFrameSaver.accept(frame.processedImage, frame.sequenceID);
                 });
         streamResultConsumers.add(
                 (frame, tgts) -> {

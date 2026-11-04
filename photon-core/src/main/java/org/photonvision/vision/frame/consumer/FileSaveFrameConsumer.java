@@ -17,10 +17,18 @@
 
 package org.photonvision.vision.frame.consumer;
 
+import io.avaje.jsonb.Jsonb;
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigProvider;
@@ -29,6 +37,8 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.wpilib.driverstation.MatchType;
 import org.wpilib.networktables.IntegerEntry;
 import org.wpilib.networktables.IntegerSubscriber;
@@ -42,10 +52,11 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private static final String FILE_PATH =
             ConfigProvider.getInstance().getImageSavePath().toString();
     static final String FILE_EXTENSION = ".jpg";
+    static final String METADATA_EXTENSION = ".json";
     private static final String NT_SUFFIX = "SaveImgCmd";
 
-    static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-    static final DateFormat tf = new SimpleDateFormat("hhmmssSS");
+    static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    static final DateTimeFormatter tf = DateTimeFormatter.ofPattern("HHmmssSSS");
 
     private final NetworkTable rootTable;
     private NetworkTable subTable;
@@ -60,7 +71,18 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private String cameraNickname;
     private final String streamType;
 
-    private long savedImagesCount = 0;
+    private volatile long savedImagesCount = 0;
+
+    // Keyed by frame sequence ID. Holds a few entries since the stream thread can lag the vision
+    // thread by a frame or two.
+    private final Map<Long, Map<String, Object>> pendingMetadata =
+            Collections.synchronizedMap(
+                    new LinkedHashMap<>() {
+                        @Override
+                        protected boolean removeEldestEntry(Map.Entry<Long, Map<String, Object>> e) {
+                            return size() > 4;
+                        }
+                    });
 
     public FileSaveFrameConsumer(String camNickname, String cameraUniqueName, String streamPrefix) {
         this.ntEntryName = streamPrefix + NT_SUFFIX;
@@ -79,11 +101,28 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         updateCameraNickname(camNickname);
     }
 
+    /** Must be called before the result's targets are released. */
+    public void updateMetadata(CVPipelineResult result, CVPipelineSettings settings) {
+        if (!isSaveRequested()) {
+            pendingMetadata.clear();
+            return;
+        }
+        pendingMetadata.put(result.sequenceID, SnapshotMetadata.create(result, settings));
+    }
+
     public void accept(CVMat image) {
-        accept(image, new Date());
+        accept(image, new Date(), null);
+    }
+
+    public void accept(CVMat image, long sequenceID) {
+        accept(image, new Date(), pendingMetadata.get(sequenceID));
     }
 
     public void accept(CVMat image, Date now) {
+        accept(image, now, null);
+    }
+
+    void accept(CVMat image, Date now, Map<String, Object> metadata) {
         long currentCount = saveFrameEntry.get();
 
         // Await save request
@@ -92,15 +131,16 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         // The requested count is greater than the actual count
         if (savedImagesCount < currentCount) {
             String matchData = getMatchData();
+            var localNow = LocalDateTime.ofInstant(now.toInstant(), ZoneId.systemDefault());
 
             String fileName =
                     cameraNickname
                             + "_"
                             + streamType
                             + "_"
-                            + df.format(now)
+                            + df.format(localNow)
                             + "T"
-                            + tf.format(now)
+                            + tf.format(localNow)
                             + "_"
                             + matchData;
 
@@ -112,18 +152,56 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
             var saveFilePath = cameraDir.toPath().resolve(fileName + FILE_EXTENSION);
 
             logger.info("Saving image to: " + saveFilePath);
+            boolean saved;
             if (image == null || image.getMat() == null || image.getMat().empty()) {
-                Imgcodecs.imwrite(saveFilePath.toString(), StaticFrames.LOST_MAT);
+                saved = Imgcodecs.imwrite(saveFilePath.toString(), StaticFrames.LOST_MAT);
             } else {
-                Imgcodecs.imwrite(saveFilePath.toString(), image.getMat());
+                saved = Imgcodecs.imwrite(saveFilePath.toString(), image.getMat());
             }
 
             savedImagesCount++;
+            if (!saved) {
+                logger.error("Failed to save image to " + saveFilePath);
+                return;
+            }
             logger.info("Saved new image at " + saveFilePath);
+
+            if (metadata != null) {
+                saveMetadata(
+                        cameraDir.toPath().resolve(fileName + METADATA_EXTENSION),
+                        fileName + FILE_EXTENSION,
+                        now,
+                        matchData,
+                        metadata);
+            }
         } else if (savedImagesCount > currentCount) {
             // Reset local value with NT value in case of de-sync
             savedImagesCount = currentCount;
         }
+    }
+
+    private void saveMetadata(
+            Path path, String imageFileName, Date now, String matchData, Map<String, Object> metadata) {
+        try {
+            var data = new LinkedHashMap<String, Object>();
+            data.put("imageFile", imageFileName);
+            data.put("cameraNickname", cameraNickname);
+            data.put("cameraUniqueName", cameraUniqueName);
+            data.put("streamType", streamType);
+            data.put("timestamp", now.toInstant().toString());
+            data.put("matchData", matchData);
+            data.putAll(metadata);
+
+            Files.writeString(path, Jsonb.instance().type(Object.class).toJson(data));
+            logger.info("Saved snapshot metadata at " + path);
+        } catch (IOException | RuntimeException e) {
+            logger.error("Failed to save snapshot metadata to " + path, e);
+        }
+    }
+
+    private boolean isSaveRequested() {
+        long currentCount = saveFrameEntry.get();
+        return currentCount != -1 && savedImagesCount < currentCount;
     }
 
     public void updateCameraNickname(String newCameraNickname) {

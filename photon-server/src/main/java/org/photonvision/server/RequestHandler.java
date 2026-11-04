@@ -1302,9 +1302,13 @@ public class RequestHandler {
                     String cameraUniqueName = cameraDir.getName();
 
                     for (File snapshot : cameraSnapshots) {
+                        var name = snapshot.getName();
+                        if (!name.toLowerCase().endsWith(".jpg")) continue;
+
                         var snapshotData = new HashMap<String, Object>();
 
                         var bufferedImage = ImageIO.read(snapshot);
+                        if (bufferedImage == null) continue;
                         var buffer = new ByteArrayOutputStream();
                         ImageIO.write(bufferedImage, "jpg", buffer);
                         byte[] data = buffer.toByteArray();
@@ -1312,6 +1316,16 @@ public class RequestHandler {
                         snapshotData.put("snapshotName", snapshot.getName());
                         snapshotData.put("cameraUniqueName", cameraUniqueName);
                         snapshotData.put("snapshotData", data);
+
+                        var metadataFile = new File(cameraDir, name.substring(0, name.length() - 4) + ".json");
+                        if (metadataFile.isFile()) {
+                            try {
+                                snapshotData.put("metadata", Files.readString(metadataFile.toPath()));
+                            } catch (IOException e) {
+                                logger.warn(
+                                        "Unable to read snapshot metadata " + metadataFile + ": " + e.getMessage());
+                            }
+                        }
 
                         snapshots.add(snapshotData);
                     }
@@ -1324,7 +1338,7 @@ public class RequestHandler {
 
         ctx.status(200);
         ctx.contentType("application/json");
-        ctx.json(snapshots);
+        ctx.json(snapshots, Types.listOf(Types.mapOf(Object.class)));
     }
 
     public static void onCameraCalibImagesRequest(Context ctx) {
@@ -1363,7 +1377,7 @@ public class RequestHandler {
             }
 
             ctx.contentType("application/json");
-            ctx.json(snapshots);
+            ctx.json(snapshots, Types.mapOf(Types.mapOf(Types.listOf(Types.mapOf(Object.class)))));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("An error occurred while getting calib data");

@@ -24,7 +24,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +90,8 @@ public class FileSaveFrameConsumerTest {
 
     @CartesianTest
     public void testNoMatch(
-            @Enum(MatchType.class) MatchType matchType, @Values(ints = {0, 1, 0xffff}) int matchNumber) {
+            @Enum(MatchType.class) MatchType matchType, @Values(ints = {0, 1, 0xffff}) int matchNumber)
+            throws IOException {
         String camNickname = "foobar";
         String cameraUniqueName = "some_unique";
         String streamPrefix = "input";
@@ -114,28 +119,33 @@ public class FileSaveFrameConsumerTest {
             var counterPublisher = consumer.saveFrameEntry.getTopic().publish();
             counterPublisher.accept(1);
             try (var frame = frameProvider.get()) {
-                consumer.accept(frame.colorImage, currentTime);
+                consumer.accept(frame.colorImage, currentTime, Map.of("targetCount", 0));
             }
         }
 
-        // THEN an image will be created on disk
+        // THEN an image and its metadata JSON will be created on disk
+        var localTime = LocalDateTime.ofInstant(currentTime.toInstant(), ZoneId.systemDefault());
+        String baseName =
+                camNickname
+                        + "_"
+                        + streamPrefix
+                        + "_"
+                        + FileSaveFrameConsumer.df.format(localTime)
+                        + "T"
+                        + FileSaveFrameConsumer.tf.format(localTime)
+                        + "_"
+                        + (matchType.name() + "-" + matchNumber + "-" + eventName);
+        var cameraDir = ConfigProvider.getInstance().getImageSavePath().resolve(cameraUniqueName);
         File expectedSnapshot =
-                ConfigProvider.getInstance()
-                        .getImageSavePath()
-                        .resolve(cameraUniqueName)
-                        .resolve(
-                                camNickname
-                                        + "_"
-                                        + streamPrefix
-                                        + "_"
-                                        + FileSaveFrameConsumer.df.format(currentTime)
-                                        + "T"
-                                        + FileSaveFrameConsumer.tf.format(currentTime)
-                                        + "_"
-                                        + (matchType.name() + "-" + matchNumber + "-" + eventName)
-                                        + FileSaveFrameConsumer.FILE_EXTENSION)
-                        .toFile();
+                cameraDir.resolve(baseName + FileSaveFrameConsumer.FILE_EXTENSION).toFile();
         System.out.println("Checking that file exists: " + expectedSnapshot.getAbsolutePath());
         assertTrue(expectedSnapshot.exists());
+
+        File expectedMetadata =
+                cameraDir.resolve(baseName + FileSaveFrameConsumer.METADATA_EXTENSION).toFile();
+        assertTrue(expectedMetadata.exists());
+        var json = Files.readString(expectedMetadata.toPath());
+        assertTrue(json.contains("\"targetCount\":0"));
+        assertTrue(json.contains("\"cameraUniqueName\":\"" + cameraUniqueName + "\""));
     }
 }
