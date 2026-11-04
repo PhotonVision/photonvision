@@ -1338,7 +1338,7 @@ public class RequestHandler {
 
         ctx.status(200);
         ctx.contentType("application/json");
-        ctx.json(snapshots);
+        ctx.json(snapshots, Types.listOf(Types.mapOf(Object.class)));
     }
 
     public static void onCameraCalibImagesRequest(Context ctx) {
@@ -1377,7 +1377,9 @@ public class RequestHandler {
             }
 
             ctx.contentType("application/json");
-            ctx.json(snapshots);
+            ctx.json(
+                    snapshots,
+                    Types.mapOf(Types.mapOf(Types.listOf(Types.mapOf(Object.class)))));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("An error occurred while getting calib data");
