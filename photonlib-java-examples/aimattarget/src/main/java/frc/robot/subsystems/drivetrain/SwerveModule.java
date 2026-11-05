@@ -33,7 +33,7 @@ import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.kinematics.SwerveModulePosition;
 import org.wpilib.math.kinematics.SwerveModuleState;
 import org.wpilib.math.util.MathUtil;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.simulation.EncoderSim;
 import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.system.RobotController;
@@ -155,9 +155,10 @@ public class SwerveModule {
                 table + "Steer Degrees", Math.toDegrees(MathUtil.angleModulus(state.angle.getRadians())));
         SmartDashboard.putNumber(
                 table + "Steer Target Degrees", Math.toDegrees(steerPidController.getSetpoint()));
-        SmartDashboard.putNumber(table + "Drive Velocity Feet", Units.metersToFeet(state.speed));
         SmartDashboard.putNumber(
-                table + "Drive Velocity Target Feet", Units.metersToFeet(desiredState.speed));
+                table + "Drive Velocity Feet", UnitConversions.metersToFeet(state.speed));
+        SmartDashboard.putNumber(
+                table + "Drive Velocity Target Feet", UnitConversions.metersToFeet(desiredState.speed));
         SmartDashboard.putNumber(table + "Drive Current", driveCurrentSim);
         SmartDashboard.putNumber(table + "Steer Current", steerCurrentSim);
     }

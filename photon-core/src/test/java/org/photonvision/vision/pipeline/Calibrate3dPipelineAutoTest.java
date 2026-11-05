@@ -39,7 +39,7 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 public class Calibrate3dPipelineAutoTest {
     private static final Size RESOLUTION = new Size(1280, 720);
@@ -57,8 +57,8 @@ public class Calibrate3dPipelineAutoTest {
         pipeline.getSettings().tagFamily = TagFamily.Dict_4X4_1000;
         pipeline.getSettings().boardHeight = 8;
         pipeline.getSettings().boardWidth = 8;
-        pipeline.getSettings().gridSize = Units.inchesToMeters(1);
-        pipeline.getSettings().markerSize = Units.inchesToMeters(0.75);
+        pipeline.getSettings().gridSize = UnitConversions.inchesToMeters(1);
+        pipeline.getSettings().markerSize = UnitConversions.inchesToMeters(0.75);
         pipeline.getSettings().resolution = RESOLUTION;
         pipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
         return pipeline;

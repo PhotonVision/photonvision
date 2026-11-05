@@ -33,7 +33,7 @@ import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.apriltag.AprilTagFields;
 
@@ -56,13 +56,13 @@ public class Constants {
 
     public static class Swerve {
         // Physical properties
-        public static final double kTrackWidth = Units.inchesToMeters(18.5);
-        public static final double kTrackLength = Units.inchesToMeters(18.5);
-        public static final double kRobotWidth = Units.inchesToMeters(25 + 3.25 * 2);
-        public static final double kRobotLength = Units.inchesToMeters(25 + 3.25 * 2);
-        public static final double kMaxLinearSpeed = Units.feetToMeters(15.5);
-        public static final double kMaxAngularSpeed = Units.rotationsToRadians(2);
-        public static final double kWheelDiameter = Units.inchesToMeters(4);
+        public static final double kTrackWidth = UnitConversions.inchesToMeters(18.5);
+        public static final double kTrackLength = UnitConversions.inchesToMeters(18.5);
+        public static final double kRobotWidth = UnitConversions.inchesToMeters(25 + 3.25 * 2);
+        public static final double kRobotLength = UnitConversions.inchesToMeters(25 + 3.25 * 2);
+        public static final double kMaxLinearSpeed = UnitConversions.feetToMeters(15.5);
+        public static final double kMaxAngularSpeed = UnitConversions.rotationsToRadians(2);
+        public static final double kWheelDiameter = UnitConversions.inchesToMeters(4);
         public static final double kWheelCircumference = kWheelDiameter * Math.PI;
 
         public static final double kDriveGearRatio = 6.75; // 6.75:1 SDS MK4 L2 ratio

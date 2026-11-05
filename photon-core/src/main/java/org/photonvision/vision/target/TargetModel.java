@@ -25,7 +25,7 @@ import org.opencv.core.Point3;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
 import org.photonvision.vision.pipe.impl.SolvePNPPipe;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 /**
  * A model representing the vertices of targets with known shapes. The vertices are in the EDN
@@ -50,36 +50,45 @@ import org.wpilib.math.util.Units;
 public enum TargetModel implements Releasable {
     k2016HighGoal(
             List.of(
-                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(6), 0),
-                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(6), 0),
-                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(-6), 0),
-                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(-6), 0)),
-            Units.inchesToMeters(6)),
+                    new Point3(UnitConversions.inchesToMeters(10), UnitConversions.inchesToMeters(6), 0),
+                    new Point3(UnitConversions.inchesToMeters(-10), UnitConversions.inchesToMeters(6), 0),
+                    new Point3(UnitConversions.inchesToMeters(-10), UnitConversions.inchesToMeters(-6), 0),
+                    new Point3(UnitConversions.inchesToMeters(10), UnitConversions.inchesToMeters(-6), 0)),
+            UnitConversions.inchesToMeters(6)),
     k2019DualTarget(
             List.of(
-                    new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(2.662), 0),
-                    new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(2.662), 0),
-                    new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(-2.662), 0),
-                    new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(-2.662), 0)),
+                    new Point3(
+                            UnitConversions.inchesToMeters(7.313), UnitConversions.inchesToMeters(2.662), 0),
+                    new Point3(
+                            UnitConversions.inchesToMeters(-7.313), UnitConversions.inchesToMeters(2.662), 0),
+                    new Point3(
+                            UnitConversions.inchesToMeters(-5.936), UnitConversions.inchesToMeters(-2.662), 0),
+                    new Point3(
+                            UnitConversions.inchesToMeters(5.936), UnitConversions.inchesToMeters(-2.662), 0)),
             0.1),
     k2020HighGoalOuter(
             List.of(
-                    new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(8.5), 0),
-                    new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(8.5), 0),
-                    new Point3(Units.inchesToMeters(-19.625), Units.inchesToMeters(-8.5), 0),
-                    new Point3(Units.inchesToMeters(19.625), Units.inchesToMeters(-8.5), 0)),
-            Units.inchesToMeters(12)),
-    kCircularPowerCell7in(circleTargetCorners(Units.inchesToMeters(7)), 0),
-    k2022CircularCargoBall(circleTargetCorners(Units.inchesToMeters(9.5)), 0),
-    k2025Algae(circleTargetCorners(Units.inchesToMeters(16.25)), 0),
+                    new Point3(
+                            UnitConversions.inchesToMeters(9.819867), UnitConversions.inchesToMeters(8.5), 0),
+                    new Point3(
+                            UnitConversions.inchesToMeters(-9.819867), UnitConversions.inchesToMeters(8.5), 0),
+                    new Point3(
+                            UnitConversions.inchesToMeters(-19.625), UnitConversions.inchesToMeters(-8.5), 0),
+                    new Point3(
+                            UnitConversions.inchesToMeters(19.625), UnitConversions.inchesToMeters(-8.5), 0)),
+            UnitConversions.inchesToMeters(12)),
+    kCircularPowerCell7in(circleTargetCorners(UnitConversions.inchesToMeters(7)), 0),
+    k2022CircularCargoBall(circleTargetCorners(UnitConversions.inchesToMeters(9.5)), 0),
+    k2025Algae(circleTargetCorners(UnitConversions.inchesToMeters(16.25)), 0),
     // 2023 AprilTag, with 6 inch marker width (inner black square).
     kAprilTag6in_16h5(
             // Corners of the tag's inner black square (excluding white border)
-            squareTargetCorners(Units.inchesToMeters(6)), Units.inchesToMeters(6)),
+            squareTargetCorners(UnitConversions.inchesToMeters(6)), UnitConversions.inchesToMeters(6)),
     // 2024 AprilTag, with 6.5 inch marker width (inner black square).
     kAprilTag6p5in_36h11(
             // Corners of the tag's inner black square (excluding white border)
-            squareTargetCorners(Units.inchesToMeters(6.5)), Units.inchesToMeters(6.5));
+            squareTargetCorners(UnitConversions.inchesToMeters(6.5)),
+            UnitConversions.inchesToMeters(6.5));
 
     @Json.Ignore private final MatOfPoint3f realWorldTargetCoordinates;
     @Json.Ignore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();

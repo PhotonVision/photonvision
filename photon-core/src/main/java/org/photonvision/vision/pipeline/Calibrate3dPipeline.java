@@ -50,7 +50,7 @@ import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe.FindBoardCornersPipeResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.util.Pair;
 
 public class Calibrate3dPipeline
@@ -411,8 +411,8 @@ public class Calibrate3dPipeline
                         new UICalibrationData(
                                 foundCornersList.size(),
                                 settings.cameraVideoModeIndex,
-                                Units.metersToInches(settings.gridSize),
-                                Units.metersToInches(settings.markerSize),
+                                UnitConversions.metersToInches(settings.gridSize),
+                                UnitConversions.metersToInches(settings.markerSize),
                                 settings.boardWidth,
                                 settings.boardHeight,
                                 settings.boardType,

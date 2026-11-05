@@ -36,7 +36,7 @@ import org.photonvision.vision.target.TargetModel;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 public class SolvePNPTest {
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
@@ -191,7 +191,9 @@ public class SolvePNPTest {
         // these numbers are not *accurate*, but they are known and expected
         var expectedTrl =
                 new Translation3d(
-                        Units.inchesToMeters(236), Units.inchesToMeters(36), Units.inchesToMeters(-53));
+                        UnitConversions.inchesToMeters(236),
+                        UnitConversions.inchesToMeters(36),
+                        UnitConversions.inchesToMeters(-53));
         assertTrue(
                 expectedTrl.getDistance(pose.getTranslation()) < 0.05,
                 "SolvePNP translation estimation failed");

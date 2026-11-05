@@ -43,7 +43,7 @@ import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.util.RawFrame;
 import org.wpilib.vision.apriltag.AprilTagImageGenerator;
 import org.wpilib.vision.camera.CvSource;
@@ -395,9 +395,9 @@ public class VideoSimUtil {
     private static List<List<Translation3d>> getFieldWallLines() {
         var list = new ArrayList<List<Translation3d>>();
 
-        final double sideHt = Units.inchesToMeters(19.5);
-        final double driveHt = Units.inchesToMeters(35);
-        final double topHt = Units.inchesToMeters(78);
+        final double sideHt = UnitConversions.inchesToMeters(19.5);
+        final double driveHt = UnitConversions.inchesToMeters(35);
+        final double topHt = UnitConversions.inchesToMeters(78);
 
         // field floor
         list.add(

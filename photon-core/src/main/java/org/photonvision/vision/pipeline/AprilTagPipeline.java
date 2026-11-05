@@ -45,7 +45,7 @@ import org.wpilib.math.geometry.CoordinateSystem;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.vision.apriltag.AprilTagDetection;
 import org.wpilib.vision.apriltag.AprilTagDetector;
 import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
@@ -79,11 +79,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         // for now, hard code tag width based on enum value
         // From 2024 best guess is 6.5
-        double tagWidth = Units.inchesToMeters(6.5);
+        double tagWidth = UnitConversions.inchesToMeters(6.5);
         TargetModel tagModel = TargetModel.kAprilTag36h11;
         if (settings.tagFamily == AprilTagFamily.kTag16h5) {
             // 2023 tag, 6in
-            tagWidth = Units.inchesToMeters(6);
+            tagWidth = UnitConversions.inchesToMeters(6);
             tagModel = TargetModel.kAprilTag16h5;
         }
 

@@ -27,7 +27,7 @@ package frc.robot.subsystems;
 import org.wpilib.hardware.motor.PWMSparkMax;
 import org.wpilib.math.system.plant.DCMotor;
 import org.wpilib.math.system.plant.LinearSystemId;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.simulation.FlywheelSim;
 import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.system.RobotController;
@@ -49,7 +49,8 @@ public class GamepieceLauncher {
     }
 
     public void periodic() {
-        double maxRPM = Units.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeed);
+        double maxRPM =
+                UnitConversions.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeed);
         curMotorCmd = curDesSpd / maxRPM;
         curMotorCmd = Math.clamp(curMotorCmd, 0.0, 1.0);
         motor.set(curMotorCmd);

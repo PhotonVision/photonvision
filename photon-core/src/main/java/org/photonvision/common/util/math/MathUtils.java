@@ -27,7 +27,7 @@ import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.linalg.VecBuilder;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
 
 public class MathUtils {
@@ -188,7 +188,7 @@ public class MathUtils {
      * have to correct the transformation's rotation.
      */
     private static final Rotation3d APRILTAG_BASE_ROTATION =
-            new Rotation3d(VecBuilder.fill(0, 1, 0), Units.degreesToRadians(180));
+            new Rotation3d(VecBuilder.fill(0, 1, 0), UnitConversions.degreesToRadians(180));
 
     /**
      * AprilTag returns a camera-to-tag transform in EDN, but the tag's z-axis points into the tag
@@ -206,7 +206,7 @@ public class MathUtils {
     public static Pose3d convertArucotoOpenCV(Transform3d pose) {
         var ocvRotation =
                 APRILTAG_BASE_ROTATION.rotateBy(
-                        new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180))
+                        new Rotation3d(VecBuilder.fill(0, 0, 1), UnitConversions.degreesToRadians(180))
                                 .rotateBy(pose.getRotation()));
         return new Pose3d(pose.getTranslation(), ocvRotation);
     }

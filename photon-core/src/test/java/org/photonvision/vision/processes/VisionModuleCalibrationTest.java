@@ -53,7 +53,7 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 /**
  * Runs through the calibration functions added in {@link VisionModule}: starting a session,
@@ -98,8 +98,8 @@ public class VisionModuleCalibrationTest {
         settings.resolution = RESOLUTION;
         settings.boardHeight = (int) Math.round(BOARD_SIZE.height);
         settings.boardWidth = (int) Math.round(BOARD_SIZE.width);
-        settings.gridSize = Units.inchesToMeters(1);
-        settings.markerSize = Units.inchesToMeters(0.75);
+        settings.gridSize = UnitConversions.inchesToMeters(1);
+        settings.markerSize = UnitConversions.inchesToMeters(0.75);
         settings.streamingFrameDivisor = FrameDivisor.NONE;
         settings.useMrCal = true;
         settings.useOldPattern = false;
@@ -145,8 +145,8 @@ public class VisionModuleCalibrationTest {
         return new UICalibrationData(
                 0,
                 0,
-                Units.inchesToMeters(1),
-                Units.inchesToMeters(0.75),
+                UnitConversions.inchesToMeters(1),
+                UnitConversions.inchesToMeters(0.75),
                 (int) BOARD_SIZE.width,
                 (int) BOARD_SIZE.height,
                 BoardType.CHARUCOBOARD,

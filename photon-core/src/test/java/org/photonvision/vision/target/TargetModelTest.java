@@ -24,7 +24,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Point3;
 import org.photonvision.common.LoadJNI;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 public class TargetModelTest {
     @BeforeAll
@@ -37,21 +37,21 @@ public class TargetModelTest {
         assertApproxEquals(
                 List.of(
                         new Point3(
-                                -Units.inchesToMeters(7) / 2,
-                                -Units.inchesToMeters(7) / 2,
-                                -Units.inchesToMeters(7) / 2),
+                                -UnitConversions.inchesToMeters(7) / 2,
+                                -UnitConversions.inchesToMeters(7) / 2,
+                                -UnitConversions.inchesToMeters(7) / 2),
                         new Point3(
-                                -Units.inchesToMeters(7) / 2,
-                                Units.inchesToMeters(7) / 2,
-                                -Units.inchesToMeters(7) / 2),
+                                -UnitConversions.inchesToMeters(7) / 2,
+                                UnitConversions.inchesToMeters(7) / 2,
+                                -UnitConversions.inchesToMeters(7) / 2),
                         new Point3(
-                                Units.inchesToMeters(7) / 2,
-                                Units.inchesToMeters(7) / 2,
-                                -Units.inchesToMeters(7) / 2),
+                                UnitConversions.inchesToMeters(7) / 2,
+                                UnitConversions.inchesToMeters(7) / 2,
+                                -UnitConversions.inchesToMeters(7) / 2),
                         new Point3(
-                                Units.inchesToMeters(7) / 2,
-                                -Units.inchesToMeters(7) / 2,
-                                -Units.inchesToMeters(7) / 2)),
+                                UnitConversions.inchesToMeters(7) / 2,
+                                -UnitConversions.inchesToMeters(7) / 2,
+                                -UnitConversions.inchesToMeters(7) / 2)),
                 TargetModel.kCircularPowerCell7in.getRealWorldTargetCoordinates().toList(),
                 1E-6);
     }
@@ -60,10 +60,22 @@ public class TargetModelTest {
     void testSquareTargetGeneration() {
         assertApproxEquals(
                 List.of(
-                        new Point3(-Units.inchesToMeters(6.5 / 2.0), -Units.inchesToMeters(6.5 / 2.0), 0),
-                        new Point3(-Units.inchesToMeters(6.5 / 2.0), Units.inchesToMeters(6.5 / 2.0), 0),
-                        new Point3(Units.inchesToMeters(6.5 / 2.0), Units.inchesToMeters(6.5 / 2.0), 0),
-                        new Point3(Units.inchesToMeters(6.5 / 2.0), -Units.inchesToMeters(6.5 / 2.0), 0)),
+                        new Point3(
+                                -UnitConversions.inchesToMeters(6.5 / 2.0),
+                                -UnitConversions.inchesToMeters(6.5 / 2.0),
+                                0),
+                        new Point3(
+                                -UnitConversions.inchesToMeters(6.5 / 2.0),
+                                UnitConversions.inchesToMeters(6.5 / 2.0),
+                                0),
+                        new Point3(
+                                UnitConversions.inchesToMeters(6.5 / 2.0),
+                                UnitConversions.inchesToMeters(6.5 / 2.0),
+                                0),
+                        new Point3(
+                                UnitConversions.inchesToMeters(6.5 / 2.0),
+                                -UnitConversions.inchesToMeters(6.5 / 2.0),
+                                0)),
                 TargetModel.kAprilTag6p5in_36h11.getRealWorldTargetCoordinates().toList(),
                 1E-6);
     }

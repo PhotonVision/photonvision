@@ -28,15 +28,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import org.wpilib.math.geometry.*;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 class PhotonUtilTest {
     @Test
     public void testDistance() {
         var camHeight = 1;
         var targetHeight = 3;
-        var camPitch = Units.degreesToRadians(0);
-        var targetPitch = Units.degreesToRadians(30);
+        var camPitch = UnitConversions.degreesToRadians(0);
+        var targetPitch = UnitConversions.degreesToRadians(30);
 
         var dist =
                 PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
@@ -45,8 +45,8 @@ class PhotonUtilTest {
 
         camHeight = 1;
         targetHeight = 2;
-        camPitch = Units.degreesToRadians(20);
-        targetPitch = Units.degreesToRadians(-10);
+        camPitch = UnitConversions.degreesToRadians(20);
+        targetPitch = UnitConversions.degreesToRadians(-10);
 
         dist =
                 PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
@@ -58,7 +58,7 @@ class PhotonUtilTest {
         var camHeight = 1;
         var tgtHeight = 3;
         var camPitch = 0;
-        var tgtPitch = Units.degreesToRadians(30);
+        var tgtPitch = UnitConversions.degreesToRadians(30);
         var tgtYaw = new Rotation2d();
         var gyroAngle = new Rotation2d();
         var fieldToTarget = new Pose2d();
@@ -92,12 +92,15 @@ class PhotonUtilTest {
 
         var targetPose =
                 new Pose2d(
-                        new Translation2d(Units.inchesToMeters(324), Units.inchesToMeters(162)),
+                        new Translation2d(
+                                UnitConversions.inchesToMeters(324), UnitConversions.inchesToMeters(162)),
                         new Rotation2d());
         var currentPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
         assertEquals(4.0, fieldToRobot.getX());
         assertEquals(
-                Math.toDegrees(Math.atan2((Units.inchesToMeters(162)), (Units.inchesToMeters(324)))),
+                Math.toDegrees(
+                        Math.atan2(
+                                (UnitConversions.inchesToMeters(162)), (UnitConversions.inchesToMeters(324)))),
                 PhotonUtils.getYawToPose(currentPose, targetPose).getDegrees());
     }
 }

@@ -32,7 +32,7 @@ import org.photonvision.PhotonUtils;
 import org.wpilib.driverstation.XboxController;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.opmode.TimedRobot;
 import org.wpilib.simulation.BatterySim;
 import org.wpilib.simulation.RoboRioSim;
@@ -105,8 +105,9 @@ public class Robot extends TimedRobot {
                                 PhotonUtils.calculateDistanceToTargetMeters(
                                         0.5, // Measured with a tape measure, or in CAD.
                                         1.435, // From 2024 game manual for ID 7
-                                        Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
-                                        Units.degreesToRadians(target.getPitch()));
+                                        UnitConversions.degreesToRadians(
+                                                -30.0), // Measured with a protractor, or in CAD.
+                                        UnitConversions.degreesToRadians(target.getPitch()));
 
                         targetVisible = true;
                     }

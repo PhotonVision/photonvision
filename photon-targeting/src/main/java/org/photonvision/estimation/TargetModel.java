@@ -24,7 +24,7 @@ import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 /** Describes the 3d model of a target. */
 public class TargetModel {
@@ -42,13 +42,13 @@ public class TargetModel {
 
     /** The model of AprilTags in the 16h5 family used by <i>FIRST</i> in FRC 2023. */
     public static final TargetModel kAprilTag16h5 =
-            new TargetModel(Units.inchesToMeters(6), Units.inchesToMeters(6));
+            new TargetModel(UnitConversions.inchesToMeters(6), UnitConversions.inchesToMeters(6));
 
     /**
      * The model of AprilTags in the 36h11 family used by <i>FIRST</i> in FRC 2024 and later years.
      */
     public static final TargetModel kAprilTag36h11 =
-            new TargetModel(Units.inchesToMeters(6.5), Units.inchesToMeters(6.5));
+            new TargetModel(UnitConversions.inchesToMeters(6.5), UnitConversions.inchesToMeters(6.5));
 
     /**
      * Creates a rectangular, planar target model given the width and height. The model has four
