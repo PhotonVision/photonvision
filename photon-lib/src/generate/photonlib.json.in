@@ -18,6 +18,7 @@
       "isJar": false,
       "validPlatforms": [
         "windowsx86-64",
+        "windowsarm64",
         "linuxsystemcore",
         "linuxx86-64",
         "osxuniversal"
@@ -31,6 +32,7 @@
       "isJar": false,
       "validPlatforms": [
         "windowsx86-64",
+        "windowsarm64",
         "linuxsystemcore",
         "linuxx86-64",
         "osxuniversal"
@@ -48,6 +50,7 @@
       "skipInvalidPlatforms": true,
       "binaryPlatforms": [
         "windowsx86-64",
+        "windowsarm64",
         "linuxsystemcore",
         "linuxx86-64",
         "osxuniversal"
@@ -63,6 +66,7 @@
       "skipInvalidPlatforms": true,
       "binaryPlatforms": [
         "windowsx86-64",
+        "windowsarm64",
         "linuxsystemcore",
         "linuxx86-64",
         "osxuniversal"
