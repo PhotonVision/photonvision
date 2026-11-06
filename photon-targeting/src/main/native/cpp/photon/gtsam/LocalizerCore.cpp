@@ -103,7 +103,8 @@ Key LocalizerCore::InsertIntoSmoother(Key lower, Key upper, Key newKey,
   if (factorsConnectedToUpper == variableIndex.end() ||
       factorsConnectedToLower == variableIndex.end()) {
     // unclear what to do lol
-    return 0;
+    throw std::runtime_error(
+        "InsertIntoSmoother: one of the keys is not in the smoother");
   }
 
   // we know there is exactly one factor connecting, so do sorting-at-home
@@ -153,7 +154,7 @@ Key LocalizerCore::InsertIntoSmoother(Key lower, Key upper, Key newKey,
       }
     }
   }
-  return 0; // bail
+  throw std::runtime_error("InsertIntoSmoother: no connecting factor found");
 }
 
 using KeyTimeConstIt = FixedLagSmoother::KeyTimestampMap::const_iterator;
