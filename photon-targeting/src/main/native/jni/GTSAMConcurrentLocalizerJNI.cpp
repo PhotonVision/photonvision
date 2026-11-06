@@ -116,12 +116,18 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_SubmitResetJNI
    jlong noise_handle, jlong timeUs)
 {
   jdouble* wTrPtr = env->GetDoubleArrayElements(wTrArray, nullptr);
-  reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+  try {
+    reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
       ConcurrentLocalizer_handle)
       ->SubmitReset(photon::pvgtsam::ResetData{
           jdoublePtrToGtsamPose3(wTrPtr),
           *reinterpret_cast<gtsam::SharedNoiseModel*>(noise_handle),
           static_cast<uint64_t>(timeUs)});
+  } catch (const std::exception& e) {
+    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
+  } catch (...) {
+    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "Unknown native error");
+  }
   env->ReleaseDoubleArrayElements(wTrArray, wTrPtr, JNI_ABORT);
 }
 
@@ -136,11 +142,17 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_SubmitOdometryJNI
    jlong noise_handle, jlong timeUs)
 {
   jdouble* wTrPtr = env->GetDoubleArrayElements(wTrArray, nullptr);
-  reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+  try {
+    reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
       ConcurrentLocalizer_handle)
       ->SubmitOdometry(photon::pvgtsam::OdometryObservation{
           static_cast<uint64_t>(timeUs), jdoublePtrToGtsamPose3(wTrPtr),
           *reinterpret_cast<gtsam::SharedNoiseModel*>(noise_handle)});
+  } catch (const std::exception& e) {
+    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
+  } catch (...) {
+    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "Unknown native error");
+  }
   env->ReleaseDoubleArrayElements(wTrArray, wTrPtr, JNI_ABORT);
 }
 
@@ -162,13 +174,19 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_SubmitTagObservationJNI
     cornersVec.emplace_back(
         gtsam::Vector2{cornersPtr[2 * i], cornersPtr[2 * i + 1]});
   }
-  reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+  try {
+    reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
       ConcurrentLocalizer_handle)
       ->SubmitTagObservation(photon::pvgtsam::CameraVisionObservation{
           static_cast<uint64_t>(timeUs), tagID, cornersVec,
           *reinterpret_cast<gtsam::Cal3_S2_*>(cameraCal_handle),
           jdoublePtrToGtsamPose3(robotTcameraPtr),
           *reinterpret_cast<gtsam::SharedNoiseModel*>(cameraNoise_handle)});
+  } catch (const std::exception& e) {
+    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
+  } catch (...) {
+    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "Unknown native error");
+  }
   env->ReleaseDoubleArrayElements(corners, cornersPtr, JNI_ABORT);
   env->ReleaseDoubleArrayElements(robotTcamera, robotTcameraPtr, JNI_ABORT);
 }
@@ -236,9 +254,15 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_GTSAMConcurrentLocalizer_Step
   (JNIEnv*, jclass, jlong ConcurrentLocalizer_handle)
 {
-  reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+  try {
+    reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
       ConcurrentLocalizer_handle)
       ->Step();
+  } catch (const std::exception& e) {
+    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
+  } catch (...) {
+    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "Unknown native error");
+  }
 }
 
 /*
