@@ -99,7 +99,7 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_createJNI
  */
 JNIEXPORT void JNICALL
 Java_org_photonvision_jni_GTSAMConcurrentLocalizer_destroyJNI
-  (JNIEnv*, jclass, jlong ConcurrentLocalizer_handle)
+  (JNIEnv* env, jclass, jlong ConcurrentLocalizer_handle)
 {
   delete reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
       ConcurrentLocalizer_handle);
@@ -252,7 +252,7 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_GetPoseComponentStdDevsJNI
  */
 JNIEXPORT void JNICALL
 Java_org_photonvision_jni_GTSAMConcurrentLocalizer_Step
-  (JNIEnv*, jclass, jlong ConcurrentLocalizer_handle)
+  (JNIEnv* env, jclass, jlong ConcurrentLocalizer_handle)
 {
   try {
     reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
