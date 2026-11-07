@@ -15,12 +15,16 @@ function isEqual<T>(a: T, b: T): boolean {
   );
 }
 
+function field(obj: PVCameraInfo, key: string): unknown {
+  return key in obj ? (obj as unknown as Record<string, unknown>)[key] : undefined;
+}
+
 const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraInfo }>();
 </script>
 
 <template>
   <div>
-    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <pv-table>
       <tbody>
         <tr>
           <th></th>
@@ -28,12 +32,12 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <th>Current</th>
         </tr>
         <tr
-          v-if="'dev' in saved && 'dev' in current && saved.dev !== null"
-          :class="saved.dev !== current.dev ? 'mismatch' : ''"
+          v-if="('dev' in saved || 'dev' in current) && field(saved, 'dev') !== null"
+          :class="field(saved, 'dev') !== field(current, 'dev') ? 'mismatch' : ''"
         >
           <td>Device Number:</td>
-          <td>{{ saved.dev }}</td>
-          <td>{{ current.dev }}</td>
+          <td>{{ field(saved, "dev") }}</td>
+          <td>{{ field(current, "dev") }}</td>
         </tr>
         <tr v-if="saved.name !== null" :class="saved.name !== current.name ? 'mismatch' : ''">
           <td>Name:</td>
@@ -41,12 +45,12 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td>{{ current.name }}</td>
         </tr>
         <tr
-          v-if="'baseName' in saved && 'baseName' in current && saved.baseName !== null"
-          :class="saved.baseName !== current.baseName ? 'mismatch' : ''"
+          v-if="('baseName' in saved || 'baseName' in current) && field(saved, 'baseName') !== null"
+          :class="field(saved, 'baseName') !== field(current, 'baseName') ? 'mismatch' : ''"
         >
           <td>Base Name:</td>
-          <td>{{ saved.baseName }}</td>
-          <td>{{ current.baseName }}</td>
+          <td>{{ field(saved, "baseName") }}</td>
+          <td>{{ field(current, "baseName") }}</td>
         </tr>
         <tr>
           <td>Type:</td>
@@ -60,20 +64,20 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr
-          v-if="'vendorId' in saved && 'vendorId' in current && saved.vendorId !== null"
-          :class="saved.vendorId !== current.vendorId ? 'mismatch' : ''"
+          v-if="('vendorId' in saved || 'vendorId' in current) && field(saved, 'vendorId') !== null"
+          :class="field(saved, 'vendorId') !== field(current, 'vendorId') ? 'mismatch' : ''"
         >
           <td>Vendor ID:</td>
-          <td>{{ saved.vendorId }}</td>
-          <td>{{ current.vendorId }}</td>
+          <td>{{ field(saved, "vendorId") }}</td>
+          <td>{{ field(current, "vendorId") }}</td>
         </tr>
         <tr
-          v-if="'productId' in saved && 'productId' in current && saved.productId !== null"
-          :class="saved.productId !== current.productId ? 'mismatch' : ''"
+          v-if="('productId' in saved || 'productId' in current) && field(saved, 'productId') !== null"
+          :class="field(saved, 'productId') !== field(current, 'productId') ? 'mismatch' : ''"
         >
           <td>Product ID:</td>
-          <td>{{ saved.productId }}</td>
-          <td>{{ current.productId }}</td>
+          <td>{{ field(saved, "productId") }}</td>
+          <td>{{ field(current, "productId") }}</td>
         </tr>
         <tr v-if="saved.path !== null" :class="saved.path !== current.path ? 'mismatch' : ''">
           <td>Path:</td>
@@ -86,15 +90,15 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td style="word-break: break-all">{{ current.uniquePath }}</td>
         </tr>
         <tr
-          v-if="'otherPaths' in saved && 'otherPaths' in current && saved.otherPaths !== null"
-          :class="isEqual(saved.otherPaths, current.otherPaths) ? '' : 'mismatch'"
+          v-if="('otherPaths' in saved || 'otherPaths' in current) && field(saved, 'otherPaths') !== null"
+          :class="isEqual(field(saved, 'otherPaths'), field(current, 'otherPaths')) ? '' : 'mismatch'"
         >
           <td>Other Paths:</td>
-          <td>{{ saved.otherPaths }}</td>
-          <td>{{ current.otherPaths }}</td>
+          <td>{{ field(saved, "otherPaths") }}</td>
+          <td>{{ field(current, "otherPaths") }}</td>
         </tr>
       </tbody>
-    </v-table>
+    </pv-table>
   </div>
 </template>
 

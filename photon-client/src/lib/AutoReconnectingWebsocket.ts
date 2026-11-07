@@ -46,7 +46,7 @@ export class AutoReconnectingWebsocket {
   send(data: unknown) {
     // Only send data if the websocket is open
     if (this.isConnected()) {
-      this.websocket?.send(encode(data));
+      this.websocket?.send(encode(data) as Uint8Array<ArrayBuffer>);
     }
   }
 
