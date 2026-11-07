@@ -434,8 +434,65 @@ class PhotonCameraSim:
                 cs.VideoSource.ConnectionStrategy.CONNECTION_FORCE_CLOSE
             )
 
-        # if self.videoSimProcEnabled:
-        #     VideoSimUtil.updateVideoProp(videoSimProcessed, prop);
+        if self.videoSimProcEnabled:
+            cv.cvtColor(
+                self.videoSimFrameRaw, cv.COLOR_GRAY2BGR, self.videoSimFrameProcessed
+            )
+            cv.drawMarker(
+                self.videoSimFrameProcessed,
+                (
+                    int(self.prop.getResWidth() / 2.0),
+                    int(self.prop.getResHeight() / 2.0),
+                ),
+                [0, 255, 0],
+                markerType=cv.MARKER_CROSS,
+                markerSize=int(
+                    VideoSimUtil.getScaledThickness(15, self.videoSimFrameProcessed)
+                ),
+                thickness=int(
+                    VideoSimUtil.getScaledThickness(1, self.videoSimFrameProcessed)
+                ),
+                line_type=cv.LINE_AA,
+            )
+            for tgt in detectableTgts:
+                detectedCornersDouble = tgt.getDetectedCorners()
+                if tgt.fiducialId >= 0:
+                    VideoSimUtil.drawTagDetection(
+                        tgt.fiducialId,
+                        OpenCVHelp.cornersToPoints(detectedCornersDouble),
+                        self.videoSimFrameProcessed,
+                    )
+                else:
+                    cv.rectangle(
+                        self.videoSimFrameProcessed,
+                        OpenCVHelp.getBoundingRect(
+                            OpenCVHelp.cornersToPoints(detectedCornersDouble)
+                        ),
+                        [0, 0, 255],
+                        int(
+                            VideoSimUtil.getScaledThickness(
+                                1, self.videoSimFrameProcessed
+                            )
+                        ),
+                        cv.LINE_AA,
+                    )
+                    smallVec = tgt.getMinAreaRectCorners()
+                    VideoSimUtil.drawPoly(
+                        OpenCVHelp.cornersToPoints(smallVec),
+                        int(
+                            VideoSimUtil.getScaledThickness(
+                                1, self.videoSimFrameProcessed
+                            )
+                        ),
+                        [255, 30, 30],
+                        True,
+                        self.videoSimFrameProcessed,
+                    )
+                    self.videoSimProcessed.put_frame(self.videoSimFrameProcessed)
+        else:
+            self.videoSimProcessed.set_connection_strategy(
+                cs.VideoSource.ConnectionStrategy.CONNECTION_FORCE_CLOSE
+            )
 
         multiTagResults: MultiTargetPNPResult | None = None
 
