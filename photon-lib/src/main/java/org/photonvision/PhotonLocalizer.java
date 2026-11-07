@@ -29,6 +29,7 @@ import org.photonvision.jni.GTSAMConcurrentLocalizer;
 import org.photonvision.jni.GTSAMExtras;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.fields.Field;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Transform3d;
@@ -46,7 +47,13 @@ public class PhotonLocalizer {
     public PhotonLocalizer(Field layout, TargetModel model) {
         core = new GTSAMConcurrentLocalizer(layout, model);
         odomNoise = GTSAMExtras.NoiseModel.Diagonal(VecBuilder.fill(0.1, 0.1, 0.1, 0.1, 0.1, 0.1));
-        notifier = new Notifier(() -> this.core.step());
+        notifier = new Notifier(() -> {
+            try {
+                core.step();
+            } catch (Exception e) {
+                DriverStationErrors.reportError("[PhotonLocalizer] Exception in GTSAMRunner step: " + e.getMessage(), false);
+            }
+        });
     }
 
     public static final record GTSAMCamConfig(
