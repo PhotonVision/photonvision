@@ -53,7 +53,7 @@ class SimCameraProperties:
 
         resDiag = math.sqrt(width * width + height * height)
         diagRatio = math.tan(fovDiag.radians() / 2.0)
-        fovWidth = Rotation2d(math.atan((diagRatio * (width / resDiag)) * 2))
+        fovWidth = Rotation2d(math.atan(diagRatio * (width / resDiag)) * 2)
         fovHeight = Rotation2d(math.atan(diagRatio * (height / resDiag)) * 2)
 
         # assume no distortion
@@ -93,7 +93,7 @@ class SimCameraProperties:
                 Rotation3d(
                     0.0,
                     0.0,
-                    (self.getPixelYaw(0) + Rotation2d(math.pi / 2.0)).radians(),
+                    (self.getPixelYaw(0) + Rotation2d(-math.pi / 2.0)).radians(),
                 ),
             ),
             Translation3d(
@@ -108,16 +108,16 @@ class SimCameraProperties:
                 1.0,
                 Rotation3d(
                     0.0,
-                    0.0,
                     (self.getPixelPitch(0) + Rotation2d(math.pi / 2.0)).radians(),
+                    0.0,
                 ),
             ),
             Translation3d(
                 1.0,
                 Rotation3d(
                     0.0,
+                    (self.getPixelPitch(height) + Rotation2d(-math.pi / 2.0)).radians(),
                     0.0,
-                    (self.getPixelPitch(height) + Rotation2d(math.pi / 2.0)).radians(),
                 ),
             ),
         ]
