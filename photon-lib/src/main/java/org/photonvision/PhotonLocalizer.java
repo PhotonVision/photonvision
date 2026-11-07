@@ -47,13 +47,16 @@ public class PhotonLocalizer {
     public PhotonLocalizer(Field layout, TargetModel model) {
         core = new GTSAMConcurrentLocalizer(layout, model);
         odomNoise = GTSAMExtras.NoiseModel.Diagonal(VecBuilder.fill(0.1, 0.1, 0.1, 0.1, 0.1, 0.1));
-        notifier = new Notifier(() -> {
-            try {
-                core.step();
-            } catch (Exception e) {
-                DriverStationErrors.reportError("[PhotonLocalizer] Exception in GTSAMRunner step: " + e.getMessage(), false);
-            }
-        });
+        notifier =
+                new Notifier(
+                        () -> {
+                            try {
+                                core.step();
+                            } catch (Exception e) {
+                                DriverStationErrors.reportError(
+                                        "[PhotonLocalizer] Exception in GTSAMRunner step: " + e.getMessage(), false);
+                            }
+                        });
     }
 
     public static final record GTSAMCamConfig(
