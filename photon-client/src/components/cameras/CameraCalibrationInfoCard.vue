@@ -2,10 +2,18 @@
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
 
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, inject, ref, useTemplateRef } from "vue";
-import { axiosPost, getResolutionString, parseJsonFile, resolutionsAreEqual } from "@/lib/PhotonUtils";
+import { computed, inject, ref, useTemplateRef, watch } from "vue";
+import axios from "axios";
+import {
+  axiosPost,
+  getCalibrationSummaryStatistics,
+  getResolutionString,
+  meanReprojectionError,
+  parseJsonFile
+} from "@/lib/PhotonUtils";
 import IconImport from "~icons/mdi/import";
 import IconExport from "~icons/mdi/export";
 import IconEye from "~icons/mdi/eye";
@@ -15,6 +23,31 @@ import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-vis
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
+
+// While a calibration session is active this card only ever shows the pending calibration
+const isCalibrating = computed(
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
+);
+
+// The full calibration (with observations) for this resolution.
+const fetchedCalibration = ref<CameraCalibrationResult | null>(null);
+
+const fetchCalibration = async () => {
+  try {
+    const response = await axios.get("settings/camera/getCalibration", {
+      params: {
+        cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
+        width: props.videoFormat.resolution.width,
+        height: props.videoFormat.resolution.height
+      }
+    });
+    fetchedCalibration.value = response.data;
+  } catch {
+    fetchedCalibration.value = null;
+  }
+};
+
+watch(() => props.videoFormat.resolution, fetchCalibration, { immediate: true });
 
 const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
@@ -55,11 +88,13 @@ const importCalibration = async () => {
 
   useCameraSettingsStore()
     .importCalibrationFromData({ calibration: data })
-    .then((response) => {
+    .then(async (response) => {
       useStateStore().showSnackbarMessage({
         color: "success",
         message: response.data.text || response.data
       });
+      // We need to refetch the calibration since the cache will be outdated
+      await fetchCalibration();
     })
     .catch((error) => {
       if (error.response) {
@@ -93,20 +128,12 @@ type TabItem = {
   value: string;
 };
 
-const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(() =>
-  useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
+const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(
+  () => fetchedCalibration.value ?? useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
 );
 
-// the prop object can become stale after importing calibration data. Using props.videoFormat directly may not be reactive
-const reactiveVideoFormat = computed<VideoFormat>(() => {
-  const matchingFormat = useCameraSettingsStore().currentCameraSettings.validVideoFormats.find((format) =>
-    resolutionsAreEqual(format.resolution, props.videoFormat.resolution)
-  );
-  return matchingFormat ?? props.videoFormat;
-});
-
-const totalOutlierPoints = computed<number>(
-  () => currentCalibrationCoeffs.value?.numOutliers.reduce((a, b) => a + b, 0) ?? 0
+const totalOutlierPoints = computed<number>(() =>
+  observationDetails.value.reduce((sum, observation) => sum + observation.numOutliers, 0)
 );
 
 const totalObservationPoints = computed<number>(() => {
@@ -114,7 +141,7 @@ const totalObservationPoints = computed<number>(() => {
   return coefficients
     ? Math.max(0, coefficients.calobjectSize.width - 1) *
         Math.max(0, coefficients.calobjectSize.height - 1) *
-        coefficients.numSnapshots
+        (coefficients.numSnapshots ?? coefficients.observations?.length ?? 0)
     : 0;
 });
 
@@ -128,16 +155,38 @@ const inlierRatioPercent = computed<string>(() => {
 
 const observationDetails = computed<ObservationDetails[]>(() => {
   const coefficients = currentCalibrationCoeffs.value;
+  if (!coefficients) return [];
 
-  return (
-    coefficients?.meanErrors.map((m, i) => ({
+  // Re-derive stats if they're missing
+  if (coefficients.meanErrors !== undefined) {
+    return coefficients.meanErrors.map((m, i) => ({
       index: i,
       mean: parseFloat(m.toFixed(2)),
       numOutliers: coefficients.numOutliers[i],
       numMissing: coefficients.numMissing[i]
-    })) ?? []
+    }));
+  }
+
+  return (
+    coefficients.observations?.map((obs, i) => {
+      const numMissing = obs.locationInImageSpace.filter((pt) => pt.x < 0 || pt.y < 0).length;
+      return {
+        index: i,
+        mean: parseFloat(meanReprojectionError(obs).toFixed(2)),
+        // Mirrors UICameraCalibrationCoefficients -- outliers exclude corners that were never detected
+        numOutliers: obs.cornersUsed.filter((used) => !used).length - numMissing,
+        numMissing
+      };
+    }) ?? []
   );
 });
+
+const summaryStatistics = computed(() => {
+  const c = currentCalibrationCoeffs.value;
+  return c ? getCalibrationSummaryStatistics(c) : undefined;
+});
+const formatStat = (value: number | undefined, unit: string): string =>
+  value !== undefined ? (isNaN(value) ? "NaN" : value.toFixed(2) + unit) : "-";
 
 const exportCalibrationURL = computed<string | undefined>(() =>
   props.videoFormat
@@ -169,7 +218,7 @@ const tabItems: TabItem[] = [
         <div class="w-full flex-1 p-0">
           <div class="text-base font-semibold">Calibration Details</div>
         </div>
-        <div class="mr-2 flex items-center">
+        <div v-if="!isCalibrating" class="mr-2 flex items-center">
           <pv-button variant="passive" :icon="IconImport" block @click="openUploadPhotonCalibJsonPrompt"
             >Import</pv-button
           >
@@ -181,7 +230,7 @@ const tabItems: TabItem[] = [
             @change="importCalibration"
           />
         </div>
-        <div class="flex items-center">
+        <div v-if="!isCalibrating" class="flex items-center">
           <pv-button
             variant="passive"
             :icon="IconExport"
@@ -224,98 +273,52 @@ const tabItems: TabItem[] = [
                   <tr>
                     <td>Fx</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[0].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[0].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Fy</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[4].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[4].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Cx</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[2].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[2].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Cy</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[5].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[5].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Distortion</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || []
-                      }}
+                      {{ currentCalibrationCoeffs?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || [] }}
                     </td>
                   </tr>
                   <tr>
                     <td>Mean Error</td>
-                    <td>
-                      {{
-                        reactiveVideoFormat.mean !== undefined
-                          ? isNaN(reactiveVideoFormat.mean)
-                            ? "NaN"
-                            : reactiveVideoFormat.mean.toFixed(2) + "px"
-                          : "-"
-                      }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.mean, "px") }}</td>
                   </tr>
                   <tr>
                     <td>Horizontal FOV</td>
-                    <td>
-                      {{
-                        reactiveVideoFormat.horizontalFOV !== undefined
-                          ? reactiveVideoFormat.horizontalFOV.toFixed(2) + "°"
-                          : "-"
-                      }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.horizontalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Vertical FOV</td>
-                    <td>
-                      {{
-                        reactiveVideoFormat.verticalFOV !== undefined
-                          ? reactiveVideoFormat.verticalFOV.toFixed(2) + "°"
-                          : "-"
-                      }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.verticalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Diagonal FOV</td>
-                    <td>
-                      {{
-                        reactiveVideoFormat.diagonalFOV !== undefined
-                          ? reactiveVideoFormat.diagonalFOV.toFixed(2) + "°"
-                          : "-"
-                      }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.diagonalFOV, "°") }}</td>
                   </tr>
                   <!-- Board warp, only shown for mrcal-calibrated cameras -->
                   <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">

@@ -52,6 +52,10 @@ Ensure that there is no scaling applied during printing (it should be at 100%) a
 
 We'll next select a resolution to calibrate and populate our pattern spacing, marker size, and board size. The provided chessboard and ChArUco board are an 8x8 grid of 1 inch square. The provided ChArUco board uses the 4x4 dictionary with a marker size of 0.75 inches (this board does not need the old OpenCV pattern selector selected). Printers are not perfect, and you need to measure your calibration target and enter the correct marker size (size of the ArUco marker) and pattern spacing (aka size of the black square) using calipers or similar. Finally, once our entered data is correct, we'll click "start calibration."
 
+:::{note}
+Auto calibration can be enabled at any time by using the "Auto Calibration" toggle switch. In auto calibration mode, snapshots are taken automatically. Once the detected board has moved at least a minimum distance from its position at the last snapshot, and has then been held still for a few frames (to avoid motion blur), a snapshot is captured without any button presses. Simply move the board to a new angle, hold it steady, and repeat. You can also press the "Take Snapshot" button at any time during auto calibration to manually capture a snapshot of the current board position.
+:::
+
 :::{warning} Old OpenCV Pattern selector. This should be used in the case that the calibration image is generated from a version of OpenCV before version 4.6.0. This would include targets created by calib.io. If this selector is not set correctly the calibration will be completely invalid. For more info view [this GitHub issue](https://github.com/opencv/opencv_contrib/issues/3291).
 :::
 
@@ -63,6 +67,7 @@ If you have a [calib.io](https://calib.io/) ChArUco Target you will have to ente
 
 Now, we'll capture images of our board from various angles. It's important to check that the board overlay matches the board in your image. The further the overdrawn points are from the true position of the chessboard corners, the less accurate the final calibration will be. We'll want to capture enough images to cover the whole camera's FOV (with a minimum of 12). Once we've got our images, we'll click "Finish calibration" and wait for the calibration process to complete. If all goes well, the mean error and FOVs will be shown in the table on the right. The FOV should be close to the camera's specified FOV (usually found in a datasheet) usually within + or - 10 degrees. The mean error should also be low, usually less than 1 pixel.
 
+Before finishing a calibration, the "View Pending Calibration" button can be used to compute a calibration from the snapshots collected so far -- without finishing the current calibration -- and view the information listed below.
 ```{raw} html
 <video width="85%" controls>
     <source src="../../_static/assets/calibration_small.mp4" type="video/mp4">

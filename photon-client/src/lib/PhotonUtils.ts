@@ -1,5 +1,11 @@
 import { useStateStore } from "@/stores/StateStore";
-import { CalibrationPaperTypes, CalibrationTagFamilies, type Resolution } from "@/types/SettingTypes";
+import {
+  CalibrationPaperTypes,
+  CalibrationTagFamilies,
+  type BoardObservation,
+  type CameraCalibrationResult,
+  type Resolution
+} from "@/types/SettingTypes";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import axios, { type AxiosRequestConfig } from "axios";
 import { length, type Length } from "@adam-rocska/units-and-measurement/length";
@@ -10,6 +16,37 @@ export const resolutionsAreEqual = (a: Resolution, b?: Resolution) => {
 
 export const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
   Array.isArray(value) ? value : [value.first, value.second];
+
+export const meanReprojectionError = (obs: BoardObservation): number => {
+  const used = obs.reprojectionErrors.filter((_, i) => obs.cornersUsed[i]);
+  if (used.length === 0) return NaN;
+  return used.reduce((sum, pt) => sum + Math.hypot(pt.x, pt.y), 0) / used.length;
+};
+
+export interface CalibrationSummaryStatistics {
+  // Mean overall reprojection error in pixels, averaged over each observation's mean error
+  mean: number;
+  horizontalFOV: number;
+  verticalFOV: number;
+  diagonalFOV: number;
+}
+
+export const getCalibrationSummaryStatistics = (cal: CameraCalibrationResult): CalibrationSummaryStatistics => {
+  const fx = cal.cameraIntrinsics.data[0];
+  const fy = cal.cameraIntrinsics.data[4];
+  const { width, height } = cal.resolution;
+
+  const observationMeans = cal.meanErrors ?? cal.observations?.map(meanReprojectionError) ?? [];
+  const mean = observationMeans.length ? observationMeans.reduce((a, b) => a + b, 0) / observationMeans.length : NaN;
+
+  return {
+    mean,
+    horizontalFOV: (2 * Math.atan2(width / 2, fx) * 180) / Math.PI,
+    verticalFOV: (2 * Math.atan2(height / 2, fy) * 180) / Math.PI,
+    // Scales the vertical axis by the pixel aspect ratio (fx / fy) to handle non-square pixels
+    diagonalFOV: (2 * Math.atan2(Math.sqrt(width ** 2 + (height / (fy / fx)) ** 2) / 2, fx) * 180) / Math.PI
+  };
+};
 
 /**
  * Checks the status of the backend by polling the "/status" endpoint.

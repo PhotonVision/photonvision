@@ -18,7 +18,6 @@
 package org.photonvision.vision.camera;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
@@ -102,8 +101,6 @@ public class FileVisionSource extends VisionSource {
 
     public static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
-
-        private final ArrayList<VideoMode> videoModes = new ArrayList<>();
 
         FileSourceSettables(
                 CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {

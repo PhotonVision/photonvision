@@ -14,6 +14,7 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import {
   arucoTagDictionaryFor,
   arucoTagFamilyNameFor,
+  getCalibrationSummaryStatistics,
   getResolutionString,
   paperDimensionsFor,
   resolutionsAreEqual
@@ -32,6 +33,8 @@ import IconFlagCheckered from "~icons/mdi/flag-checkered";
 import IconFlagOffOutline from "~icons/mdi/flag-off-outline";
 import IconCancel from "~icons/mdi/cancel";
 import IconHelpCircleOutline from "~icons/mdi/help-circle-outline";
+import IconEyeOutline from "~icons/mdi/eye-outline";
+import IconInformationOutline from "~icons/mdi/information-outline";
 import { length, type Length } from "@adam-rocska/units-and-measurement/length";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
@@ -81,26 +84,11 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
       const resArea = format.resolution.width * format.resolution.height;
 
       if (calib !== undefined) {
-        // Mean overall reprojection error
-        // Calculated as average of each observation's mean error
-        if (calib.meanErrors.length)
-          format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
-        else format.mean = NaN;
-
-        format.horizontalFOV =
-          2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
-        format.verticalFOV =
-          2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
-        format.diagonalFOV =
-          2 *
-          Math.atan2(
-            Math.sqrt(
-              format.resolution.width ** 2 +
-                (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
-            ) / 2,
-            calib.cameraIntrinsics.data[0]
-          ) *
-          (180 / Math.PI);
+        const stats = getCalibrationSummaryStatistics(calib);
+        format.mean = stats.mean;
+        format.horizontalFOV = stats.horizontalFOV;
+        format.verticalFOV = stats.verticalFOV;
+        format.diagonalFOV = stats.diagonalFOV;
       }
 
       if (resArea >= minPixelCount) {
@@ -319,7 +307,25 @@ const isCalibrating = computed(
   () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
 );
 
+// Local preference for the calibration mode; while calibrating this is synced with the backend
+const autoCalibrationEnabled = ref(false);
+
+const autoCalibration = computed<boolean>({
+  get: () => (isCalibrating.value ? useStateStore().calibrationData.autoCalibrate : autoCalibrationEnabled.value),
+  set: (value) => {
+    if (isCalibrating.value) {
+      // The backend reads autoCalibrate live from the calibration pipeline settings
+      useCameraSettingsStore().changeCurrentPipelineSetting({ autoCalibrate: value }, false);
+      // Optimistic update until the next calibration state broadcast
+      useStateStore().calibrationData.autoCalibrate = value;
+    } else {
+      autoCalibrationEnabled.value = value;
+    }
+  }
+});
+
 const startCalibration = () => {
+  useStateStore().calibrationData.autoCalibrate = autoCalibrationEnabled.value;
   useCameraSettingsStore().startPnPCalibration({
     squareSizeMeters: length[dimensionUnit.value](squareSize.value).m.value,
     markerSizeMeters: length[dimensionUnit.value](markerSize.value).m.value,
@@ -327,15 +333,16 @@ const startCalibration = () => {
     patternWidth: patternWidth.value,
     boardType: boardType.value,
     useOldPattern: useOldPattern.value,
-    tagFamily: tagFamily.value
+    tagFamily: tagFamily.value,
+    autoCalibrate: autoCalibrationEnabled.value
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
-  // isCalibrating.value = true;
   calibCanceled.value = false;
   requestedVideoFormatIndex.value = useStateStore().calibrationData.videoFormatIndex;
+  showCalDialog.value = false;
 };
-const showCalibEndDialog = ref(false);
+const calibEndDialogOpen = ref(false);
 const calibCanceled = ref(false);
 const calibCancelRequested = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
@@ -348,9 +355,11 @@ const endCalibration = () => {
   calibCanceled.value = false;
   calibCancelRequested.value = canceling;
 
-  showCalibEndDialog.value = true;
-  useCameraSettingsStore()
-    .endPnPCalibration(useStateStore().currentCameraUniqueName, canceling)
+  calibEndDialogOpen.value = true;
+  const request = canceling
+    ? useCameraSettingsStore().cancelCalibration(useStateStore().currentCameraUniqueName)
+    : useCameraSettingsStore().commitCalibration(useStateStore().currentCameraUniqueName);
+  request
     .then(() => {
       if (canceling) {
         calibCanceled.value = true;
@@ -359,23 +368,79 @@ const endCalibration = () => {
       }
     })
     .catch((e) => {
-      if (e.response) {
-        // Server returned a status code
-      } else if (e.request) {
-        // Something went wrong. Unsure if calibration actually worked
+      // A request that got no response means the calibration result is unknown
+      if (e.request && !e.response) {
         calibEndpointFail.value = true;
       }
       calibSuccess.value = false;
-    })
-    .finally(() => {
-      // isCalibrating.value = false;
-      // backend deals with this for us
     });
 };
 
-const drawAllSnapshots = ref(true);
+const generatingPending = ref(false);
 
-const bypassVal = ref(false);
+// The video format currently being calibrated
+const calibratingVideoFormat = computed<VideoFormat | undefined>(
+  () =>
+    useCameraSettingsStore().currentCameraSettings.validVideoFormats[useStateStore().calibrationData.videoFormatIndex]
+);
+
+// Resolution string shown in the end-calibration success message
+const calibratedResolutionString = computed(() => {
+  const format = useCameraSettingsStore().currentCameraSettings.validVideoFormats[requestedVideoFormatIndex.value];
+  return format ? getResolutionString(format.resolution) : "";
+});
+
+// Compute a pending calibration from the collected snapshots and view it in the same calibration
+// details dialog used for saved calibrations
+const viewPendingCalibration = () => {
+  generatingPending.value = true;
+  calibEndDialogOpen.value = true;
+  useCameraSettingsStore()
+    .computeCalibration()
+    .then(() => {
+      selectedVideoFormat.value = calibratingVideoFormat.value;
+      showCalDialog.value = true;
+    })
+    .catch(() => {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: "Failed to compute pending calibration"
+      });
+    })
+    .finally(() => {
+      generatingPending.value = false;
+      calibEndDialogOpen.value = false;
+    });
+};
+
+// Calibration stream overlay: 0 = collected corners, 1 = off, 2 = exclusion zone
+const overlayMode = ref(1);
+// Exclusion zone is only needed when autoCalibration is on
+const overlayItems = computed(() => {
+  const items = [
+    { value: 0, name: "Corners" },
+    { value: 1, name: "Off" }
+  ];
+  if (autoCalibration.value) items.push({ value: 2, name: "Exclusion" });
+  return items;
+});
+watch(autoCalibration, (enabled) => {
+  if (!enabled && overlayMode.value === 2) {
+    overlayMode.value = 1;
+    handleOverlayModeChange(1);
+  }
+});
+const handleOverlayModeChange = (mode: number) => {
+  useCameraSettingsStore().changeCurrentPipelineSetting(
+    { drawAllSnapshots: mode === 0, showExclusionZone: mode === 2 },
+    false
+  );
+};
+
+const bypassVal = computed<boolean>({
+  get: () => useStateStore().bypassMinCalibrationImages,
+  set: (v) => (useStateStore().bypassMinCalibrationImages = v)
+});
 const minCount = computed(() => (bypassVal.value ? 10 : 100));
 const hasEnoughImages = computed(() => useStateStore().calibrationData.imageCount >= minCount.value);
 
@@ -396,13 +461,6 @@ const updateStreamingFrameDivisor = (value: number | string) => {
   if (ordinal >= 0) {
     useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: ordinal }, true);
   }
-};
-
-const updateDrawAllSnapshots = (value: boolean | undefined) => {
-  if (value === undefined) {
-    return;
-  }
-  useCameraSettingsStore().changeCurrentPipelineSetting({ drawAllSnapshots: value }, false);
 };
 
 const updateCameraAutoExposure = (value: boolean | undefined) => {
@@ -590,6 +648,12 @@ const updateCameraBlueGain = (value: number) => {
               tooltip="If enabled, Photon will use the old OpenCV pattern for calibration (the top left square is a marker)."
               :label-cols="4"
             />
+            <pv-switch
+              v-model="autoCalibration"
+              label="Auto Calibration"
+              tooltip="When enabled, snapshots are taken automatically as you move the board. Can be toggled at any time, even while calibrating."
+              :label-cols="4"
+            />
             <pv-select
               v-model="paperType"
               label="Paper Type"
@@ -643,14 +707,26 @@ const updateCameraBlueGain = (value: number) => {
         <div class="flex pb-5">
           <div class="w-1/2 p-0 pr-2">
             <pv-button
+              v-if="!isCalibrating"
               size="sm"
               variant="primary"
-              :icon="isCalibrating ? IconCamera : IconFlagOutline"
+              :icon="IconFlagOutline"
               block
               :disabled="!settingsValid || tooManyPoints || getUniqueVideoResolutionStrings().length === 0"
-              @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
+              @click="startCalibration()"
             >
-              <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
+              <span class="calib-btn-label">Start Calibration</span>
+            </pv-button>
+            <pv-button
+              v-else
+              size="sm"
+              variant="primary"
+              :icon="IconCamera"
+              block
+              :disabled="!settingsValid || tooManyPoints"
+              @click="useCameraSettingsStore().takeCalibrationSnapshot()"
+            >
+              <span class="calib-btn-label">Take Snapshot</span>
             </pv-button>
           </div>
           <div class="w-1/2 p-0 pl-2">
@@ -667,6 +743,19 @@ const updateCameraBlueGain = (value: number) => {
               </span>
             </pv-button>
           </div>
+        </div>
+        <div v-if="isCalibrating" class="pb-5">
+          <pv-button
+            size="sm"
+            variant="passive"
+            :icon="IconEyeOutline"
+            block
+            :loading="generatingPending"
+            :disabled="useStateStore().calibrationData.imageCount === 0"
+            @click="viewPendingCalibration"
+          >
+            <span class="calib-btn-label">View Pending Calibration</span>
+          </pv-button>
         </div>
         <div>
           <pv-button
@@ -687,6 +776,13 @@ const updateCameraBlueGain = (value: number) => {
           text="Too many corners. Finish calibration now!"
           :icon="IconAlertCircleOutline"
         />
+        <pv-alert
+          v-if="isCalibrating && useStateStore().calibrationData.autoCalibrate"
+          class="mt-5"
+          color="info"
+          text="Hold the board still in view. Snapshots are taken automatically once the board has moved far enough from the last snapshot — or press Take Snapshot to capture the current board manually."
+          :icon="IconInformationOutline"
+        />
         <div v-if="isCalibrating" class="pt-5">
           <div class="flex flex-wrap items-center justify-between gap-4 pb-5">
             <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : '#c5c5c5'">
@@ -701,12 +797,13 @@ const updateCameraBlueGain = (value: number) => {
               :switch-cols="6"
             />
           </div>
-          <pv-switch
-            v-model="drawAllSnapshots"
-            label="Draw Collected Corners"
-            :switch-cols="8"
-            tooltip="Draw all snapshots"
-            @update:modelValue="updateDrawAllSnapshots"
+          <pv-select
+            v-model="overlayMode"
+            label="Calibration Overlay"
+            tooltip="What to draw on the calibration stream: collected corners, nothing, or the last snapshot centroid with the exclusion zone the next snapshot must be outside of"
+            :items="overlayItems"
+            :select-cols="8"
+            @update:modelValue="handleOverlayModeChange"
           />
           <pv-switch
             v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
@@ -767,7 +864,7 @@ const updateCameraBlueGain = (value: number) => {
         </div>
       </div>
     </pv-card>
-    <pv-dialog v-model="showCalibEndDialog" width="500px" persistent>
+    <pv-dialog v-model="calibEndDialogOpen" width="500px" persistent>
       <pv-card>
         <div class="pb-2 text-lg font-semibold">Camera Calibration</div>
         <div style="text-align: center">
@@ -782,22 +879,15 @@ const updateCameraBlueGain = (value: number) => {
             <pv-progress indeterminate class="mx-auto mb-2" color="primary" />
             <div>Camera calibration is being canceled...</div>
           </template>
-          <!-- No result reported yet -->
-          <template v-else-if="calibSuccess === undefined">
+          <!-- No result reported yet, or a pending calibration is being computed -->
+          <template v-else-if="generatingPending || calibSuccess === undefined">
             <pv-progress indeterminate class="mx-auto mb-2" color="primary" />
             <div>Camera is being calibrated. This process may take several minutes...</div>
           </template>
           <!-- Got positive result -->
           <template v-else-if="calibSuccess">
             <pv-icon color="#00ff00" size="70" :icon="IconCheck" />
-            <div>
-              Camera has been successfully calibrated for
-              {{
-                useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
-                  getResolutionString(f.resolution)
-                )[requestedVideoFormatIndex]
-              }}!
-            </div>
+            <div>Camera has been successfully calibrated for {{ calibratedResolutionString }}!</div>
           </template>
           <template v-else-if="calibEndpointFail">
             <pv-icon color="gray" size="70" :icon="IconHelpCircleOutline" />
@@ -822,7 +912,7 @@ const updateCameraBlueGain = (value: number) => {
           <pv-button
             v-if="calibSuccess !== undefined || calibCanceled || calibEndpointFail"
             variant="text"
-            @click="showCalibEndDialog = false"
+            @click="calibEndDialogOpen = false"
           >
             OK
           </pv-button>

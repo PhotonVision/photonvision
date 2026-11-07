@@ -13,8 +13,9 @@ const cameraViewType = computed<number[]>({
       useCameraSettingsStore().isDriverMode ||
       useCameraSettingsStore().isCalibrationMode ||
       useCameraSettingsStore().isFocusMode
-    )
+    ) {
       return [1];
+    }
 
     const ret: number[] = [];
     if (useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {

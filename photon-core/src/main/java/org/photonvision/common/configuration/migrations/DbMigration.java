@@ -53,7 +53,9 @@ public class DbMigration {
     public static final MigrationManager getMigration() {
         return new MigrationManager(2, schema02)
             .addStep(202701, update2026CameraConfig)
-            .addStep(202702, schema202702);
+            .addStep(202702, schema202702)
+            .addStep(202703, update2026StatusLEDs)
+            .addStep(202704, update2026ATFL);
     }
 
     private static final String schema02 =
@@ -212,11 +214,24 @@ public class DbMigration {
                     for (JsonNode pipelineString : rawPipelineJsons.elements()) {
                         var pipelineJson = Jsonb.instance().type(JsonArray.class).fromJson(pipelineString.text());
                         String type = pipelineJson.elements().get(0).text();
-                        var pipeline = (JsonObject) pipelineJson.elements().get(1).copy();
+                        JsonObject pipeline = (JsonObject) pipelineJson.elements().get(1).copy();
                         logger.debug(
                                 String.format(
                                         "Migrating legacy %s, \"%s\"", type, pipeline.extract("pipelineNickname")));
                         pipeline.add("type", type);
+                        if (pipeline.containsKey("outputShowMultipleTargets")) {
+                            /**
+                             * Handles backward compatibility for the deprecated outputShowMultipleTargets property. When
+                             * outputShowMultipleTargets is encountered during deserialization, it sets outputMaximumTargets
+                             * appropriately. If outputShowMultipleTargets is false, outputMaximumTargets is set to 1.
+                             */
+                            if (pipeline.extract("outputShowMultipleTargets").strip().equals("false")) {
+                                pipeline.add("outputMaximumTargets", 1);
+                            } else {
+                                pipeline.add("outputMaximumTargets", 20);
+                            }
+                            pipeline.remove("outputShowMultipleTargets");
+                        }
                         pipelines.add(pipeline);
                     }
                     configJson.add("pipelineSettings", pipelines);
@@ -254,6 +269,119 @@ public class DbMigration {
             } catch (SQLException e) {
                 throw new MigrationException("Exception thrown writing migrated JSON to database for " + uniqueName, e);
             }
+        }
+    };
+
+    private static MigrationFunction update2026StatusLEDs = (conn) -> {
+        String hardwareConfigQuery = "SELECT contents FROM global WHERE config_name='hardwareConfig';";
+        String hardwareConfigJson = null;
+
+        try (var query = conn.prepareStatement(hardwareConfigQuery);
+             var result = query.executeQuery();) {
+            if (result.next()) {
+                hardwareConfigJson = result.getString("contents");
+            } else {
+                logger.info("No hardwareConfig found in global table. Skipping status LED migration.");
+                return;
+            }
+        } catch (SQLException e) {
+            throw new MigrationException("Failed to read configuration from existing database", e);
+        }
+
+        JsonObject hardwareConfig = Jsonb.instance().type(JsonObject.class).fromJson(hardwareConfigJson);
+        hardwareConfig = hardwareConfig.copy(); // Make the config mutable
+        if (hardwareConfig.containsKey("statusRGBPins") || hardwareConfig.containsKey("statusRGBActiveHigh")) {
+            logger.debug("Migrating legacy statusRGBPins to statusLEDConfig");
+            JsonObject statusLEDConfig = JsonObject.create();
+            statusLEDConfig.add("type", "RGB");
+            if (hardwareConfig.containsKey("statusRGBActiveHigh")) {
+                statusLEDConfig.add("activeHigh", hardwareConfig.extract("statusRGBActiveHigh", false));
+                hardwareConfig.remove("statusRGBActiveHigh");
+            } else {
+                statusLEDConfig.add("activeHigh", false);
+            }
+            statusLEDConfig.add("redPin", -1);
+            statusLEDConfig.add("greenPin", -1);
+            statusLEDConfig.add("bluePin", -1);
+            if (hardwareConfig.containsKey("statusRGBPins")) {
+                JsonArray statusRGBPins = (JsonArray) hardwareConfig.get("statusRGBPins");
+                if (statusRGBPins.size() >= 3) {
+                    statusLEDConfig.add("redPin", statusRGBPins.elements().get(0));
+                    statusLEDConfig.add("greenPin", statusRGBPins.elements().get(1));
+                    statusLEDConfig.add("bluePin", statusRGBPins.elements().get(2));
+                } else {
+                    logger.warn("Legacy statusRGBPins has less than 3 pins.");
+                }
+                hardwareConfig.remove("statusRGBPins");
+            }
+            hardwareConfig.add("statusLEDConfig", statusLEDConfig);
+
+            // update hardware config in database
+            var sqlString =
+                    "REPLACE INTO global (config_name, contents) VALUES ('hardwareConfig', ?);";
+            try (var statement = conn.prepareStatement(sqlString)) {
+                statement.setString(1, Jsonb.instance().type(JsonObject.class).toJson(hardwareConfig));
+                statement.executeUpdate();
+            } catch (JsonException | UncheckedIOException e) {
+                throw new MigrationException("Cannot serialize migrated JSON to database for hardwareConfig", e);
+            } catch (SQLException e) {
+                throw new MigrationException("Exception thrown writing migrated JSON to database for hardwareConfig", e);
+            }
+        } else {
+            logger.debug("No legacy statusRGBPins found. Skipping migration.");
+        }
+    };
+
+    private static MigrationFunction update2026ATFL = (conn) -> {
+        // 2026 and earlier used "apriltagFieldLayout" as the config_name for the field layout, but 2027 and later uses "fieldLayout"
+        String hardwareConfigQuery = "SELECT contents FROM global WHERE config_name='apriltagFieldLayout';";
+        String fieldLayoutJson = null;
+
+        try (var query = conn.prepareStatement(hardwareConfigQuery);
+             var result = query.executeQuery();) {
+            if (result.next()) {
+                fieldLayoutJson = result.getString("contents");
+            } else {
+                logger.info("No apriltagFieldLayout found in global table. Skipping status LED migration.");
+                return;
+            }
+        } catch (SQLException e) {
+            throw new MigrationException("Failed to read configuration from existing database", e);
+        }
+
+        JsonObject fieldLayout = Jsonb.instance().type(JsonObject.class).fromJson(fieldLayoutJson);
+        fieldLayout = fieldLayout.copy(); // Make the config mutable
+        if (fieldLayout.containsKey("field") || fieldLayout.containsKey("tags")) {
+            logger.debug("Migrating legacy AprilTagFieldLayout");
+            if (fieldLayout.containsKey("field")) {
+                fieldLayout.add("field-dimensions", fieldLayout.get("field"));
+                fieldLayout.remove("field");
+            }
+            if (fieldLayout.containsKey("tags")) {
+                fieldLayout.add("field-tags", fieldLayout.get("tags"));
+                fieldLayout.remove("tags");
+            }
+
+            // update hardware config in database
+            String sqlInsert =
+                    "REPLACE INTO global (config_name, contents) VALUES ('fieldLayout', ?);";
+            String sqlRemove =
+                    "DELETE FROM global WHERE config_name = 'apriltagFieldLayout';";
+            try (var statement = conn.prepareStatement(sqlInsert)) {
+                statement.setString(1, Jsonb.instance().type(JsonObject.class).toJson(fieldLayout));
+                statement.executeUpdate();
+            } catch (JsonException | UncheckedIOException e) {
+                throw new MigrationException("Cannot serialize migrated JSON to database for fieldLayout", e);
+            } catch (SQLException e) {
+                throw new MigrationException("Exception thrown writing migrated JSON to database for fieldLayout", e);
+            }
+            try (var statement = conn.prepareStatement(sqlRemove)) {
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                throw new MigrationException("Exception thrown deleting legacy configuration from database", e);
+            }
+        } else {
+            logger.debug("No legacy AprilTagFieldLayout found. Skipping migration.");
         }
     };
 

@@ -7,7 +7,28 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import IconImport from "~icons/mdi/import";
 import IconExport from "~icons/mdi/export";
+import IconCheckerboard from "~icons/mdi/checkerboard";
+import IconHandBackRight from "~icons/mdi/hand-back-right";
+import IconArrowExpand from "~icons/mdi/arrow-expand";
 import type { ToggleItem } from "@/components/common/form/pv-toggle-group.vue";
+
+const showAutoCalibrationHint = computed(
+  () => useCameraSettingsStore().isCalibrationMode && useStateStore().calibrationData.autoCalibrate
+);
+
+const calibrationAlertState = computed<"missing" | "moved" | "tooClose">(() => {
+  const movedFarEnough = useStateStore().calibrationData.movedFarEnough;
+
+  if (movedFarEnough === null) {
+    return "missing";
+  }
+
+  if (movedFarEnough) {
+    return "moved";
+  }
+
+  return "tooClose";
+});
 
 const value = defineModel<number[]>({ required: true });
 
@@ -112,5 +133,36 @@ const streamToggleModel = computed<string[]>({
         :disabled="streamToggleDisabled"
       />
     </div>
+    <div v-if="showAutoCalibrationHint" class="flex flex-col gap-2 px-5 pt-0 pb-5">
+      <pv-alert
+        color="warning"
+        :icon="IconCheckerboard"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'missing' }"
+      >
+        No calibration board detected -- point the camera at the calibration board
+      </pv-alert>
+      <pv-alert
+        color="success"
+        :icon="IconHandBackRight"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'moved' }"
+      >
+        Moved far enough -- hold still while the snapshot is taken
+      </pv-alert>
+      <pv-alert
+        color="info"
+        :icon="IconArrowExpand"
+        :class="{ 'calibration-alert--inactive': calibrationAlertState !== 'tooClose' }"
+      >
+        Move the calibration board farther from where the last snapshot was taken
+      </pv-alert>
+    </div>
   </section>
 </template>
+
+<style scoped>
+.calibration-alert--inactive {
+  opacity: 0.45;
+  filter: grayscale(0.8);
+  pointer-events: none;
+}
+</style>
