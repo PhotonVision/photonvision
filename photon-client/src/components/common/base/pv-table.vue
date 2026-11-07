@@ -54,7 +54,7 @@ const tableClasses = computed(() => [
   --pv-table-border-color: color-mix(in srgb, var(--color-pv-background), transparent 85%);
   --pv-table-background: #00000022;
   --pv-table-hover-color: color-mix(in srgb, var(--pv-table-background), transparent 40%);
-  --pv-table-stripe-color: rgba(var(--pv-border-color), var(--pv-stripe-opacity, 0.06));
+  --pv-table-stripe-color: color-mix(in srgb, var(--pv-on-surface), transparent 94%);
   --pv-table-text: var(--pv-on-surface-strong);
 
   width: 100%;

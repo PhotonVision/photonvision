@@ -783,7 +783,7 @@ const updateCameraBlueGain = (value: number) => {
         />
         <div v-if="isCalibrating" class="pt-5">
           <div class="flex flex-wrap items-center justify-between gap-4 pb-5">
-            <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : '#c5c5c5'">
+            <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : 'onSurface'">
               Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
               {{ minCount }}
             </pv-chip>

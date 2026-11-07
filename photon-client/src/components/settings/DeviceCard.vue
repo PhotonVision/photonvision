@@ -236,7 +236,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
 
   stats.push({
     header: "Disk Usage",
-    value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct}%`
+    value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct.toFixed(1)}%`
   });
 
   if (metrics.npuUsage && metrics.npuUsage.length > 0) {
