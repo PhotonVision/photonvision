@@ -2,7 +2,7 @@
 import { computed, ref, useAttrs } from "vue";
 import type { Component } from "vue";
 import IconClose from "~icons/mdi/close";
-import { useThemeColor } from "../../../lib/ComponentUtils";
+import { type PvColor, useThemeColor } from "../../../lib/ComponentUtils";
 
 defineOptions({
   inheritAttrs: false
@@ -10,7 +10,7 @@ defineOptions({
 
 const props = withDefaults(
   defineProps<{
-    color?: string;
+    color?: PvColor;
     icon?: Component;
     text?: string;
     variant?: "tonal" | "elevated" | "flat" | "outlined";

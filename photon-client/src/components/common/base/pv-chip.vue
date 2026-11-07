@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
-import { useThemeColor } from "../../../lib/ComponentUtils";
+import { type PvColor, useThemeColor } from "../../../lib/ComponentUtils";
 
 defineOptions({
   inheritAttrs: false
@@ -8,7 +8,7 @@ defineOptions({
 
 const props = withDefaults(
   defineProps<{
-    color?: string;
+    color?: PvColor;
     label?: boolean;
     variant?: "filled" | "text";
   }>(),

@@ -79,7 +79,7 @@ export function fieldWrapperClasses(opts: {
  * Returns true when the value is already a usable CSS color
  * (hex, rgb(), rgba(), var(), hsl(), oklch(), etc.) rather than a theme token.
  */
-export function isRawCssColor(color: string): boolean {
+export function isRawCssColor(color: string): color is CssColor {
   return /^(#|rgb|rgba|hsl|hsla|oklch|var\()/.test(color);
 }
 
@@ -88,7 +88,7 @@ const toThemeVar = (token: string) => {
   return `var(--color-pv-${normalized})`;
 };
 
-const themeTokens = new Set([
+export const themeColorTokens = [
   "background",
   "onBackground",
   "surface",
@@ -104,12 +104,22 @@ const themeTokens = new Set([
   "buttonPassive",
   "logsBackground",
   "sidebar"
-]);
+] as const;
 
-const legacyColorMap: Record<string, string> = {
-  "light-grey": "#c5c5c5",
-  "light-gray": "#c5c5c5"
-};
+export type ThemeColorToken = (typeof themeColorTokens)[number];
+
+export type CssColor =
+  | `#${string}`
+  | `rgb(${string})`
+  | `rgba(${string})`
+  | `hsl(${string})`
+  | `hsla(${string})`
+  | `oklch(${string})`
+  | `var(--${string})`;
+
+export type PvColor = ThemeColorToken | CssColor;
+
+const themeTokens: ReadonlySet<string> = new Set(themeColorTokens);
 
 /**
  * Resolve a theme-token string (e.g. "primary", "error") or a raw CSS color
@@ -122,7 +132,7 @@ const legacyColorMap: Record<string, string> = {
  * accepts a `color` prop that can be either a theme token or a raw value.
  */
 export function useThemeColor(
-  color: MaybeRefOrGetter<string>,
+  color: MaybeRefOrGetter<PvColor>,
   opts?: { translucentAlpha?: number; borderAlpha?: number }
 ) {
   const tAlpha = opts?.translucentAlpha ?? 0.65;
@@ -133,7 +143,6 @@ export function useThemeColor(
   const baseColor = computed(() => {
     const c = toValue(color);
     if (isRawCssColor(c)) return c;
-    if (legacyColorMap[c]) return legacyColorMap[c];
     if (themeTokens.has(c)) return toThemeVar(c);
     return c;
   });
@@ -156,7 +165,7 @@ export function useThemeColor(
 
   /** Light theme tokens that need dark text for contrast */
   const isLightTone = computed(() =>
-    ["buttonActive", "primary", "secondary", "warning", "success"].includes(toValue(color))
+    (["buttonActive", "primary", "secondary", "warning", "success"] as PvColor[]).includes(toValue(color))
   );
 
   return { solid, translucent, border, isRaw, isLightTone };

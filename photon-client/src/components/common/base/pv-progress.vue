@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ProgressIndicator, ProgressRoot } from "reka-ui";
-import { useThemeColor } from "../../../lib/ComponentUtils";
+import { type PvColor, useThemeColor } from "../../../lib/ComponentUtils";
 
 const props = withDefaults(
   defineProps<{
-    color?: string;
+    color?: PvColor;
     showPercentage?: boolean;
     indeterminate?: boolean;
   }>(),

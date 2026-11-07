@@ -237,28 +237,10 @@ const downloadCalibBoard = async () => {
   const chessboardStartY = (paperHeight - patternHeight.value * squareSizeInches) / 2;
 
   switch (boardType.value) {
-    case CalibrationBoardTypes.Chessboard: {
-      for (let squareY = 0; squareY < patternHeight.value; squareY++) {
-        for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          if (squareY % 2 !== squareX % 2) {
-            doc.rect(
-              chessboardStartX + squareX * squareSizeInches,
-              chessboardStartY + squareY * squareSizeInches,
-              squareSizeInches,
-              squareSizeInches,
-              "F"
-            );
-          }
-        }
-      }
-      doc.text(
-        `${patternWidth.value} x ${patternHeight.value} | ${squareSize.value}${dimensionUnit.value} squares`,
-        paperWidth - 1,
-        1.0,
-        { maxWidth: (paperWidth - 2.0) / 2, align: "right" }
-      );
-      break;
-    }
+    case CalibrationBoardTypes.Chessboard:
+      // This branch is inaccessible
+      console.error("Chessboard generation is not supported");
+      return;
 
     case CalibrationBoardTypes.ChArUco: {
       const { arucoToSVGString } = await arucoMarker;
@@ -692,7 +674,7 @@ const updateCameraBlueGain = (value: number) => {
             variant="passive"
             :icon="IconDownload"
             block
-            :disabled="!settingsValid"
+            :disabled="!settingsValid || boardType === CalibrationBoardTypes.Chessboard"
             @click="downloadCalibBoard"
           >
             <span class="calib-btn-label">Generate Board</span>
@@ -707,7 +689,7 @@ const updateCameraBlueGain = (value: number) => {
         />
         <div v-if="isCalibrating" class="pt-5">
           <div class="flex flex-wrap items-center justify-between gap-4 pb-5">
-            <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : 'light-grey'">
+            <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : '#c5c5c5'">
               Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
               {{ minCount }}
             </pv-chip>

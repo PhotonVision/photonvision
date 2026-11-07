@@ -31,13 +31,13 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
-              <th class="">ID</th>
-              <th class="">X meters</th>
-              <th class="">Y meters</th>
-              <th class="">Z meters</th>
-              <th class="">θ<sub>x</sub>&deg;</th>
-              <th class="">θ<sub>y</sub>&deg;</th>
-              <th class="">θ<sub>z</sub>&deg;</th>
+              <th>ID</th>
+              <th>X meters</th>
+              <th>Y meters</th>
+              <th>Z meters</th>
+              <th>θ<sub>x</sub>&deg;</th>
+              <th>θ<sub>y</sub>&deg;</th>
+              <th>θ<sub>z</sub>&deg;</th>
             </tr>
           </thead>
           <tbody>

@@ -53,7 +53,7 @@ const performanceRecommendation = computed<string>(() => {
           >{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &middot;</span
         ><span class="tabular-nums">{{ performanceRecommendation }}</span>
       </pv-chip>
-      <pv-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
+      <pv-chip v-else label variant="text" color="error" style="font-size: 1rem; padding: 0; margin: 0">
         <span class="pr-1"> Camera not connected </span>
       </pv-chip>
       <pv-switch
