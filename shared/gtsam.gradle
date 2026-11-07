@@ -22,5 +22,12 @@ ext {
             binary.cppCompiler.args.add("-Wno-redundant-move")
             binary.cppCompiler.args.add("-Wno-undef")
         }
+
+        // Windows: GTSAM calls UnDecorateSymbolName from dbghelp.dll
+        if (binary.targetPlatform.name == nativeUtils.wpi.platforms.windowsx86-64) {
+            binary.linker.args.add("/DEFAULTLIB:dbghelp.lib")
+            // or, depending on toolchain setup:
+            // binary.linker.args.add("dbghelp.lib")
+        }
     }
 }
