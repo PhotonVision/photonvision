@@ -295,7 +295,6 @@ watchEffect(() => {
           :disabled="!useSettingsStore().network.canManage || useSettingsStore().network.networkingDisabled"
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
-          :label-cols="4"
         />
         <pv-select
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -326,7 +325,6 @@ watchEffect(() => {
           v-model="tempSettingsStruct.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
-          :label-cols="4"
         />
         <pv-alert
           v-if="tempSettingsStruct.runNTServer"
@@ -339,7 +337,6 @@ watchEffect(() => {
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
-          :label-cols="4"
         />
         <pv-alert
           v-if="tempSettingsStruct.shouldPublishProto"

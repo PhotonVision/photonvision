@@ -118,13 +118,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         {{ useSettingsStore().general.conflictingCameras }}!
       </span>
     </pv-alert>
-    <pv-alert
-      v-if="cameraMismatchWarningShown"
-      v-model="cameraMismatchWarningShown"
-      color="error"
-      class="mb-3"
-      :icon="IconAlertCircleOutline"
-    >
+    <pv-alert v-if="cameraMismatchWarningShown" color="error" class="mb-3" :icon="IconAlertCircleOutline">
       <span
         >Camera Mismatch Detected! Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
         Note: Camera matching is done by USB port. Ensure cameras are plugged into the same USB ports as when they were

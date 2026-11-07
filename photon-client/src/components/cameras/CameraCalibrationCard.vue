@@ -646,13 +646,11 @@ const updateCameraBlueGain = (value: number) => {
               label="Old OpenCV Pattern"
               :disabled="isCalibrating"
               tooltip="If enabled, Photon will use the old OpenCV pattern for calibration (the top left square is a marker)."
-              :label-cols="4"
             />
             <pv-switch
               v-model="autoCalibration"
               label="Auto Calibration"
               tooltip="When enabled, snapshots are taken automatically as you move the board. Can be toggled at any time, even while calibrating."
-              :label-cols="4"
             />
             <pv-select
               v-model="paperType"
@@ -793,7 +791,6 @@ const updateCameraBlueGain = (value: number) => {
               v-model="bypassVal"
               label="Bypass minimum"
               tooltip="Bypass the recommended snapshot minimum for development or temporary testing. At least 10 images are still required."
-              :label-cols="6"
               :switch-cols="6"
             />
           </div>
@@ -808,7 +805,6 @@ const updateCameraBlueGain = (value: number) => {
           <pv-switch
             v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
             label="Auto Exposure"
-            :label-cols="4"
             tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
             @update:modelValue="updateCameraAutoExposure"
           />

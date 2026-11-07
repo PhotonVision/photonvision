@@ -54,9 +54,3 @@ const chipStyle = computed(() => {
     <slot />
   </span>
 </template>
-<style scoped>
-:root {
-  --pv-chip-bg: transparent;
-  --pv-chip-fg: inherit;
-}
-</style>

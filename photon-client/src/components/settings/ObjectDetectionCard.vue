@@ -228,7 +228,6 @@ const handleBulkImport = async () => {
                   <pv-text-field v-model="importHeight" variant="underlined" label="Height" type="number" />
                   <pv-select
                     v-model="importVersion"
-                    variant="underlined"
                     label="Model Version"
                     data-testid="import-version-select"
                     :items="

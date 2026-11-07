@@ -138,8 +138,6 @@ document.addEventListener("keydown", (e) => {
                 <pv-switch
                   v-model="selectedLogLevels[level]"
                   class="pl-2"
-                  hide-details
-                  color="primary"
                   :label="getLogLevelFromIndex(level)"
                 ></pv-switch>
               </div>

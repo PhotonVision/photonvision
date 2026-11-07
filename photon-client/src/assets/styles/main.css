@@ -128,9 +128,6 @@
     background-color: var(--color-pv-primary);
   }
 
-  .main-container {
-    padding: 0 !important;
-  }
   body {
     min-height: 100vh;
     background-color: var(--color-pv-background);

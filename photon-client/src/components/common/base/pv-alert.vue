@@ -33,14 +33,12 @@ const alertStyle = computed(() => {
 
   if (isRaw.value) {
     return {
-      "--pv-alert-color": solid.value,
       backgroundColor: isTonalOrOutlined ? "transparent" : solid.value,
       borderColor: solid.value
     };
   }
 
   return {
-    "--pv-alert-color": solid.value,
     backgroundColor:
       props.variant === "tonal" ? translucent.value : props.variant === "outlined" ? "transparent" : solid.value,
     borderColor: borderColor.value

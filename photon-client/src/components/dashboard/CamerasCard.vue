@@ -60,8 +60,6 @@ const performanceRecommendation = computed<string>(() => {
         v-model="driverMode"
         :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
         label="Driver Mode"
-        color="primary"
-        hide-details="auto"
         class="py-0!"
       />
     </div>

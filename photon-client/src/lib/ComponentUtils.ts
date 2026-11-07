@@ -44,7 +44,7 @@ export const sliderNumberInputClass =
 
 /** Slider thumb */
 export const sliderThumbClass =
-  "block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50 pv-slider-thumb";
+  "block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50";
 
 /**
  * Build the wrapper class list for a text-field / file-input field area.
