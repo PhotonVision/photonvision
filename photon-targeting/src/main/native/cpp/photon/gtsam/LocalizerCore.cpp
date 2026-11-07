@@ -112,14 +112,18 @@ Key LocalizerCore::InsertIntoSmoother(Key lower, Key upper, Key newKey,
     for (const FactorIndex& idxUpper : factorsConnectedToUpper->second) {
       if (idxLower == idxUpper) {
         // found our connecting factor
-        if (idxLower >= currentFactors.size() || !currentFactors[idxLower]) continue; // bail
-        
-        auto edge = std::dynamic_pointer_cast<BetweenFactor<Pose3>>(currentFactors[idxLower]);
-        if (!edge || edge->key1() != lower || edge->key2() != upper) continue; // bail
+        if (idxLower >= currentFactors.size() || !currentFactors[idxLower])
+          continue;  // bail
 
-        if (std::find(factorsToRemove.begin(), factorsToRemove.end(), idxLower) !=
-        factorsToRemove.end()) {
-          throw std::runtime_error("InsertIntoSmoother: edge already being split"); // bail
+        auto edge = std::dynamic_pointer_cast<BetweenFactor<Pose3>>(
+            currentFactors[idxLower]);
+        if (!edge || edge->key1() != lower || edge->key2() != upper)
+          continue;  // bail
+
+        if (std::find(factorsToRemove.begin(), factorsToRemove.end(),
+                      idxLower) != factorsToRemove.end()) {
+          throw std::runtime_error(
+              "InsertIntoSmoother: edge already being split");  // bail
         }
 
         const auto& ts = smootherISAM2.timestamps();
@@ -137,11 +141,11 @@ Key LocalizerCore::InsertIntoSmoother(Key lower, Key upper, Key newKey,
         const Pose3 deltaLowerToMid = Pose3::Expmap(totalTwist * t);
         const Pose3 deltaMidToHigh = Pose3::Expmap(totalTwist * (1.0 - t));
 
-        graph.emplace_shared<BetweenFactor<Pose3>>(
-            lower, newKey, deltaLowerToMid, noise);
-        graph.emplace_shared<BetweenFactor<Pose3>>(
-            newKey, upper, deltaMidToHigh, noise);
-        
+        graph.emplace_shared<BetweenFactor<Pose3>>(lower, newKey,
+                                                   deltaLowerToMid, noise);
+        graph.emplace_shared<BetweenFactor<Pose3>>(newKey, upper,
+                                                   deltaMidToHigh, noise);
+
         Pose3 currentWorldToLower =
             smootherISAM2.calculateEstimate<Pose3>(lower);
         currentEstimate.insert(
@@ -190,8 +194,8 @@ Key LocalizerCore::GetOrInsertKey(Key newKey, double time) {
     if (time - isamEntryBefore->second < kSnapUs) return isamEntryBefore->first;
     if (isamEntryAfter->second - time < kSnapUs) return isamEntryAfter->first;
 
-    return InsertIntoSmoother(isamEntryBefore->first,
-                                    isamEntryAfter->first, newKey, time);
+    return InsertIntoSmoother(isamEntryBefore->first, isamEntryAfter->first,
+                              newKey, time);
   }
 
   KeyTimeMap::iterator notAddedAfter = newTimestamps.upper_bound(newKey);
