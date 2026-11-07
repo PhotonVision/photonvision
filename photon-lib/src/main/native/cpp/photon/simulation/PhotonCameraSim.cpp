@@ -273,7 +273,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
       VisionTargetSim tgt = pair.first;
       std::vector<cv::Point2f> corners = pair.second;
 
-      if (tgt.GetFiducialId() > 0) {
+      if (tgt.GetFiducialId() >= 0) {
         VideoSimUtil::Warp165h5TagImage(tgt.GetFiducialId(), corners, true,
                                         videoSimFrameRaw);
       } else if (!tgt.GetModel().GetIsSpherical()) {

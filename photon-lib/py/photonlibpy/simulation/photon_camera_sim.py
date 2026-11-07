@@ -413,7 +413,7 @@ class PhotonCameraSim:
                     self.videoSimFrameRaw,
                 )
             for tgt, corners in visibleTgts:
-                if tgt.fiducialId > 0:
+                if tgt.fiducialId >= 0:
                     VideoSimUtil.warp165h5TagImage(
                         tgt.fiducialId, corners, True, self.videoSimFrameRaw
                     )
