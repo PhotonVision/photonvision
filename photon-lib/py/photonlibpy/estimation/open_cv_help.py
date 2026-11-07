@@ -16,6 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class OpenCVHelp:
+
+    @staticmethod
+    def getConvexHull(points: np.ndarray) -> np.ndarray:
+        return cv.convexHull(points)
+
+
     @staticmethod
     def getMinAreaRect(points: np.ndarray) -> cv.RotatedRect:
         return cv.RotatedRect(*cv.minAreaRect(points))
