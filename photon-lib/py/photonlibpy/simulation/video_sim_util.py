@@ -42,16 +42,16 @@ class VideoSimUtil:
 
     @staticmethod
     def getImageCorners(width: int, height: int) -> np.ndarray:
-        # /**
-        # * Gets the points representing the corners of this image. Because image pixels
-        # * are accessed through a cv::Mat, the point (0,0) actually represents the
-        # * center of the top-left pixel and not the actual top-left corner.
-        # *
-        # * <p>Order of corners returned is: [BL, BR, TR, TL]
-        # *
-        # * @param size Size of image
-        # * @return The corners
-        # */
+        """Gets the points representing the corners of this image. Because image pixels are accessed
+        through a Mat, the point (0,0) actually represents the center of the top-left pixel and not the
+        actual top-left corner.
+
+        Order of corners returned is: [BL, BR, TR, TL]
+
+        :param size: Size of image
+
+        :returns: The corners
+        """
         return np.array(
             [
                 [[-0.5, height - 0.5]],
@@ -64,12 +64,12 @@ class VideoSimUtil:
 
     @staticmethod
     def get36h11MarkerPts(scale: int = 1) -> np.ndarray:
-        # /**
-        # * Gets the points representing the marker(black square) corners.
-        # *
-        # * @param scale The scale of the tag image (10*scale x 10*scale image)
-        # * @return The points
-        # */
+        """Gets the points representing the marker(black square) corners.
+
+        :param scale: The scale of the tag image (10*scale x 10*scale image)
+
+        :returns: The points
+        """
         x = y = 1 * scale
         width = height = 8 * scale
 
@@ -79,8 +79,7 @@ class VideoSimUtil:
 
     @staticmethod
     def updateVideoProp(video: cs.CvSource, prop: SimCameraProperties) -> None:
-        # /** Updates the properties of this cs::CvSource video stream with the given
-        # * camera properties. */
+        """Updates the properties of this CvSource video stream with the given camera properties."""
         video.set_resolution(prop.getResWidth(), prop.getResHeight())
         video.set_fps(prop.getFPS())
 
@@ -88,19 +87,16 @@ class VideoSimUtil:
     def warp165h5TagImage(
         tag_id: int, dst_points: np.ndarray, antialiasing: bool, destination: np.ndarray
     ) -> None:
-        # /**
-        # * Warps the image of a specific 36h11 AprilTag onto the destination image at
-        # * the given points.
-        # *
-        # * @param tagId The id of the specific tag to warp onto the destination image
-        # * @param dstPoints Points(4) in destination image where the tag marker(black
-        # * square) corners should be warped onto.
-        # * @param antialiasing If antialiasing should be performed by automatically
-        # *     supersampling/interpolating the warped image. This should be used if
-        # * better stream quality is desired or target detection is being done on the
-        # * stream, but can hurt performance.
-        # * @param destination The destination image to place the warped tag image onto.
-        # */
+        """Warps the image of a specific 36h11 AprilTag onto the destination image at the given points.
+
+        :param tagId:        The id of the specific tag to warp onto the destination image
+        :param dstPoints:    Points(4) in destination image where the tag marker(black square) corners
+                             should be warped onto.
+        :param antialiasing: If antialiasing should be performed by automatically
+                             supersampling/interpolating the warped image. This should be used if better stream quality
+                             is desired or target detection is being done on the stream, but can hurt performance.
+        :param destination:  The destination image to place the warped tag image onto.
+        """
 
         if not tag_id in VideoSimUtil.TAG_36h11_IMAGES:
             return
@@ -125,7 +121,9 @@ class VideoSimUtil:
         if warped_tag_upscale > 0:
             super_sampling = math.ceil(super_sampling / warped_tag_upscale)
         else:
-            super_sampling = 10  # zero-area tag: the limit of 6/upscale, clamped to the max
+            super_sampling = (
+                10  # zero-area tag: the limit of 6/upscale, clamped to the max
+            )
         super_sampling = max(min(super_sampling, 10), 1)
 
         if warped_tag_upscale > 2.0:
@@ -204,14 +202,14 @@ class VideoSimUtil:
     def getScaledThickness(
         thickness_480p: float, destination: cv.typing.MatLike
     ) -> float:
-        # /**
-        # * Given a line thickness in a 640x480 image, try to scale to the given
-        # * destination image resolution.
-        # *
-        # * @param thickness480p A hypothetical line thickness in a 640x480 image
-        # * @param destination The destination image to scale to
-        # * @return Scaled thickness which cannot be less than 1
-        # */
+        """Given a line thickness in a 640x480 image, try to scale to the given destination image
+        resolution.
+
+        :param thickness480p: A hypothetical line thickness in a 640x480 image
+        :param destination:   The destination image to scale to
+
+        :returns: Scaled thickness which cannot be less than 1
+        """
         scale_x = destination.shape[1] / 640.0
         scale_y = destination.shape[0] / 480.0
         min_scale = min(scale_x, scale_y)
@@ -223,16 +221,14 @@ class VideoSimUtil:
         color: cv.typing.Scalar,
         destination: cv.typing.MatLike,
     ) -> None:
-        # /**
-        # * Draw a filled ellipse in the destination image.
-        # *
-        # * @param dstPoints The points in the destination image representing the
-        # * rectangle in which the ellipse is inscribed.
-        # * @param color The color of the ellipse. This is a scalar with BGR values
-        # * (0-255)
-        # * @param destination The destination image to draw onto. The image should be in
-        # * the BGR color space.
-        # */
+        """Draw a filled ellipse in the destination image.
+
+        :param dstPoints:   The points in the destination image representing the rectangle in which the
+                            ellipse is inscribed.
+        :param color:       The color of the ellipse. This is a scalar with BGR values (0-255)
+        :param destination: The destination image to draw onto. The image should be in the BGR color
+                            space.
+        """
 
         rect = OpenCVHelp.getMinAreaRect(dst_points)
         # OpenCV stubs type `box` as a cv.typing.RotatedRect, not cv.RotatedRect; both work at runtime
@@ -246,6 +242,15 @@ class VideoSimUtil:
         is_closed: bool,
         destination: cv.typing.MatLike,
     ) -> None:
+        """Draw a polygon outline or filled polygon to the destination image with the given points.
+
+        :param dstPoints:   The points in the destination image representing the polygon.
+        :param thickness:   The thickness of the outline in pixels. If this is not positive, a filled
+                            polygon is drawn instead.
+        :param color:       The color drawn. This should match the color space of the destination image.
+        :param isClosed:    If the last point should connect to the first point in the polygon outline.
+        :param destination: The destination image to draw onto.
+        """
         list_of_list_of_points = [np.rint(dst_points).astype(np.int32)]
         if thickness > 0:
             cv.polylines(
@@ -263,7 +268,14 @@ class VideoSimUtil:
     def drawTagDetection(
         id: int, dst_points: np.ndarray, destination: cv.typing.MatLike
     ) -> None:
+        """Draws a contour around the given points and text of the id onto the destination image.
 
+        :param id:          Fiducial ID number to draw
+        :param dstPoints:   Points representing the four corners of the tag marker(black square) in the
+                            destination image.
+        :param destination: The destination image to draw onto. The image should be in the BGR color
+                            space.
+        """
         thickness = VideoSimUtil.getScaledThickness(1, destination)
         VideoSimUtil.drawPoly(
             dst_points, int(thickness), [0, 0, 255], True, destination
@@ -284,10 +296,9 @@ class VideoSimUtil:
 
     @staticmethod
     def getFieldWallLines() -> list[list[Translation3d]]:
-        # /**
-        # * The translations used to draw the field side walls and driver station walls.
-        # * It is a vector of vectors because the translations are not all connected.
-        # */
+        """The translations used to draw the field side walls and driver station walls. It is a List of
+        Lists because the translations are not all connected.
+        """
 
         SIDE_HT = units.inches_to_meters(19.5)
         DRIVE_HT = units.inches_to_meters(35.0)
@@ -370,15 +381,13 @@ class VideoSimUtil:
 
     @staticmethod
     def getFieldFloorLines(sub_divisions: int) -> list[list[Translation3d]]:
-        # /**
-        # * The translations used to draw the field floor subdivisions (not the floor
-        # * outline). It is a vector of vectors because the translations are not all
-        # * connected.
-        # *
-        # * @param subdivisions How many "subdivisions" along the width/length of the
-        # * floor. E.g. 3 subdivisions would mean 2 lines along the length and 2 lines
-        # * along the width creating a 3x3 "grid".
-        # */
+        """The translations used to draw the field floor subdivisions (not the floor outline). It is a
+        List of Lists because the translations are not all connected.
+
+        :param subdivisions: How many "subdivisions" along the width/length of the floor. E.g. 3
+                             subdivisions would mean 2 lines along the length and 2 lines along the width creating a 3x3
+                             "grid".
+        """
         translations: list[list[Translation3d]] = []
         SUB_LENGTH = VideoSimUtil.FIELD_LENGTH / sub_divisions
         SUB_WIDTH = VideoSimUtil.FIELD_WIDTH / sub_divisions
@@ -407,23 +416,20 @@ class VideoSimUtil:
         is_closed: bool,
         destination: cv.typing.MatLike,
     ) -> list[np.ndarray]:
-        # /**
-        # * Convert 3D lines represented by the given series of translations into a
-        # * polygon(s) in the camera's image.
-        # *
-        # * @param camRt The change in basis from world coordinates to camera
-        # * coordinates. See RotTrlTransform3d#makeRelativeTo(Pose3d).
-        # * @param prop The simulated camera's properties.
-        # * @param trls A sequential series of translations defining the polygon to be
-        # * drawn.
-        # * @param resolution Resolution as a fraction(0 - 1) of the video frame's
-        # * diagonal length in pixels. Line segments will be subdivided if they exceed
-        # * this resolution.
-        # * @param isClosed If the final translation should also draw a line to the first
-        # * translation.
-        # * @param destination The destination image that is being drawn to.
-        # * @return A list of polygons(which are an array of points)
-        # */
+        """Convert 3D lines represented by the given series of translations into a polygon(s) in the
+        camera's image.
+
+        :param camRt:       The change in basis from world coordinates to camera coordinates. See {@link
+                            RotTrlTransform3d#makeRelativeTo(Pose3d)}.
+        :param prop:        The simulated camera's properties.
+        :param trls:        A sequential series of translations defining the polygon to be drawn.
+        :param resolution:  Resolution as a fraction(0 - 1) of the video frame's diagonal length in
+                            pixels. Line segments will be subdivided if they exceed this resolution.
+        :param isClosed:    If the final translation should also draw a line to the first translation.
+        :param destination: The destination image that is being drawn to.
+
+        :returns: A list of polygons(which are an array of points)
+        """
         resolution = math.hypot(destination.shape[0], destination.shape[1]) * resolution
         pts = list(trls)
         if is_closed:
@@ -479,25 +485,23 @@ class VideoSimUtil:
         floor_color: cv.typing.Scalar,
         destination: cv.typing.MatLike,
     ) -> None:
-        # /**
-        # * Draw a wireframe of the field to the given image.
-        # *
-        # * @param camRt The change in basis from world coordinates to camera
-        # * coordinates. See RotTrlTransform3d#makeRelativeTo(wpi::math::Pose3d).
-        # * @param prop The simulated camera's properties.
-        # * @param resolution Resolution as a fraction(0 - 1) of the video frame's
-        # * diagonal length in pixels. Line segments will be subdivided if they exceed
-        # * this resolution.
-        # * @param wallThickness Thickness of the lines used for drawing the field walls
-        # * in pixels. This is scaled by #getScaledThickness(double, cv::Mat).
-        # * @param wallColor Color of the lines used for drawing the field walls.
-        # * @param floorSubdivisions A NxN "grid" is created from the floor where this
-        # * parameter is N, which defines the floor lines.
-        # * @param floorThickness Thickness of the lines used for drawing the field floor
-        # * grid in pixels. This is scaled by #getScaledThickness(double, cv::Mat).
-        # * @param floorColor Color of the lines used for drawing the field floor grid.
-        # * @param destination The destination image to draw to.
-        # */
+        """Draw a wireframe of the field to the given image.
+
+        :param camRt:             The change in basis from world coordinates to camera coordinates. See {@link
+                                  RotTrlTransform3d#makeRelativeTo(Pose3d)}.
+        :param prop:              The simulated camera's properties.
+        :param resolution:        Resolution as a fraction(0 - 1) of the video frame's diagonal length in
+                                  pixels. Line segments will be subdivided if they exceed this resolution.
+        :param wallThickness:     Thickness of the lines used for drawing the field walls in pixels. This is
+                                  scaled by :meth:`.getScaledThickness`.
+        :param wallColor:         Color of the lines used for drawing the field walls.
+        :param floorSubdivisions: A NxN "grid" is created from the floor where this parameter is N,
+                                  which defines the floor lines.
+        :param floorThickness:    Thickness of the lines used for drawing the field floor grid in pixels.
+                                  This is scaled by :meth:`.getScaledThickness`.
+        :param floorColor:        Color of the lines used for drawing the field floor grid.
+        :param destination:       The destination image to draw to.
+        """
 
         for trls in VideoSimUtil.getFieldFloorLines(floor_subdivisions):
             polys = VideoSimUtil.polyFrom3dLines(
