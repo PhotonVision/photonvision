@@ -23,9 +23,11 @@ ext {
             binary.cppCompiler.args.add("-Wno-undef")
         }
 
-        // Windows: GTSAM calls UnDecorateSymbolName from dbghelp.dll
-        if (binary.targetPlatform.name == nativeUtils.wpi.platforms.windowsx86-64) {
-            binary.linker.args.add("/DEFAULTLIB:dbghelp.lib")
+        if (binary.toolChain instanceof VisualCpp
+                && binary.targetPlatform.name == 'windowsx86-64'
+                && (binary instanceof SharedLibraryBinarySpec || binary instanceof NativeExecutableBinarySpec)) {
+            // GTSAM calls UnDecorateSymbolName from dbghelp.dll
+            binary.linker.args.add('/DEFAULTLIB:dbghelp.lib')
         }
     }
 }
