@@ -50,6 +50,10 @@ model {
                     it.linker.args << "-fsanitize=address,undefined,leak"
                 }
             }
+            if (it.toolChain instanceof VisualCpp) {
+                it.cppCompiler.args << "/D_USE_MATH_DEFINES"
+                it.cppCompiler.args << "/D_ENABLE_EXTENDED_ALIGNED_STORAGE"
+            }
         }
     }
 }

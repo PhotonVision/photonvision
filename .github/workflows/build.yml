@@ -4,6 +4,16 @@ on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      run-smoketest-native:
+        description: 'Run smoketest-native job'
+        required: false
+        default: 'true'
+      run-playwright-tests:
+        description: 'Run Playwright E2E tests'
+        required: false
+        default: 'true'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -153,6 +163,8 @@ jobs:
         with:
           name: photon-serde-tests-javacpp
           path: photon-serde-tests/src/
+      #- name: Linker Debugging (REMOVE)
+      #  run: ./gradlew photon-targeting:linkPhotontargetingTestLinuxx86-64DebugGoogleTestExe --info
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage

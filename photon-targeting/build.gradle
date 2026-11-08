@@ -11,6 +11,7 @@ apply plugin: 'org.wpilib.GradleJni'
 
 ext.licenseFile = file("$rootDir/LICENSE")
 apply from: "${rootDir}/shared/config.gradle"
+apply from: "${rootDir}/shared/gtsam.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
 
 nativeUtils {
@@ -29,6 +30,12 @@ nativeUtils {
     exportsConfigs {
         "${nativeName}" {}
     }
+}
+
+// Needed for gcc 16 compatibility
+nativeUtils.platformConfigs.named('linuxx86-64').configure {
+    it.cppCompiler.args.add("-Wno-error=maybe-uninitialized")
+    it.cCompiler.args.add("-Wno-error=maybe-uninitialized")
 }
 
 sourceSets.main.java.srcDir "${projectDir}/src/generated/main/java"
@@ -62,11 +69,23 @@ model {
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }
+                project.gtsamArgs(it)
+                // DEBUGGING
+                /*
+                 if (it.toolChain instanceof GccCompatibleToolChain) {
+                 it.linker.args.add("-Wl,--no-undefined")
+                 }
+                 */
                 if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
                     nativeUtils.useRequiredLibrary(it, "mrclib_sconly")
                 }
             }
 
+            nativeUtils.useRequiredLibrary(it, 'gtsam')
+            // deliberate duplicate: forces a second linker pass over gtsam/metis/etc so ld
+            // resolves symbols the packaged archive order leaves dangling on pass 1
+            // Hack lol
+            nativeUtils.useRequiredLibrary(it, 'gtsam')
             nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
             nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "wpimath_shared")
@@ -94,8 +113,20 @@ model {
 
             binaries.all {
                 lib library: nativeName, linkage: 'shared'
+                project.gtsamArgs(it)
+                // DEBUGGING
+                /*
+                 if (it.toolChain instanceof GccCompatibleToolChain) {
+                 it.linker.args.add("-Wl,--no-undefined")
+                 }
+                 */
             }
 
+            nativeUtils.useRequiredLibrary(it, 'gtsam')
+            // deliberate duplicate: forces a second linker pass over gtsam/metis/etc so ld
+            // resolves symbols the packaged archive order leaves dangling on pass 1
+            // Hack lol
+            nativeUtils.useRequiredLibrary(it, 'gtsam')
             nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
             nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "wpimath_shared")
@@ -103,6 +134,8 @@ model {
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
         }
     }
     testSuites {
@@ -131,11 +164,17 @@ model {
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }
+                project.gtsamArgs(it)
                 if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
                     nativeUtils.useRequiredLibrary(it, "mrclib_sconly")
                 }
             }
 
+            nativeUtils.useRequiredLibrary(it, 'gtsam')
+            // deliberate duplicate: forces a second linker pass over gtsam/metis/etc so ld
+            // resolves symbols the packaged archive order leaves dangling on pass 1
+            // Hack lol
+            nativeUtils.useRequiredLibrary(it, 'gtsam')
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "catch2_static")
             nativeUtils.useRequiredLibrary(it, "datalog_shared")

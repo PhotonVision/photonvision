@@ -172,3 +172,8 @@ deploy {
         }
     }
 }
+
+// TODO: Is this needed? It gets builds working on my machine, but that might be a skill issue on my part
+tasks.named('processResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

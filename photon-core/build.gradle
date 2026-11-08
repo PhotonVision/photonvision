@@ -74,6 +74,12 @@ dependencies {
         transitive = false
     }
 
+    /*
+     wpilibNatives("org.wpilib.thirdparty.gtsam:gtsam-cpp:${rootProject.ext.gtsamThirdPartyVersion}:${rootProject.ext.jniPlatform}static@zip") {
+     transitive = false
+     }
+     */
+
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'
 }
 
