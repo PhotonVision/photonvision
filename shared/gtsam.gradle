@@ -24,8 +24,7 @@ ext {
         }
 
         if (binary.toolChain instanceof VisualCpp
-                && binary.targetPlatform.name == 'windowsx86-64'
-                && (binary instanceof SharedLibraryBinarySpec || binary instanceof NativeExecutableBinarySpec)) {
+                && binary.targetPlatform.name == 'windowsx86-64') {
             // GTSAM calls UnDecorateSymbolName from dbghelp.dll
             binary.linker.args.add('/DEFAULTLIB:dbghelp.lib')
         }
