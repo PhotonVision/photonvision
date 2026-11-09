@@ -61,6 +61,19 @@
         "linuxx86-64",
         "osxuniversal"
       ]
+    },
+    {
+      "groupId": "org.wpilib.apriltag",
+      "artifactId": "apriltag-cpp",
+      "version": "wpilib",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
     }
   ],
   "cppDependencies": [
@@ -141,6 +154,22 @@
         "linuxx86-64",
         "osxuniversal"
       ]
+    },
+    {
+      "groupId": "org.wpilib.apriltag",
+      "artifactId": "apriltag-cpp",
+      "version": "wpilib",
+      "libName": "apriltag",
+      "headerClassifier": "headers",
+      "sourcesClassifier": "sources",
+      "sharedLibrary": true,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
     }
   ],
   "javaDependencies": [
@@ -167,6 +196,11 @@
     {
       "groupId": "org.wpilib.cameraserver",
       "artifactId": "cameraserver-java",
+      "version": "wpilib"
+    },
+    {
+      "groupId": "org.wpilib.apriltag",
+      "artifactId": "apriltag-java",
       "version": "wpilib"
     }
   ]
