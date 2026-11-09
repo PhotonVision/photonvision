@@ -222,11 +222,14 @@ jobs:
         include:
           - os: windows-latest
             artifact-name: Win64
+            java-distribution: temurin
           - os: windows-11-arm
             artifact-name: WinArm64
             build-options: "-Ponlywindowsarm64"
+            java-distribution: microsoft
           - os: macos-26
             artifact-name: macOS
+            java-distribution: temurin
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -238,7 +241,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           java-version: 25
-          distribution: temurin
+          distribution: ${{ matrix.java-distribution }}
       - run: git fetch --tags --force
       - run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }}
         name: Build with Gradle
