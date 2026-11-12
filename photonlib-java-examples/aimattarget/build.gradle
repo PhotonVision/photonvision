@@ -1,7 +1,7 @@
 plugins {
     id "java"
     id "application"
-    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-7"
+    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-8"
 }
 
 repositories {
@@ -16,7 +16,6 @@ java {
 def ROBOT_MAIN_CLASS = "wpilib.robot.Main"
 
 // wpi.maven.useDevelopment = true
-// wpi.versions.wpilibVersion = "2027.0.0-alpha-6"
 
 // Set to true to use debug for all targets including JNI, which will drastically impact
 // performance.
