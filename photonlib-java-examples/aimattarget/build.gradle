@@ -1,6 +1,11 @@
 plugins {
     id "java"
-    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-6"
+    id "application"
+    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-7"
+}
+
+repositories {
+    mavenLocal()
 }
 
 java {
@@ -10,45 +15,12 @@ java {
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
-wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = "2027.0.0-alpha-6"
-
-// Define my targets (SystemCore) and artifacts (deployable files)
-// This is added by GradleRIO's backing project DeployUtils.
-deploy {
-    targets {
-        systemcore(getTargetTypeClass('SystemCore')) {
-            // Team number is loaded either from the .wpilib/wpilib_preferences.json
-            // or from command line. If not found an exception will be thrown.
-            // You can use getTeamOrDefault(team) instead of getTeamNumber if you
-            // want to store a team number in this file.
-            team = project.frc.getTeamOrDefault(5940)
-            debug = project.frc.getDebugOrDefault(false)
-
-            artifacts {
-                // First part is artifact name, 2nd is artifact type
-                // getTargetTypeClass is a shortcut to get the class type using a string
-
-                frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
-                }
-
-                // Static files artifact
-                frcStaticFileDeploy(getArtifactTypeClass('FileTreeArtifact')) {
-                    files = project.fileTree('src/main/deploy')
-                    directory = '/home/systemcore/deploy'
-                    deleteOldFiles = false // Change to true to delete files on systemcore that no
-                    // longer exist in deploy directory of this project
-                }
-            }
-        }
-    }
-}
-
-def deployArtifact = deploy.targets.systemcore.artifacts.frcJava
+// wpi.maven.useDevelopment = true
+// wpi.versions.wpilibVersion = "2027.0.0-alpha-6"
 
 // Set to true to use debug for all targets including JNI, which will drastically impact
 // performance.
-wpi.java.debugJni = false
+wpi.java.runSimWithDebugJni = false
 
 // Set this to true to enable desktop support.
 def includeDesktopSupport = true
@@ -59,12 +31,6 @@ dependencies {
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
-
-    systemcoreDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.systemcore)
-    systemcoreDebug wpi.java.vendor.jniDebug(wpi.platforms.systemcore)
-
-    systemcoreRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.systemcore)
-    systemcoreRelease wpi.java.vendor.jniRelease(wpi.platforms.systemcore)
 
     nativeDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
     nativeDebug wpi.java.vendor.jniDebug(wpi.platforms.desktop)
@@ -103,10 +69,16 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-// Configure jar and deploy tasks
-deployArtifact.jarTask = jar
-wpi.java.configureExecutableTasks(jar)
+application.mainClass = ROBOT_MAIN_CLASS
+
+wpi.java.configureApplication(application)
 wpi.java.configureTestTasks(test)
+
+// jar {
+//     from('src') { into 'backup/src' }
+//     from('vendordeps') { into 'backup/vendordeps' }
+//     from('build.gradle') { into 'backup' }
+// }
 
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {

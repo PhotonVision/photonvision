@@ -29,13 +29,11 @@ import static frc.robot.Constants.Vision.*;
 import frc.robot.subsystems.drivetrain.SwerveDrive;
 import org.photonvision.PhotonCamera;
 import org.wpilib.driverstation.XboxController;
+import org.wpilib.framework.TimedRobot;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
-import org.wpilib.opmode.TimedRobot;
 import org.wpilib.simulation.BatterySim;
 import org.wpilib.simulation.RoboRioSim;
-import org.wpilib.smartdashboard.SmartDashboard;
-
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
     private VisionSim visionSim;
@@ -112,8 +110,8 @@ public class Robot extends TimedRobot {
         // Command drivetrain motors based on target speeds
         drivetrain.drive(forward, strafe, turn);
 
-        // Put debug information to the dashboard
-        SmartDashboard.putBoolean("Vision Target Visible", targetVisible);
+        // Put debug information to the console because SmartDashboard was removed in this WPILib alpha.
+        System.out.println("Vision Target Visible=" + targetVisible);
     }
 
     @Override

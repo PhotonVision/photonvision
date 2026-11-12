@@ -30,18 +30,18 @@ import java.util.Random;
 import org.wpilib.math.controller.SimpleMotorFeedforward;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.math.kinematics.SwerveDriveKinematics;
 import org.wpilib.math.kinematics.SwerveModulePosition;
-import org.wpilib.math.kinematics.SwerveModuleState;
+import org.wpilib.math.kinematics.SwerveModuleVelocity;
 import org.wpilib.math.linalg.MatBuilder;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N2;
+import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Discretization;
 import org.wpilib.math.system.LinearSystem;
-import org.wpilib.math.system.plant.DCMotor;
 import org.wpilib.math.util.Nat;
 import org.wpilib.system.RobotController;
 
@@ -180,7 +180,7 @@ public class SwerveDriveSim {
         this.steerGearing = steerGearing;
 
         this.kinematics = kinematics;
-        numModules = kinematics.toSwerveModuleStates(new ChassisSpeeds()).length;
+        numModules = kinematics.toSwerveModuleVelocities(new ChassisVelocities()).length;
         driveInputs = new double[numModules];
         driveStates = new ArrayList<>(numModules);
         steerInputs = new double[numModules];
@@ -340,7 +340,7 @@ public class SwerveDriveSim {
             driveStates.set(i, moduleDriveStates.get(i).copy());
             steerStates.set(i, moduleSteerStates.get(i).copy());
         }
-        omegaRadsPerSec = kinematics.toChassisSpeeds(getModuleStates()).omega;
+        omegaRadsPerSec = kinematics.toChassisVelocities(getModuleStates()).omega;
     }
 
     /**
@@ -387,14 +387,14 @@ public class SwerveDriveSim {
     }
 
     /**
-     * Get the {@link SwerveModuleState} of each module. The returned array order matches the
+     * Get the {@link SwerveModuleVelocity} of each module. The returned array order matches the
      * kinematics module order. This should be called after {@link #update(double)}.
      */
-    public SwerveModuleState[] getModuleStates() {
-        var positions = new SwerveModuleState[numModules];
+    public SwerveModuleVelocity[] getModuleStates() {
+        var positions = new SwerveModuleVelocity[numModules];
         for (int i = 0; i < numModules; i++) {
             positions[i] =
-                    new SwerveModuleState(
+                    new SwerveModuleVelocity(
                             driveStates.get(i).get(1, 0), new Rotation2d(steerStates.get(i).get(0, 0)));
         }
         return positions;

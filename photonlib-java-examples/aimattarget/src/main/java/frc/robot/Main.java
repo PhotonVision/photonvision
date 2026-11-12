@@ -24,7 +24,7 @@
 
 package frc.robot;
 
-import org.wpilib.opmode.RobotBase;
+import org.wpilib.framework.RobotBase;
 
 public final class Main {
     private Main() {}
