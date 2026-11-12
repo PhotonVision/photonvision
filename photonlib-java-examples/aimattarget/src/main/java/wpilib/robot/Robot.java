@@ -22,56 +22,41 @@
  * SOFTWARE.
  */
 
-package frc.robot;
+package wpilib.robot;
 
-import frc.robot.subsystems.GamepieceLauncher;
-import frc.robot.subsystems.drivetrain.SwerveDrive;
+import static wpilib.robot.Constants.Vision.*;
+
+import org.photonvision.PhotonCamera;
 import org.wpilib.driverstation.XboxController;
+import org.wpilib.framework.TimedRobot;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
-import org.wpilib.math.geometry.Transform2d;
-import org.wpilib.math.geometry.Translation2d;
-import org.wpilib.opmode.TimedRobot;
 import org.wpilib.simulation.BatterySim;
 import org.wpilib.simulation.RoboRioSim;
+import wpilib.robot.subsystems.drivetrain.SwerveDrive;
 
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
-    private Vision vision;
+    private VisionSim visionSim;
+    private PhotonCamera camera;
 
-    private GamepieceLauncher gpLauncher;
+    private final double VISION_TURN_kP = 0.01;
 
     private XboxController controller;
 
-    @Override
-    public void robotInit() {
+    public Robot() {
         drivetrain = new SwerveDrive();
-        vision = new Vision(drivetrain::addVisionMeasurement);
+        camera = new PhotonCamera(kCameraName);
+
+        visionSim = new VisionSim(camera);
 
         controller = new XboxController(0);
-
-        gpLauncher = new GamepieceLauncher();
     }
 
     @Override
     public void robotPeriodic() {
-        // Update Gamepiece Launcher Subsystem
-        gpLauncher.periodic();
-
         // Update drivetrain subsystem
         drivetrain.periodic();
-
-        // Update vision
-        vision.periodic();
-
-        // Test/Example only!
-        // Apply an offset to pose estimator to test vision correction
-        // You probably don't want this on a real robot, just delete it.
-        if (controller.getBButtonPressed()) {
-            var disturbance =
-                    new Transform2d(new Translation2d(1.0, 1.0), new Rotation2d(0.17 * 2 * Math.PI));
-            drivetrain.resetPose(drivetrain.getPose().plus(disturbance), false);
-        }
 
         // Log values to the dashboard
         drivetrain.log();
@@ -94,13 +79,39 @@ public class Robot extends TimedRobot {
         double strafe = -controller.getLeftX() * Constants.Swerve.kMaxLinearSpeed;
         double turn = -controller.getRightX() * Constants.Swerve.kMaxAngularSpeed;
 
+        // Read in relevant data from the Camera
+        boolean targetVisible = false;
+        double targetYaw = 0.0;
+        var results = camera.getAllUnreadResults();
+        if (!results.isEmpty()) {
+            // Camera processed a new frame since last
+            // Get the last one in the list.
+            var result = results.get(results.size() - 1);
+            if (result.hasTargets()) {
+                // At least one AprilTag was seen by the camera
+                for (var target : result.getTargets()) {
+                    if (target.getFiducialId() == 7) {
+                        // Found Tag 7, record its information
+                        targetYaw = target.getYaw();
+                        targetVisible = true;
+                    }
+                }
+            }
+        }
+
+        // Auto-align when requested
+        if (controller.getAButton() && targetVisible) {
+            // Driver wants auto-alignment to tag 7
+            // And, tag 7 is in sight, so we can turn toward it.
+            // Override the driver's turn command with an automatic one that turns toward the tag.
+            turn = -1.0 * targetYaw * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
+        }
+
         // Command drivetrain motors based on target speeds
         drivetrain.drive(forward, strafe, turn);
 
-        // Calculate whether the gamepiece launcher runs based on our global pose estimate.
-        var curPose = drivetrain.getPose();
-        var shouldRun = (curPose.getY() > 2.0 && curPose.getX() < 4.0); // Close enough to blue speaker
-        gpLauncher.setRunning(shouldRun);
+        // Put debug information to the console because SmartDashboard was removed in this WPILib alpha.
+        System.out.println("Vision Target Visible=" + targetVisible);
     }
 
     @Override
@@ -109,14 +120,11 @@ public class Robot extends TimedRobot {
         drivetrain.simulationPeriodic();
 
         // Update camera simulation
-        vision.simulationPeriodic(drivetrain.getSimPose());
+        visionSim.simulationPeriodic(drivetrain.getSimPose());
 
-        var debugField = vision.getSimDebugField();
+        var debugField = visionSim.getSimDebugField();
         debugField.getObject("EstimatedRobot").setPose(drivetrain.getPose());
         debugField.getObject("EstimatedRobotModules").setPoses(drivetrain.getModulePoses());
-
-        // Update gamepiece launcher simulation
-        gpLauncher.simulationPeriodic();
 
         // Calculate battery voltage sag due to current draw
         var batteryVoltage =
@@ -133,6 +141,6 @@ public class Robot extends TimedRobot {
         // The first pose in an autonomous path is often a good choice.
         var startPose = new Pose2d(1, 1, new Rotation2d());
         drivetrain.resetPose(startPose, true);
-        vision.resetSimPose(startPose);
+        visionSim.resetSimPose(startPose);
     }
 }

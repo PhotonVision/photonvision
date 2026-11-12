@@ -22,26 +22,25 @@
  * SOFTWARE.
  */
 
-package frc.robot.subsystems.drivetrain;
+package wpilib.robot.subsystems.drivetrain;
 
-import static frc.robot.Constants.Swerve.*;
+import static wpilib.robot.Constants.Swerve.*;
 
-import frc.robot.Robot;
+import org.wpilib.framework.TimedRobot;
 import org.wpilib.hardware.imu.OnboardIMU;
 import org.wpilib.hardware.imu.OnboardIMU.MountOrientation;
 import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Transform2d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.math.kinematics.SwerveDriveKinematics;
 import org.wpilib.math.kinematics.SwerveModulePosition;
-import org.wpilib.math.kinematics.SwerveModuleState;
+import org.wpilib.math.kinematics.SwerveModuleVelocity;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.*;
-import org.wpilib.math.system.plant.DCMotor;
-import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.math.system.DCMotor;
 
 public class SwerveDrive {
     // Construct the swerve modules with their respective constants.
@@ -61,12 +60,12 @@ public class SwerveDrive {
                     swerveMods[2].getModuleConstants().centerOffset,
                     swerveMods[3].getModuleConstants().centerOffset);
 
-    private final OnboardIMU gyro = new OnboardIMU(MountOrientation.kFlat);
+    private final OnboardIMU gyro = new OnboardIMU(MountOrientation.FLAT);
 
     // The robot pose estimator for tracking swerve odometry and applying vision corrections.
     private final SwerveDrivePoseEstimator poseEstimator;
 
-    private ChassisSpeeds targetChassisSpeeds = new ChassisSpeeds();
+    private ChassisVelocities targetChassisSpeeds = new ChassisVelocities();
 
     // ----- Simulation
     // TODO(Jade) OnboardIMU doesn't have sim yet
@@ -114,7 +113,7 @@ public class SwerveDrive {
     }
 
     /**
-     * Basic drive control. A target field-relative ChassisSpeeds (vx, vy, omega) is converted to
+     * Basic drive control. A target field-relative chassis velocity (vx, vy, omega) is converted to
      * specific swerve module states.
      *
      * @param vx X velocity (forwards/backwards)
@@ -122,13 +121,13 @@ public class SwerveDrive {
      * @param omega Angular velocity (rotation CCW+)
      */
     public void drive(double vx, double vy, double omega) {
-        var targetChassisSpeeds = new ChassisSpeeds(vx, vy, omega).toRobotRelative(getHeading());
+        var targetChassisSpeeds = new ChassisVelocities(vx, vy, omega).toRobotRelative(getHeading());
         setChassisSpeeds(targetChassisSpeeds, true, false);
     }
 
     /**
      * Command the swerve drive to the desired chassis speeds by converting them to swerve module
-     * states and using {@link #setModuleStates(SwerveModuleState[], boolean)}.
+     * velocities and using {@link #setModuleStates(SwerveModuleVelocity[], boolean)}.
      *
      * @param targetChassisSpeeds Target robot-relative chassis speeds (vx, vy, omega).
      * @param openLoop If swerve modules should use feedforward only and ignore velocity feedback
@@ -136,8 +135,9 @@ public class SwerveDrive {
      * @param steerInPlace If modules should steer to the target angle when target velocity is 0.
      */
     public void setChassisSpeeds(
-            ChassisSpeeds targetChassisSpeeds, boolean openLoop, boolean steerInPlace) {
-        setModuleStates(kinematics.toSwerveModuleStates(targetChassisSpeeds), openLoop, steerInPlace);
+            ChassisVelocities targetChassisSpeeds, boolean openLoop, boolean steerInPlace) {
+        setModuleStates(
+                kinematics.toSwerveModuleVelocities(targetChassisSpeeds), openLoop, steerInPlace);
         this.targetChassisSpeeds = targetChassisSpeeds;
     }
 
@@ -150,8 +150,8 @@ public class SwerveDrive {
      * @param steerInPlace If modules should steer to the target angle when target velocity is 0.
      */
     public void setModuleStates(
-            SwerveModuleState[] desiredStates, boolean openLoop, boolean steerInPlace) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, kMaxLinearSpeed);
+            SwerveModuleVelocity[] desiredStates, boolean openLoop, boolean steerInPlace) {
+        desiredStates = SwerveDriveKinematics.desaturateWheelVelocities(desiredStates, kMaxLinearSpeed);
         for (int i = 0; i < swerveMods.length; i++) {
             swerveMods[i].setDesiredState(desiredStates[i], openLoop, steerInPlace);
         }
@@ -211,16 +211,16 @@ public class SwerveDrive {
     }
 
     /** Get the chassis speeds of the robot (vx, vy, omega) from the swerve module states. */
-    public ChassisSpeeds getChassisSpeeds() {
-        return kinematics.toChassisSpeeds(getModuleStates());
+    public ChassisVelocities getChassisSpeeds() {
+        return kinematics.toChassisVelocities(getModuleStates());
     }
 
     /**
-     * Get the SwerveModuleState of each swerve module (speed, angle). The returned array order
+     * Get the SwerveModuleVelocity of each swerve module (speed, angle). The returned array order
      * matches the kinematics module order.
      */
-    public SwerveModuleState[] getModuleStates() {
-        return new SwerveModuleState[] {
+    public SwerveModuleVelocity[] getModuleStates() {
+        return new SwerveModuleVelocity[] {
             swerveMods[0].getState(),
             swerveMods[1].getState(),
             swerveMods[2].getState(),
@@ -258,21 +258,20 @@ public class SwerveDrive {
         return modulePoses;
     }
 
-    /** Log various drivetrain values to the dashboard. */
+    /** Log various drivetrain values to the console. */
     public void log() {
         String table = "Drive/";
         Pose2d pose = getPose();
-        SmartDashboard.putNumber(table + "X", pose.getX());
-        SmartDashboard.putNumber(table + "Y", pose.getY());
-        SmartDashboard.putNumber(table + "Heading", pose.getRotation().getDegrees());
-        ChassisSpeeds chassisSpeeds = getChassisSpeeds();
-        SmartDashboard.putNumber(table + "VX", chassisSpeeds.vx);
-        SmartDashboard.putNumber(table + "VY", chassisSpeeds.vy);
-        SmartDashboard.putNumber(table + "Omega Degrees", Math.toDegrees(chassisSpeeds.omega));
-        SmartDashboard.putNumber(table + "Target VX", targetChassisSpeeds.vx);
-        SmartDashboard.putNumber(table + "Target VY", targetChassisSpeeds.vy);
-        SmartDashboard.putNumber(
-                table + "Target Omega Degrees", Math.toDegrees(targetChassisSpeeds.omega));
+        ChassisVelocities chassisSpeeds = getChassisSpeeds();
+        System.out.println(table + "X=" + pose.getX());
+        System.out.println(table + "Y=" + pose.getY());
+        System.out.println(table + "Heading=" + pose.getRotation().getDegrees());
+        System.out.println(table + "VX=" + chassisSpeeds.vx);
+        System.out.println(table + "VY=" + chassisSpeeds.vy);
+        System.out.println(table + "Omega Degrees=" + Math.toDegrees(chassisSpeeds.omega));
+        System.out.println(table + "Target VX=" + targetChassisSpeeds.vx);
+        System.out.println(table + "Target VY=" + targetChassisSpeeds.vy);
+        System.out.println(table + "Target Omega Degrees=" + Math.toDegrees(targetChassisSpeeds.omega));
 
         for (SwerveModule module : swerveMods) {
             module.log();
@@ -293,7 +292,7 @@ public class SwerveDrive {
         swerveDriveSim.setSteerInputs(steerInputs);
 
         // Simulate one timestep
-        swerveDriveSim.update(Robot.kDefaultPeriod);
+        swerveDriveSim.update(TimedRobot.DEFAULT_PERIOD);
 
         // Update module and gyro values with simulated values
         var driveStates = swerveDriveSim.getDriveStates();

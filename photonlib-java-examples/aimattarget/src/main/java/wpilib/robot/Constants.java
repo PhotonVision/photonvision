@@ -22,8 +22,10 @@
  * SOFTWARE.
  */
 
-package frc.robot;
+package wpilib.robot;
 
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
 import org.wpilib.math.controller.SimpleMotorFeedforward;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
@@ -34,19 +36,18 @@ import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.math.util.Units;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
-import org.wpilib.vision.apriltag.AprilTagFields;
 
 public class Constants {
     public static class Vision {
         public static final String kCameraName = "YOUR CAMERA NAME";
-        // Cam mounted facing forward, half a meter forward of center, half a meter up from center.
+        // Cam mounted facing forward, half a meter forward of center, half a meter up from center,
+        // pitched upward.
+        private static final double camPitch = Units.degreesToRadians(30.0);
         public static final Transform3d kRobotToCam =
-                new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
+                new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));
 
         // The layout of the AprilTags on the field
-        public static final AprilTagFieldLayout kTagLayout =
-                AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        public static final Field kTagLayout = Field.loadField(Fields.DEFAULT_FIELD);
 
         // The standard deviations of our vision estimated poses, which affect correction rate
         // (Fake values. Experiment and determine estimation noise on an actual robot.)
