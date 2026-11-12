@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package frc.robot;
+package wpilib.robot;
 
-import static frc.robot.Constants.Vision.*;
+import static wpilib.robot.Constants.Vision.*;
 
-import frc.robot.subsystems.drivetrain.SwerveDrive;
+import wpilib.robot.subsystems.drivetrain.SwerveDrive;
 import org.photonvision.PhotonCamera;
 import org.wpilib.driverstation.XboxController;
 import org.wpilib.framework.TimedRobot;

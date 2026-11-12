@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package frc.robot;
+package wpilib.robot;
 
 import org.wpilib.framework.RobotBase;
 
