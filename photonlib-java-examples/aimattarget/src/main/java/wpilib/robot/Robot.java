@@ -26,7 +26,6 @@ package wpilib.robot;
 
 import static wpilib.robot.Constants.Vision.*;
 
-import wpilib.robot.subsystems.drivetrain.SwerveDrive;
 import org.photonvision.PhotonCamera;
 import org.wpilib.driverstation.XboxController;
 import org.wpilib.framework.TimedRobot;
@@ -34,6 +33,7 @@ import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.simulation.BatterySim;
 import org.wpilib.simulation.RoboRioSim;
+import wpilib.robot.subsystems.drivetrain.SwerveDrive;
 
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
