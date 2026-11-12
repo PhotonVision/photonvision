@@ -34,6 +34,7 @@ import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.simulation.BatterySim;
 import org.wpilib.simulation.RoboRioSim;
+
 public class Robot extends TimedRobot {
     private SwerveDrive drivetrain;
     private VisionSim visionSim;
@@ -43,8 +44,7 @@ public class Robot extends TimedRobot {
 
     private XboxController controller;
 
-    @Override
-    public void robotInit() {
+    public Robot() {
         drivetrain = new SwerveDrive();
         camera = new PhotonCamera(kCameraName);
 

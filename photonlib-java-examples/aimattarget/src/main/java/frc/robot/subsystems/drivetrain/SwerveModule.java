@@ -35,9 +35,15 @@ import org.wpilib.math.kinematics.SwerveModuleVelocity;
 import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.util.Units;
 import org.wpilib.simulation.EncoderSim;
-import org.wpilib.system.RobotController;
 
 public class SwerveModule {
+    private static class SimulatedPWMMotorController extends PWMMotorController {
+        SimulatedPWMMotorController(int channel) {
+            super(channel);
+            setBoundsMicroseconds(2500, 2000, 1500, 1000, 500);
+        }
+    }
+
     // --- Module Constants
     private final ModuleConstants moduleConstants;
 
@@ -65,10 +71,10 @@ public class SwerveModule {
     public SwerveModule(ModuleConstants moduleConstants) {
         this.moduleConstants = moduleConstants;
 
-        driveMotor = new PWMMotorController(moduleConstants.driveMotorID);
+        driveMotor = new SimulatedPWMMotorController(moduleConstants.driveMotorID);
         driveEncoder = new Encoder(moduleConstants.driveEncoderA, moduleConstants.driveEncoderB);
         driveEncoder.setDistancePerPulse(kDriveDistPerPulse);
-        steerMotor = new PWMMotorController(moduleConstants.steerMotorID);
+        steerMotor = new SimulatedPWMMotorController(moduleConstants.steerMotorID);
         steerEncoder = new Encoder(moduleConstants.steerEncoderA, moduleConstants.steerEncoderB);
         steerEncoder.setDistancePerPulse(kSteerRadPerPulse);
 
@@ -106,9 +112,7 @@ public class SwerveModule {
             SwerveModuleVelocity desiredState, boolean openLoop, boolean steerInPlace) {
         Rotation2d currentRotation = getAbsoluteHeading();
         // Avoid turning more than 90 degrees by inverting speed on large angle changes
-        desiredState.optimize(currentRotation);
-
-        this.desiredState = desiredState;
+        this.desiredState = desiredState.optimize(currentRotation);
     }
 
     /** Module heading reported by steering encoder. */
@@ -131,12 +135,12 @@ public class SwerveModule {
 
     /** Voltage of the drive motor */
     public double getDriveVoltage() {
-        return driveMotor.get() * RobotController.getBatteryVoltage();
+        return driveMotor.getVoltage();
     }
 
     /** Voltage of the steer motor */
     public double getSteerVoltage() {
-        return steerMotor.get() * RobotController.getBatteryVoltage();
+        return steerMotor.getVoltage();
     }
 
     /**
@@ -151,8 +155,7 @@ public class SwerveModule {
 
         String table = "Module " + moduleConstants.moduleNum + "/";
         System.out.println(
-                table + "Steer Degrees="
-                        + Math.toDegrees(MathUtil.angleModulus(state.angle.getRadians())));
+                table + "Steer Degrees=" + Math.toDegrees(MathUtil.angleModulus(state.angle.getRadians())));
         System.out.println(
                 table + "Steer Target Degrees=" + Math.toDegrees(steerPidController.getSetpoint()));
         System.out.println(table + "Drive Velocity Feet=" + Units.metersToFeet(state.velocity));

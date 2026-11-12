@@ -26,7 +26,7 @@ package frc.robot.subsystems.drivetrain;
 
 import static frc.robot.Constants.Swerve.*;
 
-import frc.robot.Robot;
+import org.wpilib.framework.TimedRobot;
 import org.wpilib.hardware.imu.OnboardIMU;
 import org.wpilib.hardware.imu.OnboardIMU.MountOrientation;
 import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
@@ -60,7 +60,7 @@ public class SwerveDrive {
                     swerveMods[2].getModuleConstants().centerOffset,
                     swerveMods[3].getModuleConstants().centerOffset);
 
-    private final OnboardIMU gyro = new OnboardIMU(MountOrientation.kFlat);
+    private final OnboardIMU gyro = new OnboardIMU(MountOrientation.FLAT);
 
     // The robot pose estimator for tracking swerve odometry and applying vision corrections.
     private final SwerveDrivePoseEstimator poseEstimator;
@@ -136,7 +136,8 @@ public class SwerveDrive {
      */
     public void setChassisSpeeds(
             ChassisVelocities targetChassisSpeeds, boolean openLoop, boolean steerInPlace) {
-        setModuleStates(kinematics.toSwerveModuleVelocities(targetChassisSpeeds), openLoop, steerInPlace);
+        setModuleStates(
+                kinematics.toSwerveModuleVelocities(targetChassisSpeeds), openLoop, steerInPlace);
         this.targetChassisSpeeds = targetChassisSpeeds;
     }
 
@@ -150,7 +151,7 @@ public class SwerveDrive {
      */
     public void setModuleStates(
             SwerveModuleVelocity[] desiredStates, boolean openLoop, boolean steerInPlace) {
-        SwerveDriveKinematics.desaturateWheelVelocities(desiredStates, kMaxLinearSpeed);
+        desiredStates = SwerveDriveKinematics.desaturateWheelVelocities(desiredStates, kMaxLinearSpeed);
         for (int i = 0; i < swerveMods.length; i++) {
             swerveMods[i].setDesiredState(desiredStates[i], openLoop, steerInPlace);
         }
@@ -291,7 +292,7 @@ public class SwerveDrive {
         swerveDriveSim.setSteerInputs(steerInputs);
 
         // Simulate one timestep
-        swerveDriveSim.update(Robot.kDefaultPeriod);
+        swerveDriveSim.update(TimedRobot.DEFAULT_PERIOD);
 
         // Update module and gyro values with simulated values
         var driveStates = swerveDriveSim.getDriveStates();

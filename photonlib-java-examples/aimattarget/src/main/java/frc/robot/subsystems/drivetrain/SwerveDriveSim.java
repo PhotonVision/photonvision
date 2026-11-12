@@ -297,7 +297,7 @@ public class SwerveDriveSim {
         }
 
         var twist = kinematics.toTwist2d(moduleDeltas);
-        pose = pose.exp(twist);
+        pose = pose.transformBy(twist.exp());
         omegaRadsPerSec = twist.dtheta / dtSeconds;
     }
 
