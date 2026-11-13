@@ -29,7 +29,7 @@ public class CropPipe extends CVPipe<CVMat, CVMat, CropPipe.CropPipeParams> {
     private static final int MIN_CROP_DIMENSION = 16;
 
     /**
-     * Parametres for the crop pipe. Automatically aligns the rectangle to the apriltag detector
+     * Parameters for the crop pipe. Automatically aligns the rectangle to the apriltag detector
      * tiles.
      */
     public static record CropPipeParams(Rect rect, AdvancedPipelineSettings settings) {
