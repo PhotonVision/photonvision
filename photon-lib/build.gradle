@@ -179,6 +179,7 @@ task generateVendorJson() {
     def read = photonlibFileInput.text
             .replace('${photon_version}', pubVersion)
             .replace('${wpilib_year}', wpilibYear)
+            .replace('${opencv_version}', openCVversion)
     photonlibFileOutput.text = read
 
     outputs.upToDateWhen { false }
