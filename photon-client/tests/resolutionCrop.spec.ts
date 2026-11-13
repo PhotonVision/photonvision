@@ -9,12 +9,10 @@ const row = (page: Page, label: string): Locator =>
     .last()
     .locator("input[type=number]");
 
-// These tests need a camera with several capture modes, which the file-based test cameras don't
-// have -- they run against a real webcam when one is attached and skip cleanly otherwise (CI).
+// Tests require multiple camera modes so don't run in CI.
 test("resolution change scaling and reset", async ({ page }) => {
   test.setTimeout(120000);
 
-  // Activate the real webcam (multi-mode) via the camera matching page if it isn't active yet.
   await page.goto("http://localhost:5800/#/cameraConfigs");
   await page.waitForTimeout(2000);
   const webcamCard = page.locator(".v-card").filter({ hasText: /webcam/i });
@@ -34,7 +32,6 @@ test("resolution change scaling and reset", async ({ page }) => {
   if (await prompt.isVisible().catch(() => false)) await page.keyboard.press("Escape");
   await page.getByRole("tab", { name: "Input", exact: true }).first().click();
 
-  // The file cameras are single-mode; the real webcam (when present) has several capture modes.
   const camSelect = page
     .locator("div.d-flex")
     .filter({ has: page.getByText("Camera", { exact: true }) })
@@ -57,7 +54,6 @@ test("resolution change scaling and reset", async ({ page }) => {
   }
   test.skip(webcam < 0, "no real webcam available for multi-resolution testing");
 
-  // The label "Resolution" exactly -- "Stream Resolution" is a different select.
   const resSelect = page
     .locator("div.d-flex")
     .filter({ has: page.getByText("Resolution", { exact: true }) })
@@ -109,7 +105,6 @@ test("resolution change scaling and reset", async ({ page }) => {
     return Math.abs(sw * h - w * sh) <= 0.01 * sw * h;
   };
 
-  // Same aspect ratio: bounds scale.
   const sameAspect = names.find((n) => n !== start && sameAspectOf(n));
   test.skip(!sameAspect, "no same-aspect mode");
   await pick(new RegExp((sameAspect ?? "").split(" ")[0]));
@@ -121,7 +116,6 @@ test("resolution change scaling and reset", async ({ page }) => {
   await expect(y.nth(1)).toHaveValue(String(Math.round(500 * scale)));
   await expect(page.getByText(/crop region was reset/i)).not.toBeVisible();
 
-  // Different aspect ratio: reset + popup.
   const diffAspect = names.find((n) => !sameAspectOf(n));
   test.skip(!diffAspect, "no different-aspect mode on this camera");
   await pick(new RegExp((diffAspect ?? "").split(" ")[0]));

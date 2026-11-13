@@ -156,11 +156,8 @@ export type ConfigurablePipelineSettings = Partial<
     | "cornerDetectionStrategy"
   >
 >;
-// Upper crop bound meaning "wherever the frame ends". The crop is clamped to the frame edge, so a
-// sentinel larger than any frame keeps the default crop region -- the whole frame -- independent of the
-// resolution the camera happens to be running at. This has to be Java's Integer.MAX_VALUE, since the
-// backend reads these bounds as ints: a larger value (Number.MAX_SAFE_INTEGER, say) is truncated to
-// its low 32 bits, which turns the sentinel into -1 and the crop into a one-pixel sliver.
+
+// Java's Integer.MAX_VALUE to prevent truncating as the value is passed over the network
 export const FrameEdgeCropBound = 2147483647;
 
 // Omitted settings are changed for all pipeline types

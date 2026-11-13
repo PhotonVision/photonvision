@@ -82,8 +82,6 @@ const showStaticCrop = computed(
     !useCameraSettingsStore().isFocusMode
 );
 
-// The crop is applied after rotation, so its bounds are the rotated frame dimensions. 90° rotations
-// (rotation modes 1 and 3) swap the width and height.
 const croppableResolution = computed<{ width: number; height: number }>(() => {
   const resolution = useCameraSettingsStore().currentVideoFormat?.resolution;
   const rotation = useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode;
@@ -95,9 +93,6 @@ const croppableResolution = computed<{ width: number; height: number }>(() => {
 const cropBounds = (range: WebsocketNumberPair | [number, number] | undefined): [number, number] =>
   Object.values(range || { first: 0, second: FrameEdgeCropBound }) as [number, number];
 
-// The stored upper bounds default to a sentinel larger than any frame (the backend clamps the crop to
-// the frame edge), so clamp into the frame here: an unconfigured crop reads as the full 0-to-res
-// range instead of a value the slider can't display.
 const clampCropRange = (range: WebsocketNumberPair | [number, number] | undefined, max: number): [number, number] =>
   cropBounds(range).map((bound) => Math.max(0, Math.min(bound, max))) as [number, number];
 
@@ -115,15 +110,6 @@ const staticCropY = computed<[number, number]>({
 const rotatedDims = (width: number, height: number, rotation: number) =>
   rotation === 1 || rotation === 3 ? { width: height, height: width } : { width, height };
 
-// The stored crop doesn't know the frame size, so it has to follow frame changes:
-//
-// - Resolution change, same aspect ratio: the region describes the same part of the scene, so its
-//   bounds scale with the resolution (the frame-edge sentinel is already resolution-independent).
-// - Resolution change, different aspect ratio: the region can't be mapped meaningfully, so the crop
-//   resets to the whole frame -- with a popup, since a region the user drew just disappeared.
-// - Rotation: an upper bound that was sitting on the frame edge means "the whole frame", so it is
-//   stored as the frame-edge sentinel and tracks the edge; interior bounds are the ones the user
-//   actually picked, so they are kept and only pulled in if the rotated frame is too small for them.
 watch(
   [
     () => useStateStore().currentCameraUniqueName,
@@ -133,15 +119,12 @@ watch(
   ],
   (newValues, oldValues) => {
     const [camera, width, height, rotation] = newValues;
-    // On the immediate first run there are no old values; treat the current ones as unchanged.
     const oldCamera = oldValues?.[0] ?? camera;
     const oldWidth = oldValues?.[1] ?? width;
     const oldHeight = oldValues?.[2] ?? height;
     const oldRotation = oldValues?.[3] ?? rotation;
-    // No camera or no video mode yet -- there's nothing meaningful to adjust against.
+
     if (!oldWidth || !oldHeight || !width || !height || width <= 0 || height <= 0) return;
-    // A camera switch changes everything at once, and the stored bounds already belong to the newly
-    // selected camera -- nothing to adjust.
     if (camera !== oldCamera) return;
 
     const settings = useCameraSettingsStore().currentPipelineSettings;
@@ -151,11 +134,8 @@ watch(
     const oldDims = rotatedDims(oldWidth, oldHeight, oldRotation);
 
     if (width !== oldWidth || height !== oldHeight) {
-      // Camera mode lists round odd sizes to integers (a 4000x1868 sensor offering 666x311, say), so
-      // aspect ratios that differ by a fraction of a percent are the same aspect, not a reset.
       const sameAspect = Math.abs(oldWidth * height - width * oldHeight) <= 0.01 * oldWidth * height;
       if (sameAspect) {
-        // Same aspect ratio: scale the region with the resolution.
         for (const [axis, scale, max] of [
           ["staticCropX", dims.width / oldDims.width, dims.width],
           ["staticCropY", dims.height / oldDims.height, dims.height]
@@ -168,7 +148,6 @@ watch(
           if (scaled[0] !== first || scaled[1] !== second) changes[axis] = scaled;
         }
       } else {
-        // Different aspect ratio: reset to the whole frame, and say so if a real region was lost.
         const [x0, x1] = cropBounds(settings.staticCropX);
         const [y0, y1] = cropBounds(settings.staticCropY);
         const wasWholeFrame = x0 <= 0 && y0 <= 0 && x1 >= oldDims.width && y1 >= oldDims.height;
@@ -188,10 +167,7 @@ watch(
       ] as ["staticCropX" | "staticCropY", number, number][]) {
         const [first, second] = cropBounds(settings[axis]);
         const updated: [number, number] = [
-          // A start point past the end of the frame is meaningless, so pull it inside.
           Math.max(0, Math.min(first, max)),
-          // At or past the smaller of the two frames, the bound either covered the old frame's edge
-          // or no longer fits in the new one. Either way it belongs on the edge from here on.
           second >= Math.min(oldMax, max) ? FrameEdgeCropBound : second
         ];
 
@@ -204,8 +180,6 @@ watch(
   { immediate: true }
 );
 
-// Reset the crop region to the full frame. The frame-edge sentinel keeps the reset value
-// resolution-independent, exactly like the defaults.
 const resetCrop = () => {
   useCameraSettingsStore().changeCurrentPipelineSetting(
     { staticCropX: [0, FrameEdgeCropBound], staticCropY: [0, FrameEdgeCropBound] },

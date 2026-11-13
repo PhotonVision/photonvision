@@ -37,13 +37,8 @@ const streamStyle = computed<StyleValue>(() => {
   return {};
 });
 
-// All crop visualization and interaction lives on the Raw stream: its content is the full frame
-// (with the cropped-away area dimmed by the backend), so the region can be shown in context. The
-// Processed stream simply shows the cropped image.
 const isRawStream = props.streamType === "Raw";
 
-// The full frame dimensions in the coordinate space the static crop applies in: after rotation, so
-// 90° rotations (modes 1 and 3) swap width and height.
 const rotatedResolution = computed<{ width: number; height: number } | null>(() => {
   if (props.cameraSettings.validVideoFormats.length === 0) {
     return null;
@@ -61,13 +56,8 @@ const containerStyle = computed<StyleValue>(() => {
   if (resolution === null) {
     return { aspectRatio: "1/1" };
   }
-  // The Processed stream contains only the cropped pixels, so its card takes the crop's shape.
   const region = cropRegion.value;
   if (!isRawStream && region !== null) {
-    // Keep the card size stable even when a processed (cropped-only) stream is shown.
-    // Previously the card adopted the crop's aspect ratio which caused the surrounding
-    // Cameras view to grow/shrink while adjusting the crop. Use the full-frame
-    // aspect ratio so adjusting the crop doesn't change the overall layout.
     return {
       aspectRatio: `${resolution.width}/${resolution.height}`
     };
@@ -77,15 +67,9 @@ const containerStyle = computed<StyleValue>(() => {
   };
 });
 
-// The static crop region as fractions of the full (rotated) frame, or null when cropping is off.
-// Mirrors the backend's clamping: bounds are clamped into the frame (the stored upper bounds
-// default to a larger-than-any-frame sentinel meaning "the frame edge") and a reversed range is
-// normalized. A whole-frame region still shows, so an enabled crop is always adjustable on the
-// stream even before it is narrowed.
 const cropRegion = computed<{ left: number; top: number; width: number; height: number } | null>(() => {
   const resolution = rotatedResolution.value;
   const settings = props.cameraSettings.pipelineSettings;
-  // A settings object without crop support (driver mode) reads as undefined -> falsy here.
   if (resolution === null || !settings.staticCropEnabled) {
     return null;
   }
@@ -99,7 +83,6 @@ const cropRegion = computed<{ left: number; top: number; width: number; height: 
   const [x0, x1] = clampedRange(settings.staticCropX, resolution.width);
   const [y0, y1] = clampedRange(settings.staticCropY, resolution.height);
 
-  // A degenerate region means the backend doesn't crop at all.
   if (x1 - x0 <= 0 || y1 - y0 <= 0) return null;
 
   return {
@@ -122,10 +105,6 @@ onMounted(() => {
 });
 onBeforeUnmount(() => containerResizeObserver?.disconnect());
 
-// On the Raw stream, the frame box is sized to exactly the full frame's on-screen rectangle
-// (contain-fit to the measured container) whenever the crop region is shown, so the region
-// overlays and pointer positions map linearly to frame pixels. The Processed stream (and the
-// no-crop case) just fills the container and lets the stream contain-fit as always.
 const frameStyle = computed<StyleValue>(() => {
   const resolution = rotatedResolution.value;
   const container = containerSize.value;
@@ -149,8 +128,6 @@ const frameStyle = computed<StyleValue>(() => {
 
 const streamFrame = useTemplateRef("streamFrame");
 
-// The crop region geometry currently on screen: while the region is being moved or resized this is
-// the dragged geometry (the throttled live commits catch the backend up as the pointer travels).
 const previewRegion = computed<{ left: number; top: number; width: number; height: number } | null>(() => {
   const region = cropRegion.value;
   if (region === null) return null;
@@ -164,8 +141,6 @@ const regionGeometryStyle = (region: { left: number; top: number; width: number;
   height: `${region.height * 100}%`
 });
 
-// The crop region outlined in PhotonVision yellow, around the crisp area of the dimmed full frame
-// on the Raw stream.
 const cropOutlineStyle = computed<StyleValue>(() => {
   const preview = previewRegion.value;
   if (preview === null || !isRawStream) {
@@ -178,8 +153,6 @@ const cropOutlineStyle = computed<StyleValue>(() => {
   };
 });
 
-// Resize handles drawn on the region's corners and border midpoints. Purely visual (the borders
-// themselves are the grab targets), so they never intercept pointer events.
 const cropHandlePositions = [
   { left: "0%", top: "0%" },
   { left: "50%", top: "0%" },
@@ -199,11 +172,8 @@ const handleBoxStyle = computed<StyleValue>(() => {
   return regionGeometryStyle(preview);
 });
 
-// Dragging the visible crop region adjusts the crop: grabbing its interior moves the window around
-// the frame, grabbing a border (or corner) resizes it.
 const canAdjustCrop = computed(() => isRawStream && cropRegion.value !== null && !useStateStore().colorPickingMode);
 
-// Which crop borders a drag adjusts; none selected means the whole region moves.
 type DragEdges = { left: boolean; right: boolean; top: boolean; bottom: boolean };
 const isMove = (edges: DragEdges) => !edges.left && !edges.right && !edges.top && !edges.bottom;
 
@@ -214,11 +184,9 @@ const dragState = ref<{
   frameHeight: number;
   base: { left: number; top: number; width: number; height: number };
   edges: DragEdges;
-  // The current preview geometry, in fractions of the full frame
   region: { left: number; top: number; width: number; height: number };
 } | null>(null);
 
-// Borders under the pointer while hovering (drives the resize cursors)
 const hoverEdges = ref<DragEdges | null>(null);
 
 const edgesToCursor = (edges: DragEdges | null, dragging: boolean): string | undefined => {
@@ -232,15 +200,8 @@ const edgesToCursor = (edges: DragEdges | null, dragging: boolean): string | und
   return dragging ? "grabbing" : "grab";
 };
 
-// How far from a border, in screen pixels, a grab still catches it. The zone extends to both sides
-// of the border: nobody lands on a 2px outline exactly, and coming at a corner from the dimmed
-// outside has to work as well as from the inside.
 const EDGE_GRAB_DISTANCE = 12;
 
-// Hit-test the pointer against the crop region's on-screen rectangle: which borders are within
-// grabbing distance (from either side), the interior (none selected -- a move), or null when the
-// pointer is outside the region and not near any border. Only the inward reach is capped by the
-// region size, so small regions keep a movable middle without shrinking the outside target.
 const edgeHitTest = (event: PointerEvent): DragEdges | null => {
   const frameRect = streamFrame.value?.getBoundingClientRect();
   const region = previewRegion.value;
@@ -256,7 +217,6 @@ const edgeHitTest = (event: PointerEvent): DragEdges | null => {
 
   const inwardX = Math.min(EDGE_GRAB_DISTANCE, width / 4);
   const inwardY = Math.min(EDGE_GRAB_DISTANCE, height / 4);
-  // Near a border's line and within (or just past) the span it covers on the other axis.
   const alongX = event.clientX >= left - EDGE_GRAB_DISTANCE && event.clientX <= right + EDGE_GRAB_DISTANCE;
   const alongY = event.clientY >= top - EDGE_GRAB_DISTANCE && event.clientY <= bottom + EDGE_GRAB_DISTANCE;
 
@@ -268,7 +228,6 @@ const edgeHitTest = (event: PointerEvent): DragEdges | null => {
   };
   if (edges.left || edges.right || edges.top || edges.bottom) return edges;
 
-  // Inside the region away from every border: a move.
   if (event.clientX > left && event.clientX < right && event.clientY > top && event.clientY < bottom) {
     return edges;
   }
@@ -278,11 +237,8 @@ const edgeHitTest = (event: PointerEvent): DragEdges | null => {
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
 
-// Never resize below what the backend would grow a crop back to anyway (unless the region already
-// started smaller).
 const MIN_CROP_PIXELS = 16;
 
-/** The drag's preview region for a pointer offset, clamped into the frame. */
 const adjustedRegion = (
   state: NonNullable<typeof dragState.value>,
   dx: number,
@@ -312,8 +268,6 @@ const adjustedRegion = (
   return { left: newLeft, top: newTop, width: newRight - newLeft, height: newBottom - newTop };
 };
 
-// The bounds last written during a drag, so mid-drag updates and the final release only send when
-// the region actually changed (a sub-pixel drag is a click, not an adjustment).
 let lastSentBounds: { x0: number; x1: number; y0: number; y1: number } | null = null;
 let lastDragSendMillis = 0;
 
@@ -323,7 +277,6 @@ const commitDrag = (state: NonNullable<typeof dragState.value>) => {
 
   let bounds: { x0: number; x1: number; y0: number; y1: number };
   if (isMove(state.edges)) {
-    // A move preserves the region's exact pixel size, whatever the drag rounding did.
     const width = Math.round(state.base.width * resolution.width);
     const height = Math.round(state.base.height * resolution.height);
     const x0 = clamp(Math.round(state.region.left * resolution.width), 0, resolution.width - width);
@@ -373,7 +326,6 @@ const handleRegionPointerDown = (event: PointerEvent) => {
   }
   event.preventDefault();
   (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-  // Seed the dedupe with the current bounds so a drag that goes nowhere sends nothing.
   lastSentBounds = {
     x0: Math.round(base.left * resolution.width),
     x1: Math.round((base.left + base.width) * resolution.width),
@@ -395,7 +347,6 @@ const handleRegionPointerDown = (event: PointerEvent) => {
 const handleRegionPointerMove = (event: PointerEvent) => {
   const state = dragState.value;
   if (state === null) {
-    // Not dragging: just track which borders are under the pointer for cursor feedback.
     hoverEdges.value = canAdjustCrop.value ? edgeHitTest(event) : null;
     return;
   }
@@ -407,8 +358,6 @@ const handleRegionPointerMove = (event: PointerEvent) => {
   const updated = { ...state, region: adjustedRegion(state, dx, dy, resolution) };
   dragState.value = updated;
 
-  // Push the region to the backend as it changes (throttled), so the stream live-previews exactly
-  // what the new crop will show. The final geometry is always sent on release.
   const now = Date.now();
   if (now - lastDragSendMillis >= 100) {
     lastDragSendMillis = now;
@@ -564,7 +513,6 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* Prevent touch pans from stealing crop-drag gestures before the pointer events fire. */
   touch-action: none;
 }
 
