@@ -3,7 +3,10 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
-import { computed } from "vue";
+import PvRangeSlider from "@/components/common/pv-range-slider.vue";
+import { computed, watch } from "vue";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+import { FrameEdgeCropBound, type ConfigurablePipelineSettings } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";
@@ -71,6 +74,119 @@ const currentStreamResolutionIndex = computed<number>({
     });
   }
 });
+
+const showStaticCrop = computed(
+  () =>
+    !useCameraSettingsStore().isDriverMode &&
+    !useCameraSettingsStore().isCalibrationMode &&
+    !useCameraSettingsStore().isFocusMode
+);
+
+const croppableResolution = computed<{ width: number; height: number }>(() => {
+  const resolution = useCameraSettingsStore().currentVideoFormat?.resolution;
+  const rotation = useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode;
+  return rotation === 1 || rotation === 3
+    ? { width: resolution?.height ?? 0, height: resolution?.width ?? 0 }
+    : { width: resolution?.width ?? 0, height: resolution?.height ?? 0 };
+});
+
+const cropBounds = (range: WebsocketNumberPair | [number, number] | undefined): [number, number] =>
+  Object.values(range || { first: 0, second: FrameEdgeCropBound }) as [number, number];
+
+const clampCropRange = (range: WebsocketNumberPair | [number, number] | undefined, max: number): [number, number] =>
+  cropBounds(range).map((bound) => Math.max(0, Math.min(bound, max))) as [number, number];
+
+const staticCropX = computed<[number, number]>({
+  get: () =>
+    clampCropRange(useCameraSettingsStore().currentPipelineSettings.staticCropX, croppableResolution.value.width),
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.staticCropX = v)
+});
+const staticCropY = computed<[number, number]>({
+  get: () =>
+    clampCropRange(useCameraSettingsStore().currentPipelineSettings.staticCropY, croppableResolution.value.height),
+  set: (v) => (useCameraSettingsStore().currentPipelineSettings.staticCropY = v)
+});
+
+const rotatedDims = (width: number, height: number, rotation: number) =>
+  rotation === 1 || rotation === 3 ? { width: height, height: width } : { width, height };
+
+watch(
+  [
+    () => useStateStore().currentCameraUniqueName,
+    () => useCameraSettingsStore().currentVideoFormat?.resolution.width,
+    () => useCameraSettingsStore().currentVideoFormat?.resolution.height,
+    () => useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode
+  ],
+  (newValues, oldValues) => {
+    const [camera, width, height, rotation] = newValues;
+    const oldCamera = oldValues?.[0] ?? camera;
+    const oldWidth = oldValues?.[1] ?? width;
+    const oldHeight = oldValues?.[2] ?? height;
+    const oldRotation = oldValues?.[3] ?? rotation;
+
+    if (!oldWidth || !oldHeight || !width || !height || width <= 0 || height <= 0) return;
+    if (camera !== oldCamera) return;
+
+    const settings = useCameraSettingsStore().currentPipelineSettings;
+    if (!("staticCropEnabled" in settings)) return;
+    const changes: ConfigurablePipelineSettings = {};
+    const dims = rotatedDims(width, height, rotation);
+    const oldDims = rotatedDims(oldWidth, oldHeight, oldRotation);
+
+    if (width !== oldWidth || height !== oldHeight) {
+      const sameAspect = Math.abs(oldWidth * height - width * oldHeight) <= 0.01 * oldWidth * height;
+      if (sameAspect) {
+        for (const [axis, scale, max] of [
+          ["staticCropX", dims.width / oldDims.width, dims.width],
+          ["staticCropY", dims.height / oldDims.height, dims.height]
+        ] as ["staticCropX" | "staticCropY", number, number][]) {
+          const [first, second] = cropBounds(settings[axis]);
+          const scaled: [number, number] = [
+            Math.max(0, Math.min(Math.round(first * scale), max)),
+            second >= FrameEdgeCropBound ? FrameEdgeCropBound : Math.max(0, Math.min(Math.round(second * scale), max))
+          ];
+          if (scaled[0] !== first || scaled[1] !== second) changes[axis] = scaled;
+        }
+      } else {
+        const [x0, x1] = cropBounds(settings.staticCropX);
+        const [y0, y1] = cropBounds(settings.staticCropY);
+        const wasWholeFrame = x0 <= 0 && y0 <= 0 && x1 >= oldDims.width && y1 >= oldDims.height;
+        changes.staticCropX = [0, FrameEdgeCropBound];
+        changes.staticCropY = [0, FrameEdgeCropBound];
+        if (settings.staticCropEnabled && !wasWholeFrame) {
+          useStateStore().showSnackbarMessage({
+            message: "The crop region was reset because the resolution changed to one with a different aspect ratio.",
+            color: "warning"
+          });
+        }
+      }
+    } else {
+      for (const [axis, max, oldMax] of [
+        ["staticCropX", dims.width, oldDims.width],
+        ["staticCropY", dims.height, oldDims.height]
+      ] as ["staticCropX" | "staticCropY", number, number][]) {
+        const [first, second] = cropBounds(settings[axis]);
+        const updated: [number, number] = [
+          Math.max(0, Math.min(first, max)),
+          second >= Math.min(oldMax, max) ? FrameEdgeCropBound : second
+        ];
+
+        if (updated[0] !== first || updated[1] !== second) changes[axis] = updated;
+      }
+    }
+
+    if (Object.keys(changes).length) useCameraSettingsStore().changeCurrentPipelineSetting(changes);
+  },
+  { immediate: true }
+);
+
+const resetCrop = () => {
+  useCameraSettingsStore().changeCurrentPipelineSetting(
+    { staticCropX: [0, FrameEdgeCropBound], staticCropY: [0, FrameEdgeCropBound] },
+    true
+  );
+};
+
 const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
@@ -200,6 +316,53 @@ const interactiveCols = computed(() =>
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :items="streamResolutions"
       :select-cols="interactiveCols"
+    />
+    <v-row v-if="showStaticCrop" class="ma-0" style="flex-wrap: nowrap">
+      <v-col class="pa-0">
+        <pv-switch
+          v-model="useCameraSettingsStore().currentPipelineSettings.staticCropEnabled"
+          label="Static Crop"
+          :switch-cols="interactiveCols"
+          tooltip="Crops the camera frame to a fixed region before processing. Camera calibration is adjusted so 3D pose estimation stays accurate."
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropEnabled: args }, false)
+          "
+        />
+      </v-col>
+      <v-col cols="auto" class="d-flex align-center pl-3 pr-0">
+        <v-btn size="small" color="primary" class="text-black" @click="resetCrop">
+          <v-icon start size="large"> mdi-restore </v-icon>
+          Reset Crop
+        </v-btn>
+      </v-col>
+    </v-row>
+    <pv-range-slider
+      v-if="showStaticCrop"
+      v-model="staticCropX"
+      label="Crop X Range"
+      tooltip="Left and right pixel bounds of the crop region (after rotation)"
+      :disabled="!useCameraSettingsStore().currentPipelineSettings.staticCropEnabled"
+      :min="0"
+      :max="croppableResolution.width"
+      :step="1"
+      :slider-cols="interactiveCols"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropX: value }, false)
+      "
+    />
+    <pv-range-slider
+      v-if="showStaticCrop"
+      v-model="staticCropY"
+      label="Crop Y Range"
+      tooltip="Top and bottom pixel bounds of the crop region (after rotation)"
+      :disabled="!useCameraSettingsStore().currentPipelineSettings.staticCropEnabled"
+      :min="0"
+      :max="croppableResolution.height"
+      :step="1"
+      :slider-cols="interactiveCols"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ staticCropY: value }, false)
+      "
     />
     <pv-switch
       v-if="useCameraSettingsStore().isDriverMode"
