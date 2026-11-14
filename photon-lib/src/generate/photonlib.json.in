@@ -9,6 +9,20 @@
     "https://maven.photonvision.org/repository/snapshots"
   ],
   "jsonUrl": "https://maven.photonvision.org/repository/internal/org/photonvision/photonlib-json/1.0/photonlib-json-1.0.json",
+  "requires": [
+    {
+      "uuid": "19049c8a-7635-4aca-aa7d-1fdde2c10eed",
+      "errorMessage": "You need to install the CameraServer vendordep from WPILib!",
+      "offlineFileName": "CameraServer.json",
+      "onlineUrl": ""
+    },
+    {
+      "uuid": "3ac3403d-7f6b-4b5a-a09c-a49a2c32e5a3",
+      "errorMessage": "You need to install the AprilTag vendordep from WPILib!",
+      "offlineFileName": "AprilTag.json",
+      "onlineUrl": ""
+    }
+  ],
   "jniDependencies": [
     {
       "groupId": "org.photonvision",
