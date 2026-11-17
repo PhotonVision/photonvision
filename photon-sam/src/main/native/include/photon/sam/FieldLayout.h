@@ -27,7 +27,7 @@
 
 #include "photon/estimation/TargetModel.h"
 
-namespace photon::pvgtsam {
+namespace photon::sam {
 
 class FieldLayout {
  public:
@@ -47,4 +47,4 @@ class FieldLayout {
   std::array<gtsam::Point3, 4> tagToCorners;  // Offsets of tag corners in tag
                                               // frame, in "canonical" order
 };
-}  // namespace photon::pvgtsam
+}  // namespace photon::sam

@@ -15,13 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "photon/gtsam/FieldLayout.h"
+#include "photon/sam/FieldLayout.h"
 
 #include <stdexcept>
 
-#include "photon/gtsam/gtsam_utils.h"
+#include "photon/sam/gtsam_utils.h"
 
-namespace photon::pvgtsam {
+namespace photon::sam {
 
 FieldLayout::FieldLayout(const wpi::fields::Field& layout,
                          const photon::TargetModel& tagModel) {
@@ -76,4 +76,4 @@ std::optional<std::array<gtsam::Point3, 4>> FieldLayout::WorldToCorners(
   return worldToCorners;
 }
 
-}  // namespace photon::pvgtsam
+}  // namespace photon::sam

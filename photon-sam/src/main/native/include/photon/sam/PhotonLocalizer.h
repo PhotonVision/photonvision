@@ -32,7 +32,7 @@
 #include <wpi/math/linalg/EigenCore.hpp>
 #include <wpi/system/Notifier.hpp>
 
-#include "photon/gtsam/ConcurrentLocalizer.h"
+#include "photon/sam/ConcurrentLocalizer.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 
 namespace photon {
@@ -58,7 +58,7 @@ struct GTSAMCamConfig {
   // For convenience, allow construction from WPILIB types
   explicit GTSAMCamConfig(wpi::math::Transform3d robotToCamera_wpi,
                           wpi::math::Vectord<5> cameraCal_wpi, double sigma)
-      : GTSAMCamConfig(pvgtsam::Transform3dToGtsamPose3(robotToCamera_wpi),
+      : GTSAMCamConfig(sam::Transform3dToGtsamPose3(robotToCamera_wpi),
                        gtsam::Cal3_S2(cameraCal_wpi),
                        gtsam::noiseModel::Isotropic::Sigma(2, sigma)) {}
 };
@@ -81,7 +81,7 @@ class PhotonLocalizer {
   wpi::math::Vectord<6> GetPoseStdDevs() const;
 
  private:
-  pvgtsam::ConcurrentLocalizer core;
+  std::unique_ptr<photon::sam::ConcurrentLocalizer> core;
   wpi::Notifier notifier;
   gtsam::SharedNoiseModel odomNoise;  // Should be diagonal. TODO: Make robust?
                                       // ts needs to be tested

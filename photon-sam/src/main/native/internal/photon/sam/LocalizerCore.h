@@ -34,10 +34,10 @@
 #include <wpi/units/time.hpp>
 
 #include "gtsam/slam/expressions.h"
-#include "photon/gtsam/FieldLayout.h"
-#include "photon/gtsam/gtsam_utils.h"
+#include "photon/sam/FieldLayout.h"
+#include "photon/sam/gtsam_utils.h"
 
-namespace photon::pvgtsam {
+namespace photon::sam {
 
 class LocalizerCore {
   using Key = gtsam::Key;
@@ -139,4 +139,4 @@ class LocalizerCore {
   FieldLayout fieldLayout;
 };
 
-}  // namespace photon::pvgtsam
+}  // namespace photon::sam

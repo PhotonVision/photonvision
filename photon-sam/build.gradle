@@ -26,7 +26,7 @@ model {
             sources {
                 cpp {
                     source {
-                        srcDirs 'src/main/native/cpp'
+                        srcDirs 'src/main/native/cpp', 'src/main/native/internal'
                         include '**/*.cpp', '**/*.cc'
                     }
                     exportedHeaders {
@@ -39,12 +39,19 @@ model {
             binaries.all {
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
+                    // Private headers: visible to this component only, not exported to consumers
+                    it.includes 'src/main/native/internal'
                 }
                 if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
                 project.gtsamArgs(it)
             }
+            nativeUtils.useRequiredLibrary(it, "gtsam")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
         }
         "${nativeName}JNI"(JniNativeLibrarySpec) {
 
@@ -56,13 +63,20 @@ model {
             sources {
                 cpp {
                     source {
-                        srcDirs 'src/main/native/jni'
+                        srcDirs 'src/main/native/jni', 'src/main/native/internal'
                         include '**/*.cpp', '**/*.cc'
                     }
                 }
             }
 
             binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.includes 'src/main/native/internal'
+                }
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'photontargetingJNI', linkage: 'shared'
+                }
                 lib library: nativeName, linkage: 'shared'
                 project.gtsamArgs(it)
                 // DEBUGGING
@@ -72,6 +86,14 @@ model {
                  }
                  */
             }
+
+            // JNI sources include gtsam and Eigen (shipped with wpimath) directly,
+            // and `lib library:` does not pass the main component's dependencies on.
+            nativeUtils.useRequiredLibrary(it, "gtsam")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
         }
     }
     testSuites {
@@ -96,8 +118,10 @@ model {
 
             binaries.all {
                 lib library: nativeName, linkage: 'shared'
+                lib library: "${nativeName}JNI", linkage: 'shared'
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
+                    it.includes 'src/main/native/internal'
                 }
                 if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
@@ -105,6 +129,23 @@ model {
                 }
                 project.gtsamArgs(it)
             }
+            nativeUtils.useRequiredLibrary(it, "gtsam")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "catch2_static")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "wpinet_shared")
+            nativeUtils.useRequiredLibrary(it, "ntcore_shared")
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
 
@@ -375,3 +416,15 @@ nativeTasks.addToSourceSetResources(sourceSets.test)
 dependencies {
     wpilibNatives project(":photon-targeting")
 }
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("datalog")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("fields")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("telemetry")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("tunables")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)

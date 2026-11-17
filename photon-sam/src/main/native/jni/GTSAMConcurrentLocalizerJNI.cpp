@@ -27,8 +27,8 @@
 #include <wpi/units/length.hpp>
 
 #include "gtsam_jni_utils.h"
-#include "photon/gtsam/ConcurrentLocalizer.h"
-#include "photon/gtsam/FieldLayout.h"
+#include "photon/sam/ConcurrentLocalizer.h"
+#include "photon/sam/FieldLayout.h"
 
 extern "C" {
 
@@ -80,10 +80,10 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_createJNI
 
   photon::TargetModel tagModel(verts);
 
-  photon::pvgtsam::FieldLayout fieldLayout =
-      photon::pvgtsam::FieldLayout(field, tagModel);
-  photon::pvgtsam::ConcurrentLocalizer* ConcurrentLocalizer_handle =
-      new photon::pvgtsam::ConcurrentLocalizer(fieldLayout);
+  photon::sam::FieldLayout fieldLayout =
+      photon::sam::FieldLayout(field, tagModel);
+  photon::sam::ConcurrentLocalizer* ConcurrentLocalizer_handle =
+      new photon::sam::ConcurrentLocalizer(fieldLayout);
 
   env->ReleaseIntArrayElements(tagIDs, tagIDsPtr, JNI_ABORT);
   env->ReleaseDoubleArrayElements(tagPoses, tagPosesPtr, JNI_ABORT);
@@ -101,7 +101,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_GTSAMConcurrentLocalizer_destroyJNI
   (JNIEnv* env, jclass, jlong ConcurrentLocalizer_handle)
 {
-  delete reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+  delete reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
       ConcurrentLocalizer_handle);
 }
 
@@ -117,9 +117,9 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_SubmitResetJNI
 {
   jdouble* wTrPtr = env->GetDoubleArrayElements(wTrArray, nullptr);
   try {
-    reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+    reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
         ConcurrentLocalizer_handle)
-        ->SubmitReset(photon::pvgtsam::ResetData{
+        ->SubmitReset(photon::sam::ResetData{
             jdoublePtrToGtsamPose3(wTrPtr),
             *reinterpret_cast<gtsam::SharedNoiseModel*>(noise_handle),
             static_cast<uint64_t>(timeUs)});
@@ -144,9 +144,9 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_SubmitOdometryJNI
 {
   jdouble* wTrPtr = env->GetDoubleArrayElements(wTrArray, nullptr);
   try {
-    reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+    reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
         ConcurrentLocalizer_handle)
-        ->SubmitOdometry(photon::pvgtsam::OdometryObservation{
+        ->SubmitOdometry(photon::sam::OdometryObservation{
             static_cast<uint64_t>(timeUs), jdoublePtrToGtsamPose3(wTrPtr),
             *reinterpret_cast<gtsam::SharedNoiseModel*>(noise_handle)});
   } catch (const std::exception& e) {
@@ -177,9 +177,9 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_SubmitTagObservationJNI
         gtsam::Vector2{cornersPtr[2 * i], cornersPtr[2 * i + 1]});
   }
   try {
-    reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+    reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
         ConcurrentLocalizer_handle)
-        ->SubmitTagObservation(photon::pvgtsam::CameraVisionObservation{
+        ->SubmitTagObservation(photon::sam::CameraVisionObservation{
             static_cast<uint64_t>(timeUs), tagID, cornersVec,
             *reinterpret_cast<gtsam::Cal3_S2_*>(cameraCal_handle),
             jdoublePtrToGtsamPose3(robotTcameraPtr),
@@ -204,7 +204,7 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_GetLatestWorldToBodyJNI
   (JNIEnv* env, jclass, jlong ConcurrentLocalizer_handle)
 {
   gtsam::Pose3 latestWorldToBody =
-      reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+      reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
           ConcurrentLocalizer_handle)
           ->GetLatestWorldToBody();
   jdouble buf[6];
@@ -223,7 +223,7 @@ JNIEXPORT jlong JNICALL
 Java_org_photonvision_jni_GTSAMConcurrentLocalizer_GetLastOdomTimeJNI
   (JNIEnv*, jclass, jlong ConcurrentLocalizer_handle)
 {
-  return reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+  return reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
              ConcurrentLocalizer_handle)
       ->GetLastOdomTime();
 }
@@ -237,7 +237,7 @@ JNIEXPORT jdoubleArray JNICALL
 Java_org_photonvision_jni_GTSAMConcurrentLocalizer_GetPoseComponentStdDevsJNI
   (JNIEnv* env, jclass, jlong ConcurrentLocalizer_handle)
 {
-  auto stdDevs = reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+  auto stdDevs = reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
                      ConcurrentLocalizer_handle)
                      ->GetPoseComponentStdDevs();
   // Todo: serialize and return through JNI
@@ -258,7 +258,7 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_Step
   (JNIEnv* env, jclass, jlong ConcurrentLocalizer_handle)
 {
   try {
-    reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+    reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
         ConcurrentLocalizer_handle)
         ->Step();
   } catch (const std::exception& e) {
@@ -279,7 +279,7 @@ Java_org_photonvision_jni_GTSAMConcurrentLocalizer_GetLatestTimestampJNI
   (JNIEnv*, jclass, jlong ConcurrentLocalizer_handle)
 {
   return gtsam::symbolIndex(
-      reinterpret_cast<photon::pvgtsam::ConcurrentLocalizer*>(
+      reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
           ConcurrentLocalizer_handle)
           ->GetCurrStateIdx());
 }

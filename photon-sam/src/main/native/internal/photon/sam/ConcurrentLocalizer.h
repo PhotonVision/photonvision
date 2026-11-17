@@ -28,9 +28,9 @@
 
 #include <wpi/math/geometry/Pose3d.hpp>
 
-#include "photon/gtsam/LocalizerCore.h"
+#include "photon/sam/LocalizerCore.h"
 
-namespace photon::pvgtsam {
+namespace photon::sam {
 
 class ConcurrentLocalizer {
  public:
@@ -90,4 +90,4 @@ class ConcurrentLocalizer {
   std::queue<DataSubmission> submissionQueue;
 };
 
-}  // namespace photon::pvgtsam
+}  // namespace photon::sam

@@ -26,8 +26,8 @@
 #include <wpi/units/length.hpp>
 
 #include "gtsam_jni_utils.h"
-#include "photon/gtsam/FieldLayout.h"
-#include "photon/gtsam/LocalizerCore.h"
+#include "photon/sam/FieldLayout.h"
+#include "photon/sam/LocalizerCore.h"
 
 extern "C" {
 
@@ -79,10 +79,10 @@ Java_org_photonvision_jni_GTSAMLocalizerCore_createJNI
 
   photon::TargetModel tagModel(verts);
 
-  photon::pvgtsam::FieldLayout fieldLayout =
-      photon::pvgtsam::FieldLayout(field, tagModel);
-  photon::pvgtsam::LocalizerCore* LocalizerCore_handle =
-      new photon::pvgtsam::LocalizerCore(fieldLayout);
+  photon::sam::FieldLayout fieldLayout =
+      photon::sam::FieldLayout(field, tagModel);
+  photon::sam::LocalizerCore* LocalizerCore_handle =
+      new photon::sam::LocalizerCore(fieldLayout);
 
   env->ReleaseIntArrayElements(tagIDs, tagIDsPtr, JNI_ABORT);
   env->ReleaseDoubleArrayElements(tagPoses, tagPosesPtr, JNI_ABORT);
@@ -100,7 +100,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_GTSAMLocalizerCore_destroyJNI
   (JNIEnv*, jclass, jlong LocalizerCore_handle)
 {
-  delete reinterpret_cast<photon::pvgtsam::LocalizerCore*>(
+  delete reinterpret_cast<photon::sam::LocalizerCore*>(
       LocalizerCore_handle);
 }
 
@@ -116,8 +116,8 @@ Java_org_photonvision_jni_GTSAMLocalizerCore_ResetJNI
 {
   jdouble* wTrPtr = env->GetDoubleArrayElements(wTrArray, nullptr);
   try {
-    reinterpret_cast<photon::pvgtsam::LocalizerCore*>(LocalizerCore_handle)
-        ->Reset(photon::pvgtsam::ResetData{
+    reinterpret_cast<photon::sam::LocalizerCore*>(LocalizerCore_handle)
+        ->Reset(photon::sam::ResetData{
             jdoublePtrToGtsamPose3(wTrPtr),
             *reinterpret_cast<gtsam::SharedNoiseModel*>(noise_handle),
             static_cast<uint64_t>(timeUs)});
@@ -142,8 +142,8 @@ Java_org_photonvision_jni_GTSAMLocalizerCore_AddOdometryJNI
 {
   jdouble* wTrPtr = env->GetDoubleArrayElements(wTrArray, nullptr);
   try {
-    reinterpret_cast<photon::pvgtsam::LocalizerCore*>(LocalizerCore_handle)
-        ->AddOdometry(photon::pvgtsam::OdometryObservation{
+    reinterpret_cast<photon::sam::LocalizerCore*>(LocalizerCore_handle)
+        ->AddOdometry(photon::sam::OdometryObservation{
             static_cast<uint64_t>(timeUs), jdoublePtrToGtsamPose3(wTrPtr),
             *reinterpret_cast<gtsam::SharedNoiseModel*>(noise_handle)});
   } catch (const std::exception& e) {
@@ -174,8 +174,8 @@ Java_org_photonvision_jni_GTSAMLocalizerCore_AddTagObservationJNI
         gtsam::Vector2{cornersPtr[2 * i], cornersPtr[2 * i + 1]});
   }
   try {
-    reinterpret_cast<photon::pvgtsam::LocalizerCore*>(LocalizerCore_handle)
-        ->AddTagObservation(photon::pvgtsam::CameraVisionObservation{
+    reinterpret_cast<photon::sam::LocalizerCore*>(LocalizerCore_handle)
+        ->AddTagObservation(photon::sam::CameraVisionObservation{
             static_cast<uint64_t>(timeUs), tagID, cornersVec,
             *reinterpret_cast<gtsam::Cal3_S2_*>(cameraCal_handle),
             jdoublePtrToGtsamPose3(robotTcameraPtr),
@@ -200,7 +200,7 @@ Java_org_photonvision_jni_GTSAMLocalizerCore_OptimizeJNI
   (JNIEnv* env, jclass, jlong LocalizerCore_handle)
 {
   try {
-    reinterpret_cast<photon::pvgtsam::LocalizerCore*>(LocalizerCore_handle)
+    reinterpret_cast<photon::sam::LocalizerCore*>(LocalizerCore_handle)
         ->Optimize();
   } catch (const std::exception& e) {
     env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
@@ -220,7 +220,7 @@ Java_org_photonvision_jni_GTSAMLocalizerCore_GetLatestWorldToBodyJNI
   (JNIEnv* env, jclass, jlong LocalizerCore_handle)
 {
   gtsam::Pose3 latestWorldToBody =
-      reinterpret_cast<photon::pvgtsam::LocalizerCore*>(LocalizerCore_handle)
+      reinterpret_cast<photon::sam::LocalizerCore*>(LocalizerCore_handle)
           ->GetLatestWorldToBody();
   jdouble buf[6];
   writeGtsamPose3ToArray(latestWorldToBody, buf);
@@ -238,7 +238,7 @@ JNIEXPORT jlong JNICALL
 Java_org_photonvision_jni_GTSAMLocalizerCore_GetLastOdomTimeJNI
   (JNIEnv*, jclass, jlong LocalizerCore_handle)
 {
-  return reinterpret_cast<photon::pvgtsam::LocalizerCore*>(LocalizerCore_handle)
+  return reinterpret_cast<photon::sam::LocalizerCore*>(LocalizerCore_handle)
       ->GetLastOdomTime();
 }
 
@@ -252,7 +252,7 @@ Java_org_photonvision_jni_GTSAMLocalizerCore_GetPoseComponentStdDevsJNI
   (JNIEnv* env, jclass, jlong LocalizerCore_handle)
 {
   auto stdDevs =
-      reinterpret_cast<photon::pvgtsam::LocalizerCore*>(LocalizerCore_handle)
+      reinterpret_cast<photon::sam::LocalizerCore*>(LocalizerCore_handle)
           ->GetPoseComponentStdDevs();
   // Todo: serialize and return through JNI
   jdoubleArray out = env->NewDoubleArray(6);

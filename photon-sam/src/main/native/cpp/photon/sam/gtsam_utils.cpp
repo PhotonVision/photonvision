@@ -15,11 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "photon/gtsam/gtsam_utils.h"
+#include "photon/sam/gtsam_utils.h"
 
 using namespace gtsam;
 
-namespace photon::pvgtsam {
+namespace photon::sam {
 Pose3 Pose3dToGtsamPose3(wpi::math::Pose3d pose) {
   const auto q = pose.Rotation().GetQuaternion();
   return Pose3{Rot3(q.W(), q.X(), q.Y(), q.Z()),
@@ -61,4 +61,4 @@ wpi::math::Pose3d GtsamToFrcPose3d(gtsam::Pose3 pose) {
                                wpi::units::meter_t{pose.z()}},
       wpi::math::Rotation3d{pose.rotation().matrix()}};
 }
-}  // namespace photon::pvgtsam
+}  // namespace photon::sam

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "photon/PhotonLocalizer.h"
+#include "photon/sam/PhotonLocalizer.h"
 
 #include <algorithm>
 #include <ranges>
@@ -34,7 +34,7 @@ using namespace photon;
 
 PhotonLocalizer::PhotonLocalizer(const wpi::fields::Field& layout,
                                  const TargetModel& tagModel)
-    : core(layout, tagModel), notifier([this] { this->core.Step(); }) {
+    : core(std::make_unique<photon::sam::ConcurrentLocalizer>(layout, tagModel)), notifier([this] { this->core->Step(); }) {
   gtsam::Vector6 odomSigma;
   odomSigma << 0.005, 0.005,
       0.002,              // roll, pitch, yaw (rad): gyro yaw is very good
@@ -43,14 +43,14 @@ PhotonLocalizer::PhotonLocalizer(const wpi::fields::Field& layout,
 }
 
 void PhotonLocalizer::SubmitReset(wpi::math::Pose3d pose, uint64_t timeUs) {
-  core.SubmitReset(
-      pvgtsam::ResetData{pvgtsam::Pose3dToGtsamPose3(pose), odomNoise, timeUs});
+  core->SubmitReset(
+      sam::ResetData{sam::Pose3dToGtsamPose3(pose), odomNoise, timeUs});
 }
 
 void PhotonLocalizer::SubmitOdometry(wpi::math::Transform3d delta,
                                      uint64_t timeUs) {
-  core.SubmitOdometry(pvgtsam::OdometryObservation{
-      timeUs, pvgtsam::Transform3dToGtsamPose3(delta), odomNoise});
+  core->SubmitOdometry(sam::OdometryObservation{
+      timeUs, sam::Transform3dToGtsamPose3(delta), odomNoise});
 }
 
 void PhotonLocalizer::SubmitPipelineResult(PhotonPipelineResult result,
@@ -61,7 +61,7 @@ void PhotonLocalizer::SubmitPipelineResult(PhotonPipelineResult result,
                return gtsam::Point2{corner.x, corner.y};
              });
     std::vector<gtsam::Point2> gtsam_corners(v.begin(), v.end());
-    core.SubmitTagObservation(pvgtsam::CameraVisionObservation{
+    core->SubmitTagObservation(sam::CameraVisionObservation{
         static_cast<uint64_t>(result.metadata.captureTimestampNanos),
         target.GetFiducialId(), gtsam_corners, camConfig.cameraCal,
         camConfig.robotToCamera, camConfig.pixelNoise});
@@ -70,12 +70,12 @@ void PhotonLocalizer::SubmitPipelineResult(PhotonPipelineResult result,
 
 GTSAMPoseEstimate PhotonLocalizer::GetLatestPoseEstimate() const {
   return GTSAMPoseEstimate{
-      pvgtsam::GtsamToFrcPose3d(core.GetLatestWorldToBody()),
-      gtsam::symbolIndex(core.GetCurrStateIdx())};
+      sam::GtsamToFrcPose3d(core->GetLatestWorldToBody()),
+      gtsam::symbolIndex(core->GetCurrStateIdx())};
 }
 
 wpi::math::Vectord<6> PhotonLocalizer::GetPoseStdDevs() const {
-  return core.GetPoseComponentStdDevs();
+  return core->GetPoseComponentStdDevs();
 }
 
 void PhotonLocalizer::SetOdomNoise(wpi::math::Vectord<6> sigmas) {

@@ -22,7 +22,7 @@
 #include <wpi/fields/frc/2025-reefscape.hpp>
 
 #include "photon/estimation/TargetModel.h"
-#include "photon/gtsam/LocalizerCore.h"
+#include "photon/sam/LocalizerCore.h"
 
 using namespace gtsam;
 
@@ -60,25 +60,25 @@ TEST_CASE("LocalizerCoreTest.LatencyCompensate", "[LocalizerCoreTest]") {
   auto reefscape2025 =
       wpi::fields::GetField(wpi::fields::FieldId::FRC_2025_REEFSCAPE_WELDED);
 
-  photon::pvgtsam::FieldLayout layout(reefscape2025, photon::kAprilTag36h11);
+  photon::sam::FieldLayout layout(reefscape2025, photon::kAprilTag36h11);
 
-  auto LocalizerCore = photon::pvgtsam::LocalizerCore(layout);
+  auto LocalizerCore = photon::sam::LocalizerCore(layout);
 
   LocalizerCore.Reset(
-      photon::pvgtsam::ResetData{Pose3(), posePriorNoise, 5 * 1000});
-  LocalizerCore.AddOdometry(photon::pvgtsam::OdometryObservation{
+      photon::sam::ResetData{Pose3(), posePriorNoise, 5 * 1000});
+  LocalizerCore.AddOdometry(photon::sam::OdometryObservation{
       100 * 1000, Pose3{Rot3{}, Point3{1, 0, 0}}, odometryNoise});
-  LocalizerCore.AddOdometry(photon::pvgtsam::OdometryObservation{
+  LocalizerCore.AddOdometry(photon::sam::OdometryObservation{
       200 * 1000, Pose3{Rot3{}, Point3{1, 0, 0}}, odometryNoise});
-  LocalizerCore.AddOdometry(photon::pvgtsam::OdometryObservation{
+  LocalizerCore.AddOdometry(photon::sam::OdometryObservation{
       300 * 1000, Pose3{Rot3{}, Point3{1, 0, 0}}, odometryNoise});
-  LocalizerCore.AddOdometry(photon::pvgtsam::OdometryObservation{
+  LocalizerCore.AddOdometry(photon::sam::OdometryObservation{
       400 * 1000, Pose3{Rot3{}, Point3{1, 0, 0}}, odometryNoise});
   LocalizerCore.Optimize();
   auto pose = LocalizerCore.GetLatestWorldToBody();
   pose.print("Pose: ");
 
-  photon::pvgtsam::CameraVisionObservation obs{240000,
+  photon::sam::CameraVisionObservation obs{240000,
                                                8,
                                                {
                                                    {414, 166},
@@ -98,7 +98,7 @@ TEST_CASE("LocalizerCoreTest.LatencyCompensate", "[LocalizerCoreTest]") {
   LocalizerCore.Print();
 
   // add but don't optimize
-  LocalizerCore.AddOdometry(photon::pvgtsam::OdometryObservation{
+  LocalizerCore.AddOdometry(photon::sam::OdometryObservation{
       500 * 1000, Pose3{Rot3{}, Point3{1, 0, 0}}, odometryNoise});
 
   obs = {460000,

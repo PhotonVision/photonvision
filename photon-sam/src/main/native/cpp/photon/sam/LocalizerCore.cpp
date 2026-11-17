@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "photon/gtsam/LocalizerCore.h"
+#include "photon/sam/LocalizerCore.h"
 
 #include <iostream>
 #include <utility>
@@ -27,7 +27,7 @@
 using namespace gtsam;
 using symbol_shorthand::X;
 
-namespace photon::pvgtsam {
+namespace photon::sam {
 LocalizerCore::LocalizerCore(FieldLayout fieldLayout)
     : fieldLayout(std::move(fieldLayout)) {
   ISAM2Params parameters;
@@ -472,4 +472,4 @@ void LocalizerCore::SetLatestWorldToBody(gtsam::Pose3 wTb) {
   std::lock_guard<std::mutex> lock(wTr_mtx);
   wTb_latest = wTb;
 }
-}  // namespace photon::pvgtsam
+}  // namespace photon::sam

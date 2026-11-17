@@ -15,12 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "photon/gtsam/ConcurrentLocalizer.h"
+#include "photon/sam/ConcurrentLocalizer.h"
 
 #include <utility>
 #include <vector>
 
-namespace photon::pvgtsam {
+namespace photon::sam {
 
 void ConcurrentLocalizer::SubmitReset(ResetData data) {
   Enqueue(DataSubmission{DataSubmissionType::Reset, data});
@@ -95,4 +95,4 @@ std::vector<wpi::math::Pose3d> ConcurrentLocalizer::GetPoseHistory() const {
   return core.GetPoseHistory();
 }
 
-}  // namespace photon::pvgtsam
+}  // namespace photon::sam

@@ -49,6 +49,7 @@ public class PhotonLocalizerTest {
             fail();
         }
         RuntimeLoader.loadLibrary("photontargetingJNI");
+        RuntimeLoader.loadLibrary("photonsamJNI");
 
         HAL.initialize();
 
