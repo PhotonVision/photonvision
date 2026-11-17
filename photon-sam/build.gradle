@@ -345,6 +345,9 @@ tasks.named('cppSourcesZip') {
     from("$buildDir/generated/native/cpp") {
         into '/'
     }
+    from('src/main/native/internal') {
+        into '/'
+    }
 }
 
 // Publish an uberzip with photon-sam and photon-targeting. This makes python binding easier to have it in one place
