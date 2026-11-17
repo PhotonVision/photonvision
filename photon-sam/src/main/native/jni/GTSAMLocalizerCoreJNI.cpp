@@ -100,8 +100,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_GTSAMLocalizerCore_destroyJNI
   (JNIEnv*, jclass, jlong LocalizerCore_handle)
 {
-  delete reinterpret_cast<photon::sam::LocalizerCore*>(
-      LocalizerCore_handle);
+  delete reinterpret_cast<photon::sam::LocalizerCore*>(LocalizerCore_handle);
 }
 
 /*

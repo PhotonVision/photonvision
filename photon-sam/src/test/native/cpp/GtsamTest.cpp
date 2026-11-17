@@ -79,16 +79,16 @@ TEST_CASE("LocalizerCoreTest.LatencyCompensate", "[LocalizerCoreTest]") {
   pose.print("Pose: ");
 
   photon::sam::CameraVisionObservation obs{240000,
-                                               8,
-                                               {
-                                                   {414, 166},
-                                                   {457, 165},
-                                                   {457, 122},
-                                                   {412, 122},
-                                               },
-                                               cal,
-                                               Pose3(),
-                                               measurementNoise};
+                                           8,
+                                           {
+                                               {414, 166},
+                                               {457, 165},
+                                               {457, 122},
+                                               {412, 122},
+                                           },
+                                           cal,
+                                           Pose3(),
+                                           measurementNoise};
 
   // add vision to within isam's history
   LocalizerCore.AddTagObservation(obs);

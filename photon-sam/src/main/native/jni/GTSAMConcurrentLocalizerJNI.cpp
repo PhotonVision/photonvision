@@ -278,9 +278,8 @@ JNIEXPORT jlong JNICALL
 Java_org_photonvision_jni_GTSAMConcurrentLocalizer_GetLatestTimestampJNI
   (JNIEnv*, jclass, jlong ConcurrentLocalizer_handle)
 {
-  return gtsam::symbolIndex(
-      reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
-          ConcurrentLocalizer_handle)
-          ->GetCurrStateIdx());
+  return gtsam::symbolIndex(reinterpret_cast<photon::sam::ConcurrentLocalizer*>(
+                                ConcurrentLocalizer_handle)
+                                ->GetCurrStateIdx());
 }
 }  // extern "C"
