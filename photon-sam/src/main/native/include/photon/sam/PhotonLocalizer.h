@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include <gtsam/geometry/Cal3_S2.h>
 #include <gtsam/slam/expressions.h>

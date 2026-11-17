@@ -18,6 +18,7 @@
 #include "photon/sam/PhotonLocalizer.h"
 
 #include <algorithm>
+#include <memory>
 #include <ranges>
 #include <vector>
 
