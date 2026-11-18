@@ -93,7 +93,6 @@ public class GTSAMExtras {
 
     private static native void DestroyGaussianNoiseModelJNI(long handle);
 
-    // Cal3S2
     public static final class Cal3S2 extends JNIHandle {
         private Cal3S2(long handle, Runnable cleanup) {
             super(handle, cleanup);
