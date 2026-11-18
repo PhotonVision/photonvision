@@ -85,10 +85,11 @@ public class GTSAMExtras {
         }
     }
 
-    // This returns a handle to a gaussian noise model, built from a covariance matrix. the covariance
-    // matrix should be stored as a flattened SQUARE COLUMN-MAJOR matrix
-    // the covariance matrix should be of size matsize x matsize, and the covariances array should be
-    // of length matsize * matsize
+    /**
+     * This returns a handle to a gaussian noise model, built from a covariance matrix. the covariance
+     * matrix should be stored as a flattened SQUARE COLUMN-MAJOR matrix the covariance matrix should
+     * be of size matsize x matsize, and the covariances array should be of length matsize * matsize
+     */
     private static native long CreateGaussianNoiseModelJNI(int matsize, double[] covariances);
 
     private static native void DestroyGaussianNoiseModelJNI(long handle);
