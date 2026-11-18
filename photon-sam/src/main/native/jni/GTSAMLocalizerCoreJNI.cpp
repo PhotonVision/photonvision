@@ -25,7 +25,7 @@
 #include <wpi/math/geometry/Transform3d.hpp>
 #include <wpi/units/length.hpp>
 
-#include "gtsam_jni_utils.h"
+#include "GtsamJNIUtils.h"
 #include "photon/sam/FieldLayout.h"
 #include "photon/sam/LocalizerCore.h"
 

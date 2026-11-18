@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "photon/sam/gtsam_utils.h"
+#include "photon/sam/GtsamUtils.h"
 
 using namespace gtsam;
 

@@ -21,7 +21,7 @@
 #include <wpi/math/geometry/Transform3d.hpp>
 #include <wpi/units/length.hpp>
 
-#include "photon/sam/gtsam_utils.h"
+#include "photon/sam/GtsamUtils.h"
 
 inline wpi::math::Pose3d jdoublePtrToPose3d(jdouble* ptr) {
   return wpi::math::Pose3d{

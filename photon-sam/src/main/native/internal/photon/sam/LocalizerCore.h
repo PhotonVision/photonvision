@@ -35,7 +35,7 @@
 
 #include "gtsam/slam/expressions.h"
 #include "photon/sam/FieldLayout.h"
-#include "photon/sam/gtsam_utils.h"
+#include "photon/sam/GtsamUtils.h"
 
 namespace photon::sam {
 

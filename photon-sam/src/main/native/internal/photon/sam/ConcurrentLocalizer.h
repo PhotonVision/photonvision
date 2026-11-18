@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// We keep this in Photontargeting rather than photonlib so that there is one
-// implementation of multithreading behavior across all languages
+// We keep this here rather than in PhotonLocalizer so that there is one
+// consistent implementation of queue/mutex behavior across all three languages
 
 #pragma once
 

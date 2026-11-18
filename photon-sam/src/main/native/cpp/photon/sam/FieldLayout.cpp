@@ -19,7 +19,7 @@
 
 #include <stdexcept>
 
-#include "photon/sam/gtsam_utils.h"
+#include "photon/sam/GtsamUtils.h"
 
 namespace photon::sam {
 

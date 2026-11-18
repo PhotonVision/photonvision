@@ -19,6 +19,7 @@ package org.photonvision.jni;
 
 import java.lang.ref.Cleaner;
 import java.lang.ref.Cleaner.Cleanable;
+import org.ejml.simple.SimpleMatrix;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.Vector;
 import org.wpilib.math.numbers.N5;
@@ -26,6 +27,15 @@ import org.wpilib.math.util.Nat;
 import org.wpilib.math.util.Num;
 
 public class GTSAMExtras {
+    /**
+     * this will change the matrix to column-major order, which is what GTSAM expects. We do not
+     * mathematically transpose the matrix, this is purely memory order tomfoolery. We need to do this
+     * because EJML stores SimpleMatrix in row-major order
+     */
+    public static SimpleMatrix toColMajor(SimpleMatrix mat) {
+        return new SimpleMatrix(mat.transpose());
+    }
+
     public static class JNIHandle implements AutoCloseable {
         private final long handle;
         private static final Cleaner cleaner = Cleaner.create();
@@ -47,34 +57,20 @@ public class GTSAMExtras {
         }
     }
 
-    // NoiseModel
     public static final class NoiseModel extends JNIHandle {
         private NoiseModel(long handle, Runnable cleanup) {
             super(handle, cleanup);
         }
 
         public static <S extends Num> NoiseModel Gaussian(Matrix<S, S> covariances) {
-            var covariances_t =
-                    covariances
-                            .transpose(); // this will change the matrix to column-major order, which is what
-            // GTSAM
-            // expects. We do not mathematically transpose the matrix, this is purely
-            // memory order tomfoolery
+            var covariances_t = toColMajor(covariances.getStorage());
             long handle =
                     CreateGaussianNoiseModelJNI(covariances_t.getNumRows(), covariances_t.getData());
             return new NoiseModel(handle, () -> DestroyGaussianNoiseModelJNI(handle));
         }
 
         public static <S extends Num> NoiseModel Diagonal(Vector<S> sigmas) {
-            var covariances_t =
-                    sigmas
-                            .getStorage()
-                            .diag()
-                            .transpose(); // this will change the matrix to column-major order, which is what
-            // GTSAM
-            // expects. We do not mathematically transpose the matrix, this is purely
-            // memory order tomfoolery
-            // We need to do this because EJML stores SimpleMatrix in row-major order
+            var covariances_t = toColMajor(sigmas.getStorage().diag());
             long handle =
                     CreateGaussianNoiseModelJNI(sigmas.getNumRows(), covariances_t.getDDRM().getData());
             return new NoiseModel(handle, () -> DestroyGaussianNoiseModelJNI(handle));
