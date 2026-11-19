@@ -128,249 +128,240 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 </script>
 
 <template>
-  <div class="p-3">
-    <div class="bg-pv-surface/30 -mx-3 flex flex-wrap rounded-2xl p-3">
-      <!-- Active modules -->
-      <div
-        v-for="(module, index) in activeVisionModules"
-        :key="`enabled-${module.uniqueName}`"
-        class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3"
-      >
-        <pv-card class="rounded-2xl">
-          <div class="text-lg font-semibold wrap-break-word">
-            {{ module.matchedCameraInfo.name }}
+  <div class="flex flex-wrap p-3">
+    <!-- Active modules -->
+    <div
+      v-for="(module, index) in activeVisionModules"
+      :key="`enabled-${module.uniqueName}`"
+      class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3"
+    >
+      <pv-card class="rounded-2xl">
+        <div class="text-lg font-semibold wrap-break-word">
+          {{ module.matchedCameraInfo.name }}
+        </div>
+        <div v-if="!cameraConnected(module.matchedCameraInfo.uniquePath)" class="text-sm">
+          Status: <span class="inactive-status">Disconnected</span>
+        </div>
+        <div v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch" class="text-sm">
+          Status: <span class="active-status">Active</span>
+        </div>
+        <div v-else class="text-sm">Status: <span class="mismatch-status">Mismatch</span></div>
+        <div class="pt-3">
+          <pv-table>
+            <tbody>
+              <tr
+                v-if="
+                  cameraConnected(module.matchedCameraInfo.uniquePath) &&
+                  useStateStore().backendResults[module.uniqueName]
+                "
+              >
+                <td class="pr-0">Frames Processed</td>
+                <td class="tabular-nums">
+                  {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
+                    useStateStore().backendResults[module.uniqueName].fps
+                  }}
+                  FPS)
+                </td>
+              </tr>
+              <tr v-else>
+                <td>Name</td>
+                <td>
+                  {{ module.nickname }}
+                </td>
+              </tr>
+              <tr>
+                <td>Pipelines</td>
+                <td>{{ module.pipelineNicknames.join(", ") }}</td>
+              </tr>
+              <tr>
+                <td>Calibrations</td>
+                <td>
+                  {{
+                    module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
+                    "Not calibrated"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td>Streams:</td>
+                <td>
+                  <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
+                  /
+                  <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
+                </td>
+              </tr>
+            </tbody>
+          </pv-table>
+          <div
+            v-if="cameraConnected(module.matchedCameraInfo.uniquePath)"
+            :id="`stream-container-${index}`"
+            class="mt-3 flex h-62.5 flex-col items-center justify-center"
+          >
+            <photon-camera-stream
+              :id="`output-camera-stream-${index}`"
+              :camera-settings="module"
+              stream-type="Processed"
+            />
           </div>
-          <div v-if="!cameraConnected(module.matchedCameraInfo.uniquePath)" class="text-sm">
-            Status: <span class="inactive-status">Disconnected</span>
-          </div>
-          <div v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch" class="text-sm">
-            Status: <span class="active-status">Active</span>
-          </div>
-          <div v-else class="text-sm">Status: <span class="mismatch-status">Mismatch</span></div>
-          <div class="pt-3">
-            <pv-table>
-              <tbody>
-                <tr
-                  v-if="
-                    cameraConnected(module.matchedCameraInfo.uniquePath) &&
-                    useStateStore().backendResults[module.uniqueName]
-                  "
-                >
-                  <td class="pr-0">Frames Processed</td>
-                  <td class="tabular-nums">
-                    {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
-                      useStateStore().backendResults[module.uniqueName].fps
-                    }}
-                    FPS)
-                  </td>
-                </tr>
-                <tr v-else>
-                  <td>Name</td>
-                  <td>
-                    {{ module.nickname }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Pipelines</td>
-                  <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                </tr>
-                <tr>
-                  <td>Calibrations</td>
-                  <td>
-                    {{
-                      module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
-                      "Not calibrated"
-                    }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Streams:</td>
-                  <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
-                    /
-                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
-                  </td>
-                </tr>
-              </tbody>
-            </pv-table>
-            <div
-              v-if="cameraConnected(module.matchedCameraInfo.uniquePath)"
-              :id="`stream-container-${index}`"
-              class="mt-3 flex h-62.5 flex-col items-center justify-center"
-            >
-              <photon-camera-stream
-                :id="`output-camera-stream-${index}`"
-                :camera-settings="module"
-                stream-type="Processed"
-              />
+        </div>
+        <div class="pt-3">
+          <div class="-mx-2 flex flex-wrap">
+            <div class="w-full px-2 pb-3 md:w-1/3 md:pb-0">
+              <pv-button
+                variant="passive"
+                block
+                @click="setCameraView(module.matchedCameraInfo, cameraConnected(module.matchedCameraInfo.uniquePath))"
+              >
+                <span>Details</span>
+              </pv-button>
+            </div>
+            <div class="w-1/2 px-2 md:w-[41.666%]">
+              <pv-button
+                variant="primary"
+                block
+                :loading="deactivatingModule"
+                @click="deactivateModule(module.uniqueName)"
+              >
+                Deactivate
+              </pv-button>
+            </div>
+            <div class="w-1/2 px-2 md:w-1/4">
+              <pv-button
+                variant="danger"
+                block
+                :loading="module.uniqueName === deletingCamera"
+                @click="
+                  () =>
+                    (confirmDeleteDialog = {
+                      show: true,
+                      nickname: module.nickname,
+                      cameraUniqueName: module.uniqueName
+                    })
+                "
+              >
+                <IconTrashCanOutline class="size-6" aria-hidden="true" />
+              </pv-button>
             </div>
           </div>
-          <div class="pt-3">
-            <div class="-mx-2 flex flex-wrap">
-              <div class="w-full px-2 pb-3 md:w-1/3 md:pb-0">
-                <pv-button
-                  variant="passive"
-                  block
-                  @click="setCameraView(module.matchedCameraInfo, cameraConnected(module.matchedCameraInfo.uniquePath))"
-                >
-                  <span>Details</span>
-                </pv-button>
-              </div>
-              <div class="w-1/2 px-2 md:w-[41.666%]">
-                <pv-button
-                  variant="primary"
-                  block
-                  :loading="deactivatingModule"
-                  @click="deactivateModule(module.uniqueName)"
-                >
-                  Deactivate
-                </pv-button>
-              </div>
-              <div class="w-1/2 px-2 md:w-1/4">
-                <pv-button
-                  variant="danger"
-                  block
-                  :loading="module.uniqueName === deletingCamera"
-                  @click="
-                    () =>
-                      (confirmDeleteDialog = {
-                        show: true,
-                        nickname: module.nickname,
-                        cameraUniqueName: module.uniqueName
-                      })
-                  "
-                >
-                  <IconTrashCanOutline class="size-6" aria-hidden="true" />
-                </pv-button>
-              </div>
-            </div>
-          </div>
-        </pv-card>
-      </div>
-
-      <!-- Deactivated modules -->
-      <div
-        v-for="module in disabledVisionModules"
-        :key="`disabled-${module.uniqueName}`"
-        class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3"
-      >
-        <pv-card class="rounded-2xl">
-          <div class="text-lg font-semibold wrap-break-word">
-            {{ module.cameraQuirks.baseName }}
-          </div>
-          <div class="text-sm">Status: <span class="inactive-status">Deactivated</span></div>
-          <div class="pt-3">
-            <pv-table>
-              <tbody>
-                <tr>
-                  <td>Name</td>
-                  <td>
-                    {{ module.nickname }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Pipelines</td>
-                  <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                </tr>
-                <tr>
-                  <td>Calibrations</td>
-                  <td>
-                    {{
-                      module.calibrations.map((it2) => getResolutionString(it2.resolution)).join(", ") ||
-                      "Not calibrated"
-                    }}
-                  </td>
-                </tr>
-                <tr>
-                  <td>Connected</td>
-                  <td>{{ cameraConnected(module.matchedCameraInfo.uniquePath) }}</td>
-                </tr>
-              </tbody>
-            </pv-table>
-          </div>
-          <div class="pt-0">
-            <div class="-mx-2 flex flex-wrap">
-              <div class="w-full px-2 pb-3 md:w-1/3 md:pb-0">
-                <pv-button
-                  variant="passive"
-                  block
-                  @click="setCameraView(module.matchedCameraInfo, cameraConnected(module.matchedCameraInfo.uniquePath))"
-                >
-                  <span>Details</span>
-                </pv-button>
-              </div>
-              <div class="w-1/2 px-2 md:w-[41.666%]">
-                <pv-button
-                  variant="primary"
-                  block
-                  :loading="activatingModule"
-                  @click="activateModule(module.uniqueName)"
-                >
-                  Activate
-                </pv-button>
-              </div>
-              <div class="w-1/2 px-2 md:w-1/4">
-                <pv-button
-                  variant="danger"
-                  block
-                  :loading="module.uniqueName === deletingCamera"
-                  @click="
-                    () =>
-                      (confirmDeleteDialog = {
-                        show: true,
-                        nickname: module.nickname,
-                        cameraUniqueName: module.uniqueName
-                      })
-                  "
-                >
-                  <IconTrashCanOutline class="size-6" aria-hidden="true" />
-                </pv-button>
-              </div>
-            </div>
-          </div>
-        </pv-card>
-      </div>
-
-      <!-- Unassigned cameras -->
-      <div v-for="(camera, index) in unmatchedCameras" :key="index" class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
-        <pv-card class="rounded-2xl">
-          <div class="text-lg font-semibold wrap-break-word">
-            <span v-if="camera.type === PVUsbCamera">USB Camera:</span>
-            <span v-else-if="camera.type === PVCSICamera">CSI Camera:</span>
-            <span v-else-if="camera.type === PVFileCamera">File Camera:</span>
-            <span v-else>Unknown Camera:</span>
-            &nbsp;<span>{{ camera.name }}</span>
-          </div>
-          <div class="text-sm">Status: Unassigned</div>
-          <div class="pt-3">
-            <span style="word-break: break-all">{{ camera.path }}</span>
-          </div>
-          <div class="pt-0">
-            <div class="-mx-2 flex flex-wrap">
-              <div class="w-1/2 px-2">
-                <pv-button variant="passive" block @click="setCameraView(camera, false)">
-                  <span>Details</span>
-                </pv-button>
-              </div>
-              <div class="w-1/2 px-2">
-                <pv-button variant="primary" block :loading="assigningCamera" @click="assignCamera(camera)">
-                  Activate
-                </pv-button>
-              </div>
-            </div>
-          </div>
-        </pv-card>
-      </div>
-
-      <!-- Info card -->
-      <div class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
-        <pv-card :bordered="false" class="flex h-full flex-col items-center justify-center bg-transparent!">
-          <pv-icon size="64" color="primary" :icon="IconPlus" />
-          <div class="pt-3 text-lg font-semibold">Additional plugged in cameras will display here!</div>
-        </pv-card>
-      </div>
+        </div>
+      </pv-card>
     </div>
 
+    <!-- Deactivated modules -->
+    <div
+      v-for="module in disabledVisionModules"
+      :key="`disabled-${module.uniqueName}`"
+      class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3"
+    >
+      <pv-card class="rounded-2xl">
+        <div class="text-lg font-semibold wrap-break-word">
+          {{ module.cameraQuirks.baseName }}
+        </div>
+        <div class="text-sm">Status: <span class="inactive-status">Deactivated</span></div>
+        <div class="pt-3">
+          <pv-table>
+            <tbody>
+              <tr>
+                <td>Name</td>
+                <td>
+                  {{ module.nickname }}
+                </td>
+              </tr>
+              <tr>
+                <td>Pipelines</td>
+                <td>{{ module.pipelineNicknames.join(", ") }}</td>
+              </tr>
+              <tr>
+                <td>Calibrations</td>
+                <td>
+                  {{
+                    module.calibrations.map((it2) => getResolutionString(it2.resolution)).join(", ") || "Not calibrated"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td>Connected</td>
+                <td>{{ cameraConnected(module.matchedCameraInfo.uniquePath) }}</td>
+              </tr>
+            </tbody>
+          </pv-table>
+        </div>
+        <div class="pt-0">
+          <div class="-mx-2 flex flex-wrap">
+            <div class="w-full px-2 pb-3 md:w-1/3 md:pb-0">
+              <pv-button
+                variant="passive"
+                block
+                @click="setCameraView(module.matchedCameraInfo, cameraConnected(module.matchedCameraInfo.uniquePath))"
+              >
+                <span>Details</span>
+              </pv-button>
+            </div>
+            <div class="w-1/2 px-2 md:w-[41.666%]">
+              <pv-button variant="primary" block :loading="activatingModule" @click="activateModule(module.uniqueName)">
+                Activate
+              </pv-button>
+            </div>
+            <div class="w-1/2 px-2 md:w-1/4">
+              <pv-button
+                variant="danger"
+                block
+                :loading="module.uniqueName === deletingCamera"
+                @click="
+                  () =>
+                    (confirmDeleteDialog = {
+                      show: true,
+                      nickname: module.nickname,
+                      cameraUniqueName: module.uniqueName
+                    })
+                "
+              >
+                <IconTrashCanOutline class="size-6" aria-hidden="true" />
+              </pv-button>
+            </div>
+          </div>
+        </div>
+      </pv-card>
+    </div>
+
+    <!-- Unassigned cameras -->
+    <div v-for="(camera, index) in unmatchedCameras" :key="index" class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
+      <pv-card class="rounded-2xl">
+        <div class="text-lg font-semibold wrap-break-word">
+          <span v-if="camera.type === PVUsbCamera">USB Camera:</span>
+          <span v-else-if="camera.type === PVCSICamera">CSI Camera:</span>
+          <span v-else-if="camera.type === PVFileCamera">File Camera:</span>
+          <span v-else>Unknown Camera:</span>
+          &nbsp;<span>{{ camera.name }}</span>
+        </div>
+        <div class="text-sm">Status: Unassigned</div>
+        <div class="pt-3">
+          <span style="word-break: break-all">{{ camera.path }}</span>
+        </div>
+        <div class="pt-0">
+          <div class="-mx-2 flex flex-wrap">
+            <div class="w-1/2 px-2">
+              <pv-button variant="passive" block @click="setCameraView(camera, false)">
+                <span>Details</span>
+              </pv-button>
+            </div>
+            <div class="w-1/2 px-2">
+              <pv-button variant="primary" block :loading="assigningCamera" @click="assignCamera(camera)">
+                Activate
+              </pv-button>
+            </div>
+          </div>
+        </div>
+      </pv-card>
+    </div>
+
+    <!-- Info card -->
+    <div class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
+      <pv-card :bordered="false" class="flex h-full flex-col items-center justify-center bg-transparent!">
+        <pv-icon size="64" color="primary" :icon="IconPlus" />
+        <div class="pt-3 text-lg font-semibold">Additional plugged in cameras will display here!</div>
+      </pv-card>
+    </div>
     <!-- Camera details modal -->
     <pv-dialog v-model="viewingDetails" :max-width="800">
       <pv-card v-if="viewingCamera[0] !== null" class="flex flex-col gap-3">
