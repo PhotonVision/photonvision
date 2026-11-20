@@ -1,38 +1,27 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
-
-import { useTheme } from "@/composables/useTheme";
-import type {
-  Scene as SceneType,
-  PerspectiveCamera as PerspectiveCameraType,
-  WebGLRenderer as WebGLRendererType,
-  Group as GroupType,
-  Object3D
-} from "three";
-import type { TrackballControls as TrackballControlsType } from "three/examples/jsm/controls/TrackballControls.js";
+import { ref, watch, watchEffect, type Ref } from "vue";
 const {
-  AmbientLight,
   AxesHelper,
   BoxGeometry,
   CameraHelper,
-  Color,
   ConeGeometry,
   Group,
   Mesh,
   MeshNormalMaterial,
   MeshPhongMaterial,
-  PerspectiveCamera,
-  Scene,
-  SphereGeometry,
-  WebGLRenderer
+  SphereGeometry
 } = await import("three");
-const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls.js");
+import type { Group as GroupType, Object3D } from "three";
 import type { BoardObservation, CameraCalibrationResult } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { createPerspectiveCamera } from "@/lib/ThreeUtils";
-
-const theme = useTheme();
+import {
+  createPerspectiveCamera,
+  disposeObject,
+  type ThreeVisualizerContext,
+  type VisualizerCameraPose
+} from "@/lib/ThreeUtils";
+import PhotonThreeVisualizer from "@/components/app/photon-three-visualizer.vue";
 
 const props = defineProps<{
   cameraUniqueName: string;
@@ -40,10 +29,18 @@ const props = defineProps<{
   title: string;
 }>();
 
-let scene: SceneType | undefined;
-let camera: PerspectiveCameraType | undefined;
-let renderer: WebGLRendererType | undefined;
-let controls: TrackballControlsType | undefined;
+let threeContext: ThreeVisualizerContext | undefined;
+
+const firstPersonPose: VisualizerCameraPose = {
+  position: [0, 0, 0.05],
+  up: [0, -1, 0],
+  target: [0, 0, 1]
+};
+const thirdPersonPose: VisualizerCameraPose = {
+  position: [-0.3, -0.2, -0.3],
+  up: [0, -1, 0],
+  target: [0, 0, 0.4]
+};
 
 const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): GroupType => {
   const group = new Group();
@@ -73,14 +70,17 @@ const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): 
 };
 
 let previousTargets: Object3D[] = [];
-let baseAspect: number | undefined;
 const drawCalibration = async (cal: CameraCalibrationResult | null) => {
   // Check here, since if we check in watchEffect this never gets called
-  if (!cal || !scene || !camera || !renderer || !controls) {
+  if (!cal || !threeContext) {
     return;
   }
+  const { scene } = threeContext;
 
   scene.remove(...previousTargets);
+  // Redrawing recreates every geometry and material -- dispose of the old
+  // ones so repeated redraws don't leak GPU resources
+  previousTargets.forEach(disposeObject);
   previousTargets = [];
 
   // Draw all chessboards with transparency
@@ -120,13 +120,8 @@ const drawCalibration = async (cal: CameraCalibrationResult | null) => {
 };
 
 const calibrationData: Ref<CameraCalibrationResult | null> = ref(null);
-const isLoading: Ref<boolean> = ref(true);
-const error: Ref<string | null> = ref(null);
 
 const fetchCalibrationData = async () => {
-  isLoading.value = true;
-  error.value = null;
-
   try {
     const response = await axios.get("settings/camera/getCalibration", {
       params: {
@@ -138,104 +133,11 @@ const fetchCalibrationData = async () => {
     calibrationData.value = response.data;
   } catch (err) {
     console.error("Failed to fetch calibration data:", err);
-    error.value = "Failed to load calibration data";
-  } finally {
-    isLoading.value = false;
   }
 };
 
-const onWindowResize = () => {
-  const container = document.getElementById("container");
-  const canvas = document.getElementById("view");
-
-  if (!container || !canvas || !camera || !renderer) {
-    return;
-  }
-
-  // Compute a concrete width from the container and derive height from a
-  // stable base aspect ratio (calculated on mount) to avoid feedback loops
-  // where updating canvas size changes container size while resizing
-  const width = Math.max(1, Math.floor(container.clientWidth));
-  let height: number;
-  if (baseAspect && baseAspect > 0) {
-    height = Math.max(1, Math.floor(width / baseAspect));
-  } else {
-    height = Math.max(1, Math.floor(container.clientHeight));
-  }
-
-  // Use updateStyle=false so Three.js does not write to canvas style,
-  // which can affect layout and re-trigger resize events
-  renderer.setSize(width, height, false);
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-};
-
-const resetCamFirstPerson = () => {
-  if (!scene || !camera || !controls) {
-    return;
-  }
-
-  controls.reset();
-  camera.position.set(0, 0, 0.05);
-  camera.up.set(0, -1, 0);
-  controls.target.set(0.0, 0.0, 1.0);
-  controls.update();
-  if (previousTargets.length > 0) {
-    scene.add(...previousTargets);
-  }
-};
-
-const resetCamThirdPerson = () => {
-  if (!scene || !camera || !controls) {
-    return;
-  }
-
-  controls.reset();
-  camera.position.set(-0.3, -0.2, -0.3);
-  camera.up.set(0, -1, 0);
-  controls.target.set(0.0, 0.0, 0.4);
-  controls.update();
-  if (previousTargets.length > 0) {
-    scene.add(...previousTargets);
-  }
-};
-
-let animationFrameId: number | null = null;
-
-onMounted(async () => {
-  scene = new Scene();
-  camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
-
-  const canvas = document.getElementById("view");
-  if (!canvas) return;
-  renderer = new WebGLRenderer({ canvas: canvas, antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-
-  // Add lights
-  const ambientLight = new AmbientLight(0xffffff, 0.6);
-  scene.add(ambientLight);
-
-  if (theme.isDark.value) scene.background = new Color(0x151515);
-  else scene.background = new Color(0x232c37);
-
-  // Initialize a stable aspect ratio so subsequent resize events derive
-  // height from width, avoiding layout feedback during continuous resizing
-  try {
-    const initWidth = Math.max(1, Math.floor(document.getElementById("container")?.clientWidth || 1));
-    const initHeight = Math.max(
-      1,
-      Math.floor(
-        (document.getElementById("container")?.clientHeight || 1) -
-          (document.querySelector(".buttons")?.clientHeight || 0)
-      )
-    );
-    baseAspect = initWidth / Math.max(1, initHeight);
-  } catch {
-    baseAspect = undefined;
-  }
-
-  onWindowResize();
-  window.addEventListener("resize", onWindowResize);
+const onSceneReady = (context: ThreeVisualizerContext) => {
+  threeContext = context;
 
   const referenceFrameCues: Object3D[] = [];
 
@@ -255,92 +157,14 @@ onMounted(async () => {
   referenceFrameCues.push(camBody);
   referenceFrameCues.push(camLens);
 
-  controls = new TrackballControls(camera, renderer.domElement);
-  controls.rotateSpeed = 1.0;
-  controls.zoomSpeed = 1.2;
-  controls.panSpeed = 0.8;
-  controls.noZoom = false;
-  controls.noPan = false;
-  controls.staticMoving = true;
-  controls.dynamicDampingFactor = 0.3;
+  context.scene.add(...referenceFrameCues);
 
-  scene.add(...referenceFrameCues);
-  resetCamThirdPerson();
-
-  controls.update();
-
-  // Fetch calibration only after the scene is ready so the initial draw
-  // can happen immediately when the data arrives.
-  await fetchCalibrationData();
-
-  const animate = () => {
-    if (!scene || !camera || !renderer || !controls) {
-      return;
-    }
-
-    animationFrameId = requestAnimationFrame(animate);
-
-    controls.update();
-    renderer.render(scene, camera);
-  };
-
-  animate();
-});
-
-const cleanup = () => {
-  window.removeEventListener("resize", onWindowResize);
-
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-  }
-
-  if (controls) {
-    controls.dispose();
-  }
-
-  if (renderer) {
-    renderer.dispose();
-    renderer.forceContextLoss();
-  }
-
-  if (scene) {
-    scene.traverse((object) => {
-      if (object instanceof Mesh) {
-        object.geometry?.dispose();
-        if (object.material) {
-          if (Array.isArray(object.material)) {
-            object.material.forEach((material) => material.dispose());
-          } else {
-            object.material.dispose();
-          }
-        }
-      }
-    });
-  }
-
-  scene = undefined;
-  camera = undefined;
-  renderer = undefined;
-  controls = undefined;
-  previousTargets = [];
+  // The fetch may have resolved before the scene was ready
+  void drawCalibration(calibrationData.value);
 };
-
-onBeforeUnmount(cleanup);
-
-// If hot-reloading, cleanup on hot reload
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
-    cleanup();
-  });
-}
 
 watchEffect(() => {
   void drawCalibration(calibrationData.value);
-});
-
-watch(theme.isDark, () => {
-  if (!scene) return;
-  scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
 });
 
 watch(
@@ -353,27 +177,16 @@ watch(
   async () => {
     console.log("Camera or resolution changed, refetching calibration");
     await fetchCalibrationData();
-  }
+  },
+  { immediate: true }
 );
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%" class="flex flex-col">
-    <div class="flex flex-wrap items-center py-2">
-      <div class="flex-1 pl-0 text-base font-semibold">
-        {{ props.title }}
-      </div>
-    </div>
-    <div id="container" style="flex: 1 1 auto">
-      <canvas id="view" class="h-auto max-w-full rounded-xl border border-white/10" />
-      <div class="buttons flex gap-2 pt-2">
-        <div class="flex items-center">
-          <pv-button variant="primary" @click="resetCamFirstPerson"> First Person </pv-button>
-        </div>
-        <div class="flex items-center">
-          <pv-button variant="primary" @click="resetCamThirdPerson"> Third Person </pv-button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <PhotonThreeVisualizer
+    :title="props.title"
+    :first-person-pose="firstPersonPose"
+    :third-person-pose="thirdPersonPose"
+    @scene-ready="onSceneReady"
+  />
 </template>

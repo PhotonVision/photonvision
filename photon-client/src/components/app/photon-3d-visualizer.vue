@@ -1,30 +1,18 @@
 <script setup lang="ts">
+import { computed, watchEffect } from "vue";
 import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
-// @ts-expect-error Intellisense says these conflict with the dynamic imports below
-import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
-// @ts-expect-error Intellisense says these conflict with the dynamic imports below
-import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
-import { computed, onBeforeUnmount, onMounted, useTemplateRef, watch, watchEffect } from "vue";
-import { useTheme } from "@/composables/useTheme";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { createPerspectiveCamera } from "@/lib/ThreeUtils";
+import type { Object3D } from "three";
+const { ArrowHelper, BoxGeometry, CameraHelper, ConeGeometry, Group, Mesh, MeshNormalMaterial, Quaternion, Vector3 } =
+  await import("three");
 
-const {
-  ArrowHelper,
-  BoxGeometry,
-  CameraHelper,
-  Color,
-  ConeGeometry,
-  Group,
-  Mesh,
-  MeshNormalMaterial,
-  PerspectiveCamera,
-  Quaternion,
-  Vector3,
-  Scene,
-  WebGLRenderer
-} = await import("three");
-const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls.js");
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import {
+  createPerspectiveCamera,
+  disposeObject,
+  type ThreeVisualizerContext,
+  type VisualizerCameraPose
+} from "@/lib/ThreeUtils";
+import PhotonThreeVisualizer from "@/components/app/photon-three-visualizer.vue";
 
 const currentVideoFormat = computed(() => useCameraSettingsStore().currentVideoFormat);
 const calibrationCoeffs = computed(() => {
@@ -36,25 +24,31 @@ const props = defineProps<{
   targets: PhotonTarget[];
 }>();
 
-const theme = useTheme();
+let threeContext: ThreeVisualizerContext | undefined;
 
-let scene: Scene | undefined;
-let camera: PerspectiveCamera | undefined;
-let renderer: WebGLRenderer | undefined;
-let controls: TrackballControls | undefined;
+const firstPersonPose: VisualizerCameraPose = {
+  position: [0.2, 0, 0],
+  up: [0, 0, 1],
+  target: [4, 0, 0]
+};
+const thirdPersonPose: VisualizerCameraPose = {
+  position: [-1.39, -1.09, 1.17],
+  up: [0, 0, 1],
+  target: [4, 0, 0]
+};
 
 let previousTargets: Object3D[] = [];
 const drawTargets = async (targets: PhotonTarget[]) => {
   // Check here, since if we check in watchEffect this never gets called
-  if (!scene || !camera || !renderer || !controls) {
+  if (!threeContext) {
     return;
   }
+  const { scene } = threeContext;
 
-  if (theme.isDark.value) scene.background = new Color(0x151515);
-  else scene.background = new Color(0x232c37);
-
-  previousTargets.forEach(disposeObject);
   scene.remove(...previousTargets);
+  // Redrawing recreates every geometry and material -- dispose of the old
+  // ones so repeated redraws don't leak GPU resources
+  previousTargets.forEach(disposeObject);
   previousTargets = [];
 
   targets.forEach((target) => {
@@ -109,90 +103,14 @@ const drawTargets = async (targets: PhotonTarget[]) => {
   }
 };
 
-const disposeObject = (object: Object3D) => {
-  object.traverse((child) => {
-    const disposable = child as Object3D & {
-      geometry?: { dispose: () => void };
-      material?: { dispose: () => void } | Array<{ dispose: () => void }>;
-    };
-    disposable.geometry?.dispose();
-    if (Array.isArray(disposable.material)) disposable.material.forEach((material) => material.dispose());
-    else disposable.material?.dispose();
-  });
-};
-const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
-const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
+const onSceneReady = (context: ThreeVisualizerContext) => {
+  threeContext = context;
 
-const onResize = () => {
-  const container = containerRef.value;
-  const canvas = canvasRef.value;
-
-  if (!container || !canvas || !camera || !renderer) {
-    return;
-  }
-
-  // keeping this very very slightly smaller than the container prevents some weird overexpansion that happen during resizing
-  canvas.style.width = container.clientWidth * 0.999 + "px";
-  canvas.style.height = container.clientWidth * 0.55 + "px";
-  camera.aspect = canvas.clientWidth / canvas.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-};
-
-const resetCamFirstPerson = () => {
-  if (!scene || !camera || !controls) {
-    return;
-  }
-
-  controls.reset();
-  camera.position.set(0.2, 0, 0);
-  camera.up.set(0, 0, 1);
-  controls.target.set(4.0, 0.0, 0.0);
-  controls.update();
-  if (previousTargets.length > 0) {
-    scene.add(...previousTargets);
-  }
-};
-const resetCamThirdPerson = () => {
-  if (!scene || !camera || !controls) {
-    return;
-  }
-
-  controls.reset();
-  camera.position.set(-1.39, -1.09, 1.17);
-  camera.up.set(0, 0, 1);
-  controls.target.set(4.0, 0.0, 0.0);
-  controls.update();
-  if (previousTargets.length > 0) {
-    scene.add(...previousTargets);
-  }
-};
-
-onMounted(async () => {
-  scene = new Scene();
-  camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
-
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-  renderer = new WebGLRenderer({ canvas: canvas, antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-
-  if (theme.isDark.value) scene.background = new Color(0x151515);
-  else scene.background = new Color(0x232c37);
-
-  onResize();
-  window.addEventListener("resize", onResize);
-
-  const referenceFrameCues: Object3D[] = [];
-  referenceFrameCues.push(
-    new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0xff0000, 0.1, 0.1)
-  );
-  referenceFrameCues.push(
-    new ArrowHelper(new Vector3(0, 1, 0).normalize(), new Vector3(0, 0, 0), 1, 0x00ff00, 0.1, 0.1)
-  );
-  referenceFrameCues.push(
+  const referenceFrameCues: Object3D[] = [
+    new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0), 1, 0xff0000, 0.1, 0.1),
+    new ArrowHelper(new Vector3(0, 1, 0).normalize(), new Vector3(0, 0, 0), 1, 0x00ff00, 0.1, 0.1),
     new ArrowHelper(new Vector3(0, 0, 1).normalize(), new Vector3(0, 0, 0), 1, 0x0000ff, 0.1, 0.1)
-  );
+  ];
 
   // Draw the Camera Body
   const camSize = 0.2;
@@ -207,62 +125,22 @@ onMounted(async () => {
   referenceFrameCues.push(camBody);
   referenceFrameCues.push(camLens);
 
-  controls = new TrackballControls(camera, renderer.domElement);
-  controls.rotateSpeed = 1.0;
-  controls.zoomSpeed = 1.2;
-  controls.panSpeed = 0.8;
-  controls.noZoom = false;
-  controls.noPan = false;
-  controls.staticMoving = true;
-  controls.dynamicDampingFactor = 0.3;
+  context.scene.add(...referenceFrameCues);
 
-  scene.add(...referenceFrameCues);
-  resetCamThirdPerson();
-
-  controls.update();
-
-  const animate = () => {
-    if (!scene || !camera || !renderer || !controls) {
-      return;
-    }
-
-    requestAnimationFrame(animate);
-
-    controls.update();
-    renderer.render(scene, camera);
-  };
-
-  await drawTargets(props.targets);
-  animate();
-});
+  // Targets may already have arrived before the scene was ready
+  void drawTargets(props.targets);
+};
 
 watchEffect(() => {
   void drawTargets(props.targets);
 });
-
-watch(theme.isDark, () => {
-  if (!scene) return;
-  scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
-});
-
-onBeforeUnmount(() => window.removeEventListener("resize", onResize));
-onBeforeUnmount(() => {
-  previousTargets.forEach(disposeObject);
-  controls?.dispose();
-  renderer?.dispose();
-});
 </script>
 
 <template>
-  <div ref="containerRef" class="flex w-full flex-col items-center">
-    <canvas ref="canvasRef" class="w-full rounded-xl border border-white/10" />
-    <div class="flex w-full gap-2 md:pt-3">
-      <div class="flex w-full items-center">
-        <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
-      </div>
-      <div class="flex w-full items-center">
-        <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
-      </div>
-    </div>
-  </div>
+  <PhotonThreeVisualizer
+    :first-person-pose="firstPersonPose"
+    :third-person-pose="thirdPersonPose"
+    :default-aspect="1.8"
+    @scene-ready="onSceneReady"
+  />
 </template>
