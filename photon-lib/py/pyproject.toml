@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "photonlibpy"
 dynamic = ["version"]
 description = "Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors."
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "numpy~=2.3",
     "wpilib==2027.0.0a8",

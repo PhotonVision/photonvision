@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 
 class OpenCVHelp:
     @staticmethod
+    def getConvexHull(points: np.ndarray) -> np.ndarray:
+        return cv.convexHull(points)
+
+    @staticmethod
     def getMinAreaRect(points: np.ndarray) -> cv.RotatedRect:
         return cv.RotatedRect(*cv.minAreaRect(points))
 
@@ -81,6 +85,10 @@ class OpenCVHelp:
     def cornersToPoints(corners: list[TargetCorner]) -> np.ndarray:
         points = [[[c.x, c.y]] for c in corners]
         return np.array(points)
+
+    @staticmethod
+    def getBoundingRect(points: np.ndarray) -> cv.typing.Rect:
+        return cv.boundingRect(points)
 
     @staticmethod
     def projectPoints(

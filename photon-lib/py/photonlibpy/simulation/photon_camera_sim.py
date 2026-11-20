@@ -22,6 +22,7 @@ from ..targeting import (
     TargetCorner,
 )
 from .sim_camera_properties import SimCameraProperties
+from .video_sim_util import VideoSimUtil
 from .vision_target_sim import VisionTargetSim
 
 
@@ -73,28 +74,23 @@ class PhotonCameraSim:
         self.prop = props if props is not None else SimCameraProperties.PERFECT_90DEG()
         self.setMinTargetAreaPixels(PhotonCameraSim.kDefaultMinAreaPx)
 
-        # TODO Check fps is right
-        self.videoSimRaw = cs.CvSource(
+        self.videoSimRaw = cs.CameraServer.put_video(
             self.cam.getName() + "-raw",
-            PixelFormat.GRAY,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
-            1,
         )
         self.videoSimFrameRaw = np.zeros(
-            (self.prop.getResWidth(), self.prop.getResHeight())
+            (self.prop.getResHeight(), self.prop.getResWidth()), dtype=np.uint8
         )
+        self.videoSimRaw.set_pixel_format(PixelFormat.GRAY)
 
-        # TODO Check fps is right
-        self.videoSimProcessed = cs.CvSource(
+        self.videoSimProcessed = cs.CameraServer.put_video(
             self.cam.getName() + "-processed",
-            PixelFormat.GRAY,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
-            1,
         )
         self.videoSimFrameProcessed = np.zeros(
-            (self.prop.getResWidth(), self.prop.getResHeight())
+            (self.prop.getResHeight(), self.prop.getResWidth(), 3), dtype=np.uint8
         )
 
         self.ts = NTTopicSet(self.cam._cameraTable)
@@ -229,7 +225,6 @@ class PhotonCameraSim:
         Note: This may increase loop times.
         """
         self.videoSimRawEnabled = enabled
-        raise NotImplementedError("Raw stream not implemented")
 
     def enableDrawWireframe(self, enabled: bool) -> None:
         """Sets whether a wireframe of the field is drawn to the raw video stream.
@@ -237,7 +232,6 @@ class PhotonCameraSim:
         Note: This will dramatically increase loop times.
         """
         self.videoSimWireframeEnabled = enabled
-        raise NotImplementedError("Wireframe not implemented")
 
     def setWireframeResolution(self, resolution: float) -> None:
         """Sets the resolution of the drawn wireframe if enabled. Drawn line segments will be subdivided
@@ -251,7 +245,6 @@ class PhotonCameraSim:
     def enableProcessedStream(self, enabled: bool) -> None:
         """Sets whether the processed video stream simulation is enabled."""
         self.videoSimProcEnabled = enabled
-        raise NotImplementedError("Processed stream not implemented")
 
     def process(
         self, latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]
@@ -269,6 +262,13 @@ class PhotonCameraSim:
 
         # basis change from world coordinates to camera coordinates
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
+
+        # reset our frame
+        VideoSimUtil.updateVideoProp(self.videoSimRaw, self.prop)
+        VideoSimUtil.updateVideoProp(self.videoSimProcessed, self.prop)
+        self.videoSimFrameRaw = np.zeros(
+            (self.prop.getResHeight(), self.prop.getResWidth()), dtype=np.uint8
+        )
 
         for tgt in targets:
             if len(detectableTgts) >= 50:
@@ -400,17 +400,100 @@ class PhotonCameraSim:
                 )
             )
 
-        # Video streams disabled for now
         if self.videoSimRawEnabled:
-            # TODO Video streams disabled for now port and uncomment when implemented
-            # VideoSimUtil::UpdateVideoProp(videoSimRaw, prop);
-            # cv::Size videoFrameSize{prop.GetResWidth(), prop.GetResHeight()};
-            # cv::Mat blankFrame = cv::Mat::zeros(videoFrameSize, CV_8UC1);
-            # blankFrame.assignTo(videoSimFrameRaw);
-            pass
+            if self.videoSimWireframeEnabled:
+                VideoSimUtil.drawFieldWireFrame(
+                    camRt,
+                    self.prop,
+                    self.videoSimWireframeResolution,
+                    1.5,
+                    [80],
+                    6,
+                    1,
+                    [30],
+                    self.videoSimFrameRaw,
+                )
+            for tgt, corners in visibleTgts:
+                if tgt.fiducialId >= 0:
+                    VideoSimUtil.warp165h5TagImage(
+                        tgt.fiducialId, corners, True, self.videoSimFrameRaw
+                    )
+                elif not tgt.getModel().getIsSpherical():
+                    contour = corners.copy()
+                    if not tgt.getModel().getIsPlanar():
+                        contour = OpenCVHelp.getConvexHull(contour)
+                    VideoSimUtil.drawPoly(
+                        contour, -1, [-255], True, self.videoSimFrameRaw
+                    )
+                else:
+                    VideoSimUtil.drawInscribedEllipse(
+                        corners, [255], self.videoSimFrameRaw
+                    )
+            self.videoSimRaw.put_frame(self.videoSimFrameRaw)
+        else:
+            self.videoSimRaw.set_connection_strategy(
+                cs.VideoSource.ConnectionStrategy.CONNECTION_FORCE_CLOSE
+            )
+
         if self.videoSimProcEnabled:
-            # VideoSimUtil::UpdateVideoProp(videoSimProcessed, prop);
-            pass
+            cv.cvtColor(
+                self.videoSimFrameRaw, cv.COLOR_GRAY2BGR, self.videoSimFrameProcessed
+            )
+            cv.drawMarker(
+                self.videoSimFrameProcessed,
+                (
+                    int(self.prop.getResWidth() / 2.0),
+                    int(self.prop.getResHeight() / 2.0),
+                ),
+                [0, 255, 0],
+                markerType=cv.MARKER_CROSS,
+                markerSize=int(
+                    VideoSimUtil.getScaledThickness(15, self.videoSimFrameProcessed)
+                ),
+                thickness=int(
+                    VideoSimUtil.getScaledThickness(1, self.videoSimFrameProcessed)
+                ),
+                line_type=cv.LINE_AA,
+            )
+            for tgt in detectableTgts:
+                detectedCornersDouble = tgt.getDetectedCorners()
+                if tgt.fiducialId >= 0:
+                    VideoSimUtil.drawTagDetection(
+                        tgt.fiducialId,
+                        OpenCVHelp.cornersToPoints(detectedCornersDouble),
+                        self.videoSimFrameProcessed,
+                    )
+                else:
+                    cv.rectangle(
+                        self.videoSimFrameProcessed,
+                        OpenCVHelp.getBoundingRect(
+                            OpenCVHelp.cornersToPoints(detectedCornersDouble)
+                        ),
+                        [0, 0, 255],
+                        int(
+                            VideoSimUtil.getScaledThickness(
+                                1, self.videoSimFrameProcessed
+                            )
+                        ),
+                        cv.LINE_AA,
+                    )
+                    smallVec = tgt.getMinAreaRectCorners()
+                    VideoSimUtil.drawPoly(
+                        OpenCVHelp.cornersToPoints(smallVec),
+                        int(
+                            VideoSimUtil.getScaledThickness(
+                                1, self.videoSimFrameProcessed
+                            )
+                        ),
+                        [255, 30, 30],
+                        True,
+                        self.videoSimFrameProcessed,
+                    )
+                    self.videoSimProcessed.put_frame(self.videoSimFrameProcessed)
+        else:
+            self.videoSimProcessed.set_connection_strategy(
+                cs.VideoSource.ConnectionStrategy.CONNECTION_FORCE_CLOSE
+            )
 
         multiTagResults: MultiTargetPNPResult | None = None
 
