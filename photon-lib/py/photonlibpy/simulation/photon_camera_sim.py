@@ -264,6 +264,13 @@ class PhotonCameraSim:
         # basis change from world coordinates to camera coordinates
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
 
+        # reset our frame
+        VideoSimUtil.updateVideoProp(self.videoSimRaw, self.prop)
+        VideoSimUtil.updateVideoProp(self.videoSimProcessed, self.prop)
+        self.videoSimFrameRaw = np.zeros(
+            (self.prop.getResHeight(), self.prop.getResWidth()), dtype=np.uint8
+        )
+
         for tgt in targets:
             if len(detectableTgts) >= 50:
                 break
