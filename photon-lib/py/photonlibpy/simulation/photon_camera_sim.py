@@ -74,25 +74,20 @@ class PhotonCameraSim:
         self.prop = props if props is not None else SimCameraProperties.PERFECT_90DEG()
         self.setMinTargetAreaPixels(PhotonCameraSim.kDefaultMinAreaPx)
 
-        # TODO Check fps is right
-        self.videoSimRaw = cs.CvSource(
+        self.videoSimRaw = cs.CameraServer.put_video(
             self.cam.getName() + "-raw",
-            PixelFormat.GRAY,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
-            1,
         )
         self.videoSimFrameRaw = np.zeros(
             (self.prop.getResWidth(), self.prop.getResHeight())
         )
+        self.videoSimRaw.set_pixel_format(PixelFormat.GRAY)
 
-        # TODO Check fps is right
-        self.videoSimProcessed = cs.CvSource(
+        self.videoSimProcessed = cs.CameraServer.put_video(
             self.cam.getName() + "-processed",
-            PixelFormat.GRAY,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
-            1,
         )
         self.videoSimFrameProcessed = np.zeros(
             (self.prop.getResWidth(), self.prop.getResHeight())
