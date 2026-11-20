@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import type { PvColor } from "@/lib/ComponentUtils";
 import type { LogMessage, VsmState } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
@@ -51,9 +52,9 @@ interface StateStore {
   snackbarData: {
     show: boolean;
     progressBar: number;
-    progressBarColor: string;
+    progressBarColor: PvColor;
     message: string;
-    color: string;
+    color: PvColor;
     timeout: number;
   };
 
@@ -178,17 +179,17 @@ export const useStateStore = defineStore("state", {
     },
     showSnackbarMessage(data: {
       message: string;
-      color: string;
+      color: PvColor;
       timeout?: number;
       progressBar?: number;
-      progressBarColor?: string;
+      progressBarColor?: PvColor;
     }) {
       this.snackbarData = {
         show: true,
         progressBar: data.progressBar || -1,
         message: data.message,
         color: data.color,
-        progressBarColor: data.progressBarColor || "",
+        progressBarColor: data.progressBarColor || "primary",
         timeout: data.timeout || 5000
       };
     }

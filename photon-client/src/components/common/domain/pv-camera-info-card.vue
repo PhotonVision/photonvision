@@ -6,7 +6,7 @@ const { camera } = defineProps<{ camera: PVCameraInfo }>();
 
 <template>
   <div>
-    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <pv-table>
       <tbody>
         <tr v-if="'dev' in camera && camera.dev !== null">
           <td>Device Number:</td>
@@ -48,6 +48,6 @@ const { camera } = defineProps<{ camera: PVCameraInfo }>();
           <td>{{ camera.otherPaths }}</td>
         </tr>
       </tbody>
-    </v-table>
+    </pv-table>
   </div>
 </template>

@@ -1,4 +1,6 @@
 import type { JsonMatOfDouble, Resolution } from "@/types/SettingTypes";
+import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
+import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 const three = import("three");
 
 /**
@@ -21,4 +23,45 @@ export const createPerspectiveCamera = async (
   const aspect = imageWidth / imageHeight;
 
   return new PerspectiveCamera(fovY, aspect, 0.1, frustumMax);
+};
+
+/**
+ * A camera position/up/target triplet used to reset the visualizer camera
+ */
+export interface VisualizerCameraPose {
+  position: [number, number, number];
+  up: [number, number, number];
+  target: [number, number, number];
+}
+
+/**
+ * The three.js objects handed to consumers of the shared three.js visualizer
+ * once the scene has been mounted
+ */
+export interface ThreeVisualizerContext {
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer;
+  controls: TrackballControls;
+}
+
+/**
+ * Dispose of all geometries and materials belonging to an object and its
+ * descendants. Removing an object from a scene does not free its GPU
+ * resources -- geometries and materials must be disposed explicitly.
+ *
+ * @param root object (sub)tree to dispose
+ */
+export const disposeObject = (root: Object3D): void => {
+  root.traverse((object) => {
+    const maybeMesh = object as Partial<Mesh>;
+    maybeMesh.geometry?.dispose();
+
+    const material = maybeMesh.material;
+    if (Array.isArray(material)) {
+      material.forEach((entry) => entry.dispose());
+    } else {
+      material?.dispose();
+    }
+  });
 };
