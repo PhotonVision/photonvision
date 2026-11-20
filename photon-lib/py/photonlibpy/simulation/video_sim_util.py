@@ -81,7 +81,7 @@ class VideoSimUtil:
     def updateVideoProp(video: cs.CvSource, prop: SimCameraProperties) -> None:
         """Updates the properties of this CvSource video stream with the given camera properties."""
         video.set_resolution(prop.getResWidth(), prop.getResHeight())
-        video.set_fps(prop.getFPS())
+        video.set_fps(int(prop.getFPS()))
 
     @staticmethod
     def warp165h5TagImage(
