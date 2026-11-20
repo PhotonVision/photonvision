@@ -6,13 +6,24 @@ from photonlibpy.estimation import RotTrlTransform3d, TargetModel
 from photonlibpy.estimation.open_cv_help import OpenCVHelp
 from photonlibpy.photon_camera import setVersionCheckEnabled
 from photonlibpy.simulation import SimCameraProperties, VisionTargetSim
-from wpimath import Pose3d, Rotation3d, Translation3d
+from wpimath import Pose3d, Rotation3d, Transform3d, Translation3d
 
 
 @pytest.fixture(autouse=True)
 def setupCommon() -> None:
     nt.NetworkTableInstance.get_default().start_server()
     setVersionCheckEnabled(False)
+
+
+def assertPosesApprox(expected: Pose3d, actual: Transform3d) -> None:
+    # solvePNP may return an equivalent rotation with wrapped Euler angles
+    # (e.g. yaw of pi vs -pi), so compare the norm of the relative pose
+    # error instead of raw Euler components
+    error = expected.relative_to(Pose3d() + actual)
+    assert error.translation().norm() < 0.005 * math.sqrt(3)
+    quat = error.rotation().get_quaternion()
+    rotation_error = 2.0 * math.acos(min(1.0, abs(quat.w)))
+    assert rotation_error < 0.25
 
 
 def test_TrlConvert():
@@ -123,19 +134,7 @@ def test_SolvePNP_SQUARE():
     assert pnpSim is not None
 
     # check solvePNP estimation accuracy
-    assert relTarget.rotation().x == pytest.approx(pnpSim.best.rotation().x, abs=0.25)
-    assert relTarget.rotation().y == pytest.approx(pnpSim.best.rotation().y, abs=0.25)
-    assert relTarget.rotation().z == pytest.approx(pnpSim.best.rotation().z, abs=0.25)
-
-    assert relTarget.translation().x == pytest.approx(
-        pnpSim.best.translation().x, abs=0.005
-    )
-    assert relTarget.translation().y == pytest.approx(
-        pnpSim.best.translation().y, abs=0.005
-    )
-    assert relTarget.translation().z == pytest.approx(
-        pnpSim.best.translation().z, abs=0.005
-    )
+    assertPosesApprox(relTarget, pnpSim.best)
 
 
 def test_SolvePNP_SQPNP():
@@ -178,16 +177,4 @@ def test_SolvePNP_SQPNP():
     assert pnpSim is not None
 
     # check solvePNP estimation accuracy
-    assert relTarget.rotation().x == pytest.approx(pnpSim.best.rotation().x, abs=0.25)
-    assert relTarget.rotation().y == pytest.approx(pnpSim.best.rotation().y, abs=0.25)
-    assert relTarget.rotation().z == pytest.approx(pnpSim.best.rotation().z, abs=0.25)
-
-    assert relTarget.translation().x == pytest.approx(
-        pnpSim.best.translation().x, abs=0.005
-    )
-    assert relTarget.translation().y == pytest.approx(
-        pnpSim.best.translation().y, abs=0.005
-    )
-    assert relTarget.translation().z == pytest.approx(
-        pnpSim.best.translation().z, abs=0.005
-    )
+    assertPosesApprox(relTarget, pnpSim.best)
