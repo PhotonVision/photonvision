@@ -91,10 +91,14 @@ public final class CombinedRuntimeLoader {
 
         boolean intel32 = "x86".equals(arch) || "i386".equals(arch);
         boolean intel64 = "amd64".equals(arch) || "x86_64".equals(arch);
+        boolean arm32 = "arm".equals(arch) || "arm32".equals(arch);
+        boolean arm64 = "aarch64".equals(arch) || "arm64".equals(arch);
 
         if (System.getProperty("os.name").startsWith("Windows")) {
             if (intel32) {
                 filePath = "/windows/x86/";
+            } else if (arm64) {
+                filePath = "/windows/arm64/";
             } else {
                 filePath = "/windows/x86-64/";
             }
@@ -107,9 +111,9 @@ public final class CombinedRuntimeLoader {
                 filePath = "/linux/x86-64/";
             } else if (Platform.isAthena()) {
                 filePath = "/linux/athena/";
-            } else if ("arm".equals(arch) || "arm32".equals(arch)) {
+            } else if (arm32) {
                 filePath = "/linux/arm32/";
-            } else if ("aarch64".equals(arch) || "arm64".equals(arch)) {
+            } else if (arm64) {
                 filePath = "/linux/arm64/";
             } else {
                 filePath = "/linux/nativearm/";

@@ -178,13 +178,18 @@ jacocoTestReport {
 }
 
 
+// protoc and protoc-gen-quickbuf run only at build time. Neither publishes a
+// windows-aarch_64 executable (quickbuf through 1.4). Windows on ARM runs the
+// x64 binaries under Prism.
+def protobufToolClassifier = osdetector.classifier == 'windows-aarch_64' ? 'windows-x86_64' : osdetector.classifier
+
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.21.12'
+        artifact = "com.google.protobuf:protoc:3.21.12:${protobufToolClassifier}@exe"
     }
     plugins {
         quickbuf {
-            artifact = 'us.hebi.quickbuf:protoc-gen-quickbuf:1.3.3'
+            artifact = "us.hebi.quickbuf:protoc-gen-quickbuf:${quickbufVersion}:${protobufToolClassifier}@exe"
         }
     }
     generateProtoTasks {
