@@ -80,7 +80,7 @@ class PhotonCameraSim:
             self.prop.getResHeight(),
         )
         self.videoSimFrameRaw = np.zeros(
-            (self.prop.getResWidth(), self.prop.getResHeight())
+            (self.prop.getResHeight(), self.prop.getResWidth()), dtype=np.uint8
         )
         self.videoSimRaw.set_pixel_format(PixelFormat.GRAY)
 
@@ -90,7 +90,7 @@ class PhotonCameraSim:
             self.prop.getResHeight(),
         )
         self.videoSimFrameProcessed = np.zeros(
-            (self.prop.getResWidth(), self.prop.getResHeight())
+            (self.prop.getResHeight(), self.prop.getResWidth(), 3), dtype=np.uint8
         )
 
         self.ts = NTTopicSet(self.cam._cameraTable)
