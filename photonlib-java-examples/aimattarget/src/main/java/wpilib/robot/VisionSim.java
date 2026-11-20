@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package frc.robot;
+package wpilib.robot;
 
-import static frc.robot.Constants.Vision.*;
+import static wpilib.robot.Constants.Vision.*;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
