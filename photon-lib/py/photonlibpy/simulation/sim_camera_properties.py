@@ -180,6 +180,8 @@ class SimCameraProperties:
         return self.distCoeffs
 
     def getFPS(self) -> hertz:
+        if self.frameSpeed <= 0:
+            return math.inf
         return 1.0 / self.frameSpeed
 
     def getFrameSpeed(self) -> milliseconds:
