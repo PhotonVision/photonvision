@@ -225,7 +225,6 @@ class PhotonCameraSim:
         Note: This may increase loop times.
         """
         self.videoSimRawEnabled = enabled
-        raise NotImplementedError("Raw stream not implemented")
 
     def enableDrawWireframe(self, enabled: bool) -> None:
         """Sets whether a wireframe of the field is drawn to the raw video stream.
