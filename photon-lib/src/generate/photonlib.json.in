@@ -35,6 +35,45 @@
         "linuxx86-64",
         "osxuniversal"
       ]
+    },
+    {
+      "groupId": "org.wpilib.thirdparty.opencv",
+      "artifactId": "opencv-cpp",
+      "version": "${opencv_version}",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.cscore",
+      "artifactId": "cscore-cpp",
+      "version": "wpilib",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.apriltag",
+      "artifactId": "apriltag-cpp",
+      "version": "wpilib",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
     }
   ],
   "cppDependencies": [
@@ -67,6 +106,70 @@
         "linuxx86-64",
         "osxuniversal"
       ]
+    },
+    {
+      "groupId": "org.wpilib.thirdparty.opencv",
+      "artifactId": "opencv-cpp",
+      "version": "${opencv_version}",
+      "libName": "opencv",
+      "headerClassifier": "headers",
+      "sourcesClassifier": "sources",
+      "sharedLibrary": true,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.cscore",
+      "artifactId": "cscore-cpp",
+      "version": "wpilib",
+      "libName": "cscore",
+      "headerClassifier": "headers",
+      "sourcesClassifier": "sources",
+      "sharedLibrary": true,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.cameraserver",
+      "artifactId": "cameraserver-cpp",
+      "version": "wpilib",
+      "libName": "cameraserver",
+      "headerClassifier": "headers",
+      "sourcesClassifier": "sources",
+      "sharedLibrary": true,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.apriltag",
+      "artifactId": "apriltag-cpp",
+      "version": "wpilib",
+      "libName": "apriltag",
+      "headerClassifier": "headers",
+      "sourcesClassifier": "sources",
+      "sharedLibrary": true,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
     }
   ],
   "javaDependencies": [
@@ -79,6 +182,26 @@
       "groupId": "org.photonvision",
       "artifactId": "photontargeting-java",
       "version": "${photon_version}"
+    },
+    {
+      "groupId": "org.wpilib.thirdparty.opencv",
+      "artifactId": "opencv-java",
+      "version": "${opencv_version}"
+    },
+    {
+      "groupId": "org.wpilib.cscore",
+      "artifactId": "cscore-java",
+      "version": "wpilib"
+    },
+    {
+      "groupId": "org.wpilib.cameraserver",
+      "artifactId": "cameraserver-java",
+      "version": "wpilib"
+    },
+    {
+      "groupId": "org.wpilib.apriltag",
+      "artifactId": "apriltag-java",
+      "version": "wpilib"
     }
   ]
 }
