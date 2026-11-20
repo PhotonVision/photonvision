@@ -269,7 +269,15 @@ public class NetworkUtils {
                     var conn = NetworkTableInstance.getDefault().getConnections();
                     if (conn.length > 0 && !conn[0].remoteIp.equals("127.0.0.1")) {
                         var addr = InetAddress.getByName(conn[0].remoteIp);
-                        return formatMacAddress(NetworkInterface.getByInetAddress(addr).getHardwareAddress());
+                        var connIface = NetworkInterface.getByInetAddress(addr);
+                        // The remote IP may not belong to a local interface (e.g. routed or NAT'd),
+                        // in which case fall through to the other lookups below
+                        if (connIface != null) {
+                            byte[] mac = connIface.getHardwareAddress();
+                            if (mac != null) {
+                                return formatMacAddress(mac);
+                            }
+                        }
                     }
                 }
                 // Connected to a localhost server or we are the server? Try resolving ourselves. Only
