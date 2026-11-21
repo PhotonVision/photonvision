@@ -114,6 +114,9 @@ public class VisionRunner implements AutoCloseable {
             needsColor = ar.debugThreshold;
         }
 
+        frameSupplier.requestGrayscaleInput(
+                wantedProcessType == FrameThresholdType.GREYSCALE && !needsColor);
+
         frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
         frameSupplier.requestFrameCopies(
                 settings.inputShouldShow || needsColor,
