@@ -33,6 +33,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.DuplicateVisionSource;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -133,6 +134,31 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                         method.invoke(parentModule.visionSource.getSettables(), newPropValue);
                                     } catch (Exception e) {
                                         logger.error("Failed to invoke camera settable method: " + method.getName(), e);
+                                    }
+                                }
+                            }
+
+                            // If this is a source camera (not itself a duplicate), propagate hardware setting
+                            // changes to any duplicates that depend on it. Duplicates share the same physical
+                            // device but keep their own independent pipeline settings, which would otherwise
+                            // drift from the source (e.g. resolution, exposure, brightness never updating).
+                            if (!(parentModule.visionSource instanceof DuplicateVisionSource)) {
+                                for (var dupModule :
+                                        VisionSourceManager.getInstance()
+                                                .getDuplicateModules(parentModule.uniqueName())) {
+                                    try {
+                                        setProperty(
+                                                dupModule.pipelineManager.getCurrentPipelineSettings(),
+                                                propName,
+                                                newPropValue);
+                                        dupModule.saveAndBroadcastAll();
+                                    } catch (Exception e) {
+                                        logger.error(
+                                                "Failed to propagate "
+                                                        + propName
+                                                        + " to duplicate "
+                                                        + dupModule.uniqueName(),
+                                                e);
                                     }
                                 }
                             }
