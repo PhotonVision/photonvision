@@ -2,7 +2,7 @@ import { expect } from "@playwright/test";
 import { test } from "./fixtures.ts";
 
 test("Quirks should be able to be changed", async ({ page }) => {
-  await page.goto("http://localhost:5800/#/cameras");
+  await page.goto("http://localhost:5800/cameras");
 
   await page.locator("div.d-flex", { has: page.locator("span", { hasText: "Arducam Model" }) }).locator("div.v-field").click();
 

@@ -11,7 +11,7 @@ const platforms = ["LINUX_RK3588_64", "LINUX_QCS6490"];
 for (const platform of platforms) {
   test.describe(`Platform: ${platform}`, () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto("/#/settings");
+      await page.goto("/settings");
       await axios.post("/override/platform", { platform: platform });
       await page.reload();
     });
@@ -45,7 +45,7 @@ for (const platform of platforms) {
 
       await page.getByRole("button", { name: "Import Object Detection Model" }).click();
 
-      await page.goto("/#/settings");
+      await page.goto("/settings");
       const tableRow = page.getByTestId("model-table").locator("tr", { hasText: fakeModelName });
 
       await expect(tableRow).toBeVisible();
