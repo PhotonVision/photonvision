@@ -35,6 +35,12 @@ kRobotToCam = wpimath.Transform3d(
     wpimath.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
 )
 
+# Constants for filtering vision estimates.
+kMaxAcceptedRobotZ = 0.2
+kMaxAcceptedRobotPitch = 0.2
+kMaxAcceptedRobotRoll = 0.2
+kMaxAcceptedPoseAmbiguity = 0.2
+
 
 class MyRobot(wpilib.TimedRobot):
     def __init__(self) -> None:
@@ -44,8 +50,9 @@ class MyRobot(wpilib.TimedRobot):
         self.controller = wpilib.NiDsXboxController(0)
         self.swerve = drivetrain.Drivetrain()
         self.cam = PhotonCamera("YOUR CAMERA NAME")
+        self.aprilTagField = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)
         self.camPoseEst = PhotonPoseEstimator(
-            AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
+            self.aprilTagField,
             kRobotToCam,
         )
 
@@ -55,7 +62,21 @@ class MyRobot(wpilib.TimedRobot):
             if camEstPose is None:
                 camEstPose = self.camPoseEst.estimateLowestAmbiguityPose(result)
 
-            if camEstPose:
+            # Filter out poses that are likely to be incorrect (off the field, not flat on the ground, etc).
+            # This is optional, but can help prevent bad vision estimates from hurting your pose estimator.
+            estPose = camEstPose.estimatedPose
+            if (
+                abs(estPose.Z()) < kMaxAcceptedRobotZ
+                and -self.aprilTagField.getFieldLength() / 2
+                < estPose.X()
+                < self.aprilTagField.getFieldLength() / 2
+                and -self.aprilTagField.getFieldWidth() / 2
+                < estPose.Y()
+                < self.aprilTagField.getFieldWidth() / 2
+                and abs(estPose.rotation().X()) < kMaxAcceptedRobotPitch
+                and abs(estPose.rotation().Y()) < kMaxAcceptedRobotRoll
+                and result.getBestTarget().poseAmbiguity < kMaxAcceptedPoseAmbiguity
+            ):
                 self.swerve.addVisionPoseEstimate(
                     camEstPose.estimatedPose, camEstPose.timestampSeconds
                 )
