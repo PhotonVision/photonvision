@@ -13,7 +13,7 @@ import VirtualList from "vue3-virtual-scroll-list";
 const backendHost = inject<string>("backendHost");
 
 const searchQuery = ref("");
-const timeInput = ref<string>("");
+const timeInput = ref("");
 const autoScroll = ref(true);
 const logList = useTemplateRef<InstanceType<typeof VirtualList>>("logList"); // this needs to be typed in the definition since vue has trouble inferring it
 const logKeeps = ref(40);
