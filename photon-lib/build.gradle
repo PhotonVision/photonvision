@@ -15,6 +15,7 @@ apply plugin: 'google-test-test-suite'
 apply plugin: 'org.wpilib.NativeUtils'
 
 apply from: "${rootDir}/shared/config.gradle"
+apply from: "${rootDir}/shared/gtsam.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
 
 nativeUtils {
@@ -33,6 +34,12 @@ nativeUtils {
     exportsConfigs {
         "${nativeName}" {}
     }
+}
+
+// Needed for gcc 16 compatibility
+nativeUtils.platformConfigs.named('linuxx86-64').configure {
+    it.cppCompiler.args.add("-Wno-error=maybe-uninitialized")
+    it.cCompiler.args.add("-Wno-error=maybe-uninitialized")
 }
 
 model {
@@ -61,8 +68,10 @@ model {
                 if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                 }
+                project.gtsamArgs(it)
             }
 
+            nativeUtils.useRequiredLibrary(it, "gtsam")
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "telemetry_shared")
             nativeUtils.useRequiredLibrary(it, "tunables_shared")
@@ -94,6 +103,7 @@ model {
             }
 
             binaries.all {
+                lib library: nativeName, linkage: 'shared'
                 it.tasks.withType(CppCompile) {
                     it.dependsOn generateProto
                 }
@@ -101,11 +111,13 @@ model {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
                     lib project: ':photon-targeting', library: 'photontargetingJNI', linkage: 'shared'
                 }
+                project.gtsamArgs(it)
                 if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
                     nativeUtils.useRequiredLibrary(it, "mrclib_sconly")
                 }
             }
 
+            nativeUtils.useRequiredLibrary(it, "gtsam")
             nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "telemetry_shared")
             nativeUtils.useRequiredLibrary(it, "tunables_shared")

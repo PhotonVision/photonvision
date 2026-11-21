@@ -1,0 +1,84 @@
+{
+  "fileName": "photonsam.json",
+  "name": "photonsam",
+  "version": "${photon_version}",
+  "uuid": "31b1e2a7-2b30-4731-9015-e3219af97fb8",
+  "wpilibYear": "${wpilib_year}",
+  "mavenUrls": [
+    "https://maven.photonvision.org/repository/internal",
+    "https://maven.photonvision.org/repository/snapshots"
+  ],
+  "jsonUrl": "https://maven.photonvision.org/repository/internal/org/photonvision/photonsam-json/1.0/photonsam-json-1.0.json",
+  "jniDependencies": [
+    {
+      "groupId": "org.photonvision",
+      "artifactId": "photontargeting-cpp",
+      "version": "${photon_version}",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.fields",
+      "artifactId": "fields-cpp",
+      "version": "wpilib",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    }
+  ],
+  "cppDependencies": [
+    {
+      "groupId": "org.photonvision",
+      "artifactId": "photonsam-cpp",
+      "version": "${photon_version}",
+      "libName": "photonsam",
+      "headerClassifier": "headers",
+      "sharedLibrary": true,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.photonvision",
+      "artifactId": "photontargeting-cpp",
+      "version": "${photon_version}",
+      "libName": "photontargeting",
+      "headerClassifier": "headers",
+      "sharedLibrary": true,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    }
+  ],
+  "javaDependencies": [
+    {
+      "groupId": "org.photonvision",
+      "artifactId": "photonsam-java",
+      "version": "${photon_version}"
+    },
+    {
+      "groupId": "org.photonvision",
+      "artifactId": "photontargeting-java",
+      "version": "${photon_version}"
+    }
+  ]
+}
