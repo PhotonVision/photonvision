@@ -82,7 +82,7 @@ const streamToggleModel = computed<string[]>({
       <span
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         class="inline-flex gap-1 rounded-full px-3 py-1 text-sm font-medium"
-        :class="fpsTooLow ? 'bg-pv-error/12 text-pv-error' : 'text-pv-primary bg-transparent'"
+        :class="fpsTooLow ? 'bg-pv-error/12 text-pv-error-on-surface' : 'text-pv-primary bg-transparent'"
       >
         <span class="tabular-nums">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }} FPS</span>
         &middot;
@@ -90,7 +90,7 @@ const streamToggleModel = computed<string[]>({
           {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency</span
         >
       </span>
-      <span v-else class="text-pv-error inline-flex rounded-full px-3 py-1 text-sm font-medium">
+      <span v-else class="text-pv-error-on-surface inline-flex rounded-full px-3 py-1 text-sm font-medium">
         Camera not connected
       </span>
       <span

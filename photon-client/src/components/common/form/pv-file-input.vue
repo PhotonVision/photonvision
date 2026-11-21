@@ -111,7 +111,7 @@ const displayValue = computed(() => {
             <IconClose class="size-4" aria-hidden="true" />
           </button>
         </div>
-        <p v-if="hasError" class="text-pv-error text-xs">
+        <p v-if="hasError" class="text-pv-error-on-surface text-xs">
           {{ errorMessage }}
         </p>
       </div>

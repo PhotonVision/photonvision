@@ -11,6 +11,7 @@ import MonoLogo from "@/assets/images/logoMono.png";
 import { useStateStore } from "@/stores/StateStore";
 
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import type { Calibration3dPipelineSettings } from "@/types/PipelineTypes";
 import {
   arucoTagDictionaryFor,
   arucoTagFamilyNameFor,
@@ -414,7 +415,19 @@ const viewPendingCalibration = () => {
 };
 
 // Calibration stream overlay: 0 = collected corners, 1 = off, 2 = exclusion zone
-const overlayMode = ref(1);
+const overlayMode = computed<number>({
+  get: () => {
+    const settings = useCameraSettingsStore().currentPipelineSettings as Calibration3dPipelineSettings;
+    if (settings.drawAllSnapshots) return 0;
+    if (settings.showExclusionZone) return 2;
+    return 1;
+  },
+  set: (mode) =>
+    useCameraSettingsStore().changeCurrentPipelineSetting(
+      { drawAllSnapshots: mode === 0, showExclusionZone: mode === 2 },
+      true
+    )
+});
 // Exclusion zone is only needed when autoCalibration is on
 const overlayItems = computed(() => {
   const items = [
@@ -425,17 +438,8 @@ const overlayItems = computed(() => {
   return items;
 });
 watch(autoCalibration, (enabled) => {
-  if (!enabled && overlayMode.value === 2) {
-    overlayMode.value = 1;
-    handleOverlayModeChange(1);
-  }
+  if (!enabled && overlayMode.value === 2) overlayMode.value = 1;
 });
-const handleOverlayModeChange = (mode: number) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting(
-    { drawAllSnapshots: mode === 0, showExclusionZone: mode === 2 },
-    false
-  );
-};
 
 const bypassVal = computed<boolean>({
   get: () => useStateStore().bypassMinCalibrationImages,
@@ -800,7 +804,6 @@ const updateCameraBlueGain = (value: number) => {
             tooltip="What to draw on the calibration stream: collected corners, nothing, or the last snapshot centroid with the exclusion zone the next snapshot must be outside of"
             :items="overlayItems"
             :select-cols="8"
-            @update:modelValue="handleOverlayModeChange"
           />
           <pv-switch
             v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"

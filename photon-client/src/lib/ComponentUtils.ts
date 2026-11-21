@@ -36,7 +36,7 @@ export function useColFlexBasis(contentCols: Ref<number> | (() => number)) {
 
 /** Popover / dropdown / select-content floating surface */
 export const popoverSurfaceClass =
-  "z-[2500] overflow-hidden rounded-xl border border-white/12 bg-pv-surface text-pv-on-surface shadow-2xl shadow-black/45 ring-1 ring-white/8";
+  "z-[2500] overflow-hidden rounded-xl border border-white/12 bg-pv-surface text-pv-on-surface shadow-2xl shadow-black/45 ring-1 ring-white/8 origin-(--reka-popper-transform-origin) data-[side=bottom]:[--popover-slide-y:-4px] data-[side=top]:[--popover-slide-y:4px] data-[side=left]:[--popover-slide-x:4px] data-[side=right]:[--popover-slide-x:-4px] data-[state=open]:animate-popover-in data-[state=closed]:animate-popover-out";
 
 /** Inline number-input box used inside sliders */
 export const sliderNumberInputClass =

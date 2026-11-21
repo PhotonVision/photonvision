@@ -129,7 +129,7 @@ const fieldClass = computed(() =>
         <IconClose class="size-4" aria-hidden="true" />
       </button>
     </div>
-    <p v-if="!hideDetails && hasError" class="text-pv-error text-xs">
+    <p v-if="!hideDetails && hasError" class="text-pv-error-on-surface text-xs">
       {{ validationMessage }}
     </p>
   </div>
