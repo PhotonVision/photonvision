@@ -55,7 +55,7 @@
   --pv-sidebar: var(--color-slate-700);
 
   /*
-   * Status colors for text on a pv-surface.  
+   * Status colors for text on a pv-surface.
    * Surface is user-customizable, so these are calculated from --pv-on-surface
    */
   --pv-error-on-surface: oklch(from var(--pv-on-surface) calc(0.32 + 0.61 * l) calc(0.2 - 0.12 * l) 25);
