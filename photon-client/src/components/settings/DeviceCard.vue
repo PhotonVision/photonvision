@@ -202,6 +202,20 @@ const generalMetrics = computed<MetricItem[]>(() => {
   return stats;
 });
 
+function mapToString(map: Map<string, number>): string {
+  let result = "";
+  let comma = false;
+  for (const [key, value] of map.entries()) {
+    if (comma) {
+      result += ", ";
+    } else {
+      comma = true;
+    }
+    result += `${key}: ${value}`;
+  }
+  return result;
+}
+
 // @ts-expect-error This uses Intl.DurationFormat which is newly implemented and not available in TS.
 const durationFormatter = new Intl.DurationFormat("en", { style: "narrow" });
 const platformMetrics = computed<MetricItem[]>(() => {
@@ -228,10 +242,10 @@ const platformMetrics = computed<MetricItem[]>(() => {
     }
   ];
 
-  if (metrics.npuUsage && metrics.npuUsage.length > 0) {
+  if (metrics.npuUsage && metrics.npuUsage.size > 0) {
     stats.push({
       header: "NPU Usage",
-      value: metrics.npuUsage?.map((usage, index) => `Core${index} ${usage}%`).join(", ") || "Unknown"
+      value: mapToString(metrics?.npuUsage) || "Unknown"
     });
   }
 
