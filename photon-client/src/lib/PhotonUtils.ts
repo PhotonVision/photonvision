@@ -6,12 +6,16 @@ import {
   type CameraCalibrationResult,
   type Resolution
 } from "@/types/SettingTypes";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import axios, { type AxiosRequestConfig } from "axios";
 import { length, type Length } from "@adam-rocska/units-and-measurement/length";
 
 export const resolutionsAreEqual = (a: Resolution, b?: Resolution) => {
   return a.height === b?.height && a.width === b?.width;
 };
+
+export const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
+  Array.isArray(value) ? value : [value.first, value.second];
 
 export const meanReprojectionError = (obs: BoardObservation): number => {
   const used = obs.reprojectionErrors.filter((_, i) => obs.cornersUsed[i]);
@@ -60,7 +64,7 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
   while (pollLimit > 0) {
     try {
       pollLimit--;
-      await axios.get(ip ? `http://${ip}/api/status` : "/status");
+      await axios.get(ip ? `http://${ip}/api/status` : "status");
       return true;
     } catch {
       // Backend not ready yet, wait and retry
@@ -75,7 +79,7 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
  * Forces a page reload after a brief delay and a status check.
  */
 export const forceReloadPage = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
   useStateStore().showSnackbarMessage({
     message: "Reloading the page to apply changes...",

@@ -20,11 +20,14 @@ package org.photonvision.server;
 import io.avaje.jsonb.Json;
 import io.avaje.jsonb.Jsonb;
 import io.javalin.http.Context;
+import java.util.Map;
 import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.processes.VisionSourceManager;
 
 public class TestRequestHandler {
     // Treat all 2XX calls as "INFO"
@@ -57,6 +60,28 @@ public class TestRequestHandler {
 
         } catch (Exception e) {
             logger.error("Failed to parse platform override request: " + e.getMessage());
+            ctx.status(400).result("Invalid request");
+        }
+    }
+
+    @Json
+    record QuirksOverrideRequest(Map<CameraQuirk, Boolean> quirks) {}
+
+    public static void handleQuirksOverrideRequest(Context ctx) {
+        try {
+            QuirksOverrideRequest request =
+                    Jsonb.instance().type(QuirksOverrideRequest.class).fromJson(ctx.body());
+            Map<CameraQuirk, Boolean> quirks = request.quirks();
+            logger.info("Overriding quirks on all cameras to: " + quirks);
+
+            VisionSourceManager.getInstance()
+                    .vmm
+                    .getModules()
+                    .forEach(module -> module.changeCameraQuirks(quirks));
+            ctx.status(200);
+
+        } catch (Exception e) {
+            logger.error("Failed to parse quirks override request: " + e.getMessage());
             ctx.status(400).result("Invalid request");
         }
     }
