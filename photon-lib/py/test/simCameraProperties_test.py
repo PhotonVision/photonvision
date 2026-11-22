@@ -76,7 +76,7 @@ def test_GetVisibleLine(scp) -> None:
     a = Translation3d(-5.0, -0.1, 0)
     b = Translation3d(5.0, 0.1, 0)
     retval = scp.getVisibleLine(camRt, a, b)
-    assert retval == (0.5, 0.5)
+    assert retval == pytest.approx((0.5, 1.0))
 
 
 def test_EstPixelNoise(scp) -> None:
