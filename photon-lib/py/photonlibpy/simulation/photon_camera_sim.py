@@ -413,14 +413,14 @@ class PhotonCameraSim:
                     [30],
                     self.videoSimFrameRaw,
                 )
-            for tgt, corners in visibleTgts:
-                if tgt.fiducialId >= 0:
+            for visible_target, corners in visibleTgts:
+                if visible_target.fiducialId >= 0:
                     VideoSimUtil.warp165h5TagImage(
-                        tgt.fiducialId, corners, True, self.videoSimFrameRaw
+                        visible_target.fiducialId, corners, True, self.videoSimFrameRaw
                     )
-                elif not tgt.getModel().getIsSpherical():
+                elif not visible_target.getModel().getIsSpherical():
                     contour = corners.copy()
-                    if not tgt.getModel().getIsPlanar():
+                    if not visible_target.getModel().getIsPlanar():
                         contour = OpenCVHelp.getConvexHull(contour)
                     VideoSimUtil.drawPoly(
                         contour, -1, [-255], True, self.videoSimFrameRaw
@@ -455,11 +455,11 @@ class PhotonCameraSim:
                 ),
                 line_type=cv.LINE_AA,
             )
-            for tgt in detectableTgts:
-                detectedCornersDouble = tgt.getDetectedCorners()
-                if tgt.fiducialId >= 0:
+            for detectable_target in detectableTgts:
+                detectedCornersDouble = detectable_target.getDetectedCorners()
+                if detectable_target.fiducialId >= 0:
                     VideoSimUtil.drawTagDetection(
-                        tgt.fiducialId,
+                        detectable_target.fiducialId,
                         OpenCVHelp.cornersToPoints(detectedCornersDouble),
                         self.videoSimFrameProcessed,
                     )
@@ -477,7 +477,7 @@ class PhotonCameraSim:
                         ),
                         cv.LINE_AA,
                     )
-                    smallVec = tgt.getMinAreaRectCorners()
+                    smallVec = detectable_target.getMinAreaRectCorners()
                     VideoSimUtil.drawPoly(
                         OpenCVHelp.cornersToPoints(smallVec),
                         int(
