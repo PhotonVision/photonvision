@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { TooltipArrow, TooltipContent, TooltipPortal, TooltipProvider, TooltipRoot, TooltipTrigger } from "reka-ui";
+import { TooltipArrow, TooltipContent, TooltipPortal, TooltipProvider, TooltipRoot } from "reka-ui";
+import TooltipTrigger from "./pv-tooltip-trigger.vue";
 
 withDefaults(
   defineProps<{
