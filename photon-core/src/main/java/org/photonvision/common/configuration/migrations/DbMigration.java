@@ -58,47 +58,47 @@ public class DbMigration {
 
     private static final String schema02 =
             """
-        CREATE TABLE IF NOT EXISTS global (
-            filename TEXT PRIMARY KEY,
-            contents JSON NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS cameras (
-            unique_name TINYTEXT PRIMARY KEY,
-            config_json text NOT NULL,
-            drivermode_json text NOT NULL,
-            pipeline_jsons mediumtext NOT NULL,
-            otherpaths_json TEXT NOT NULL DEFAULT '[]'
-        );
-        """;
+            CREATE TABLE IF NOT EXISTS global (
+                filename TEXT PRIMARY KEY,
+                contents JSON NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS cameras (
+                unique_name TINYTEXT PRIMARY KEY,
+                config_json text NOT NULL,
+                drivermode_json text NOT NULL,
+                pipeline_jsons mediumtext NOT NULL,
+                otherpaths_json TEXT NOT NULL DEFAULT '[]'
+            );
+            """;
 
     private static final String schema202702 =
             """
-        CREATE TABLE IF NOT EXISTS new_global (
-            config_name TEXT PRIMARY KEY,
-            contents JSON NOT NULL
-        );
-        INSERT INTO new_global (config_name, contents)
-        SELECT filename, contents
-        FROM global
-        WHERE EXISTS (
-            SELECT 1 FROM sqlite_master WHERE type='table' AND name='global'
-        );
-        DROP TABLE IF EXISTS global;
-        ALTER TABLE new_global RENAME TO global;
+            CREATE TABLE IF NOT EXISTS new_global (
+                config_name TEXT PRIMARY KEY,
+                contents JSON NOT NULL
+            );
+            INSERT INTO new_global (config_name, contents)
+            SELECT filename, contents
+            FROM global
+            WHERE EXISTS (
+                SELECT 1 FROM sqlite_master WHERE type='table' AND name='global'
+            );
+            DROP TABLE IF EXISTS global;
+            ALTER TABLE new_global RENAME TO global;
 
-        CREATE TABLE IF NOT EXISTS new_cameras (
-            unique_name TEXT PRIMARY KEY,
-            contents JSON NOT NULL
-        );
-        INSERT INTO new_cameras (unique_name, contents)
-        SELECT unique_name, config_json
-        FROM cameras
-        WHERE EXISTS (
-            SELECT 1 FROM sqlite_master WHERE type='table' AND name='cameras'
-        );
-        DROP TABLE IF EXISTS cameras;
-        ALTER TABLE new_cameras RENAME TO cameras;
-        """;
+            CREATE TABLE IF NOT EXISTS new_cameras (
+                unique_name TEXT PRIMARY KEY,
+                contents JSON NOT NULL
+            );
+            INSERT INTO new_cameras (unique_name, contents)
+            SELECT unique_name, config_json
+            FROM cameras
+            WHERE EXISTS (
+                SELECT 1 FROM sqlite_master WHERE type='table' AND name='cameras'
+            );
+            DROP TABLE IF EXISTS cameras;
+            ALTER TABLE new_cameras RENAME TO cameras;
+            """;
 
     private static MigrationFunction update2026CameraConfig =
             (conn) -> {

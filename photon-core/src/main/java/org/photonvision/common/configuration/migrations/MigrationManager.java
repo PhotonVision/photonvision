@@ -336,13 +336,13 @@ class MigrationStep {
 
     String versionTableSchema =
             """
-        CREATE TABLE IF NOT EXISTS dbversion (
-            version INT,
-            pv_version TEXT,
-            platform TEXT,
-            date TEXT DEFAULT CURRENT_TIMESTAMP
-        );
-        """;
+            CREATE TABLE IF NOT EXISTS dbversion (
+                version INT,
+                pv_version TEXT,
+                platform TEXT,
+                date TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+            """;
 
     String updateVersionSQL =
             "INSERT INTO dbversion(version, pv_version, platform) VALUES (?, ?, ?);";

@@ -196,11 +196,11 @@ public class PhotonCamera implements AutoCloseable {
 
     /** This is something we only need to check for java because of the way java packages opencv. */
     static void verifyDependencies() {
-        // spotless:off
         // WPILIB names their opencv version in the format YEAR-OPENCVVERSION-PATCH
         // so we split on '-' and take the middle part to get the version number
         if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion.split("-")[1])) {
-            String bfw = """
+            String bfw =
+                    """
 
 
 
@@ -211,15 +211,9 @@ public class PhotonCamera implements AutoCloseable {
                     >>> You are running an incompatible version  \s
                     >>> of PhotonVision !                        \s
                     >>>                                          \s
-                    >>> PhotonLib """
-                    + PhotonVersion.versionString
-                    + " is built for OpenCV "
-                    + PhotonVersion.opencvTargetVersion
-                    + "\n"
-                    + ">>> but you are using OpenCV "
-                    + Core.VERSION
-                    + """
-                    \n>>>                                          \s
+                    >>> PhotonLib %s is built for OpenCV %s
+                    >>> but you are using OpenCV %s
+                    >>>                                          \s
                     >>> This is neither tested nor supported.    \s
                     >>> You MUST update WPILib, PhotonLib, or both.
                     >>> Check `./gradlew dependencies` and ensure\s
@@ -237,8 +231,11 @@ public class PhotonCamera implements AutoCloseable {
                     >>>                                          \s
                     >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
                     >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    """;
-            // spotless:on
+                    """
+                            .formatted(
+                                    PhotonVersion.versionString,
+                                    PhotonVersion.opencvTargetVersion,
+                                    Core.VERSION);
 
             DriverStationErrors.reportWarning(bfw, false);
             DriverStationErrors.reportError(bfw, false);
@@ -583,9 +580,8 @@ public class PhotonCamera implements AutoCloseable {
         } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch
             // But stay silent otherwise
-
-            // spotless:off
-            String bfw = """
+            String bfw =
+                    """
 
 
 
@@ -607,7 +603,6 @@ public class PhotonCamera implements AutoCloseable {
                     >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     """;
-            // spotless:on
 
             DriverStationErrors.reportWarning(bfw, false);
             String versionMismatchMessage =
