@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { TooltipArrow, TooltipContent, TooltipPortal, TooltipProvider, TooltipRoot } from "reka-ui";
-import TooltipTrigger from "./pv-tooltip-trigger.vue";
+import { TooltipArrow, TooltipContent, TooltipPortal, TooltipProvider, TooltipRoot, TooltipTrigger } from "reka-ui";
 
 withDefaults(
   defineProps<{
@@ -19,7 +18,7 @@ withDefaults(
 
 <template>
   <tooltip-provider :delay-duration="delay" :disabled="disabled">
-    <tooltip-root>
+    <tooltip-root :ignore-non-keyboard-focus="true">
       <tooltip-trigger as-child>
         <slot />
       </tooltip-trigger>
