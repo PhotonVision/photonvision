@@ -23,7 +23,6 @@ import {
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import IconInformation from "~icons/mdi/information";
-import IconAlertBox from "~icons/mdi/alert-box";
 import IconCheck from "~icons/mdi/check";
 import IconClose from "~icons/mdi/close";
 import IconDownload from "~icons/mdi/download";
@@ -52,11 +51,6 @@ const minHeightRule = (value: RuleValue) => (typeof value === "number" && value 
 
 const settingsValid = computed(() => {
   if (!Number.isFinite(squareSize.value) || squareSize.value <= 0) return false;
-  if (
-    boardType.value === CalibrationBoardTypes.ChArUco &&
-    (!Number.isFinite(markerSize.value) || markerSize.value <= 0)
-  )
-    return false;
   if (!Number.isFinite(patternWidth.value) || patternWidth.value < 4) return false;
   if (!Number.isFinite(patternHeight.value) || patternHeight.value < 4) return false;
 
@@ -224,56 +218,45 @@ const downloadCalibBoard = async () => {
   const chessboardStartX = (paperWidth - patternWidth.value * squareSizeInches) / 2;
   const chessboardStartY = (paperHeight - patternHeight.value * squareSizeInches) / 2;
 
-  switch (boardType.value) {
-    case CalibrationBoardTypes.Chessboard:
-      // This branch is inaccessible
-      console.error("Chessboard generation is not supported");
-      return;
+  const { arucoToSVGString } = await arucoMarker;
+  // ChArUco boards place ArUco tags in reading order over a chessboard with a black square in the top left
+  let markerIndex = 0;
+  const squarePadding = (squareSizeInches - markerSizeInches) / 2;
+  for (let squareY = 0; squareY < patternHeight.value; squareY++) {
+    for (let squareX = 0; squareX < patternWidth.value; squareX++) {
+      const xPos = chessboardStartX + squareX * squareSizeInches;
+      const yPos = chessboardStartY + squareY * squareSizeInches;
 
-    case CalibrationBoardTypes.ChArUco: {
-      const { arucoToSVGString } = await arucoMarker;
-      // ChArUco boards place ArUco tags in reading order over a chessboard with a black square in the top left
-      let markerIndex = 0;
-      const squarePadding = (squareSizeInches - markerSizeInches) / 2;
-      for (let squareY = 0; squareY < patternHeight.value; squareY++) {
-        for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = chessboardStartX + squareX * squareSizeInches;
-          const yPos = chessboardStartY + squareY * squareSizeInches;
-
-          // Draw black squares on the even tiles and ArUco markers on the odd tiles
-          // Parity is even in the top left corner unless using the old pattern, which starts in the bottom left corner
-          if ((squareY + (useOldPattern.value ? patternHeight.value - 1 : 0)) % 2 === squareX % 2) {
-            doc.rect(xPos, yPos, squareSizeInches, squareSizeInches, "F");
-          } else {
-            await doc.svg(
-              new DOMParser()
-                .parseFromString(
-                  arucoToSVGString(markerIndex++, undefined, await arucoTagDictionaryFor(tagFamily.value)),
-                  "image/svg+xml"
-                )
-                .getElementsByTagName("svg")[0],
-              {
-                x: xPos + squarePadding,
-                y: yPos + squarePadding,
-                width: markerSizeInches,
-                height: markerSizeInches
-              }
-            );
+      // Draw black squares on the even tiles and ArUco markers on the odd tiles
+      // Parity is even in the top left corner unless using the old pattern, which starts in the bottom left corner
+      if ((squareY + (useOldPattern.value ? patternHeight.value - 1 : 0)) % 2 === squareX % 2) {
+        doc.rect(xPos, yPos, squareSizeInches, squareSizeInches, "F");
+      } else {
+        await doc.svg(
+          new DOMParser()
+            .parseFromString(
+              arucoToSVGString(markerIndex++, undefined, await arucoTagDictionaryFor(tagFamily.value)),
+              "image/svg+xml"
+            )
+            .getElementsByTagName("svg")[0],
+          {
+            x: xPos + squarePadding,
+            y: yPos + squarePadding,
+            width: markerSizeInches,
+            height: markerSizeInches
           }
-        }
+        );
       }
-      doc.text(
-        `${patternWidth.value} x ${patternHeight.value} | ${arucoTagFamilyNameFor(tagFamily.value)}\n` +
-          `${squareSize.value}${dimensionUnit.value} squares | ${markerSize.value}${dimensionUnit.value} markers` +
-          (useOldPattern.value && patternHeight.value % 2 === 0 ? "\nOld OpenCV Pattern" : ""),
-        paperWidth - 1,
-        1.0,
-        { maxWidth: (paperWidth - 2.0) / 2, align: "right" }
-      );
-
-      break;
     }
   }
+  doc.text(
+    `${patternWidth.value} x ${patternHeight.value} | ${arucoTagFamilyNameFor(tagFamily.value)}\n` +
+      `${squareSize.value}${dimensionUnit.value} squares | ${markerSize.value}${dimensionUnit.value} markers` +
+      (useOldPattern.value && patternHeight.value % 2 === 0 ? "\nOld OpenCV Pattern" : ""),
+    paperWidth - 1,
+    1.0,
+    { maxWidth: (paperWidth - 2.0) / 2, align: "right" }
+  );
 
   // Draw ruler pattern
   const lineStartX = 1.0;
@@ -708,7 +691,7 @@ const showGenerateBoardDialog = ref(false);
             variant="passive"
             :icon="IconDownload"
             block
-            :disabled="!settingsValid || boardType === CalibrationBoardTypes.Chessboard"
+:disabled="!settingsValid"
             @click="showGenerateBoardDialog = true"
           >
             <span class="calib-btn-label">Generate Board</span>
@@ -732,25 +715,6 @@ const showGenerateBoardDialog = ref(false);
             @update:model-value="updateVideoFormatIndex"
           />
           <pv-select
-            v-model="boardType"
-            label="Board Type"
-            tooltip="Calibration board pattern to use"
-            :select-cols="8"
-            :items="[
-              { value: CalibrationBoardTypes.ChArUco, name: 'ChArUco' },
-              { value: CalibrationBoardTypes.Chessboard, name: 'Chessboard' }
-            ]"
-          />
-          <pv-alert
-            v-if="boardType !== CalibrationBoardTypes.ChArUco"
-            closable
-            variant="tonal"
-            color="warning"
-            :icon="IconAlertBox"
-            text="The usage of chessboards can result in bad calibration results if multiple
-            similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
-          />
-          <pv-select
             :model-value="[1, 2, 4, 6][useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor]"
             label="Decimation"
             tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
@@ -759,7 +723,6 @@ const showGenerateBoardDialog = ref(false);
             @update:modelValue="updateStreamingFrameDivisor"
           />
           <pv-select
-            v-if="boardType === CalibrationBoardTypes.ChArUco"
             v-model="tagFamily"
             label="Tag Family"
             tooltip="Dictionary of ArUco markers on the ChArUco board"
@@ -792,7 +755,6 @@ const showGenerateBoardDialog = ref(false);
             :step="dimensionStep"
           />
           <pv-number-input
-            v-if="boardType === CalibrationBoardTypes.ChArUco"
             v-model="markerSize"
             :label="`Marker Size (${dimensionUnit})`"
             :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
@@ -815,7 +777,6 @@ const showGenerateBoardDialog = ref(false);
             :label-cols="4"
           />
           <pv-switch
-            v-if="boardType === CalibrationBoardTypes.ChArUco"
             v-model="useOldPattern"
             label="Old OpenCV Pattern"
             tooltip="If enabled, Photon will use the old OpenCV pattern for calibration (the top left square is a marker)."
@@ -847,17 +808,6 @@ const showGenerateBoardDialog = ref(false);
         <div class="pb-2 text-lg font-semibold">Generate Calibration Board</div>
         <div class="pt-0">
           <pv-select
-            v-model="boardType"
-            label="Board Type"
-            tooltip="Calibration board pattern to use"
-            :select-cols="8"
-            :items="[
-              { value: CalibrationBoardTypes.ChArUco, name: 'ChArUco' },
-              { value: CalibrationBoardTypes.Chessboard, name: 'Chessboard' }
-            ]"
-          />
-          <pv-select
-            v-if="boardType === CalibrationBoardTypes.ChArUco"
             v-model="tagFamily"
             label="Tag Family"
             tooltip="Dictionary of ArUco markers on the ChArUco board"
@@ -890,15 +840,6 @@ const showGenerateBoardDialog = ref(false);
             :step="dimensionStep"
           />
           <pv-number-input
-            v-if="boardType === CalibrationBoardTypes.ChArUco"
-            v-model="markerSize"
-            :label="`Marker Size (${dimensionUnit})`"
-            :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
-            :rules="[positiveNumberRule]"
-            :label-cols="4"
-            :step="dimensionStep"
-          />
-          <pv-number-input
             v-model="patternWidth"
             label="Board Width (squares)"
             tooltip="Width of the board in dots or chessboard squares"
@@ -911,12 +852,6 @@ const showGenerateBoardDialog = ref(false);
             tooltip="Height of the board in dots or chessboard squares"
             :rules="[minHeightRule]"
             :label-cols="4"
-          />
-          <pv-switch
-            v-if="boardType === CalibrationBoardTypes.ChArUco"
-            v-model="useOldPattern"
-            label="Old OpenCV Pattern"
-            tooltip="If enabled, Photon will use the old OpenCV pattern for calibration (the top left square is a marker)."
           />
           <pv-select
             v-model="paperType"
@@ -959,7 +894,7 @@ const showGenerateBoardDialog = ref(false);
             <pv-button variant="passive" @click="showGenerateBoardDialog = false"> Cancel </pv-button>
             <pv-button
               variant="primary"
-              :disabled="!settingsValid || boardType === CalibrationBoardTypes.Chessboard"
+:disabled="!settingsValid"
               @click="downloadCalibBoard()"
             >
               Generate Board
