@@ -24,8 +24,8 @@ public class SystemMonitorWindows extends SystemMonitor {
      * 7.8.0, OSHI has removed the LibreHardwareMonitor dependency for Windows, so we can't use it to
      * get CPU temperature. Instead, return -1.0 to indicate that the temperature is unavailable.
      *
-     * <p>For more information, see <a href="https://github.com/oshi/oshi/issues/3707">OSHI Issue
-     * #3707</a>
+     * <p>For more information, see <a href="https://github.com/oshi/oshi/issues/3905">OSHI Issue
+     * #3905</a>
      */
     @Override
     public double getCpuTemperature() {
