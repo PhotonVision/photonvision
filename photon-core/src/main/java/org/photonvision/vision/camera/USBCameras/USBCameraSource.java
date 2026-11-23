@@ -41,7 +41,8 @@ public class USBCameraSource extends VisionSource {
     protected FrameProvider usbFrameProvider;
 
     private void onCameraConnected() {
-        // Aid to the development team - record the properties available for whatever the user plugged
+        // Aid to the development team - record the properties available for whatever the user
+        // plugged
         // in
         printCameraProperaties();
 
@@ -67,7 +68,8 @@ public class USBCameraSource extends VisionSource {
         // if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
 
         // TODO - why do we delegate this to USBCameraSource? Quirks are part of the CameraConfig??
-        // also TODO - is the config's saved usb info a reasonable guess for quirk detection? seems like
+        // also TODO - is the config's saved usb info a reasonable guess for quirk detection? seems
+        // like
         // yes to me...
         if (getCameraConfiguration().cameraQuirks == null) {
             int vid =
@@ -87,7 +89,8 @@ public class USBCameraSource extends VisionSource {
             logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks);
         }
 
-        var cameraBroken = getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken);
+        var cameraBroken =
+                getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken);
 
         if (cameraBroken) {
             // Known issues - Disable this camera
@@ -162,8 +165,8 @@ public class USBCameraSource extends VisionSource {
     }
 
     /**
-     * Must be called after createSettables Using the current config/camera and modified quirks, make
-     * a new settables
+     * Must be called after createSettables Using the current config/camera and modified quirks,
+     * make a new settables
      */
     public void remakeSettables() {
         var oldConfig = this.cameraConfiguration;

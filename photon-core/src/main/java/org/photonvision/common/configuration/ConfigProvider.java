@@ -166,7 +166,8 @@ public class ConfigProvider {
     }
 
     public File getSettingsFolderAsZip() {
-        File out = Path.of(System.getProperty("java.io.tmpdir"), "photonvision-settings.zip").toFile();
+        File out =
+                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-settings.zip").toFile();
         try {
             ZipUtil.pack(configDirectoryFile, out);
         } catch (Exception e) {
@@ -177,15 +178,21 @@ public class ConfigProvider {
 
     public File getObjectDetectionExportAsZip() {
         File out =
-                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.zip")
+                Path.of(
+                                System.getProperty("java.io.tmpdir"),
+                                "photonvision-object-detection-models.zip")
                         .toFile();
         File tempProperties =
-                Path.of(getModelsDirectory().toString(), "photonvision-object-detection-models.json")
+                Path.of(
+                                getModelsDirectory().toString(),
+                                "photonvision-object-detection-models.json")
                         .toFile();
         try {
             Jsonb.instance()
                     .type(NeuralNetworkModelsSettings.class)
-                    .toJson(getConfig().getNeuralNetworkProperties(), new FileWriter(tempProperties));
+                    .toJson(
+                            getConfig().getNeuralNetworkProperties(),
+                            new FileWriter(tempProperties));
             ZipUtil.pack(getModelsDirectory(), out);
             if (tempProperties.exists()) {
                 Files.delete(tempProperties.toPath());
@@ -257,8 +264,8 @@ public class ConfigProvider {
     }
 
     /**
-     * Creates a fresh temporary directory for preliminary calibration snapshot images. The Path isn't
-     * tracked, so the caller is responsible for cleaning it up.
+     * Creates a fresh temporary directory for preliminary calibration snapshot images. The Path
+     * isn't tracked, so the caller is responsible for cleaning it up.
      */
     public Path createPreliminaryCalibrationImageDir(String uniqueCameraName) throws IOException {
         return Files.createTempDirectory("photonvision_preliminary_" + uniqueCameraName);
@@ -451,13 +458,22 @@ public class ConfigProvider {
         synchronized (m_mutex) {
             var hardwareConfig =
                     loadConfigOrDefault(
-                            conn, GlobalKeys.HARDWARE_CONFIG, HardwareConfig.class, HardwareConfig::new);
+                            conn,
+                            GlobalKeys.HARDWARE_CONFIG,
+                            HardwareConfig.class,
+                            HardwareConfig::new);
             var hardwareSettings =
                     loadConfigOrDefault(
-                            conn, GlobalKeys.HARDWARE_SETTINGS, HardwareSettings.class, HardwareSettings::new);
+                            conn,
+                            GlobalKeys.HARDWARE_SETTINGS,
+                            HardwareSettings.class,
+                            HardwareSettings::new);
             var networkConfig =
                     loadConfigOrDefault(
-                            conn, GlobalKeys.NETWORK_CONFIG, NetworkConfig.class, NetworkConfig::new);
+                            conn,
+                            GlobalKeys.NETWORK_CONFIG,
+                            NetworkConfig.class,
+                            NetworkConfig::new);
             var nnProps =
                     loadConfigOrDefault(
                             conn,
@@ -465,7 +481,8 @@ public class ConfigProvider {
                             NeuralNetworkModelsSettings.class,
                             NeuralNetworkModelsSettings::new);
             var field =
-                    loadConfigOrDefault(conn, GlobalKeys.FIELD_CONFIG, Field.class, this::fieldDefault);
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.FIELD_CONFIG, Field.class, this::fieldDefault);
             var cams = loadCameraConfigs(conn);
 
             try {
@@ -488,7 +505,10 @@ public class ConfigProvider {
                     conn.prepareStatement(
                             String.format(
                                     "SELECT %s FROM %s WHERE %s = \"%s\"",
-                                    Columns.GLB_CONTENTS, Tables.GLOBAL, Columns.GLB_CONFIG_NAME, filename));
+                                    Columns.GLB_CONTENTS,
+                                    Tables.GLOBAL,
+                                    Columns.GLB_CONFIG_NAME,
+                                    filename));
 
             var result = query.executeQuery();
 
@@ -534,7 +554,8 @@ public class ConfigProvider {
 
                 var config = c.getValue();
                 statement.setString(1, c.getKey());
-                statement.setString(2, Jsonb.instance().type(CameraConfiguration.class).toJson(config));
+                statement.setString(
+                        2, Jsonb.instance().type(CameraConfiguration.class).toJson(config));
 
                 statement.executeUpdate();
             }
@@ -594,7 +615,9 @@ public class ConfigProvider {
                 addFile(
                         statement1,
                         GlobalKeys.HARDWARE_SETTINGS,
-                        Jsonb.instance().type(HardwareSettings.class).toJson(config.getHardwareSettings()));
+                        Jsonb.instance()
+                                .type(HardwareSettings.class)
+                                .toJson(config.getHardwareSettings()));
                 statement1.executeUpdate();
             }
 
@@ -603,7 +626,9 @@ public class ConfigProvider {
                 addFile(
                         statement2,
                         GlobalKeys.NETWORK_CONFIG,
-                        Jsonb.instance().type(NetworkConfig.class).toJson(config.getNetworkConfig()));
+                        Jsonb.instance()
+                                .type(NetworkConfig.class)
+                                .toJson(config.getNetworkConfig()));
                 statement2.executeUpdate();
                 statement2.close();
             }
@@ -613,7 +638,9 @@ public class ConfigProvider {
                 addFile(
                         statement3,
                         GlobalKeys.HARDWARE_CONFIG,
-                        Jsonb.instance().type(HardwareConfig.class).toJson(config.getHardwareConfig()));
+                        Jsonb.instance()
+                                .type(HardwareConfig.class)
+                                .toJson(config.getHardwareConfig()));
                 statement3.executeUpdate();
                 statement3.close();
             }
@@ -740,7 +767,10 @@ public class ConfigProvider {
                     loadedConfigurations.put(uniqueName, config);
                 } catch (IllegalStateException | JsonException e) {
                     logger.error(
-                            "Could not deserialize camera configuration " + uniqueName + " from database!", e);
+                            "Could not deserialize camera configuration "
+                                    + uniqueName
+                                    + " from database!",
+                            e);
                 }
             }
         } catch (SQLException e) {

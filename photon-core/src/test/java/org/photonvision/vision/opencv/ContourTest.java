@@ -36,7 +36,8 @@ public class ContourTest {
     @Test
     public void simpleContourTest() {
         var mat = new MatOfPoint();
-        mat.fromList(List.of(new Point(0, 0), new Point(10, 0), new Point(10, 10), new Point(0, 10)));
+        mat.fromList(
+                List.of(new Point(0, 0), new Point(10, 0), new Point(10, 10), new Point(0, 10)));
         try (var contour = new Contour(mat)) {
             assertEquals(100, contour.getArea());
             assertEquals(40, contour.getPerimeter());
@@ -66,7 +67,8 @@ public class ContourTest {
                         new Point(956, 825)));
         try (var firstContour = new Contour(firstMat);
                 var secondContour = new Contour(secondMat); ) {
-            boolean result = firstContour.isIntersecting(secondContour, ContourIntersectionDirection.Up);
+            boolean result =
+                    firstContour.isIntersecting(secondContour, ContourIntersectionDirection.Up);
             assertTrue(result);
         }
     }

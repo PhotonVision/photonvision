@@ -87,7 +87,8 @@ public class CVMat implements Releasable {
         allMats.add(tracker);
 
         if (shouldPrint) {
-            logger.trace("CVMat" + matId + " allocated - count: " + allMats.size() + tracker.allocTrace);
+            logger.trace(
+                    "CVMat" + matId + " allocated - count: " + allMats.size() + tracker.allocTrace);
         }
     }
 

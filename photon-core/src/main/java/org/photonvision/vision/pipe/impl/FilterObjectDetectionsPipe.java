@@ -52,7 +52,8 @@ public class FilterObjectDetectionsPipe
 
         // Aspect ratio filtering
         double aspectRatio = TargetCalculations.getAspectRatio(boc, params.isLandscape());
-        if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond()) return;
+        if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond())
+            return;
 
         m_filteredContours.add(contour);
     }

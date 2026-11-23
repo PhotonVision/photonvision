@@ -60,10 +60,22 @@ public class TargetModelTest {
     void testSquareTargetGeneration() {
         assertApproxEquals(
                 List.of(
-                        new Point3(-Units.inchesToMeters(6.5 / 2.0), -Units.inchesToMeters(6.5 / 2.0), 0),
-                        new Point3(-Units.inchesToMeters(6.5 / 2.0), Units.inchesToMeters(6.5 / 2.0), 0),
-                        new Point3(Units.inchesToMeters(6.5 / 2.0), Units.inchesToMeters(6.5 / 2.0), 0),
-                        new Point3(Units.inchesToMeters(6.5 / 2.0), -Units.inchesToMeters(6.5 / 2.0), 0)),
+                        new Point3(
+                                -Units.inchesToMeters(6.5 / 2.0),
+                                -Units.inchesToMeters(6.5 / 2.0),
+                                0),
+                        new Point3(
+                                -Units.inchesToMeters(6.5 / 2.0),
+                                Units.inchesToMeters(6.5 / 2.0),
+                                0),
+                        new Point3(
+                                Units.inchesToMeters(6.5 / 2.0),
+                                Units.inchesToMeters(6.5 / 2.0),
+                                0),
+                        new Point3(
+                                Units.inchesToMeters(6.5 / 2.0),
+                                -Units.inchesToMeters(6.5 / 2.0),
+                                0)),
                 TargetModel.kAprilTag6p5in_36h11.getRealWorldTargetCoordinates().toList(),
                 1E-6);
     }
@@ -71,9 +83,12 @@ public class TargetModelTest {
     static void assertApproxEquals(List<Point3> expected, List<Point3> actual, double delta) {
         assertEquals(expected.size(), actual.size());
         for (int i = 0; i < actual.size(); i++) {
-            assertEquals(expected.get(i).x, actual.get(i).x, delta, "Bad x for point %d".formatted(i));
-            assertEquals(expected.get(i).y, actual.get(i).y, delta, "Bad y for point %d".formatted(i));
-            assertEquals(expected.get(i).z, actual.get(i).z, delta, "Bad z for point %d".formatted(i));
+            assertEquals(
+                    expected.get(i).x, actual.get(i).x, delta, "Bad x for point %d".formatted(i));
+            assertEquals(
+                    expected.get(i).y, actual.get(i).y, delta, "Bad y for point %d".formatted(i));
+            assertEquals(
+                    expected.get(i).z, actual.get(i).z, delta, "Bad z for point %d".formatted(i));
         }
     }
 }

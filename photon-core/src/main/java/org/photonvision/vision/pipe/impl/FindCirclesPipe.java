@@ -29,17 +29,19 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.wpilib.util.Pair;
 
 public class FindCirclesPipe
-        extends CVPipe<Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams> {
-    // Output vector of found circles. Each vector is encoded as 3 or 4 element floating-point vector
+        extends CVPipe<
+                Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams> {
+    // Output vector of found circles. Each vector is encoded as 3 or 4 element floating-point
+    // vector
     // (x,y,radius) or (x,y,radius,votes) .
     private final Mat circles = new Mat();
 
     /**
-     * Runs the process for the pipe. The reason we need a separate pipe for circles is because if we
-     * were to use the FindShapes pipe, we would have to assume that any shape more than 10-20+ sides
-     * is a circle. Only issue with such approximation is that the user would no longer be able to
-     * track shapes with 10-20+ sides. And hence, in order to overcome this edge case, we can use
-     * HoughCircles which is more flexible and accurate for finding circles.
+     * Runs the process for the pipe. The reason we need a separate pipe for circles is because if
+     * we were to use the FindShapes pipe, we would have to assume that any shape more than 10-20+
+     * sides is a circle. Only issue with such approximation is that the user would no longer be
+     * able to track shapes with 10-20+ sides. And hence, in order to overcome this edge case, we
+     * can use HoughCircles which is more flexible and accurate for finding circles.
      *
      * @param in Input for pipe processing. 8-bit, single-channel, grayscale input image.
      * @return Result of processing.
@@ -70,9 +72,11 @@ public class FindCirclesPipe
                 Math.max(1.0, params.accuracy()),
                 minRadius,
                 maxRadius);
-        // Great, we now found the center point of the circle, and it's radius, but we have no idea what
+        // Great, we now found the center point of the circle, and it's radius, but we have no idea
+        // what
         // contour it corresponds to
-        // Each contour can only match to one circle, so we keep a list of unmatched contours around and
+        // Each contour can only match to one circle, so we keep a list of unmatched contours around
+        // and
         // only match against them
         // This does mean that contours closer than allowableThreshold aren't matched to anything if
         // there's a 'better' option
@@ -113,13 +117,13 @@ public class FindCirclesPipe
     }
 
     /**
-     * @param allowableThreshold When finding the corresponding contour, this is used to see how close
-     *     a center should be to a contour for it to be considered THAT contour. Should be increased
-     *     with lower resolutions and decreased with higher resolution
+     * @param allowableThreshold When finding the corresponding contour, this is used to see how
+     *     close a center should be to a contour for it to be considered THAT contour. Should be
+     *     increased with lower resolutions and decreased with higher resolution
      * @param minRadius Minimum circle radius, [0, 100]
      * @param minDist Minimum distance between the centers of the detected circles. If the parameter
-     *     is too small, multiple neighbor circles may be falsely detected in addition to a true one.
-     *     If it is too large, some circles may be missed.
+     *     is too small, multiple neighbor circles may be falsely detected in addition to a true
+     *     one. If it is too large, some circles may be missed.
      * @param maxRadius Maximum circle radius, [0, 100]
      * @param maxCannyThresh First method-specific parameter. In case of #HOUGH_GRADIENT and
      *     #HOUGH_GRADIENT_ALT, it is the higher threshold of the two passed to the Canny edge

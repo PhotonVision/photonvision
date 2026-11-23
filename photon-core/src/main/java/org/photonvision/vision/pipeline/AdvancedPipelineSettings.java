@@ -105,7 +105,9 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 && cornerDetectionUseConvexHulls == that.cornerDetectionUseConvexHulls
                 && cornerDetectionExactSideCount == that.cornerDetectionExactSideCount
                 && cornerDetectionSideCount == that.cornerDetectionSideCount
-                && Double.compare(that.cornerDetectionAccuracyPercentage, cornerDetectionAccuracyPercentage)
+                && Double.compare(
+                                that.cornerDetectionAccuracyPercentage,
+                                cornerDetectionAccuracyPercentage)
                         == 0
                 && Objects.equals(hsvHue, that.hsvHue)
                 && Objects.equals(hsvSaturation, that.hsvSaturation)

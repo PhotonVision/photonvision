@@ -141,7 +141,8 @@ public class SwerveModule {
     }
 
     /**
-     * Constants about this module, like motor IDs, encoder angle offset, and translation from center.
+     * Constants about this module, like motor IDs, encoder angle offset, and translation from
+     * center.
      */
     public ModuleConstants getModuleConstants() {
         return moduleConstants;
@@ -152,7 +153,8 @@ public class SwerveModule {
 
         String table = "Module " + moduleConstants.moduleNum + "/";
         SmartDashboard.putNumber(
-                table + "Steer Degrees", Math.toDegrees(MathUtil.angleModulus(state.angle.getRadians())));
+                table + "Steer Degrees",
+                Math.toDegrees(MathUtil.angleModulus(state.angle.getRadians())));
         SmartDashboard.putNumber(
                 table + "Steer Target Degrees", Math.toDegrees(steerPidController.getSetpoint()));
         SmartDashboard.putNumber(table + "Drive Velocity Feet", Units.metersToFeet(state.speed));

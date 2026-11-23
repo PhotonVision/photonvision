@@ -78,14 +78,22 @@ public class CscoreExtrasTest {
             final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;
             long time =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                            cvSink.getHandle(), frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
+                            cvSink.getHandle(),
+                            frame.getNativeObj(),
+                            CSCORE_DEFAULT_FRAME_TIMEOUT,
+                            lastTime);
 
             if (time != 0) {
                 var mat = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
 
                 System.out.println(mat);
                 System.out.println(
-                        "Mat is " + mat.cols() + " x " + mat.rows() + " (cols x rows) with type " + mat.type());
+                        "Mat is "
+                                + mat.cols()
+                                + " x "
+                                + mat.rows()
+                                + " (cols x rows) with type "
+                                + mat.type());
 
                 outputStream.putFrame(mat);
 

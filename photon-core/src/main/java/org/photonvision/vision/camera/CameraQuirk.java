@@ -37,8 +37,8 @@ public enum CameraQuirk {
     /** Camera is an arducam. This means it shares VID/PID with other arducams (ew) */
     ArduCamCamera,
     /**
-     * Camera is an arducam USB ov9281 which has a funky exposure issue where it is defined in v4l as
-     * 1-5000 instead of 1-75
+     * Camera is an arducam USB ov9281 which has a funky exposure issue where it is defined in v4l
+     * as 1-5000 instead of 1-75
      */
     ArduOV9281Controls,
     /** Dummy quirk to tell OV2311 from OV9281 */

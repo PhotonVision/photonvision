@@ -70,7 +70,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                 new VisionModuleChange<T>(
                                         wsEvent.propertyName,
                                         wsEvent.data,
-                                        parentModule.pipelineManager.getCurrentPipeline().getSettings(),
+                                        parentModule
+                                                .pipelineManager
+                                                .getCurrentPipeline()
+                                                .getSettings(),
                                         wsEvent.originContext));
             } finally {
                 changeListLock.unlock();
@@ -97,7 +100,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
                 switch (propName) {
                     case "pipelineName" -> newPipelineNickname((String) newPropValue);
-                    case "newPipelineInfo" -> newPipelineInfo((Pair<String, PipelineType>) newPropValue);
+                    case "newPipelineInfo" ->
+                            newPipelineInfo((Pair<String, PipelineType>) newPropValue);
                     case "deleteCurrPipeline" -> deleteCurrPipeline();
                     case "changePipeline" -> changePipeline((Integer) newPropValue);
                     case "startCalibration" -> startCalibration((Map<String, Object>) newPropValue);
@@ -126,13 +130,23 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         // special case for camera settables
                         if (propName.startsWith("camera")) {
                             var propMethodName = "set" + propName.replace("camera", "");
-                            var methods = parentModule.visionSource.getSettables().getClass().getMethods();
+                            var methods =
+                                    parentModule
+                                            .visionSource
+                                            .getSettables()
+                                            .getClass()
+                                            .getMethods();
                             for (var method : methods) {
                                 if (method.getName().equalsIgnoreCase(propMethodName)) {
                                     try {
-                                        method.invoke(parentModule.visionSource.getSettables(), newPropValue);
+                                        method.invoke(
+                                                parentModule.visionSource.getSettables(),
+                                                newPropValue);
                                     } catch (Exception e) {
-                                        logger.error("Failed to invoke camera settable method: " + method.getName(), e);
+                                        logger.error(
+                                                "Failed to invoke camera settable method: "
+                                                        + method.getName(),
+                                                e);
                                     }
                                 }
                             }
@@ -156,7 +170,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             logger.error("Unknown exception when setting PSC prop!", e);
                         }
 
-                        parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
+                        parentModule.saveAndBroadcastSelective(
+                                originContext, propName, newPropValue);
                     }
                 }
             }
@@ -217,7 +232,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     }
 
     public void robotOffsetPoint(AdvancedPipelineSettings curAdvSettings, int offsetIndex) {
-        RobotOffsetPointOperation offsetOperation = RobotOffsetPointOperation.fromIndex(offsetIndex);
+        RobotOffsetPointOperation offsetOperation =
+                RobotOffsetPointOperation.fromIndex(offsetIndex);
 
         var latestTarget = parentModule.lastPipelineResultBestTarget;
         if (latestTarget == null) {
@@ -255,7 +271,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case TAKE_SINGLE -> logger.warn("Single point operation in dual point mode");
                 }
             }
-            case None -> logger.warn("Robot offset point operation requested, but no offset mode set");
+            case None ->
+                    logger.warn("Robot offset point operation requested, but no offset mode set");
         }
     }
 

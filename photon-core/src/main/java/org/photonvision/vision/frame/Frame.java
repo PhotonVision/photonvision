@@ -66,7 +66,13 @@ public class Frame implements Releasable {
             CVMat processed,
             FrameThresholdType processType,
             FrameStaticProperties frameStaticProperties) {
-        this(sequenceID, color, processed, processType, NetworkTablesJNI.now(), frameStaticProperties);
+        this(
+                sequenceID,
+                color,
+                processed,
+                processType,
+                NetworkTablesJNI.now(),
+                frameStaticProperties);
     }
 
     public Frame() {

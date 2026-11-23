@@ -82,6 +82,7 @@ public class NetworkConfigTest {
                 testDatabase.toFile());
         var configMgr = new ConfigProvider(tmpDir);
         configMgr.load();
-        assertEquals(expectedNtServerAddress, configMgr.getConfig().getNetworkConfig().ntServerAddress);
+        assertEquals(
+                expectedNtServerAddress, configMgr.getConfig().getNetworkConfig().ntServerAddress);
     }
 }

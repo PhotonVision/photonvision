@@ -105,7 +105,8 @@ public class Robot extends TimedRobot {
                                 PhotonUtils.calculateDistanceToTargetMeters(
                                         0.5, // Measured with a tape measure, or in CAD.
                                         1.435, // From 2024 game manual for ID 7
-                                        Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
+                                        Units.degreesToRadians(
+                                                -30.0), // Measured with a protractor, or in CAD.
                                         Units.degreesToRadians(target.getPitch()));
 
                         targetVisible = true;
@@ -121,9 +122,13 @@ public class Robot extends TimedRobot {
             // Override the driver's turn and fwd/rev command with an automatic one
             // That turns toward the tag, and gets the range right.
             turn =
-                    (VISION_DES_ANGLE_deg - targetYaw) * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
+                    (VISION_DES_ANGLE_deg - targetYaw)
+                            * VISION_TURN_kP
+                            * Constants.Swerve.kMaxAngularSpeed;
             forward =
-                    (VISION_DES_RANGE_m - targetRange) * VISION_STRAFE_kP * Constants.Swerve.kMaxLinearSpeed;
+                    (VISION_DES_RANGE_m - targetRange)
+                            * VISION_STRAFE_kP
+                            * Constants.Swerve.kMaxLinearSpeed;
         }
 
         // Command drivetrain motors based on target speeds

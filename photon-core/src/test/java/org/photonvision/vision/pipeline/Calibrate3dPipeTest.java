@@ -127,7 +127,11 @@ public class Calibrate3dPipeTest {
         final boolean useOldPattern;
 
         private CalibrationDatasets(
-                String path, Size image, Size chessboard, BoardType boardType, boolean useOldPattern) {
+                String path,
+                Size image,
+                Size chessboard,
+                BoardType boardType,
+                boolean useOldPattern) {
             this.path = path;
             this.size = image;
             this.boardSize = chessboard;
@@ -171,9 +175,9 @@ public class Calibrate3dPipeTest {
     }
 
     /**
-     * Check that the uncertainty works and returns reasonable looking numbers for a good calibration
-     * dataset. Our other datasets are of questionable quality (not enough pictures, not enough
-     * angles, etc)
+     * Check that the uncertainty works and returns reasonable looking numbers for a good
+     * calibration dataset. Our other datasets are of questionable quality (not enough pictures, not
+     * enough angles, etc)
      */
     @Test
     public void testCalibrationUncertaintyWithGoodData() throws IOException {
@@ -198,7 +202,8 @@ public class Calibrate3dPipeTest {
         assertEquals(1.5, minUncertainty.getAsDouble(), 1.5);
 
         // print mean uncertainty
-        var meanUncertainty = uncertainty.stream().mapToDouble(p -> p.z).average().orElse(Double.NaN);
+        var meanUncertainty =
+                uncertainty.stream().mapToDouble(p -> p.z).average().orElse(Double.NaN);
         System.out.println("Mean uncertainty: " + meanUncertainty);
     }
 
@@ -288,11 +293,14 @@ public class Calibrate3dPipeTest {
                                     new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                     new CVMat(),
                                     FrameThresholdType.NONE,
-                                    new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
+                                    new FrameStaticProperties(
+                                            (int) imgRes.width, (int) imgRes.height, 67, null));
                     try (CVPipelineResult output =
                             calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera)) {
                         TestUtils.showImage(
-                                output.inputAndOutputFrame.processedImage.getMat(), file.getName(), 1);
+                                output.inputAndOutputFrame.processedImage.getMat(),
+                                file.getName(),
+                                1);
                     }
                 }
             }
@@ -307,12 +315,14 @@ public class Calibrate3dPipeTest {
                             .allMatch(
                                     it ->
                                             it.imagePoints.width() == it.objectPoints.width()
-                                                    && it.imagePoints.height() == it.objectPoints.height()));
+                                                    && it.imagePoints.height()
+                                                            == it.objectPoints.height()));
 
             cal =
                     calibration3dPipeline.tryCalibration(
                             ConfigProvider.getInstance()
-                                    .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
+                                    .getCalibrationImageSavePathWithRes(
+                                            imgRes, "Calibration_Test"));
             calibration3dPipeline.finishCalibration();
         }
 
@@ -327,9 +337,13 @@ public class Calibrate3dPipeTest {
         // center of the sensor.
         // For all our data samples so far, this should be true.
         double centerXErrPct =
-                Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
+                Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter)
+                        / (expectedXCenter)
+                        * 100.0;
         double centerYErrPct =
-                Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
+                Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter)
+                        / (expectedYCenter)
+                        * 100.0;
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
@@ -373,7 +387,8 @@ public class Calibrate3dPipeTest {
         for (var file : directoryListing) {
             if (file.isFile()) {
                 Mat raw = Imgcodecs.imread(file.getAbsolutePath());
-                Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
+                Mat undistorted =
+                        new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
                 Calib3d.undistort(
                         raw,
                         undistorted,

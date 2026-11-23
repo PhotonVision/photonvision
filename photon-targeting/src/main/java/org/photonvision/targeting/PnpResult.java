@@ -36,8 +36,8 @@ import org.wpilib.util.protobuf.ProtobufSerializable;
 @SuppressWarnings("doclint")
 public class PnpResult implements ProtobufSerializable, PhotonStructSerializable<PnpResult> {
     /**
-     * The best-fit transform. The coordinate frame of this transform depends on the method which gave
-     * this result.
+     * The best-fit transform. The coordinate frame of this transform depends on the method which
+     * gave this result.
      */
     public Transform3d best;
 

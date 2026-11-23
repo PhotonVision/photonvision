@@ -37,7 +37,9 @@ public class PacketPublisher<T> implements AutoCloseable {
         try {
             this.publisher
                     .getTopic()
-                    .setProperty("message_uuid", Jsonb.instance().toJson(photonStruct.getInterfaceUUID()));
+                    .setProperty(
+                            "message_uuid",
+                            Jsonb.instance().toJson(photonStruct.getInterfaceUUID()));
         } catch (IllegalStateException | JsonException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -81,7 +83,8 @@ public class PacketPublisher<T> implements AutoCloseable {
         }
 
         if (!seen.add(typeString)) {
-            throw new UnsupportedOperationException(typeString + ": circular reference with " + seen);
+            throw new UnsupportedOperationException(
+                    typeString + ": circular reference with " + seen);
         }
 
         instance.addSchema(typeString, "photonstructschema", struct.getSchema());

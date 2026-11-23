@@ -152,7 +152,8 @@ public class PhotonCameraSim implements AutoCloseable {
         setMinTargetAreaPixels(kDefaultMinAreaPx);
 
         videoSimRaw =
-                CameraServer.putVideo(camera.getName() + "-raw", prop.getResWidth(), prop.getResHeight());
+                CameraServer.putVideo(
+                        camera.getName() + "-raw", prop.getResWidth(), prop.getResHeight());
         videoSimRaw.setPixelFormat(PixelFormat.GRAY);
         videoSimProcessed =
                 CameraServer.putVideo(
@@ -169,11 +170,11 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up of
-     *     the camera's image to be processed. Match this with your contour filtering settings in the
-     *     PhotonVision GUI.
-     * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
-     *     Note that minimum target area of the image is separate from this.
+     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up
+     *     of the camera's image to be processed. Match this with your contour filtering settings in
+     *     the PhotonVision GUI.
+     * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your
+     *     camera. Note that minimum target area of the image is separate from this.
      */
     public PhotonCameraSim(
             PhotonCamera camera,
@@ -191,11 +192,11 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up of
-     *     the camera's image to be processed. Match this with your contour filtering settings in the
-     *     PhotonVision GUI.
-     * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
-     *     Note that minimum target area of the image is separate from this.
+     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up
+     *     of the camera's image to be processed. Match this with your contour filtering settings in
+     *     the PhotonVision GUI.
+     * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your
+     *     camera. Note that minimum target area of the image is separate from this.
      * @param tagLayout AprilTag field layout to use for multi-tag estimation
      */
     public PhotonCameraSim(
@@ -229,8 +230,8 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     /**
-     * Returns the minimum number of pixels a detected target must take up in the camera's image to be
-     * processed.
+     * Returns the minimum number of pixels a detected target must take up in the camera's image to
+     * be processed.
      *
      * @return The number of pixels
      */
@@ -283,7 +284,8 @@ public class PhotonCameraSim implements AutoCloseable {
                 && (!target.getModel().isPlanar
                         || Math.abs(rel.targToCamAngle.getDegrees())
                                 < 90) // camera is behind planar target and it should be occluded
-                && (rel.camToTarg.getTranslation().getNorm() <= maxSightRangeMeters)); // target is too far
+                && (rel.camToTarg.getTranslation().getNorm()
+                        <= maxSightRangeMeters)); // target is too far
     }
 
     /**
@@ -304,12 +306,12 @@ public class PhotonCameraSim implements AutoCloseable {
 
     /**
      * Determine if this camera should process a new frame based on performance metrics and the time
-     * since the last update. This returns an Optional which is either empty if no update should occur
-     * or a Long of the timestamp in nanoseconds of when the frame which should be received by NT. If
-     * a timestamp is returned, the last frame update time becomes that timestamp.
+     * since the last update. This returns an Optional which is either empty if no update should
+     * occur or a Long of the timestamp in nanoseconds of when the frame which should be received by
+     * NT. If a timestamp is returned, the last frame update time becomes that timestamp.
      *
-     * @return Optional long which is empty while blocked or the NT entry timestamp in nanoseconds if
-     *     ready
+     * @return Optional long which is empty while blocked or the NT entry timestamp in nanoseconds
+     *     if ready
      */
     public Optional<Long> consumeNextEntryTime() {
         // check if this camera is ready for another frame update
@@ -356,8 +358,8 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     /**
-     * Sets the maximum distance at which the target is illuminated to your camera. Note that minimum
-     * target area of the image is separate from this.
+     * Sets the maximum distance at which the target is illuminated to your camera. Note that
+     * minimum target area of the image is separate from this.
      *
      * @param rangeMeters The distance in meters
      */
@@ -422,8 +424,10 @@ public class PhotonCameraSim implements AutoCloseable {
         targets = new ArrayList<>(targets);
         targets.sort(
                 (t1, t2) -> {
-                    double dist1 = t1.getPose().getTranslation().getDistance(cameraPose.getTranslation());
-                    double dist2 = t2.getPose().getTranslation().getDistance(cameraPose.getTranslation());
+                    double dist1 =
+                            t1.getPose().getTranslation().getDistance(cameraPose.getTranslation());
+                    double dist2 =
+                            t2.getPose().getTranslation().getDistance(cameraPose.getTranslation());
                     if (dist1 == dist2) return 0;
                     return dist1 < dist2 ? 1 : -1;
                 });
@@ -452,16 +456,19 @@ public class PhotonCameraSim implements AutoCloseable {
             var fieldCorners = tgt.getFieldVertices();
             if (tgt.getModel().isSpherical) { // target is spherical
                 var model = tgt.getModel();
-                // orient the model to the camera (like a sprite/decal) so it appears similar regardless of
+                // orient the model to the camera (like a sprite/decal) so it appears similar
+                // regardless of
                 // view
                 fieldCorners =
                         model.getFieldVertices(
                                 TargetModel.getOrientedPose(
-                                        tgt.getPose().getTranslation(), cameraPose.getTranslation()));
+                                        tgt.getPose().getTranslation(),
+                                        cameraPose.getTranslation()));
             }
             // project 3d target points into 2d image points
             var imagePoints =
-                    OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), camRt, fieldCorners);
+                    OpenCVHelp.projectPoints(
+                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, fieldCorners);
             // spherical targets need a rotated rectangle of their midpoints for visualization
             if (tgt.getModel().isSpherical) {
                 var center = OpenCVHelp.avgPoint(imagePoints);
@@ -489,7 +496,9 @@ public class PhotonCameraSim implements AutoCloseable {
                 var rect =
                         new RotatedRect(
                                 new Point(center.x, center.y),
-                                new Size(imagePoints[r].x - lc.x, imagePoints[b].y - imagePoints[t].y),
+                                new Size(
+                                        imagePoints[r].x - lc.x,
+                                        imagePoints[b].y - imagePoints[t].y),
                                 Math.toDegrees(-angles[r]));
                 // set target corners to rect corners
                 Point[] points = new Point[4];
@@ -511,10 +520,12 @@ public class PhotonCameraSim implements AutoCloseable {
             double areaPercent = prop.getContourAreaPercent(noisyTargetCorners);
 
             // projected target can't be detected, skip to next
-            if (!(canSeeCorners(noisyTargetCorners) && areaPercent >= minTargetAreaPercent)) continue;
+            if (!(canSeeCorners(noisyTargetCorners) && areaPercent >= minTargetAreaPercent))
+                continue;
 
             var pnpSim = new PnpResult();
-            if (tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
+            if (tgt.fiducialID >= 0
+                    && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
                 pnpSim =
                         OpenCVHelp.solvePNP_SQUARE(
                                         prop.getIntrinsics(),
@@ -575,7 +586,8 @@ public class PhotonCameraSim implements AutoCloseable {
                 } else if (!tgt.getModel().isSpherical) { // non-spherical targets
                     var contour = corn;
                     if (!tgt.getModel()
-                            .isPlanar) { // visualization cant handle non-convex projections of 3d models
+                            .isPlanar) { // visualization cant handle non-convex projections of 3d
+                        // models
                         contour = OpenCVHelp.getConvexHull(contour);
                     }
                     VideoSimUtil.drawPoly(contour, -1, new Scalar(255), true, videoSimFrameRaw);
@@ -606,7 +618,8 @@ public class PhotonCameraSim implements AutoCloseable {
                     // bounding rectangle
                     Imgproc.rectangle(
                             videoSimFrameProcessed,
-                            OpenCVHelp.getBoundingRect(OpenCVHelp.cornersToPoints(tgt.getDetectedCorners())),
+                            OpenCVHelp.getBoundingRect(
+                                    OpenCVHelp.cornersToPoints(tgt.getDetectedCorners())),
                             new Scalar(0, 0, 255),
                             (int) VideoSimUtil.getScaledThickness(1, videoSimFrameProcessed),
                             Imgproc.LINE_AA);
@@ -677,9 +690,9 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     /**
-     * Simulate one processed frame of vision data, putting one result to NT. Image capture timestamp
-     * overrides {@link PhotonPipelineResult#getTimestampSeconds() getTimestampSeconds()} for more
-     * precise latency simulation.
+     * Simulate one processed frame of vision data, putting one result to NT. Image capture
+     * timestamp overrides {@link PhotonPipelineResult#getTimestampSeconds() getTimestampSeconds()}
+     * for more precise latency simulation.
      *
      * @param result The pipeline result to submit
      * @param receiveTimestamp The (sim) timestamp when this result was read by NT in nanoseconds

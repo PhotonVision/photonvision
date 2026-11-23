@@ -42,8 +42,9 @@ public class Letterbox {
     /**
      * Resize the frame to the new shape and "letterbox" it.
      *
-     * <p>Letterboxing is the process of resizing an image to a new shape while maintaining the aspect
-     * ratio of the original image. The new image is padded with a color to fill the remaining space.
+     * <p>Letterboxing is the process of resizing an image to a new shape while maintaining the
+     * aspect ratio of the original image. The new image is padded with a color to fill the
+     * remaining space.
      *
      * @param frame
      * @param letterboxed
@@ -105,7 +106,9 @@ public class Letterbox {
 
             ret.add(
                     new NeuralNetworkPipeResult(
-                            new RotatedRect(center, size, boundingBox.angle), t.classIdx(), t.confidence()));
+                            new RotatedRect(center, size, boundingBox.angle),
+                            t.classIdx(),
+                            t.confidence()));
         }
         return ret;
     }

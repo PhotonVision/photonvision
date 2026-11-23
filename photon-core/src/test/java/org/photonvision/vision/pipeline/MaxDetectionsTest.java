@@ -37,7 +37,8 @@ public class MaxDetectionsTest {
         ConfigProvider.getInstance().load();
 
         Path path =
-                TestUtils.getResourcesFolderPath(false).resolve("testimages/polygons/ColoredShapeTest.png");
+                TestUtils.getResourcesFolderPath(false)
+                        .resolve("testimages/polygons/ColoredShapeTest.png");
 
         try (ColoredShapePipeline pipeline = new ColoredShapePipeline();
                 var frameProvider = new FileFrameProvider(path, TestUtils.WPI2019Image.FOV); ) {

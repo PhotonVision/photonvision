@@ -39,7 +39,9 @@ public class MultiTargetPNPResultProtoTest {
         result =
                 new MultiTargetPNPResult(
                         new PnpResult(
-                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                                new Transform3d(
+                                        new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                0.1),
                         List.of((short) 1, (short) 2, (short) 3));
         serializedResult = MultiTargetPNPResult.proto.createMessage();
         MultiTargetPNPResult.proto.pack(serializedResult, result);

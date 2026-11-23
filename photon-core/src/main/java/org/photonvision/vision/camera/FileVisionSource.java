@@ -59,7 +59,8 @@ public class FileVisionSource extends VisionSource {
         // TODO - create new File/replay camera info type
         super(
                 new CameraConfiguration(
-                        PVCameraInfo.fromUsbCameraInfo(new UsbCameraInfo(0, imagePath, name, null, 0, 0)),
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(0, imagePath, name, null, 0, 0)),
                         name,
                         name));
         frameProvider = new FileFrameProvider(imagePath, fov);
@@ -103,7 +104,8 @@ public class FileVisionSource extends VisionSource {
         private final VideoMode videoMode;
 
         FileSourceSettables(
-                CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {
+                CameraConfiguration cameraConfiguration,
+                FrameStaticProperties frameStaticProperties) {
             super(cameraConfiguration);
             this.frameStaticProperties = frameStaticProperties;
             videoMode =

@@ -22,13 +22,13 @@ public class SystemMonitorWindows extends SystemMonitor {
      * Monitoring CPU Temperature on Windows is challenging because most vendors don't publish this
      * data to WMI. As a work-around, OSHI tries to use LibreHardwareMonitor via
      * jLibreHardwareMonitor. If the temperature isn't found in WMI and jLibreHardwareMonitor isn't
-     * present, OSHI issues warnings every time getCpuTemperature() is called. This clogs the console
-     * with useless information when running on Windows and makes testing difficult.
+     * present, OSHI issues warnings every time getCpuTemperature() is called. This clogs the
+     * console with useless information when running on Windows and makes testing difficult.
      *
      * <p>We could include jLibreHardwareMonitor as a dependency for our Windows jar, but
      * LibreHardwareMonitor installs Winring0.sys, which is a kernel-level driver with an unfixed
-     * severe vulnerability. Windows defender flags Winring0 as a vulnerable driver and blocks it from
-     * installing.
+     * severe vulnerability. Windows defender flags Winring0 as a vulnerable driver and blocks it
+     * from installing.
      *
      * <p>In the end, it isn't worth the risk to include this dependency, so we don't do CPU
      * temperature monitoring on Windows.

@@ -48,8 +48,9 @@ public sealed interface PVCameraInfo {
 
     /**
      * If the camera is a USB camera this method returns a unique descriptor of the USB port this
-     * camera is attached to. EG "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0".
-     * If the camera is a CSI camera this method returns the path of the camera.
+     * camera is attached to. EG
+     * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0". If the camera is a CSI
+     * camera this method returns the path of the camera.
      *
      * <p>If we are on Windows, this will return the opaque path as described by
      * MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK (see
@@ -77,7 +78,12 @@ public sealed interface PVCameraInfo {
 
     public static final class PVUsbCameraInfo extends UsbCameraInfo implements PVCameraInfo {
         public PVUsbCameraInfo(
-                int dev, String path, String name, String[] otherPaths, int vendorId, int productId) {
+                int dev,
+                String path,
+                String name,
+                String[] otherPaths,
+                int vendorId,
+                int productId) {
             super(dev, path, name, otherPaths, vendorId, productId);
         }
 
@@ -98,7 +104,8 @@ public sealed interface PVCameraInfo {
         @Override
         public String uniquePath() {
             return Arrays.stream(super.otherPaths)
-                    .sorted() // Must sort to ensure a consistent unique path as we can get more than one
+                    .sorted() // Must sort to ensure a consistent unique path as we can get more
+                    // than one
                     // by-path and their order changes at random?
                     .filter(path -> path.contains("/by-path/"))
                     .findFirst()
@@ -266,7 +273,13 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String toString() {
-            return "PVFileCameraInfo[type=" + type() + ", filename=" + name + ", path='" + path + "']";
+            return "PVFileCameraInfo[type="
+                    + type()
+                    + ", filename="
+                    + name
+                    + ", path='"
+                    + path
+                    + "']";
         }
     }
 

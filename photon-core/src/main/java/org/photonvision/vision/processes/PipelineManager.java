@@ -58,8 +58,8 @@ public class PipelineManager implements AutoCloseable {
     private int lastUserPipelineIdx;
 
     /**
-     * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all provided
-     * pipelines.
+     * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all
+     * provided pipelines.
      */
     PipelineManager(
             DriverModePipelineSettings driverSettings,
@@ -175,8 +175,8 @@ public class PipelineManager implements AutoCloseable {
     private volatile int requestedIndex = 0;
 
     /**
-     * Grab the currently requested pipeline index. The VisionRunner may not have changed over to this
-     * pipeline yet.
+     * Grab the currently requested pipeline index. The VisionRunner may not have changed over to
+     * this pipeline yet.
      */
     public int getRequestedIndex() {
         return requestedIndex;
@@ -227,7 +227,8 @@ public class PipelineManager implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
     }
 
     /**
@@ -245,12 +246,14 @@ public class PipelineManager implements AutoCloseable {
             case Reflective -> {
                 logger.debug("Creating Reflective pipeline");
                 currentUserPipeline =
-                        new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
+                        new ReflectivePipeline(
+                                (ReflectivePipelineSettings) desiredPipelineSettings);
             }
             case ColoredShape -> {
                 logger.debug("Creating ColoredShape pipeline");
                 currentUserPipeline =
-                        new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
+                        new ColoredShapePipeline(
+                                (ColoredShapePipelineSettings) desiredPipelineSettings);
             }
             case AprilTag -> {
                 logger.debug("Creating AprilTag pipeline");
@@ -259,12 +262,14 @@ public class PipelineManager implements AutoCloseable {
             }
             case Aruco -> {
                 logger.debug("Creating ArUco Pipeline");
-                currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                currentUserPipeline =
+                        new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
             }
             case ObjectDetection -> {
                 logger.debug("Creating ObjectDetection Pipeline");
                 currentUserPipeline =
-                        new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
+                        new ObjectDetectionPipeline(
+                                (ObjectDetectionPipelineSettings) desiredPipelineSettings);
             }
             case Calib3d, DriverMode, FocusCamera -> {}
         }
@@ -411,7 +416,8 @@ public class PipelineManager implements AutoCloseable {
         while (true) {
             String finalUniqueName = uniqueName.toString(); // To get around lambda capture
             var conflictingName =
-                    existingSettings.stream().anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
+                    existingSettings.stream()
+                            .anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
 
             if (!conflictingName) {
                 // If no conflict, we're done
@@ -427,9 +433,12 @@ public class PipelineManager implements AutoCloseable {
 
                     var parenStart = uniqueName.toString().lastIndexOf('(');
                     var parenEnd = uniqueName.length() - 1;
-                    var number = Integer.parseInt(uniqueName.substring(parenStart + 1, parenEnd)) + 1;
+                    var number =
+                            Integer.parseInt(uniqueName.substring(parenStart + 1, parenEnd)) + 1;
 
-                    uniqueName = new StringBuilder(uniqueName.substring(0, parenStart + 1) + number + ")");
+                    uniqueName =
+                            new StringBuilder(
+                                    uniqueName.substring(0, parenStart + 1) + number + ")");
                 } else {
                     uniqueName.append(" (1)");
                 }

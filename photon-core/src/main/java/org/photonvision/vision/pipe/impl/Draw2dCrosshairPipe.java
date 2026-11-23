@@ -46,7 +46,9 @@ public class Draw2dCrosshairPipe
             double x = params.frameStaticProperties().centerX;
             double y = params.frameStaticProperties().centerY;
             double scale =
-                    params.frameStaticProperties().imageWidth / (double) params.divisor().value / 32.0;
+                    params.frameStaticProperties().imageWidth
+                            / (double) params.divisor().value
+                            / 32.0;
 
             switch (params.robotOffsetPointMode()) {
                 case None -> {}
@@ -62,7 +64,8 @@ public class Draw2dCrosshairPipe
                         if (target != null) {
                             var area = target.getArea();
                             var offsetCrosshair =
-                                    TargetCalculations.calculateDualOffsetCrosshair(params.dualOffsetValues(), area);
+                                    TargetCalculations.calculateDualOffsetCrosshair(
+                                            params.dualOffsetValues(), area);
                             x = offsetCrosshair.x;
                             y = offsetCrosshair.y;
                         }

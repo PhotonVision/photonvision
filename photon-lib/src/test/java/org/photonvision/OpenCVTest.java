@@ -57,11 +57,17 @@ public class OpenCVTest {
     }
 
     public static void assertSame(Rotation3d rot1, Rotation3d rot2) {
-        assertEquals(0, MathUtil.angleModulus(rot1.getX() - rot2.getX()), kRotDeltaDeg, "Rot X Diff");
-        assertEquals(0, MathUtil.angleModulus(rot1.getY() - rot2.getY()), kRotDeltaDeg, "Rot Y Diff");
-        assertEquals(0, MathUtil.angleModulus(rot1.getZ() - rot2.getZ()), kRotDeltaDeg, "Rot Z Diff");
         assertEquals(
-                0, MathUtil.angleModulus(rot1.getAngle() - rot2.getAngle()), kRotDeltaDeg, "Rot W Diff");
+                0, MathUtil.angleModulus(rot1.getX() - rot2.getX()), kRotDeltaDeg, "Rot X Diff");
+        assertEquals(
+                0, MathUtil.angleModulus(rot1.getY() - rot2.getY()), kRotDeltaDeg, "Rot Y Diff");
+        assertEquals(
+                0, MathUtil.angleModulus(rot1.getZ() - rot2.getZ()), kRotDeltaDeg, "Rot Z Diff");
+        assertEquals(
+                0,
+                MathUtil.angleModulus(rot1.getAngle() - rot2.getAngle()),
+                kRotDeltaDeg,
+                "Rot W Diff");
     }
 
     public static void assertSame(Pose3d pose1, Pose3d pose2) {
@@ -110,12 +116,17 @@ public class OpenCVTest {
     public void testProjection() {
         var target =
                 new VisionTargetSim(
-                        new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)), TargetModel.kAprilTag16h5, 0);
+                        new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)),
+                        TargetModel.kAprilTag16h5,
+                        0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         var imagePoints =
                 OpenCVHelp.projectPoints(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
+                        prop.getIntrinsics(),
+                        prop.getDistCoeffs(),
+                        camRt,
+                        target.getFieldVertices());
 
         // find circulation (counter/clockwise-ness)
         double circulation = 0;
@@ -133,11 +144,15 @@ public class OpenCVTest {
         // test projection results after moving camera
         var avgCenterRot1 = prop.getPixelRot(OpenCVHelp.avgPoint(imagePoints));
         cameraPose =
-                cameraPose.plus(new Transform3d(new Translation3d(), new Rotation3d(0, 0.25, 0.25)));
+                cameraPose.plus(
+                        new Transform3d(new Translation3d(), new Rotation3d(0, 0.25, 0.25)));
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         imagePoints =
                 OpenCVHelp.projectPoints(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
+                        prop.getIntrinsics(),
+                        prop.getDistCoeffs(),
+                        camRt,
+                        target.getFieldVertices());
         var avgCenterRot2 = prop.getPixelRot(OpenCVHelp.avgPoint(imagePoints));
 
         var yaw2d = new Rotation2d(avgCenterRot2.getZ());
@@ -151,7 +166,8 @@ public class OpenCVTest {
         assertEquals(
                 actualRelation.camToTargPitch.getDegrees(),
                 pitchDiff.getDegrees()
-                        * Math.cos(yaw2d.getRadians()), // adjust for unaccounted perspective distortion
+                        * Math.cos(yaw2d.getRadians()), // adjust for unaccounted perspective
+                // distortion
                 kRotDeltaDeg,
                 "2d pitch doesn't match 3d");
         assertEquals(
@@ -166,7 +182,9 @@ public class OpenCVTest {
         // square AprilTag target
         var target =
                 new VisionTargetSim(
-                        new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)), TargetModel.kAprilTag16h5, 0);
+                        new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)),
+                        TargetModel.kAprilTag16h5,
+                        0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var camRt = RotTrlTransform3d.makeRelativeTo(cameraPose);
         // target relative to camera
@@ -175,7 +193,10 @@ public class OpenCVTest {
         // simulate solvePNP estimation
         var targetCorners =
                 OpenCVHelp.projectPoints(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
+                        prop.getIntrinsics(),
+                        prop.getDistCoeffs(),
+                        camRt,
+                        target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQUARE(
                                 prop.getIntrinsics(),
@@ -214,7 +235,10 @@ public class OpenCVTest {
         // simulate solvePNP estimation
         var targetCorners =
                 OpenCVHelp.projectPoints(
-                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, target.getFieldVertices());
+                        prop.getIntrinsics(),
+                        prop.getDistCoeffs(),
+                        camRt,
+                        target.getFieldVertices());
         var pnpSim =
                 OpenCVHelp.solvePNP_SQPNP(
                                 prop.getIntrinsics(),

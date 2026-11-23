@@ -70,7 +70,9 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
 
         Mat rawImage = Imgcodecs.imread(path.toString());
         if (rawImage.cols() > 0 && rawImage.rows() > 0) {
-            properties = new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, calibration);
+            properties =
+                    new FrameStaticProperties(
+                            rawImage.width(), rawImage.height(), fov, calibration);
             originalFrame = new CVMat(rawImage);
         } else {
             rawImage.release();

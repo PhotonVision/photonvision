@@ -44,7 +44,8 @@ public class CornerDetectionPipe
             // APPROX_POLY_DP_AND_EXTREME_CORNERS should be year agnostic
             if (Objects.requireNonNull(params.cornerDetectionStrategy)
                     == DetectionStrategy.APPROX_POLY_DP_AND_EXTREME_CORNERS) {
-                var targetCorners = detectExtremeCornersByApproxPolyDp(target, params.calculateConvexHulls);
+                var targetCorners =
+                        detectExtremeCornersByApproxPolyDp(target, params.calculateConvexHulls);
                 target.setTargetCorners(targetCorners);
             }
         }
@@ -92,9 +93,11 @@ public class CornerDetectionPipe
      *
      * @param target The target to track.
      * @param convexHull Whether to use the convex hull of the contour instead.
-     * @return The 4 extreme corners of the contour: (bottom-left, bottom-right, top-right, top-left)
+     * @return The 4 extreme corners of the contour: (bottom-left, bottom-right, top-right,
+     *     top-left)
      */
-    private List<Point> detectExtremeCornersByApproxPolyDp(TrackedTarget target, boolean convexHull) {
+    private List<Point> detectExtremeCornersByApproxPolyDp(
+            TrackedTarget target, boolean convexHull) {
         var centroid = target.getMinAreaRect().center;
         Comparator<Point> compareCenterDist =
                 Comparator.comparingDouble((Point point) -> distanceBetween(centroid, point));
@@ -123,8 +126,8 @@ public class CornerDetectionPipe
         // we must have at least 4 corners for this strategy to work.
         // If we are looking for an exact side count that is handled here too.
         var pointList = new ArrayList<>(polyOutput.toList());
-        if (pointList.size() < 4 || (params.exactSideCount() && params.sideCount() != pointList.size()))
-            return null;
+        if (pointList.size() < 4
+                || (params.exactSideCount() && params.sideCount() != pointList.size())) return null;
 
         target.setApproximateBoundingPolygon(polyOutput);
 
@@ -132,10 +135,12 @@ public class CornerDetectionPipe
         var boundingBoxCorners = findBoundingBoxCorners(target);
 
         var compareDistToTl =
-                Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(3)));
+                Comparator.comparingDouble(
+                        (Point p) -> distanceBetween(p, boundingBoxCorners.get(3)));
 
         var compareDistToTr =
-                Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(2)));
+                Comparator.comparingDouble(
+                        (Point p) -> distanceBetween(p, boundingBoxCorners.get(2)));
 
         // top left and top right are the poly corners closest to the bounding box tl and tr
         pointList.sort(compareDistToTl);

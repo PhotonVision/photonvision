@@ -69,12 +69,14 @@ public class ConstrainedSolvepnpTest {
                         .transpose();
 
         var point_observations =
-                MatBuilder.fill(Nat.N4(), Nat.N2(), 333, -17, 333, -83, 267, -83, 267, -17).transpose();
+                MatBuilder.fill(Nat.N4(), Nat.N2(), 333, -17, 333, -83, 267, -83, 267, -17)
+                        .transpose();
 
         // Camera with +x in world -y, +y in world -z, and +z in world +x
         // (IE, camera pointing straight along the +X axis facing forwards)
         var robot2camera =
-                MatBuilder.fill(Nat.N4(), Nat.N4(), 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1);
+                MatBuilder.fill(
+                        Nat.N4(), Nat.N4(), 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1);
 
         // Initial guess for optimization
         double[] x_guess = {0.2, 0.1, -.05};

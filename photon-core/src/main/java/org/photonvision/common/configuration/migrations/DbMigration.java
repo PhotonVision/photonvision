@@ -17,22 +17,20 @@
 
 package org.photonvision.common.configuration.migrations;
 
+import io.avaje.json.JsonException;
+import io.avaje.json.node.JsonArray;
+import io.avaje.json.node.JsonNode;
+import io.avaje.json.node.JsonObject;
+import io.avaje.jsonb.Jsonb;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.raspi.LibCameraJNI;
-
-import io.avaje.json.JsonException;
-import io.avaje.json.node.JsonArray;
-import io.avaje.json.node.JsonNode;
-import io.avaje.json.node.JsonObject;
-import io.avaje.jsonb.Jsonb;
 
 public class DbMigration {
     private static final Logger logger = new Logger(DbMigration.class, LogGroup.Config);
@@ -52,14 +50,14 @@ public class DbMigration {
 
     public static final MigrationManager getMigration() {
         return new MigrationManager(2, schema02)
-            .addStep(202701, update2026CameraConfig)
-            .addStep(202702, schema202702)
-            .addStep(202703, update2026StatusLEDs)
-            .addStep(202704, update2026ATFL);
+                .addStep(202701, update2026CameraConfig)
+                .addStep(202702, schema202702)
+                .addStep(202703, update2026StatusLEDs)
+                .addStep(202704, update2026ATFL);
     }
 
     private static final String schema02 =
-        """
+            """
         CREATE TABLE IF NOT EXISTS global (
             filename TEXT PRIMARY KEY,
             contents JSON NOT NULL
@@ -74,7 +72,7 @@ public class DbMigration {
         """;
 
     private static final String schema202702 =
-        """
+            """
         CREATE TABLE IF NOT EXISTS new_global (
             config_name TEXT PRIMARY KEY,
             contents JSON NOT NULL
@@ -102,287 +100,339 @@ public class DbMigration {
         ALTER TABLE new_cameras RENAME TO cameras;
         """;
 
-    private static MigrationFunction update2026CameraConfig = (conn) -> {
-        // Fetch all camera data first, then close the result set before making modifications
-        var cameraDataList = new ArrayList<Map<String, String>>();
+    private static MigrationFunction update2026CameraConfig =
+            (conn) -> {
+                // Fetch all camera data first, then close the result set before making
+                // modifications
+                var cameraDataList = new ArrayList<Map<String, String>>();
 
-        try {
-            var query =
-                    conn.prepareStatement(
-                            "SELECT unique_name, config_json, drivermode_json, pipeline_jsons, otherpaths_json FROM cameras;");
-            var result = query.executeQuery();
+                try {
+                    var query =
+                            conn.prepareStatement(
+                                    "SELECT unique_name, config_json, drivermode_json, pipeline_jsons, otherpaths_json FROM cameras;");
+                    var result = query.executeQuery();
 
-            // Collect all camera data into a list to release the result set
-            while (result.next()) {
-                var cameraData = new HashMap<String, String>();
-                cameraData.put("unique_name", result.getString("unique_name"));
-                cameraData.put("config_json", result.getString("config_json"));
-                cameraData.put("drivermode_json", result.getString("drivermode_json"));
-                cameraData.put("pipeline_jsons", result.getString("pipeline_jsons"));
-                cameraData.put("otherpaths_json", result.getString("otherpaths_json"));
-                cameraDataList.add(cameraData);
-            }
+                    // Collect all camera data into a list to release the result set
+                    while (result.next()) {
+                        var cameraData = new HashMap<String, String>();
+                        cameraData.put("unique_name", result.getString("unique_name"));
+                        cameraData.put("config_json", result.getString("config_json"));
+                        cameraData.put("drivermode_json", result.getString("drivermode_json"));
+                        cameraData.put("pipeline_jsons", result.getString("pipeline_jsons"));
+                        cameraData.put("otherpaths_json", result.getString("otherpaths_json"));
+                        cameraDataList.add(cameraData);
+                    }
 
-            // Close the result set and query statement immediately
-            result.close();
-            query.close();
-        } catch (SQLException e) {
-            throw new MigrationException("Failed to read configuration from existing database", e);
-        }
+                    // Close the result set and query statement immediately
+                    result.close();
+                    query.close();
+                } catch (SQLException e) {
+                    throw new MigrationException(
+                            "Failed to read configuration from existing database", e);
+                }
 
-        // Now process the collected data
-        for (var cameraData : cameraDataList) {
-            String uniqueName = cameraData.get("unique_name");
-            JsonObject configJson;
+                // Now process the collected data
+                for (var cameraData : cameraDataList) {
+                    String uniqueName = cameraData.get("unique_name");
+                    JsonObject configJson;
 
-            try {
-                configJson = Jsonb.instance().type(JsonObject.class).fromJson(cameraData.get("config_json"));
-            } catch (JsonException | UncheckedIOException e) {
-                throw new MigrationException("Cannot desearialize camera info for " + uniqueName, e);
-            }
-
-            configJson = configJson.copy(); // Make the config mutable
-
-            var matchedCameraInfo = (JsonObject) configJson.get("matchedCameraInfo");
-
-            // migrate legacy PVCameraInfo type
-            if (!matchedCameraInfo.containsKey("type")) {
-                String cameraType = matchedCameraInfo.elements().keySet().iterator().next();
-                logger.debug(
-                        String.format(
-                                "Migrating legacy %s type-wrapper for camera %s",
-                                cameraType, configJson.get("nickname").text()));
-                String type = String.format("PVCameraInfo.%s", cameraType);
-                var cameraInfo = (JsonObject) matchedCameraInfo.get(cameraType);
-                if ("PVCSICameraInfo".equals(cameraType)) {
-                    String path = cameraInfo.extract("path");
-                    List<String> cameraPaths = List.of();
                     try {
-                        cameraPaths = List.of(LibCameraJNI.getCameraNames());
-                    } catch (UnsatisfiedLinkError e) {
-                        logger.warn("Failed to load libcamera JNI library");
+                        configJson =
+                                Jsonb.instance()
+                                        .type(JsonObject.class)
+                                        .fromJson(cameraData.get("config_json"));
+                    } catch (JsonException | UncheckedIOException e) {
+                        throw new MigrationException(
+                                "Cannot desearialize camera info for " + uniqueName, e);
                     }
-                    if (cameraPaths.isEmpty()) {
-                        logger.warn("No detected CSI camera paths available");
-                    } else if (!cameraPaths.contains(path)) {
-                        var updatedPath =
-                                path.replaceFirst(
-                                        "(?<=pcie@)([0-9a-fA-F]{6})(?=/|$)", "1000$1");
-                        if (cameraPaths.contains(updatedPath)) {
-                            cameraInfo.add("path", updatedPath);
-                            logger.debug(
-                                    "Updated legacy libcamera path "
-                                            + path
-                                            + " to "
-                                            + updatedPath);
-                        } else {
-                            logger.warn(
-                                    "Legacy libcamera path "
-                                            + path
-                                            + " not found in detected camera paths:"
-                                            + cameraPaths);
-                        }
-                    } else {
-                        logger.debug(
-                                "Legacy libcamera path "
-                                        + path
-                                        + " found in detected camera paths.");
-                    }
-                }
-                cameraInfo.add("type", type);
-                configJson.add("matchedCameraInfo", cameraInfo);
-            }
 
-            // Check for other_paths that haven't been migrated
-            if (!configJson.containsKey("matchedCameraInfo.otherPaths")) {
-                try {
-                    var otherPathsJson = Jsonb.instance().type(JsonNode.class).fromJson(cameraData.get("otherpaths_json"));
-                    logger.debug("Migrating legacy otherPaths");
-                    matchedCameraInfo.add("otherPaths", otherPathsJson);
-                } catch (JsonException | UncheckedIOException e) {
-                    logger.warn("Cannot deserialize otherpaths_json. Skipping.\n" + e);
-                }
-            }
+                    configJson = configJson.copy(); // Make the config mutable
 
-            // Migrate pipeline_jsons
-            // before 2027, pipeline_jsons contained an array of strings and each string was a
-            // pipeline object
-            if (!configJson.containsKey("pipelineSettings")) {
-                try {
-                    var rawPipelineJsons = Jsonb.instance().type(JsonArray.class).fromJson(cameraData.get("pipeline_jsons"));
-                    JsonArray pipelines = JsonArray.create();
-                    for (JsonNode pipelineString : rawPipelineJsons.elements()) {
-                        var pipelineJson = Jsonb.instance().type(JsonArray.class).fromJson(pipelineString.text());
-                        String type = pipelineJson.elements().get(0).text();
-                        JsonObject pipeline = (JsonObject) pipelineJson.elements().get(1).copy();
+                    var matchedCameraInfo = (JsonObject) configJson.get("matchedCameraInfo");
+
+                    // migrate legacy PVCameraInfo type
+                    if (!matchedCameraInfo.containsKey("type")) {
+                        String cameraType = matchedCameraInfo.elements().keySet().iterator().next();
                         logger.debug(
                                 String.format(
-                                        "Migrating legacy %s, \"%s\"", type, pipeline.extract("pipelineNickname")));
-                        pipeline.add("type", type);
-                        if (pipeline.containsKey("outputShowMultipleTargets")) {
-                            /**
-                             * Handles backward compatibility for the deprecated outputShowMultipleTargets property. When
-                             * outputShowMultipleTargets is encountered during deserialization, it sets outputMaximumTargets
-                             * appropriately. If outputShowMultipleTargets is false, outputMaximumTargets is set to 1.
-                             */
-                            if (pipeline.extract("outputShowMultipleTargets").strip().equals("false")) {
-                                pipeline.add("outputMaximumTargets", 1);
-                            } else {
-                                pipeline.add("outputMaximumTargets", 20);
+                                        "Migrating legacy %s type-wrapper for camera %s",
+                                        cameraType, configJson.get("nickname").text()));
+                        String type = String.format("PVCameraInfo.%s", cameraType);
+                        var cameraInfo = (JsonObject) matchedCameraInfo.get(cameraType);
+                        if ("PVCSICameraInfo".equals(cameraType)) {
+                            String path = cameraInfo.extract("path");
+                            List<String> cameraPaths = List.of();
+                            try {
+                                cameraPaths = List.of(LibCameraJNI.getCameraNames());
+                            } catch (UnsatisfiedLinkError e) {
+                                logger.warn("Failed to load libcamera JNI library");
                             }
-                            pipeline.remove("outputShowMultipleTargets");
+                            if (cameraPaths.isEmpty()) {
+                                logger.warn("No detected CSI camera paths available");
+                            } else if (!cameraPaths.contains(path)) {
+                                var updatedPath =
+                                        path.replaceFirst(
+                                                "(?<=pcie@)([0-9a-fA-F]{6})(?=/|$)", "1000$1");
+                                if (cameraPaths.contains(updatedPath)) {
+                                    cameraInfo.add("path", updatedPath);
+                                    logger.debug(
+                                            "Updated legacy libcamera path "
+                                                    + path
+                                                    + " to "
+                                                    + updatedPath);
+                                } else {
+                                    logger.warn(
+                                            "Legacy libcamera path "
+                                                    + path
+                                                    + " not found in detected camera paths:"
+                                                    + cameraPaths);
+                                }
+                            } else {
+                                logger.debug(
+                                        "Legacy libcamera path "
+                                                + path
+                                                + " found in detected camera paths.");
+                            }
                         }
-                        pipelines.add(pipeline);
+                        cameraInfo.add("type", type);
+                        configJson.add("matchedCameraInfo", cameraInfo);
                     }
-                    configJson.add("pipelineSettings", pipelines);
-                } catch (JsonException | UncheckedIOException e) {
-                    logger.warn("Couldn't deserialize pipeline_jsons. Skipping.\n" + e);
+
+                    // Check for other_paths that haven't been migrated
+                    if (!configJson.containsKey("matchedCameraInfo.otherPaths")) {
+                        try {
+                            var otherPathsJson =
+                                    Jsonb.instance()
+                                            .type(JsonNode.class)
+                                            .fromJson(cameraData.get("otherpaths_json"));
+                            logger.debug("Migrating legacy otherPaths");
+                            matchedCameraInfo.add("otherPaths", otherPathsJson);
+                        } catch (JsonException | UncheckedIOException e) {
+                            logger.warn("Cannot deserialize otherpaths_json. Skipping.\n" + e);
+                        }
+                    }
+
+                    // Migrate pipeline_jsons
+                    // before 2027, pipeline_jsons contained an array of strings and each string was
+                    // a
+                    // pipeline object
+                    if (!configJson.containsKey("pipelineSettings")) {
+                        try {
+                            var rawPipelineJsons =
+                                    Jsonb.instance()
+                                            .type(JsonArray.class)
+                                            .fromJson(cameraData.get("pipeline_jsons"));
+                            JsonArray pipelines = JsonArray.create();
+                            for (JsonNode pipelineString : rawPipelineJsons.elements()) {
+                                var pipelineJson =
+                                        Jsonb.instance()
+                                                .type(JsonArray.class)
+                                                .fromJson(pipelineString.text());
+                                String type = pipelineJson.elements().get(0).text();
+                                JsonObject pipeline =
+                                        (JsonObject) pipelineJson.elements().get(1).copy();
+                                logger.debug(
+                                        String.format(
+                                                "Migrating legacy %s, \"%s\"",
+                                                type, pipeline.extract("pipelineNickname")));
+                                pipeline.add("type", type);
+                                if (pipeline.containsKey("outputShowMultipleTargets")) {
+                                    /**
+                                     * Handles backward compatibility for the deprecated
+                                     * outputShowMultipleTargets property. When
+                                     * outputShowMultipleTargets is encountered during
+                                     * deserialization, it sets outputMaximumTargets appropriately.
+                                     * If outputShowMultipleTargets is false, outputMaximumTargets
+                                     * is set to 1.
+                                     */
+                                    if (pipeline.extract("outputShowMultipleTargets")
+                                            .strip()
+                                            .equals("false")) {
+                                        pipeline.add("outputMaximumTargets", 1);
+                                    } else {
+                                        pipeline.add("outputMaximumTargets", 20);
+                                    }
+                                    pipeline.remove("outputShowMultipleTargets");
+                                }
+                                pipelines.add(pipeline);
+                            }
+                            configJson.add("pipelineSettings", pipelines);
+                        } catch (JsonException | UncheckedIOException e) {
+                            logger.warn("Couldn't deserialize pipeline_jsons. Skipping.\n" + e);
+                        }
+                    }
+
+                    // Migrate drivermode_json
+                    if (!configJson.containsKey("driveModeSettings")) {
+                        try {
+                            var legacyDriverModeJson =
+                                    Jsonb.instance()
+                                            .type(JsonArray.class)
+                                            .fromJson(cameraData.get("drivermode_json"));
+
+                            String type = legacyDriverModeJson.elements().get(0).text();
+                            logger.debug(String.format("Migrating legacy %s", type));
+                            var pipeline = legacyDriverModeJson.elements().get(1);
+                            configJson.add("driveModeSettings", pipeline);
+                        } catch (JsonException | UncheckedIOException e) {
+                            logger.warn("Couldn't deserialize drivermode_json. Skipping.\n" + e);
+                        }
+                    }
+
+                    // update camera in database
+                    var sqlString =
+                            "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES (?, ?, ?, ?);";
+                    try (var statement = conn.prepareStatement(sqlString)) {
+                        statement.setString(1, uniqueName);
+                        statement.setString(
+                                2, Jsonb.instance().type(JsonObject.class).toJson(configJson));
+                        statement.setString(3, "null");
+                        statement.setString(4, "[]");
+                        statement.executeUpdate();
+                    } catch (JsonException | UncheckedIOException e) {
+                        throw new MigrationException(
+                                "Cannot searialize migrated JSON to database for " + uniqueName, e);
+                    } catch (SQLException e) {
+                        throw new MigrationException(
+                                "Exception thrown writing migrated JSON to database for "
+                                        + uniqueName,
+                                e);
+                    }
                 }
-            }
+            };
 
-            // Migrate drivermode_json
-            if (!configJson.containsKey("driveModeSettings")) {
-                try {
-                    var legacyDriverModeJson =
-                        Jsonb.instance().type(JsonArray.class).fromJson(cameraData.get("drivermode_json"));
+    private static MigrationFunction update2026StatusLEDs =
+            (conn) -> {
+                String hardwareConfigQuery =
+                        "SELECT contents FROM global WHERE config_name='hardwareConfig';";
+                String hardwareConfigJson = null;
 
-                    String type = legacyDriverModeJson.elements().get(0).text();
-                    logger.debug(String.format("Migrating legacy %s", type));
-                    var pipeline = legacyDriverModeJson.elements().get(1);
-                    configJson.add("driveModeSettings", pipeline);
-                } catch (JsonException | UncheckedIOException e) {
-                    logger.warn("Couldn't deserialize drivermode_json. Skipping.\n" + e);
+                try (var query = conn.prepareStatement(hardwareConfigQuery);
+                        var result = query.executeQuery(); ) {
+                    if (result.next()) {
+                        hardwareConfigJson = result.getString("contents");
+                    } else {
+                        logger.info(
+                                "No hardwareConfig found in global table. Skipping status LED migration.");
+                        return;
+                    }
+                } catch (SQLException e) {
+                    throw new MigrationException(
+                            "Failed to read configuration from existing database", e);
                 }
-            }
 
-            // update camera in database
-            var sqlString =
-                    "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES (?, ?, ?, ?);";
-            try (var statement = conn.prepareStatement(sqlString)) {
-                statement.setString(1, uniqueName);
-                statement.setString(2, Jsonb.instance().type(JsonObject.class).toJson(configJson));
-                statement.setString(3, "null");
-                statement.setString(4, "[]");
-                statement.executeUpdate();
-            } catch (JsonException | UncheckedIOException e) {
-                throw new MigrationException("Cannot searialize migrated JSON to database for " + uniqueName, e);
-            } catch (SQLException e) {
-                throw new MigrationException("Exception thrown writing migrated JSON to database for " + uniqueName, e);
-            }
-        }
-    };
+                JsonObject hardwareConfig =
+                        Jsonb.instance().type(JsonObject.class).fromJson(hardwareConfigJson);
+                hardwareConfig = hardwareConfig.copy(); // Make the config mutable
+                if (hardwareConfig.containsKey("statusRGBPins")
+                        || hardwareConfig.containsKey("statusRGBActiveHigh")) {
+                    logger.debug("Migrating legacy statusRGBPins to statusLEDConfig");
+                    JsonObject statusLEDConfig = JsonObject.create();
+                    statusLEDConfig.add("type", "RGB");
+                    if (hardwareConfig.containsKey("statusRGBActiveHigh")) {
+                        statusLEDConfig.add(
+                                "activeHigh", hardwareConfig.extract("statusRGBActiveHigh", false));
+                        hardwareConfig.remove("statusRGBActiveHigh");
+                    } else {
+                        statusLEDConfig.add("activeHigh", false);
+                    }
+                    statusLEDConfig.add("redPin", -1);
+                    statusLEDConfig.add("greenPin", -1);
+                    statusLEDConfig.add("bluePin", -1);
+                    if (hardwareConfig.containsKey("statusRGBPins")) {
+                        JsonArray statusRGBPins = (JsonArray) hardwareConfig.get("statusRGBPins");
+                        if (statusRGBPins.size() >= 3) {
+                            statusLEDConfig.add("redPin", statusRGBPins.elements().get(0));
+                            statusLEDConfig.add("greenPin", statusRGBPins.elements().get(1));
+                            statusLEDConfig.add("bluePin", statusRGBPins.elements().get(2));
+                        } else {
+                            logger.warn("Legacy statusRGBPins has less than 3 pins.");
+                        }
+                        hardwareConfig.remove("statusRGBPins");
+                    }
+                    hardwareConfig.add("statusLEDConfig", statusLEDConfig);
 
-    private static MigrationFunction update2026StatusLEDs = (conn) -> {
-        String hardwareConfigQuery = "SELECT contents FROM global WHERE config_name='hardwareConfig';";
-        String hardwareConfigJson = null;
-
-        try (var query = conn.prepareStatement(hardwareConfigQuery);
-             var result = query.executeQuery();) {
-            if (result.next()) {
-                hardwareConfigJson = result.getString("contents");
-            } else {
-                logger.info("No hardwareConfig found in global table. Skipping status LED migration.");
-                return;
-            }
-        } catch (SQLException e) {
-            throw new MigrationException("Failed to read configuration from existing database", e);
-        }
-
-        JsonObject hardwareConfig = Jsonb.instance().type(JsonObject.class).fromJson(hardwareConfigJson);
-        hardwareConfig = hardwareConfig.copy(); // Make the config mutable
-        if (hardwareConfig.containsKey("statusRGBPins") || hardwareConfig.containsKey("statusRGBActiveHigh")) {
-            logger.debug("Migrating legacy statusRGBPins to statusLEDConfig");
-            JsonObject statusLEDConfig = JsonObject.create();
-            statusLEDConfig.add("type", "RGB");
-            if (hardwareConfig.containsKey("statusRGBActiveHigh")) {
-                statusLEDConfig.add("activeHigh", hardwareConfig.extract("statusRGBActiveHigh", false));
-                hardwareConfig.remove("statusRGBActiveHigh");
-            } else {
-                statusLEDConfig.add("activeHigh", false);
-            }
-            statusLEDConfig.add("redPin", -1);
-            statusLEDConfig.add("greenPin", -1);
-            statusLEDConfig.add("bluePin", -1);
-            if (hardwareConfig.containsKey("statusRGBPins")) {
-                JsonArray statusRGBPins = (JsonArray) hardwareConfig.get("statusRGBPins");
-                if (statusRGBPins.size() >= 3) {
-                    statusLEDConfig.add("redPin", statusRGBPins.elements().get(0));
-                    statusLEDConfig.add("greenPin", statusRGBPins.elements().get(1));
-                    statusLEDConfig.add("bluePin", statusRGBPins.elements().get(2));
+                    // update hardware config in database
+                    var sqlString =
+                            "REPLACE INTO global (config_name, contents) VALUES ('hardwareConfig', ?);";
+                    try (var statement = conn.prepareStatement(sqlString)) {
+                        statement.setString(
+                                1, Jsonb.instance().type(JsonObject.class).toJson(hardwareConfig));
+                        statement.executeUpdate();
+                    } catch (JsonException | UncheckedIOException e) {
+                        throw new MigrationException(
+                                "Cannot serialize migrated JSON to database for hardwareConfig", e);
+                    } catch (SQLException e) {
+                        throw new MigrationException(
+                                "Exception thrown writing migrated JSON to database for hardwareConfig",
+                                e);
+                    }
                 } else {
-                    logger.warn("Legacy statusRGBPins has less than 3 pins.");
+                    logger.debug("No legacy statusRGBPins found. Skipping migration.");
                 }
-                hardwareConfig.remove("statusRGBPins");
-            }
-            hardwareConfig.add("statusLEDConfig", statusLEDConfig);
+            };
 
-            // update hardware config in database
-            var sqlString =
-                    "REPLACE INTO global (config_name, contents) VALUES ('hardwareConfig', ?);";
-            try (var statement = conn.prepareStatement(sqlString)) {
-                statement.setString(1, Jsonb.instance().type(JsonObject.class).toJson(hardwareConfig));
-                statement.executeUpdate();
-            } catch (JsonException | UncheckedIOException e) {
-                throw new MigrationException("Cannot serialize migrated JSON to database for hardwareConfig", e);
-            } catch (SQLException e) {
-                throw new MigrationException("Exception thrown writing migrated JSON to database for hardwareConfig", e);
-            }
-        } else {
-            logger.debug("No legacy statusRGBPins found. Skipping migration.");
-        }
-    };
+    private static MigrationFunction update2026ATFL =
+            (conn) -> {
+                // 2026 and earlier used "apriltagFieldLayout" as the config_name for the field
+                // layout, but 2027 and later uses "fieldLayout"
+                String hardwareConfigQuery =
+                        "SELECT contents FROM global WHERE config_name='apriltagFieldLayout';";
+                String fieldLayoutJson = null;
 
-    private static MigrationFunction update2026ATFL = (conn) -> {
-        // 2026 and earlier used "apriltagFieldLayout" as the config_name for the field layout, but 2027 and later uses "fieldLayout"
-        String hardwareConfigQuery = "SELECT contents FROM global WHERE config_name='apriltagFieldLayout';";
-        String fieldLayoutJson = null;
+                try (var query = conn.prepareStatement(hardwareConfigQuery);
+                        var result = query.executeQuery(); ) {
+                    if (result.next()) {
+                        fieldLayoutJson = result.getString("contents");
+                    } else {
+                        logger.info(
+                                "No apriltagFieldLayout found in global table. Skipping status LED migration.");
+                        return;
+                    }
+                } catch (SQLException e) {
+                    throw new MigrationException(
+                            "Failed to read configuration from existing database", e);
+                }
 
-        try (var query = conn.prepareStatement(hardwareConfigQuery);
-             var result = query.executeQuery();) {
-            if (result.next()) {
-                fieldLayoutJson = result.getString("contents");
-            } else {
-                logger.info("No apriltagFieldLayout found in global table. Skipping status LED migration.");
-                return;
-            }
-        } catch (SQLException e) {
-            throw new MigrationException("Failed to read configuration from existing database", e);
-        }
+                JsonObject fieldLayout =
+                        Jsonb.instance().type(JsonObject.class).fromJson(fieldLayoutJson);
+                fieldLayout = fieldLayout.copy(); // Make the config mutable
+                if (fieldLayout.containsKey("field") || fieldLayout.containsKey("tags")) {
+                    logger.debug("Migrating legacy AprilTagFieldLayout");
+                    if (fieldLayout.containsKey("field")) {
+                        fieldLayout.add("field-dimensions", fieldLayout.get("field"));
+                        fieldLayout.remove("field");
+                    }
+                    if (fieldLayout.containsKey("tags")) {
+                        fieldLayout.add("field-tags", fieldLayout.get("tags"));
+                        fieldLayout.remove("tags");
+                    }
 
-        JsonObject fieldLayout = Jsonb.instance().type(JsonObject.class).fromJson(fieldLayoutJson);
-        fieldLayout = fieldLayout.copy(); // Make the config mutable
-        if (fieldLayout.containsKey("field") || fieldLayout.containsKey("tags")) {
-            logger.debug("Migrating legacy AprilTagFieldLayout");
-            if (fieldLayout.containsKey("field")) {
-                fieldLayout.add("field-dimensions", fieldLayout.get("field"));
-                fieldLayout.remove("field");
-            }
-            if (fieldLayout.containsKey("tags")) {
-                fieldLayout.add("field-tags", fieldLayout.get("tags"));
-                fieldLayout.remove("tags");
-            }
-
-            // update hardware config in database
-            String sqlInsert =
-                    "REPLACE INTO global (config_name, contents) VALUES ('fieldLayout', ?);";
-            String sqlRemove =
-                    "DELETE FROM global WHERE config_name = 'apriltagFieldLayout';";
-            try (var statement = conn.prepareStatement(sqlInsert)) {
-                statement.setString(1, Jsonb.instance().type(JsonObject.class).toJson(fieldLayout));
-                statement.executeUpdate();
-            } catch (JsonException | UncheckedIOException e) {
-                throw new MigrationException("Cannot serialize migrated JSON to database for fieldLayout", e);
-            } catch (SQLException e) {
-                throw new MigrationException("Exception thrown writing migrated JSON to database for fieldLayout", e);
-            }
-            try (var statement = conn.prepareStatement(sqlRemove)) {
-                statement.executeUpdate();
-            } catch (SQLException e) {
-                throw new MigrationException("Exception thrown deleting legacy configuration from database", e);
-            }
-        } else {
-            logger.debug("No legacy AprilTagFieldLayout found. Skipping migration.");
-        }
-    };
-
+                    // update hardware config in database
+                    String sqlInsert =
+                            "REPLACE INTO global (config_name, contents) VALUES ('fieldLayout', ?);";
+                    String sqlRemove =
+                            "DELETE FROM global WHERE config_name = 'apriltagFieldLayout';";
+                    try (var statement = conn.prepareStatement(sqlInsert)) {
+                        statement.setString(
+                                1, Jsonb.instance().type(JsonObject.class).toJson(fieldLayout));
+                        statement.executeUpdate();
+                    } catch (JsonException | UncheckedIOException e) {
+                        throw new MigrationException(
+                                "Cannot serialize migrated JSON to database for fieldLayout", e);
+                    } catch (SQLException e) {
+                        throw new MigrationException(
+                                "Exception thrown writing migrated JSON to database for fieldLayout",
+                                e);
+                    }
+                    try (var statement = conn.prepareStatement(sqlRemove)) {
+                        statement.executeUpdate();
+                    } catch (SQLException e) {
+                        throw new MigrationException(
+                                "Exception thrown deleting legacy configuration from database", e);
+                    }
+                } else {
+                    logger.debug("No legacy AprilTagFieldLayout found. Skipping migration.");
+                }
+            };
 }

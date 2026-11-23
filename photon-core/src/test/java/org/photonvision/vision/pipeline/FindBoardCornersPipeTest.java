@@ -31,11 +31,13 @@ public class FindBoardCornersPipeTest {
     void testSorting() {
         List<Integer> unsorted = new ArrayList<>(List.of(0, 1, 2, 3, 6, 8, 5, 4, 9, 7));
         List<Boolean> evenness =
-                new ArrayList<>(List.of(true, false, true, false, true, true, false, true, false, false));
+                new ArrayList<>(
+                        List.of(true, false, true, false, true, true, false, true, false, false));
         List<Integer> sorted = new ArrayList<>(unsorted);
         Collections.sort(sorted);
 
-        // This function expects that ids are a continuous range from 0 to n, already sorted prior to
+        // This function expects that ids are a continuous range from 0 to n, already sorted prior
+        // to
         // the start index
         FindBoardCornersPipe.sortRelatedSubranges(unsorted, List.of(evenness), 4);
 

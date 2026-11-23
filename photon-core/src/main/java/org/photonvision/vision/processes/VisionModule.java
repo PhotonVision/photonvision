@@ -171,7 +171,8 @@ public class VisionModule implements AutoCloseable {
                         this::setFPSLimit,
                         this::getEnabled,
                         this::setEnabled);
-        uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
+        uiDataConsumer =
+                new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
         resultConsumers.add(ntConsumer);
@@ -179,7 +180,8 @@ public class VisionModule implements AutoCloseable {
         resultConsumers.add(statusLEDsConsumer);
         resultConsumers.add(
                 (result) ->
-                        lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+                        lastPipelineResultBestTarget =
+                                result.hasTargets() ? result.targets.get(0) : null);
         resultConsumers.addAll(extraConsumers);
 
         // Sync VisionModule state with the first pipeline index
@@ -199,7 +201,9 @@ public class VisionModule implements AutoCloseable {
                     .ifPresent(
                             (visionLED) ->
                                     visionLED.setPipelineModeSupplier(
-                                            () -> pipelineManager.getCurrentPipelineSettings().ledMode));
+                                            () ->
+                                                    pipelineManager.getCurrentPipelineSettings()
+                                                            .ledMode));
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
@@ -228,10 +232,12 @@ public class VisionModule implements AutoCloseable {
         String camHostname = CameraServerJNI.getHostname();
         inputVideoStreamer =
                 new MJPGFrameConsumer(
-                        camHostname + "_Port_" + inputStreamPort + "_Input_MJPEG_Server", inputStreamPort);
+                        camHostname + "_Port_" + inputStreamPort + "_Input_MJPEG_Server",
+                        inputStreamPort);
         outputVideoStreamer =
                 new MJPGFrameConsumer(
-                        camHostname + "_Port_" + outputStreamPort + "_Output_MJPEG_Server", outputStreamPort);
+                        camHostname + "_Port_" + outputStreamPort + "_Output_MJPEG_Server",
+                        outputStreamPort);
     }
 
     private void recreateStreamResultConsumers() {
@@ -268,7 +274,9 @@ public class VisionModule implements AutoCloseable {
         }
 
         public void updateData(
-                Frame inputOutputFrame, AdvancedPipelineSettings settings, List<TrackedTarget> targets) {
+                Frame inputOutputFrame,
+                AdvancedPipelineSettings settings,
+                List<TrackedTarget> targets) {
             synchronized (frameLock) {
                 if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
@@ -305,7 +313,8 @@ public class VisionModule implements AutoCloseable {
                 }
                 if (shouldRun) {
                     try {
-                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
+                        CVPipelineResult osr =
+                                outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
                     } catch (Exception e) {
                         // Never die
@@ -351,7 +360,8 @@ public class VisionModule implements AutoCloseable {
 
     public void setFov(double fov) {
         var settables = visionSource.getSettables();
-        logger.trace(() -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
+        logger.trace(
+                () -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
 
         // Only set FOV if we have no vendor JSON, and we aren't using a PiCAM
         if (isVendorCamera()) {
@@ -379,7 +389,9 @@ public class VisionModule implements AutoCloseable {
         pipelineManager.setDriverMode(isDriverMode);
         setVisionLEDs(!isDriverMode);
         setPipeline(
-                isDriverMode ? PipelineManager.DRIVERMODE_INDEX : pipelineManager.getRequestedIndex());
+                isDriverMode
+                        ? PipelineManager.DRIVERMODE_INDEX
+                        : pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
     }
 
@@ -521,7 +533,10 @@ public class VisionModule implements AutoCloseable {
 
             var target = persistentDir.resolve(observation.snapshotName);
             try {
-                Files.move(observation.snapshotDataLocation, target, StandardCopyOption.REPLACE_EXISTING);
+                Files.move(
+                        observation.snapshotDataLocation,
+                        target,
+                        StandardCopyOption.REPLACE_EXISTING);
                 observation.snapshotDataLocation = target;
             } catch (IOException e) {
                 logger.error("Failed to move calibration snapshot image to " + target, e);
@@ -595,8 +610,10 @@ public class VisionModule implements AutoCloseable {
 
                     if (cameraQuirks.hasQuirk(CameraQuirk.AwbRedBlueGain)) {
                         // If the AWB gains are disabled for some reason, re-enable it
-                        if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 11;
-                        if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
+                        if (pipelineSettings.cameraRedGain == -1)
+                            pipelineSettings.cameraRedGain = 11;
+                        if (pipelineSettings.cameraBlueGain == -1)
+                            pipelineSettings.cameraBlueGain = 20;
                         settables.setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
                         settables.setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
                     } else {
@@ -610,7 +627,8 @@ public class VisionModule implements AutoCloseable {
 
                     setVisionLEDs(pipelineSettings.ledMode);
 
-                    settables.getConfiguration().currentPipelineIndex = pipelineManager.getRequestedIndex();
+                    settables.getConfiguration().currentPipelineIndex =
+                            pipelineManager.getRequestedIndex();
                 });
 
         return true;
@@ -627,14 +645,17 @@ public class VisionModule implements AutoCloseable {
 
     private void setVisionLEDs(boolean on) {
         if (camShouldControlLEDs()) {
-            HardwareManager.getInstance().visionLED.ifPresent((visionLED) -> visionLED.setState(on));
+            HardwareManager.getInstance()
+                    .visionLED
+                    .ifPresent((visionLED) -> visionLED.setState(on));
         }
     }
 
     public void saveModule() {
         ConfigProvider.getInstance()
                 .saveModule(
-                        getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+                        getStateAsCameraConfig(),
+                        visionSource.getSettables().getConfiguration().uniqueName);
     }
 
     public void saveAndBroadcastAll() {
@@ -643,7 +664,8 @@ public class VisionModule implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {

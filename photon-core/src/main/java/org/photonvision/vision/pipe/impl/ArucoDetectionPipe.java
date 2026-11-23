@@ -67,21 +67,28 @@ public class ArucoDetectionPipe
                 };
                 double bltr =
                         Math.hypot(
-                                cornerPoints[2].x - cornerPoints[0].x, cornerPoints[2].y - cornerPoints[0].y);
+                                cornerPoints[2].x - cornerPoints[0].x,
+                                cornerPoints[2].y - cornerPoints[0].y);
                 double brtl =
                         Math.hypot(
-                                cornerPoints[3].x - cornerPoints[1].x, cornerPoints[3].y - cornerPoints[1].y);
+                                cornerPoints[3].x - cornerPoints[1].x,
+                                cornerPoints[3].y - cornerPoints[1].y);
                 double minDiag = Math.min(bltr, brtl);
                 int halfWindowLength =
-                        (int) Math.ceil(kRefineWindowImageRatio * Math.min(imgMat.rows(), imgMat.cols()));
+                        (int)
+                                Math.ceil(
+                                        kRefineWindowImageRatio
+                                                * Math.min(imgMat.rows(), imgMat.cols()));
                 halfWindowLength += (int) (minDiag * kRefineWindowMarkerRatio);
                 // dont do refinement on small markers
                 if (halfWindowLength < 4) continue;
                 var halfWindowSize = new Size(halfWindowLength, halfWindowLength);
                 cornersMat.fromArray(cornerPoints);
                 var criteria =
-                        new TermCriteria(3, params.refinementMaxIterations, params.refinementMinErrorPx);
-                Imgproc.cornerSubPix(imgMat, cornersMat, halfWindowSize, new Size(-1, -1), criteria);
+                        new TermCriteria(
+                                3, params.refinementMaxIterations, params.refinementMinErrorPx);
+                Imgproc.cornerSubPix(
+                        imgMat, cornersMat, halfWindowSize, new Size(-1, -1), criteria);
                 cornerPoints = cornersMat.toArray();
                 for (int i = 0; i < cornerPoints.length; i++) {
                     var pt = cornerPoints[i];
@@ -115,7 +122,8 @@ public class ArucoDetectionPipe
 
             detectParams.set_useAruco3Detection(newParams.useAruco3);
             detectParams.set_minSideLengthCanonicalImg(newParams.aruco3MinCanonicalImgSide);
-            detectParams.set_minMarkerLengthRatioOriginalImg((float) newParams.aruco3MinMarkerSideRatio);
+            detectParams.set_minMarkerLengthRatioOriginalImg(
+                    (float) newParams.aruco3MinMarkerSideRatio);
 
             photonDetector.setParams(detectParams);
         }

@@ -49,7 +49,9 @@ public class USBFrameProvider extends CpuImageProcessor {
         this.cvSink = CameraServer.getVideo(this.camera);
         this.logger =
                 new Logger(
-                        USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
+                        USBFrameProvider.class,
+                        visionSettables.getConfiguration().nickname,
+                        LogGroup.Camera);
         this.cvSink.setEnabled(true);
 
         this.settables = visionSettables;
@@ -66,7 +68,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         }
 
         if (m_blockForFrames) {
-            // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
+            // We allocate memory so we don't fill a Mat in use by another thread (memory model is
+            // easier)
             var mat = new CVMat();
             // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is nS since
             // Hal::initialize was called
@@ -81,7 +84,8 @@ public class USBFrameProvider extends CpuImageProcessor {
 
             return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
         } else {
-            // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
+            // We allocate memory so we don't fill a Mat in use by another thread (memory model is
+            // easier)
             // TODO - consider a frame pool
             // TODO - getCurrentVideoMode is a JNI call for us, but profiling indicates it's fast
             var cameraMode = settables.getCurrentVideoMode();
@@ -97,7 +101,10 @@ public class USBFrameProvider extends CpuImageProcessor {
             // Hal::initialize was called
             long captureTimeNs =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
-                            cvSink.getHandle(), frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
+                            cvSink.getHandle(),
+                            frame.getNativeObj(),
+                            CSCORE_DEFAULT_FRAME_TIMEOUT,
+                            lastTime);
             lastTime = captureTimeNs;
 
             CVMat ret;

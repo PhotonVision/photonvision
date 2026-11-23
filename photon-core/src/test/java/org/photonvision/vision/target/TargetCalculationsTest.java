@@ -71,7 +71,9 @@ public class TargetCalculationsTest {
         double targetPixelOffsetX = 100;
         double targetPixelOffsetY = 100;
         var targetCenterPoint =
-                new Point(imageCenterPoint.x + targetPixelOffsetX, imageCenterPoint.y + targetPixelOffsetY);
+                new Point(
+                        imageCenterPoint.x + targetPixelOffsetX,
+                        imageCenterPoint.y + targetPixelOffsetY);
 
         var targetYawPitch =
                 TargetCalculations.calculateYawPitch(
@@ -98,7 +100,8 @@ public class TargetCalculationsTest {
                         imageCenterPoint.y,
                         params.verticalFocalLength,
                         params.cameraCal);
-        assertEquals(fovs.getFirst() / 2.0, maxYaw.getFirst(), 0.025, "Horizontal FOV check failed");
+        assertEquals(
+                fovs.getFirst() / 2.0, maxYaw.getFirst(), 0.025, "Horizontal FOV check failed");
         var maxPitch =
                 TargetCalculations.calculateYawPitch(
                         imageCenterPoint.x,
@@ -108,7 +111,8 @@ public class TargetCalculationsTest {
                         0,
                         params.verticalFocalLength,
                         params.cameraCal);
-        assertEquals(fovs.getSecond() / 2.0, maxPitch.getSecond(), 0.025, "Vertical FOV check failed");
+        assertEquals(
+                fovs.getSecond() / 2.0, maxPitch.getSecond(), 0.025, "Vertical FOV check failed");
     }
 
     private static Stream<Arguments> testYawPitchCalcArgs() {
@@ -129,7 +133,11 @@ public class TargetCalculationsTest {
         // FOV: ~58.5 deg horizontal, ~35 deg vertical
         JsonMatOfDouble testCameraMatrix =
                 new JsonMatOfDouble(
-                        3, 3, new double[] {1142.341323, 0, 621.384201309, 0, 1139.92214, 349.897631, 0, 0, 1});
+                        3,
+                        3,
+                        new double[] {
+                            1142.341323, 0, 621.384201309, 0, 1139.92214, 349.897631, 0, 0, 1
+                        });
         JsonMatOfDouble testDistortion =
                 new JsonMatOfDouble(
                         5,
@@ -157,10 +165,12 @@ public class TargetCalculationsTest {
         // Since we create this translation using the given yaw/pitch, we should see the same angles
         // calculated
         var targetTrl =
-                new Translation3d(1, new Rotation3d(0, Math.toRadians(pitchDeg), Math.toRadians(yawDeg)));
+                new Translation3d(
+                        1, new Rotation3d(0, Math.toRadians(pitchDeg), Math.toRadians(yawDeg)));
         // NWU to EDN
         var objectPoints =
-                new MatOfPoint3f(new Point3(-targetTrl.getY(), -targetTrl.getZ(), targetTrl.getX()));
+                new MatOfPoint3f(
+                        new Point3(-targetTrl.getY(), -targetTrl.getZ(), targetTrl.getX()));
         var imagePoints = new MatOfPoint2f();
         // Project translation into camera image
         var rvec = new MatOfDouble(0, 0, 0);
@@ -212,11 +222,13 @@ public class TargetCalculationsTest {
 
         // We pretend like x/y are in pixels, so the "top" is actually the bottom
         var result =
-                TargetCalculations.calculateTargetOffsetPoint(true, TargetOffsetPointEdge.Top, rect);
+                TargetCalculations.calculateTargetOffsetPoint(
+                        true, TargetOffsetPointEdge.Top, rect);
         assertEquals(1.25, result.x, 0.1, "Target offset x not as expected");
         assertEquals(-2.17, result.y, 0.1, "Target offset Y not as expected");
         result =
-                TargetCalculations.calculateTargetOffsetPoint(true, TargetOffsetPointEdge.Bottom, rect);
+                TargetCalculations.calculateTargetOffsetPoint(
+                        true, TargetOffsetPointEdge.Bottom, rect);
         assertEquals(-1.25, result.x, 0.1, "Target offset x not as expected");
         assertEquals(2.17, result.y, 0.1, "Target offset Y not as expected");
     }

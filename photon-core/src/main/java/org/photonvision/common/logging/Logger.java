@@ -97,8 +97,7 @@ public class Logger {
         var date = getDate();
         var builder = new StringBuilder();
         if (color) builder.append(level.colorCode);
-        builder
-                .append("[")
+        builder.append("[")
                 .append(date)
                 .append("] [")
                 .append(group)
@@ -143,7 +142,8 @@ public class Logger {
         logFileList.removeIf(
                 (File arg0) -> {
                     try {
-                        logFileStartDateMap.put(arg0, PathManager.getInstance().logFnameToDate(arg0.getName()));
+                        logFileStartDateMap.put(
+                                arg0, PathManager.getInstance().logFnameToDate(arg0.getName()));
                         return false;
                     } catch (ParseException e) {
                         return true;
@@ -237,8 +237,8 @@ public class Logger {
     }
 
     /**
-     * Logs an error message with the stack trace of a Throwable. The stacktrace will only be printed
-     * if the current LogLevel is TRACE
+     * Logs an error message with the stack trace of a Throwable. The stacktrace will only be
+     * printed if the current LogLevel is TRACE
      *
      * @param message
      * @param t
@@ -312,7 +312,8 @@ public class Logger {
             messageMap.put("logLevel", level.code);
             Map<String, Object> superMap = new HashMap<>();
             superMap.put("logMessage", messageMap);
-            DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("log", superMap));
+            DataChangeService.getInstance()
+                    .publishEvent(OutgoingUIEvent.wrappedOf("log", superMap));
         }
     }
 

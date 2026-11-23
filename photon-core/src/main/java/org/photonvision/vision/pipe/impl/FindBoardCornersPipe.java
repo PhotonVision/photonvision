@@ -115,7 +115,8 @@ public class FindBoardCornersPipe
         switch (params.type()) {
             case CHESSBOARD:
                 if (objectPointsTemplate.isEmpty()) {
-                    var objectPoints = new Point3[(int) patternSize.height * (int) patternSize.width];
+                    var objectPoints =
+                            new Point3[(int) patternSize.height * (int) patternSize.width];
                     int i = 0;
                     for (int heightIdx = 0; heightIdx < patternSize.height; heightIdx++) {
                         for (int widthIdx = 0; widthIdx < patternSize.width; widthIdx++) {
@@ -145,7 +146,8 @@ public class FindBoardCornersPipe
             return false;
         }
 
-        // We need at least 4 corners to be used for calibration but we force 10 just to ensure the user
+        // We need at least 4 corners to be used for calibration but we force 10 just to ensure the
+        // user
         // cant get away with a garbage calibration.
         long cornerCount = detectedCorners.total();
         long idCount = ids.total();
@@ -164,8 +166,8 @@ public class FindBoardCornersPipe
     }
 
     /**
-     * Figures out how much a frame or point cloud must be scaled down by to match the desired size at
-     * which to run FindCorners. Should usually be > 1.
+     * Figures out how much a frame or point cloud must be scaled down by to match the desired size
+     * at which to run FindCorners. Should usually be > 1.
      *
      * @param inFrame
      * @return
@@ -176,13 +178,14 @@ public class FindBoardCornersPipe
 
     /**
      * Finds the minimum spacing between a set of x/y points Currently only considers points whose
-     * index is next to each other Which, currently, means it traverses one dimension. This is a rough
-     * heuristic approach which could be refined in the future.
+     * index is next to each other Which, currently, means it traverses one dimension. This is a
+     * rough heuristic approach which could be refined in the future.
      *
      * <p>Note that the current implementation can be fooled under the following conditions: (1) The
-     * width of the image is an odd number, and the smallest distance was actually on the between the
-     * last two points in a given row and (2) The smallest distance was actually in the direction
-     * orthogonal to that which was getting traversed by iterating through the MatOfPoint2f in order.
+     * width of the image is an odd number, and the smallest distance was actually on the between
+     * the last two points in a given row and (2) The smallest distance was actually in the
+     * direction orthogonal to that which was getting traversed by iterating through the
+     * MatOfPoint2f in order.
      *
      * <p>I've chosen not to handle these for speed's sake, and because, really, you don't need the
      * exact answer for "min distance". you just need something fairly reasonable.
@@ -196,7 +199,8 @@ public class FindBoardCornersPipe
             // +1 idx Neighbor distance
             double[] startPoint = inPoints.get(pointIdx, 0);
             double[] endPoint = inPoints.get(pointIdx + 1, 0);
-            double distToNext = Math.hypot(startPoint[0] - endPoint[0], startPoint[1] - endPoint[1]);
+            double distToNext =
+                    Math.hypot(startPoint[0] - endPoint[0], startPoint[1] - endPoint[1]);
 
             minSpacing = Math.min(distToNext, minSpacing);
         }
@@ -274,11 +278,13 @@ public class FindBoardCornersPipe
      * @return Frame resolution, object points, board corners
      */
     private FindBoardCornersPipeResult findBoardCorners(Pair<Mat, Mat> in) {
-        /** 3 dimensional, the physical board point coordinates, Z is always zero for a flat board */
+        /**
+         * 3 dimensional, the physical board point coordinates, Z is always zero for a flat board
+         */
         final MatOfPoint3f objectPoints = createObjectPoints();
         /**
-         * 2 dimensional, the likely distorted board on the flat camera sensor frame posed relative to
-         * the target board on the flat camera sensor frame posed relative to the target
+         * 2 dimensional, the likely distorted board on the flat camera sensor frame posed relative
+         * to the target board on the flat camera sensor frame posed relative to the target
          */
         final MatOfPoint2f imagePoints = new MatOfPoint2f();
         /** Decimation level that the points were captured at */
@@ -300,7 +306,8 @@ public class FindBoardCornersPipe
             case CHARUCOBOARD:
                 ids = new MatOfInt();
 
-                // These Mats are references to existing memory, so there shouldn't be a substantial cost to
+                // These Mats are references to existing memory, so there shouldn't be a substantial
+                // cost to
                 // allocating them
                 detector.detectBoard(inFrame, detectedCorners, ids);
 
@@ -332,8 +339,10 @@ public class FindBoardCornersPipe
                 Objdetect.drawDetectedCornersCharuco(
                         outFrame, detectedCorners, ids, new Scalar(0, 0, 255)); // Red Text
 
-                // Mrcal wants our top-left corner at 0, 0. But charuco hands us the first corner at the
-                // first board intersection, which is inset a couple mm. Adjust such that the top-left
+                // Mrcal wants our top-left corner at 0, 0. But charuco hands us the first corner at
+                // the
+                // first board intersection, which is inset a couple mm. Adjust such that the
+                // top-left
                 // corner is at 0,0
                 {
                     // don't trust any particular ordering
@@ -343,7 +352,9 @@ public class FindBoardCornersPipe
 
                     // Shift all object points so that the origin is at (0,0)
                     List<Point3> shiftedPoints =
-                            pointList.stream().map(p -> new Point3(p.x - minX, p.y - minY, p.z)).toList();
+                            pointList.stream()
+                                    .map(p -> new Point3(p.x - minX, p.y - minY, p.z))
+                                    .toList();
 
                     objectPoints.fromList(shiftedPoints);
                 }
@@ -355,7 +366,8 @@ public class FindBoardCornersPipe
                     // All points are present, so ids are unnecessary
                     // Ensure points are ordered by id, which OpenCV should guarantee
                     int currentId = 0;
-                    // Scan for out of place elements first to determine if data conversion is necessary
+                    // Scan for out of place elements first to determine if data conversion is
+                    // necessary
                     for (; currentId < ids.rows(); currentId++) {
                         if (ids.at(int.class, currentId, 0).getV() != currentId) {
                             break;
@@ -366,7 +378,8 @@ public class FindBoardCornersPipe
                         var objectPointsList = objectPoints.toList();
                         var imagePointsList = imagePoints.toList();
                         var idsList = ids.toList();
-                        sortRelatedSubranges(idsList, List.of(objectPointsList, imagePointsList), currentId);
+                        sortRelatedSubranges(
+                                idsList, List.of(objectPointsList, imagePointsList), currentId);
                         logger.debug("Sorted ids: " + idsList);
                         objectPoints.fromList(objectPointsList);
                         imagePoints.fromList(imagePointsList);
@@ -378,7 +391,8 @@ public class FindBoardCornersPipe
                 break;
             case CHESSBOARD:
                 // Reduce the image size to be much more manageable
-                // Note that opencv will copy the frame if no resize is requested; we can skip this since we
+                // Note that opencv will copy the frame if no resize is requested; we can skip this
+                // since we
                 // don't need that copy. See:
                 // https://github.com/opencv/opencv/blob/a8ec6586118c3f8e8f48549a85f2da7a5b78bcc9/modules/imgproc/src/resize.cpp#L4185
                 Mat frame;
@@ -403,7 +417,8 @@ public class FindBoardCornersPipe
                 rescalePointsToOrigFrame(smallerImagePoints, inFrame, imagePoints);
 
                 // Do sub corner pix for drawing chessboard when using OpenCV
-                Imgproc.cornerSubPix(inFrame, imagePoints, getWindowSize(imagePoints), zeroZone, criteria);
+                Imgproc.cornerSubPix(
+                        inFrame, imagePoints, getWindowSize(imagePoints), zeroZone, criteria);
 
                 // draw the chessboard, doesn't have to be different for a dot board since it just
                 // reprojects the corners we found
@@ -433,7 +448,8 @@ public class FindBoardCornersPipe
             return null;
         }
 
-        return new FindBoardCornersPipeResult(inFrame.size(), objectPoints, imagePoints, level, ids);
+        return new FindBoardCornersPipeResult(
+                inFrame.size(), objectPoints, imagePoints, level, ids);
     }
 
     public static void sortRelatedSubranges(
@@ -482,7 +498,11 @@ public class FindBoardCornersPipe
         public Mat inputImage = null;
 
         public FindBoardCornersPipeResult(
-                Size size, MatOfPoint3f objectPoints, MatOfPoint2f imagePoints, float level, MatOfInt ids) {
+                Size size,
+                MatOfPoint3f objectPoints,
+                MatOfPoint2f imagePoints,
+                float level,
+                MatOfInt ids) {
             this.size = size;
             this.objectPoints = objectPoints;
             this.imagePoints = imagePoints;

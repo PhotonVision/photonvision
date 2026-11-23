@@ -29,8 +29,9 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculations {
     /**
-     * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
-     * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
+     * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated
+     * together to account for perspective distortion. Yaw is positive right, and pitch is positive
+     * up.
      *
      * @param offsetCenterX The X value of the offset principal point (cx) in pixels
      * @param targetCenterX The X value of the target's center point in pixels
@@ -54,7 +55,8 @@ public class TargetCalculations {
             MatOfPoint2f targetPoint = new MatOfPoint2f(new Point(targetCenterX, targetCenterY));
             try {
                 // Tighten up termination criteria
-                var termCriteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, 30, 1e-6);
+                var termCriteria =
+                        new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, 30, 1e-6);
                 Calib3d.undistortImagePoints(
                         targetPoint,
                         targetPoint,
@@ -64,7 +66,8 @@ public class TargetCalculations {
                 float[] buff = new float[2];
                 targetPoint.get(0, 0, buff);
 
-                // if outside of the imager, convergence fails, or really really bad user camera cal,
+                // if outside of the imager, convergence fails, or really really bad user camera
+                // cal,
                 // undistort will fail by giving us nans. at some point we should log this failure
                 // if we can't undistort, don't change the center location
                 if (Float.isFinite(buff[0]) && Float.isFinite(buff[1])) {
@@ -186,9 +189,15 @@ public class TargetCalculations {
 
         var areaFraction = MathUtils.map(currentArea, lowerArea, upperArea, 0, 1);
         var xLerp =
-                MathUtils.lerp(dualOffsetValues.firstPoint.x, dualOffsetValues.secondPoint.x, areaFraction);
+                MathUtils.lerp(
+                        dualOffsetValues.firstPoint.x,
+                        dualOffsetValues.secondPoint.x,
+                        areaFraction);
         var yLerp =
-                MathUtils.lerp(dualOffsetValues.firstPoint.y, dualOffsetValues.secondPoint.y, areaFraction);
+                MathUtils.lerp(
+                        dualOffsetValues.firstPoint.y,
+                        dualOffsetValues.secondPoint.y,
+                        areaFraction);
 
         return new Point(xLerp, yLerp);
     }

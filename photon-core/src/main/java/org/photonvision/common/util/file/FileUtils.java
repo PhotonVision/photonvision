@@ -36,8 +36,7 @@ public class FileUtils {
             var files = Files.walk(path);
 
             // delete directory including files and sub-folders
-            files
-                    .sorted(Comparator.reverseOrder())
+            files.sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     // .filter(File::isFile) // we want to delete directories and sub-dirs, too
                     .forEach((var file) -> deleteFile(file.toPath()));

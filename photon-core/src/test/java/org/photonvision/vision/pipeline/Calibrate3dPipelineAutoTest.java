@@ -67,7 +67,9 @@ public class Calibrate3dPipelineAutoTest {
     private static void runFrame(Calibrate3dPipeline pipeline, double translateX) {
         Mat image =
                 Imgcodecs.imread(
-                        TestUtils.getCharucoBoardImagesPath().resolve(IMAGE_RELATIVE_PATH).toString());
+                        TestUtils.getCharucoBoardImagesPath()
+                                .resolve(IMAGE_RELATIVE_PATH)
+                                .toString());
         if (translateX != 0) {
             Mat translated = new Mat();
             Mat transform = Mat.eye(2, 3, CvType.CV_64F);
@@ -83,7 +85,8 @@ public class Calibrate3dPipelineAutoTest {
                         new CVMat(image),
                         new CVMat(),
                         FrameThresholdType.NONE,
-                        new FrameStaticProperties((int) RESOLUTION.width, (int) RESOLUTION.height, 67, null));
+                        new FrameStaticProperties(
+                                (int) RESOLUTION.width, (int) RESOLUTION.height, 67, null));
         try (CVPipelineResult ignored = pipeline.run(frame, QuirkyCamera.DefaultCamera)) {
             // Result is auto-closed
         }
@@ -115,7 +118,8 @@ public class Calibrate3dPipelineAutoTest {
             assertEquals(1, pipeline.foundCornersList.size());
             assertEquals(Boolean.FALSE, pipeline.getMovedFarEnough());
 
-            // Move the board far enough, but keep it moving between frames -> still no snapshot, and
+            // Move the board far enough, but keep it moving between frames -> still no snapshot,
+            // and
             // the UI alternates between hold-still and move-farther
             double shift = minMovementPx + 50;
             runFrame(pipeline, shift);

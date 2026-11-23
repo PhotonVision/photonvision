@@ -35,7 +35,8 @@ import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.util.Pair;
 
 public class Draw3dTargetsPipe
-        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {
+        extends MutatingPipe<
+                Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {
     MatOfPoint boundingRect = new MatOfPoint();
     MatOfPoint2f projectedMat = new MatOfPoint2f();
     MatOfPoint contourMat = new MatOfPoint();
@@ -70,18 +71,27 @@ public class Draw3dTargetsPipe
                 if (contourMat.size().empty()) {
                     logger.error("Convex hull is empty?");
                     logger.debug(
-                            "Orig. Convex Hull: " + target.m_mainContour.getConvexHull().size().toString());
+                            "Orig. Convex Hull: "
+                                    + target.m_mainContour.getConvexHull().size().toString());
                     continue;
                 }
                 Imgproc.drawContours(
-                        in.getFirst(), List.of(contourMat), -1, ColorHelper.colorToScalar(Color.green), 1);
+                        in.getFirst(),
+                        List.of(contourMat),
+                        -1,
+                        ColorHelper.colorToScalar(Color.green),
+                        1);
 
                 // draw approximate polygon
                 var poly = target.getApproximateBoundingPolygon();
                 if (poly != null) {
                     divideMat2f(poly, contourMat);
                     Imgproc.drawContours(
-                            in.getFirst(), List.of(contourMat), -1, ColorHelper.colorToScalar(Color.blue), 2);
+                            in.getFirst(),
+                            List.of(contourMat),
+                            -1,
+                            ColorHelper.colorToScalar(Color.blue),
+                            2);
                 }
             }
 
@@ -145,9 +155,12 @@ public class Draw3dTargetsPipe
 
                 // Draw X, Y and Z axis
 
-                // The detected target's rvec and tvec perform a rotation-translation transformation which
-                // converts points in the target's coordinate system to the camera's. This means applying
-                // the transformation to the target point (0,0,0) for example would give the target's center
+                // The detected target's rvec and tvec perform a rotation-translation transformation
+                // which
+                // converts points in the target's coordinate system to the camera's. This means
+                // applying
+                // the transformation to the target point (0,0,0) for example would give the
+                // target's center
                 // relative to the camera.
                 Calib3d.projectPoints(
                         axesMat,
@@ -229,7 +242,8 @@ public class Draw3dTargetsPipe
             var hullAtI = hull[i];
             pointArray[i] =
                     new Point(
-                            hullAtI.x / (double) params.divisor.value, hullAtI.y / (double) params.divisor.value);
+                            hullAtI.x / (double) params.divisor.value,
+                            hullAtI.y / (double) params.divisor.value);
         }
         dst.fromArray(pointArray);
     }

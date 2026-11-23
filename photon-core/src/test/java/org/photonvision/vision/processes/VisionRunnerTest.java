@@ -136,7 +136,9 @@ public class VisionRunnerTest {
         private final boolean needsProcessed;
 
         PipelineUnderTest(
-                Supplier<? extends CVPipeline> factory, boolean needsColor, boolean needsProcessed) {
+                Supplier<? extends CVPipeline> factory,
+                boolean needsColor,
+                boolean needsProcessed) {
             this.factory = factory;
             this.needsColor = needsColor;
             this.needsProcessed = needsProcessed;

@@ -33,7 +33,8 @@ public class NumberListUtils {
         double result;
         int n = collection.size() / 2;
 
-        if (collection.size() % 2 == 0) // even number of items; find the middle two and average them
+        if (collection.size() % 2
+                == 0) // even number of items; find the middle two and average them
         result =
                     (nthSmallest(collection, n - 1, comp).doubleValue()
                                     + nthSmallest(collection, n, comp).doubleValue())

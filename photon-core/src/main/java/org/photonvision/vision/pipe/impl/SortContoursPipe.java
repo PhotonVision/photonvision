@@ -42,12 +42,14 @@ public class SortContoursPipe
             if (params.sortMode() != ContourSortMode.Centermost) {
                 m_sortedContours.sort(params.sortMode().getComparator());
             } else {
-                // we need knowledge of camera properties to calculate this distance -- do it ourselves
+                // we need knowledge of camera properties to calculate this distance -- do it
+                // ourselves
                 m_sortedContours.sort(Comparator.comparingDouble(this::calcSquareCenterDistance));
             }
         }
 
-        return new ArrayList<>(m_sortedContours.subList(0, Math.min(in.size(), params.maxTargets())));
+        return new ArrayList<>(
+                m_sortedContours.subList(0, Math.min(in.size(), params.maxTargets())));
     }
 
     private double calcSquareCenterDistance(PotentialTarget tgt) {
@@ -60,5 +62,7 @@ public class SortContoursPipe
     public void release() {}
 
     public static record SortContoursParams(
-            ContourSortMode sortMode, int maxTargets, FrameStaticProperties frameStaticProperties) {}
+            ContourSortMode sortMode,
+            int maxTargets,
+            FrameStaticProperties frameStaticProperties) {}
 }

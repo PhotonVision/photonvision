@@ -145,13 +145,19 @@ public class CalibrationRotationPipeTest {
         // and rotate them once distorted
         var rotatedDistortedPoints =
                 distortedOriginalPoints.stream()
-                        .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
+                        .map(
+                                it ->
+                                        rot.rotatePoint(
+                                                it, frameProps.imageWidth, frameProps.imageHeight))
                         .toList();
 
         // Now let's instead rotate then distort
         var rotatedOriginalPoints =
                 Arrays.stream(originalPoints)
-                        .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
+                        .map(
+                                it ->
+                                        rot.rotatePoint(
+                                                it, frameProps.imageWidth, frameProps.imageHeight))
                         .toList();
 
         var distortedRotatedPoints =
@@ -316,7 +322,8 @@ public class CalibrationRotationPipeTest {
 
         var pose_base = ret.output.get(0).getBestCameraToTarget3d();
         // So this is ostensibly a rotation about camera +Z,
-        // but this is actually camera +X for our AprilTag pipe since we rotate to stay in ""WPILib""".
+        // but this is actually camera +X for our AprilTag pipe since we rotate to stay in
+        // ""WPILib""".
         // Negative to return to upright
         var pose_unrotated = retRotated.output.get(0).getBestCameraToTarget3d();
 

@@ -36,7 +36,8 @@ public class MultiTargetPNPPipe
                 List<TrackedTarget>,
                 Optional<MultiTargetPNPResult>,
                 MultiTargetPNPPipe.MultiTargetPNPPipeParams> {
-    private static final Logger logger = new Logger(MultiTargetPNPPipe.class, LogGroup.VisionModule);
+    private static final Logger logger =
+            new Logger(MultiTargetPNPPipe.class, LogGroup.VisionModule);
 
     private boolean hasWarned = false;
 
@@ -89,5 +90,7 @@ public class MultiTargetPNPPipe
     public void release() {}
 
     public static record MultiTargetPNPPipeParams(
-            CameraCalibrationCoefficients cameraCoefficients, Field field, TargetModel targetModel) {}
+            CameraCalibrationCoefficients cameraCoefficients,
+            Field field,
+            TargetModel targetModel) {}
 }

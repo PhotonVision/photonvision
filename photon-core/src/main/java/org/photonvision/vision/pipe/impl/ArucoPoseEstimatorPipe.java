@@ -122,7 +122,8 @@ public class ArucoPoseEstimatorPipe
             var tagSize = newParams.tagSize();
 
             // This order is relevant for SOLVEPNP_IPPE_SQUARE
-            // The expected 2d correspondences with a tag facing the camera would be (BR, BL, TL, TR)
+            // The expected 2d correspondences with a tag facing the camera would be (BR, BL, TL,
+            // TR)
             objectPoints.fromArray(
                     new Point3(-tagSize / 2, tagSize / 2, 0),
                     new Point3(tagSize / 2, tagSize / 2, 0),

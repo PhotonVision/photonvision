@@ -114,7 +114,8 @@ public class VisionModuleManagerTest {
 
         @Override
         public void setVideoModeInternal(VideoMode videoMode) {
-            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV(), null);
+            this.frameStaticProperties =
+                    new FrameStaticProperties(getCurrentVideoMode(), getFOV(), null);
         }
 
         @Override
@@ -230,13 +231,16 @@ public class VisionModuleManagerTest {
             USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
 
             var modules =
-                    List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
+                    List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2)
+                            .stream()
                             .map(vmm::addSource)
                             .toList();
 
             System.out.println(
                     Arrays.toString(
-                            modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
+                            modules.stream()
+                                    .map(it -> it.getCameraConfiguration().streamIndex)
+                                    .toArray()));
             var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
 
             assertTrue(usbSimulation.equals(usbSimulation));

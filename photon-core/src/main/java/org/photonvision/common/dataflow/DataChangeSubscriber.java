@@ -42,7 +42,8 @@ public abstract class DataChangeSubscriber {
         this(wantedSources, DataChangeDestination.AllDestinations);
     }
 
-    public DataChangeSubscriber(DataChangeDestination.DataChangeDestinationList wantedDestinations) {
+    public DataChangeSubscriber(
+            DataChangeDestination.DataChangeDestinationList wantedDestinations) {
         this(DataChangeSource.AllSources, wantedDestinations);
     }
 
