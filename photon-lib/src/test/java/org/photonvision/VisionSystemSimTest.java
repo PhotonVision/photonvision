@@ -253,8 +253,8 @@ class VisionSystemSimTest {
 
         assertTrue(waitForSequenceNumber(camera, 1).hasTargets());
 
-        // Pitched back camera should mean target goes out of view below the robot as
-        // distance increases
+        // Pitched back camera should mean target goes out of view below the robot as distance
+        // increases
         robotPose = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
 
@@ -361,17 +361,13 @@ class VisionSystemSimTest {
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
-        // Since the camera is level with the target, a positive-upward point will mean
-        // the target is in
-        // the
-        // lower half of the image
-        // which should produce negative pitch.
+        // Since the camera is level with the target, a positive-upward point will mean the target
+        // is in the lower half of the image, which should produce negative pitch.
         assertEquals(testPitch, tgt.getPitch(), kRotDeltaDeg);
     }
 
     private static Stream<Arguments> testDistanceCalcArgs() {
-        // Arbitrary and fairly random assortment of distances, camera pitches, and
-        // heights
+        // Arbitrary and fairly random assortment of distances, camera pitches, and heights
         return Stream.of(
                 Arguments.of(5, -15.98, 0),
                 Arguments.of(6, -15.98, 1),
@@ -423,13 +419,10 @@ class VisionSystemSimTest {
 
         visionSysSim.update(robotPose);
 
-        // Note that target 2d yaw/pitch accuracy is hindered by two factors in
-        // photonvision:
-        // 1. These are calculated with the average of the minimum area rectangle, which
-        // does not
+        // Note that target 2d yaw/pitch accuracy is hindered by two factors in photonvision:
+        //  1. These are calculated with the average of the minimum area rectangle, which does not
         // actually find the target center because of perspective distortion.
-        // 2. Yaw and pitch are calculated separately which gives incorrect pitch
-        // values.
+        //  2. Yaw and pitch are calculated separately which gives incorrect pitch values.
 
         var res = waitForSequenceNumber(camera, 1);
         assertTrue(res.hasTargets());

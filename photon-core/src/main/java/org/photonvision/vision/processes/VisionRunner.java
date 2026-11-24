@@ -236,9 +236,8 @@ public class VisionRunner implements AutoCloseable {
 
             var pipeline = pipelineSupplier.get();
 
-            // Tell our camera implementation here what kind of pre-processing we need it to
-            // be doing
-            // (pipeline-dependent). I kinda hate how much leak this has...
+            // Tell our camera implementation here what kind of pre-processing we need it to be
+            // doing (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
             configureFrameProviderForPipeline(frameSupplier, pipeline);
 
@@ -255,8 +254,8 @@ public class VisionRunner implements AutoCloseable {
             } else if (pipeline == pipelineSupplier.get()) {
                 if (!enabledSupplier.get()) {
                     // If we are skipping processing due to the camera being disabled, we still want
-                    // to send a
-                    // result with the new frame and settings, just with a null pipeline result
+                    // to send a result with the new frame and settings, just with a null pipeline
+                    // result
                     pipelineResultConsumer.accept(
                             new CVPipelineResult(0l, 0, 0, null, new Frame()));
                     frame.release();
@@ -270,8 +269,7 @@ public class VisionRunner implements AutoCloseable {
                 // pipelines should check themselves
 
                 // If we have an FPS limit, check if it's 0, in which case we skip processing and
-                // just send
-                // a blank frame, otherwise we sleep until the next tick
+                // just send a blank frame, otherwise we sleep until the next tick
                 waitUntilNextTick(start);
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);

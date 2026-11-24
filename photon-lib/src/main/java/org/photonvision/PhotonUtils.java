@@ -133,11 +133,9 @@ public final class PhotonUtils {
      */
     public static Transform2d estimateCameraToTarget(
             Translation2d cameraToTargetTranslation, Pose2d fieldToTarget, Rotation2d gyroAngle) {
-        // This pose maps our camera at the origin out to our target, in the robot
-        // reference frame
-        // The translation part of this Transform2d is from the above step, and the
-        // rotation uses our robot's
-        // gyro.
+        // This pose maps our camera at the origin out to our target, in the robot reference frame.
+        // The translation part of this Transform2d is from the above step, and the rotation uses
+        // our robot's gyro.
         return new Transform2d(
                 cameraToTargetTranslation, gyroAngle.times(-1).minus(fieldToTarget.getRotation()));
     }

@@ -213,9 +213,8 @@ public class DbMigration {
                     }
 
                     // Migrate pipeline_jsons
-                    // before 2027, pipeline_jsons contained an array of strings and each string was
-                    // a
-                    // pipeline object
+                    // Before 2027, pipeline_jsons contained an array of strings and each string was
+                    // a pipeline object
                     if (!configJson.containsKey("pipelineSettings")) {
                         try {
                             var rawPipelineJsons =

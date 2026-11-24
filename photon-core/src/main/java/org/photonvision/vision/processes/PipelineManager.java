@@ -74,8 +74,7 @@ public class PipelineManager implements AutoCloseable {
 
         calibration3dPipeline = new Calibrate3dPipeline();
 
-        // We know that at this stage, VisionRunner hasn't yet started so we're good to
-        // do this from
+        // We know that at this stage, VisionRunner hasn't yet started so we're good to do this from
         // this thread
         this.setIndex(defaultIndex);
         updatePipelineFromRequested();
@@ -459,9 +458,8 @@ public class PipelineManager implements AutoCloseable {
 
     public void changePipelineType(int newType) {
         // Find the PipelineType proposed
-        // To do this we look at all the PipelineType entries and look for one with
-        // matching
-        // base indexes
+        // To do this we look at all the PipelineType entries and look for one with matching base
+        // indexes
         PipelineType type =
                 Arrays.stream(PipelineType.values())
                         .filter(it -> it.baseIndex == newType)

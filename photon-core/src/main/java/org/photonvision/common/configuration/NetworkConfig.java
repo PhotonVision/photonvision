@@ -45,8 +45,7 @@ public class NetworkConfig {
 
     public NetworkConfig() {
         // We can (usually) manage networking on Linux devices, and if we can, we should try to.
-        // Command
-        // line inhibitions happen at a level above this class
+        // Command line inhibitions happen at a level above this class
         setShouldManage(deviceCanManageNetwork());
     }
 

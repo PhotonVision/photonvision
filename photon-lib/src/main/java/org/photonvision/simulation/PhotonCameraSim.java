@@ -457,8 +457,7 @@ public class PhotonCameraSim implements AutoCloseable {
             if (tgt.getModel().isSpherical) { // target is spherical
                 var model = tgt.getModel();
                 // orient the model to the camera (like a sprite/decal) so it appears similar
-                // regardless of
-                // view
+                // regardless of view
                 fieldCorners =
                         model.getFieldVertices(
                                 TargetModel.getOrientedPose(

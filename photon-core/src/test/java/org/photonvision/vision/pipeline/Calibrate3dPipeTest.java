@@ -333,8 +333,7 @@ public class Calibrate3dPipeTest {
         assertNotNull(cal.observations);
 
         // Confirm the calibrated center pixel is fairly close to of the "expected"
-        // location at the
-        // center of the sensor.
+        // location at the center of the sensor.
         // For all our data samples so far, this should be true.
         double centerXErrPct =
                 Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter)

@@ -257,8 +257,7 @@ public class TestUtils {
         System.out.println("CWD: " + Path.of("").toAbsolutePath());
 
         // VSCode likes to make this path relative to the wrong root directory, so a fun hack to
-        // tell
-        // if it's wrong
+        // tell if it's wrong
         Path ret = Path.of("test-resources").toAbsolutePath();
         if (Path.of("test-resources")
                 .toAbsolutePath()

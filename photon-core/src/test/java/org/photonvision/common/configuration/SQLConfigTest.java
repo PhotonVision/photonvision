@@ -341,9 +341,9 @@ public class SQLConfigTest {
         var field = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
         assertAll(
                 "Field layout checks",
-                // () -> assertEquals(field.tags, updatedField.tags),  // Works now, but will break
-                // when the
-                // tags in WPILib 2027 are updated for the new coordinate system
+                // () -> assertEquals(field.tags, updatedField.tags),
+                // ^ Works now, but will break when the tags in WPILib 2027 are updated for the new
+                // coordinate system
                 () -> assertEquals(field.tags.size(), updatedField.tags.size()),
                 () -> assertEquals(field.length, updatedField.length),
                 () -> assertEquals(field.width, updatedField.width));

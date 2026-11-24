@@ -148,8 +148,7 @@ public final class OpenCVHelp {
      */
     public static Rotation3d rvecToRotation(Mat rvecInput) {
         // Get the 'rodriguez' (axis-angle, where the norm is the angle about the normalized
-        // direction
-        // of the vector)
+        // direction of the vector)
         float[] data = new float[3];
         var wrapped = new Mat(rvecInput.rows(), rvecInput.cols(), CvType.CV_32F);
         rvecInput.convertTo(wrapped, CvType.CV_32F);

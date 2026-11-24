@@ -72,8 +72,7 @@ public class VisionModuleManager implements AutoCloseable {
         // since we can only stream 5 cameras at once
 
         // Big list, which should contain every vision source (currently loaded plus the new ones
-        // being
-        // added)
+        // being added)
         List<Integer> bigList =
                 this.getModules().stream()
                         .map(it -> it.getCameraConfiguration().streamIndex)

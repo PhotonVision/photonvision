@@ -58,8 +58,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     // orientation of the target in terms of aspect ratio
     public TargetOrientation contourTargetOrientation = TargetOrientation.Landscape;
 
-    // the mode in which to offset target center point based on the camera being offset on the
-    // robot
+    // the mode in which to offset target center point based on the camera being offset on the robot
     // (None, Single Point, Dual Point)
     public RobotOffsetPointMode offsetRobotOffsetMode = RobotOffsetPointMode.None;
 

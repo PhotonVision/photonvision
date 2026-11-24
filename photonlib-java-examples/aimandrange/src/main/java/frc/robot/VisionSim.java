@@ -55,8 +55,7 @@ public class VisionSim {
             cameraProp.setAvgLatencyMs(30);
             cameraProp.setLatencyStdDevMs(10);
             // Create a PhotonCameraSim which will update the linked PhotonCamera's values with
-            // visible
-            // targets.
+            // visible targets.
             cameraSim = new PhotonCameraSim(cam_in, cameraProp);
             // Add the simulated camera to view the targets on this simulated field.
             visionSim.addCamera(cameraSim, kRobotToCam);

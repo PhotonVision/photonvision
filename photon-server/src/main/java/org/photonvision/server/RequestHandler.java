@@ -127,8 +127,7 @@ public class RequestHandler {
 
         ConfigProvider.getInstance().setWriteTaskEnabled(false);
         ConfigProvider.getInstance().disableFlushOnShutdown();
-        // We want to delete the -whole- zip file, so we need to teardown loggers for
-        // now
+        // We want to delete the -whole- zip file, so we need to teardown loggers for now
         logger.info("Writing new settings zip (logs may be truncated)...");
         Logger.closeAllLoggers();
         if (ConfigProvider.saveUploadedSettingsZip(tempFilePath.get())) {
@@ -816,10 +815,6 @@ public class RequestHandler {
                     logger.error("Failed to load object detection model", e);
                     return;
                 } finally {
-                    // this finally block will run regardless of what happens in try/catch
-                    // please see
-                    // https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
-                    // for a summary on how finally works
                     if (objDetector != null) {
                         objDetector.release();
                     }
@@ -944,8 +939,7 @@ public class RequestHandler {
 
             Path targetModelsDir = ConfigProvider.getInstance().getModelsDirectory().toPath();
 
-            // Copy all files from the source models directory to the target models
-            // directory
+            // Copy all files from the source models directory to the target models directory
             try (var stream = Files.list(tempDir)) {
                 for (Path modelFile : stream.toList()) {
                     if (Files.isRegularFile(modelFile)

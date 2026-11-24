@@ -168,8 +168,7 @@ public class NetworkUtils {
      */
     public static List<NMDeviceInfo> getAllActiveInterfaces() {
         // Seems like if an interface exists but isn't actually connected, the connection name will
-        // be
-        // an empty string. Check here and only return connections with non-empty names
+        // be an empty string. Check here and only return connections with non-empty names
         return getAllInterfaces().stream().filter(it -> !it.connName.trim().isEmpty()).toList();
     }
 
@@ -272,8 +271,7 @@ public class NetworkUtils {
         var config = ConfigProvider.getInstance().getConfig().getNetworkConfig();
         try {
             // Not managed? See if we're connected to a network. General assumption is one interface
-            // in
-            // use at a time
+            // in use at a time
             if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
                 // Use NT client IP address to find the interface in use
                 if (!config.runNTServer) {
@@ -285,10 +283,8 @@ public class NetworkUtils {
                     }
                 }
                 // Connected to a localhost server or we are the server? Try resolving ourselves.
-                // Only
-                // returns a localhost address when there's no other interface available on Windows,
-                // but
-                // like to return a localhost address on Linux
+                // Only returns a localhost address when there's no other interface available on
+                // Windows, but like to return a localhost address on Linux
                 var localIface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
                 if (localIface != null) {
                     byte[] mac = localIface.getHardwareAddress();

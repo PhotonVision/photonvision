@@ -266,10 +266,8 @@ public class VideoSimUtil {
             Imgproc.resize(tempROI, tempROI, boundingRect.size(), 0, 0, Imgproc.INTER_AREA);
         }
 
-        // we want to copy ONLY the transformed tag to the result image, not the entire bounding
-        // rect
-        // using a mask only copies the source pixels which have an associated non-zero value in the
-        // mask
+        // Copy ONLY the transformed tag to the result image, not the entire bounding rect. Using a
+        // mask only copies the source pixels which have an associated non-zero value in the mask.
         Mat tempMask = Mat.zeros(tempROI.size(), CvType.CV_8UC1);
         Core.subtract(
                 extremeCorners,

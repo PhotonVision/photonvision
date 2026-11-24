@@ -101,8 +101,7 @@ public class VisionSourceManager implements AutoCloseable {
         final HashMap<String, CameraConfiguration> deserializedConfigs = new HashMap<>();
 
         // 1. Verify all camera unique names are unique and paths/types are unique for paranoia.
-        // This
-        // seems redundant, consider deleting
+        // This seems redundant, consider deleting
         for (var config : configs) {
             Predicate<PVCameraInfo> checkDuplicateCamera =
                     (other) ->
@@ -127,9 +126,8 @@ public class VisionSourceManager implements AutoCloseable {
             }
         }
 
-        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't care about
-        // if
-        // the underlying device is currently connected or not.
+        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't care if the
+        // underlying device is currently connected or not.
         deserializedConfigs.values().stream()
                 .filter(it -> !it.deactivated)
                 .map(this::loadVisionSourceFromCamConfig)
@@ -319,8 +317,7 @@ public class VisionSourceManager implements AutoCloseable {
         }
 
         // FileVisionSources are a bit quirky. They aren't enumerated by the above, but I still want
-        // my
-        // UI to look like it ought to work
+        // my UI to look like it ought to work
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
@@ -345,10 +342,8 @@ public class VisionSourceManager implements AutoCloseable {
         for (VisionModule module : vmm.getModules()) {
             PVCameraInfo matchedCameraInfo = module.getCameraConfiguration().matchedCameraInfo;
             // We use unique paths to determine if the module has a camera in the port. If no unique
-            // path
-            // is found that matches the module, it's removed from the mismatched set as a
-            // disconnected
-            // camera cannot be mismatched.
+            // path is found that matches the module, it's removed from the mismatched set since a
+            // disconnected camera cannot be mismatched.
             if (!cameraInfos.stream()
                     .map(PVCameraInfo::uniquePath)
                     .toList()

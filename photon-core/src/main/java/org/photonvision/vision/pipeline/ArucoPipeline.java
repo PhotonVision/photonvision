@@ -150,10 +150,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         List<TrackedTarget> targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
-            // Populate target list for multitag
-            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this
-            // should
-            // not be necessary.)
+            // Populate target list for multitag.
+            // TODO: Address circular dependencies. Multitag only requires corners and IDs, this
+            // should not be necessary.
 
             targetList.add(
                     new TrackedTarget(

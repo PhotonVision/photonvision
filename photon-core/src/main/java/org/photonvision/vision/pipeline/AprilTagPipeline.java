@@ -157,9 +157,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             usedDetections.add(detection);
 
             // Populate target list for multitag
-            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this
-            // should
-            // not be necessary.)
+            // TODO: Address circular dependencies. Multitag only requires corners and IDs, this
+            // should not be necessary.
             TrackedTarget target =
                     new TrackedTarget(
                             detection,

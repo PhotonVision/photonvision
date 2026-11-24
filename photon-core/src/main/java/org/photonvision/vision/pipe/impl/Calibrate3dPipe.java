@@ -77,8 +77,7 @@ public class Calibrate3dPipe
     private final Mat stdDeviationsIntrinsics = new Mat();
     private final Mat stdDeviationsExtrinsics = new Mat();
 
-    // Contains the re projection error of each snapshot by re projecting the
-    // corners we found and
+    // Contains the re projection error of each snapshot by re projecting the corners we found and
     // finding the Euclidean distance between the actual corners.
     private final Mat perViewErrors = new Mat();
 
@@ -147,8 +146,7 @@ public class Calibrate3dPipe
             Path imageSavePath) {
         // The observation levels are ignored since they are never used to skip points with the
         // current detectors. If this changes, the relevant points should be filtered out so they
-        // are
-        // not processed.
+        // are not processed.
 
         Mat cameraMatrix = new Mat(3, 3, CvType.CV_64F);
         MatOfDouble distortionCoefficients = new MatOfDouble();
@@ -304,8 +302,7 @@ public class Calibrate3dPipe
                         1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
         // We get these from the JNI (retsult.optimizedPoses), but these are subtly different from
-        // the
-        // ones our code used to produce. To preserve consistency, continue to redo this math
+        // the ones our code used to produce. To preserve consistency, continue to redo this math
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
         for (var observation : observationCorners) {
@@ -348,9 +345,8 @@ public class Calibrate3dPipe
                 params.squareSize,
                 CameraLensModel.LENSMODEL_OPENCV,
                 // If we only saved rvecs/tvecs (in our BoardObservations), it will break mrcal
-                // uncertainty
-                // calculation -- mrcal needs the optimization state vector at the solution. So save
-                // both
+                // uncertainty calculation -- mrcal needs the optimization state vector at the
+                // solution, so save both.
                 new OptimizationInputs(result.optimizedPoses));
     }
 
@@ -374,8 +370,7 @@ public class Calibrate3dPipe
         List<BoardObservation> observations = new ArrayList<>();
         for (int snapshotId = 0; snapshotId < observationData.size(); snapshotId++) {
             // Copy object points to a new mat to allow warp modification without affecting
-            // underlying
-            // data
+            // underlying data
             observationData.get(snapshotId).objectPoints.copyTo(objectPoints);
 
             List<Point> iPoints = observationData.get(snapshotId).imagePoints.toList();

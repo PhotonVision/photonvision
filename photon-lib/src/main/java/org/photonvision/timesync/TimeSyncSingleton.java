@@ -40,8 +40,7 @@ public class TimeSyncSingleton {
                 RuntimeLoader.loadLibrary("photontargetingJNI");
             } catch (IOException e) {
                 // Don't want to return early. We want to create the TimeSyncServer so the program
-                // crashes
-                // because we need it in order to function.
+                // crashes because we need it in order to function.
                 e.printStackTrace();
             }
 

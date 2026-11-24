@@ -267,8 +267,7 @@ public class PhotonCamera implements AutoCloseable {
         updateDisconnectAlert();
 
         // Grab the latest results. We don't care about the timestamps from NT - the metadata header
-        // has
-        // this, latency compensated by the Time Sync Client
+        // has this, latency compensated by the Time Sync Client
         var changes = resultSubscriber.getAllChanges();
         List<PhotonPipelineResult> ret = new ArrayList<>(changes.size());
         for (var c : changes) {
@@ -295,8 +294,7 @@ public class PhotonCamera implements AutoCloseable {
         updateDisconnectAlert();
 
         // Grab the latest result. We don't care about the timestamp from NT - the metadata header
-        // has
-        // this, latency compensated by the Time Sync Client
+        // has this, latency compensated by the Time Sync Client
         var ret = resultSubscriber.get();
 
         if (ret.timestamp == 0) return new PhotonPipelineResult();

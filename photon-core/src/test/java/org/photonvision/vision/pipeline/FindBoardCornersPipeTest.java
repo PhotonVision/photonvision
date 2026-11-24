@@ -37,8 +37,7 @@ public class FindBoardCornersPipeTest {
         Collections.sort(sorted);
 
         // This function expects that ids are a continuous range from 0 to n, already sorted prior
-        // to
-        // the start index
+        // to the start index
         FindBoardCornersPipe.sortRelatedSubranges(unsorted, List.of(evenness), 4);
 
         assertEquals(sorted, unsorted);

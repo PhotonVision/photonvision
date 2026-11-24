@@ -156,12 +156,9 @@ public class Draw3dTargetsPipe
                 // Draw X, Y and Z axis
 
                 // The detected target's rvec and tvec perform a rotation-translation transformation
-                // which
-                // converts points in the target's coordinate system to the camera's. This means
-                // applying
-                // the transformation to the target point (0,0,0) for example would give the
-                // target's center
-                // relative to the camera.
+                // which converts points in the target's coordinate system to the camera's. This
+                // means applying the transformation to the target point (0,0,0) for example would
+                // give the target's center relative to the camera.
                 Calib3d.projectPoints(
                         axesMat,
                         target.getCameraRelativeRvec(),

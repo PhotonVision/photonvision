@@ -50,8 +50,7 @@ public class DrawCalibrationPipe
         var diag = Math.hypot(imgSz.width, imgSz.height);
 
         // heuristic: about 4px at a diagonal of 750px, or .5%, 'looks good'. keep it at least 3px
-        // at
-        // worst tho
+        // at worst tho
         int r = (int) Math.max(diag * 4.0 / 750.0, 3);
         int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
 

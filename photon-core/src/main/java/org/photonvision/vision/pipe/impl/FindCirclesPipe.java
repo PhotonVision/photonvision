@@ -32,8 +32,7 @@ public class FindCirclesPipe
         extends CVPipe<
                 Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams> {
     // Output vector of found circles. Each vector is encoded as 3 or 4 element floating-point
-    // vector
-    // (x,y,radius) or (x,y,radius,votes) .
+    // vector (x,y,radius) or (x,y,radius,votes).
     private final Mat circles = new Mat();
 
     /**
@@ -73,13 +72,9 @@ public class FindCirclesPipe
                 minRadius,
                 maxRadius);
         // Great, we now found the center point of the circle, and it's radius, but we have no idea
-        // what
-        // contour it corresponds to
-        // Each contour can only match to one circle, so we keep a list of unmatched contours around
-        // and
-        // only match against them
-        // This does mean that contours closer than allowableThreshold aren't matched to anything if
-        // there's a 'better' option
+        // what contour it corresponds to. Each contour can only match to one circle, so we keep a
+        // list of unmatched contours and only match against them. This means that contours closer
+        // than allowableThreshold aren't matched to anything if there's a 'better' option.
         var unmatchedContours = in.getSecond();
         for (int x = 0; x < circles.cols(); x++) {
             // Grab the current circle we are looking at

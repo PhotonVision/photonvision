@@ -154,7 +154,6 @@ public class SystemMonitor {
         // Find the thermal zone type by logging on to the coprocessor and running:
         //     `cat /sys/class/thermal/thermal_zone*/type`
         // This command will show the types for all thermal zones.
-        //
         return GlobalConfig.get("oshi.os.linux.sensors.cputemperature.types");
     }
 

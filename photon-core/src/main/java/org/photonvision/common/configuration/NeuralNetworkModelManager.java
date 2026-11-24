@@ -336,8 +336,7 @@ public class NeuralNetworkModelManager {
                 properties = ModelProperties.createFromFilename(path.getFileName().toString());
 
                 // At this point this property is not serialized or known to our configuration. add
-                // to
-                // NeuralNetworkModelsSettings
+                // to NeuralNetworkModelsSettings
                 ConfigProvider.getInstance()
                         .getConfig()
                         .getNeuralNetworkProperties()
@@ -414,8 +413,7 @@ public class NeuralNetworkModelManager {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
 
-        // After loading all of the models, sort them by name to ensure a consistent
-        // ordering
+        // After loading all of the models, sort them by name to ensure a consistent ordering
         models.forEach(
                 (backend, backendModels) ->
                         backendModels.sort((a, b) -> a.getPath().compareTo(b.getPath())));

@@ -41,11 +41,8 @@ public class CameraCalibrationCoefficients implements Releasable {
     // Mirror of
     // https://github.com/dkogan/mrcal/blob/c311b0acdb29d3f6c1a5abeaf17dc6a7e2ab10d9/mrcal/cameramodel.py#L377
     // We must pass the exact optimization state vector back to mrcal when computing uncertainty,
-    // but
-    // we re-estimate the camera to object pose using SolvePNP
-    // So we need to keep this + the observation camera to object around. This input shall not
-    // change
-    // with "calibration rotation"
+    // but we re-estimate the camera to object pose using SolvePNP, so we need to keep this + the
+    // observation camera to object around. This input shall not change with "calibration rotation"
     public static record OptimizationInputs(List<Pose3d> rt_cam_ref) {}
 
     /** The unrotated resolution of the calibration */
@@ -152,8 +149,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 3, -p1);
 
                 // The rotated image size is the same as the unrotated image size, but the width and
-                // height
-                // are swapped
+                // height are swapped
                 rotatedImageSize = new Size(resolution.height, resolution.width);
                 break;
             case DEG_180_CCW:
@@ -187,8 +183,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 3, p1);
 
                 // The rotated image size is the same as the unrotated image size, but the width and
-                // height
-                // are swapped
+                // height are swapped
                 rotatedImageSize = new Size(resolution.height, resolution.width);
                 break;
         }

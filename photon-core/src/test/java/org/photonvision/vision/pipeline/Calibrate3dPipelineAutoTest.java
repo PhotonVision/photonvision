@@ -119,8 +119,7 @@ public class Calibrate3dPipelineAutoTest {
             assertEquals(Boolean.FALSE, pipeline.getMovedFarEnough());
 
             // Move the board far enough, but keep it moving between frames -> still no snapshot,
-            // and
-            // the UI alternates between hold-still and move-farther
+            // and the UI alternates between hold-still and move-farther
             double shift = minMovementPx + 50;
             runFrame(pipeline, shift);
             assertEquals(Boolean.TRUE, pipeline.getMovedFarEnough());

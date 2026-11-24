@@ -37,8 +37,7 @@ import org.photonvision.vision.camera.PVCameraInfo;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
 public class VisionSourceManagerTest {
-    // Test harness that overrides getConnectedCameras, but uses USB cameras for
-    // everything else
+    // Test harness that overrides getConnectedCameras, but uses USB cameras for everything else
     // when we start testing libcamera stuff we'll need to mock more stuff out
     private static class TestVsm extends VisionSourceManager {
         public List<PVCameraInfo> testCameras = new ArrayList<>();

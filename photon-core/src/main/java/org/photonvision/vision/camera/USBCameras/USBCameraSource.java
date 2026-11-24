@@ -42,8 +42,7 @@ public class USBCameraSource extends VisionSource {
 
     private void onCameraConnected() {
         // Aid to the development team - record the properties available for whatever the user
-        // plugged
-        // in
+        // plugged in
         printCameraProperaties();
 
         settables.onCameraConnected();
@@ -69,8 +68,7 @@ public class USBCameraSource extends VisionSource {
 
         // TODO - why do we delegate this to USBCameraSource? Quirks are part of the CameraConfig??
         // also TODO - is the config's saved usb info a reasonable guess for quirk detection? seems
-        // like
-        // yes to me...
+        // like yes to me...
         if (getCameraConfiguration().cameraQuirks == null) {
             int vid =
                     (config.matchedCameraInfo instanceof PVUsbCameraInfo cameraInfo)

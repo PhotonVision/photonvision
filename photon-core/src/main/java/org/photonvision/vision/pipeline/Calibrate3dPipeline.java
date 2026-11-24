@@ -131,9 +131,8 @@ public class Calibrate3dPipeline
         }
 
         if (getSettings().inputImageRotationMode != ImageRotationMode.DEG_0) {
-            // All this calibration assumes zero rotation. If we want a rotation, it should
-            // be applied at
-            // the output
+            // All this calibration assumes zero rotation. If we want a rotation, it should be
+            // applied at the output
             logger.error(
                     "Input image rotation was non-zero! Calibration wasn't designed to deal with this. Attempting to manually change back to zero");
             getSettings().inputImageRotationMode = ImageRotationMode.DEG_0;

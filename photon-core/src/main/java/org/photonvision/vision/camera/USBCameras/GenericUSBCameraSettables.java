@@ -37,8 +37,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     // auto exposure mode so we can restore it
     protected double lastExposureRaw = -1;
 
-    // Some cameras need logic where we re-apply brightness after
-    // changing exposure
+    // Some cameras need logic where we re-apply brightness after changing exposure
     protected int lastBrightness = -1;
 
     protected VideoProperty exposureAbsProp = null;
@@ -177,10 +176,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                         || configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311Controls))
                 && !cameraAutoExposure) {
             // OV9281, OV9782, and OV2311 on Linux seems to sometimes ignore our exposure requests
-            // on
-            // first boot if we're in manual mode. Poking the camera into and out of auto exposure
-            // seems
-            // to fix it.
+            // on first boot if we're in manual mode. Poking the camera into and out of auto
+            // exposure seems to fix it.
             try {
                 setAutoExposureImpl(false);
                 Thread.sleep(2000);
@@ -413,8 +410,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
         logger.info("Caching cscore properties");
 
-        // Now that our device is actually connected, we can enumerate properties/video
-        // modes
+        // Now that our device is actually connected, we can enumerate properties/video modes
         setUpExposureProperties();
         setUpWhiteBalanceProperties();
         cacheVideoModes();

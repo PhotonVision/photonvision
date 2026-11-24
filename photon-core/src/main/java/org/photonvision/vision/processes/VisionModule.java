@@ -79,8 +79,7 @@ public class VisionModule implements AutoCloseable {
     private final VisionModuleChangeSubscriber changeSubscriber;
     private final SubscriberHandle changeSubscriberHandle;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
-    // Raw result consumers run before any drawing has been done by the
-    // OutputStreamPipeline
+    // Raw result consumers run before any drawing has been done by the OutputStreamPipeline
     private final LinkedList<BiConsumer<Frame, List<TrackedTarget>>> streamResultConsumers =
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
@@ -635,11 +634,9 @@ public class VisionModule implements AutoCloseable {
     }
 
     private boolean camShouldControlLEDs() {
-        // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use
-        // for
-        // vision processing, and should command stuff to the LED's.
-        // TODO: Make LED control a property of the camera itself and controllable in
-        // the UI.
+        // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for vision
+        // processing, and should command stuff to the LED's.
+        // TODO: Make LED control a property of the camera itself and controllable in the UI.
         return isVendorCamera();
     }
 

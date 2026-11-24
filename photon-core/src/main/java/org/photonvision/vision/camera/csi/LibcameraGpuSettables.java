@@ -172,8 +172,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         lastGain = gain;
 
         // Map and clamp gain to values between 1 and 10 (libcamera min and gain that just seems
-        // higher
-        // than ever needed) from 0 to 100 (UI values).
+        // higher than ever needed) from 0 to 100 (UI values).
         var success =
                 LibCameraJNI.setAnalogGain(
                         r_ptr, Math.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
@@ -213,8 +212,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         var mode = (FPSRatedVideoMode) videoMode;
 
         // We need to make sure that other threads don't try to do anything funny while we're
-        // recreating
-        // the camera
+        // recreating the camera
         synchronized (CAMERA_LOCK) {
             if (r_ptr != 0) {
                 logger.debug("Stopping libcamera");

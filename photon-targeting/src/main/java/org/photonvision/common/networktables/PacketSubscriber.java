@@ -94,8 +94,7 @@ public class PacketSubscriber<T> implements AutoCloseable {
         var uuidStr = subscriber.getTopic().getProperty("message_uuid");
 
         // "null" can be returned if the property does not exist. From system knowledge, uuid can
-        // never
-        // be the string literal "null".
+        // never be the string literal "null".
         if (uuidStr.equals("null")) {
             return "";
         }

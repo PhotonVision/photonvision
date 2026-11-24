@@ -51,10 +51,9 @@ public class FindBoardCornersPipe
     CharucoBoard board;
     CharucoDetector detector;
 
-    // Configure the optimizations used while using OpenCV's find corners algorithm
-    // Since we return results in real-time, we want to ensure it goes as fast as
-    // possible
-    // and fails as fast as possible.
+    // Configure the optimizations used while using OpenCV's find corners algorithm. Since we return
+    // results in real-time, we want to ensure it goes as fast as possible and fails as fast as
+    // possible.
     static final int findChessboardFlags =
             Calib3d.CALIB_CB_NORMALIZE_IMAGE
                     | Calib3d.CALIB_CB_ADAPTIVE_THRESH
@@ -147,8 +146,7 @@ public class FindBoardCornersPipe
         }
 
         // We need at least 4 corners to be used for calibration but we force 10 just to ensure the
-        // user
-        // cant get away with a garbage calibration.
+        // user can't get away with a garbage calibration.
         long cornerCount = detectedCorners.total();
         long idCount = ids.total();
         return cornerCount >= 10 && cornerCount == idCount;
@@ -307,8 +305,7 @@ public class FindBoardCornersPipe
                 ids = new MatOfInt();
 
                 // These Mats are references to existing memory, so there shouldn't be a substantial
-                // cost to
-                // allocating them
+                // cost to allocating them
                 detector.detectBoard(inFrame, detectedCorners, ids);
 
                 // reformat the Mat to a List<Mat> for matchImagePoints
@@ -340,10 +337,8 @@ public class FindBoardCornersPipe
                         outFrame, detectedCorners, ids, new Scalar(0, 0, 255)); // Red Text
 
                 // Mrcal wants our top-left corner at 0, 0. But charuco hands us the first corner at
-                // the
-                // first board intersection, which is inset a couple mm. Adjust such that the
-                // top-left
-                // corner is at 0,0
+                // the first board intersection, which is inset a couple mm. Adjust such that the
+                // top-left corner is at 0,0
                 {
                     // don't trust any particular ordering
                     List<Point3> pointList = objectPoints.toList();
@@ -392,8 +387,7 @@ public class FindBoardCornersPipe
             case CHESSBOARD:
                 // Reduce the image size to be much more manageable
                 // Note that opencv will copy the frame if no resize is requested; we can skip this
-                // since we
-                // don't need that copy. See:
+                // since we don't need that copy. See:
                 // https://github.com/opencv/opencv/blob/a8ec6586118c3f8e8f48549a85f2da7a5b78bcc9/modules/imgproc/src/resize.cpp#L4185
                 Mat frame;
                 if (params.divisor() != FrameDivisor.NONE) {
