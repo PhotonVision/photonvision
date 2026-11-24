@@ -37,8 +37,7 @@ public class CoordinateConversionTest {
     @Test
     public void testAprilTagToOpenCV() {
         // AprilTag and OpenCV both use the EDN coordinate system. AprilTag, however, assumes the
-        // tag's
-        // z-axis points away from the camera while we expect it to point towards the camera.
+        // tag's z-axis points away from the camera while we expect it to point towards the camera.
         var apriltag =
                 new Transform3d(
                         new Translation3d(1, 2, 3),
