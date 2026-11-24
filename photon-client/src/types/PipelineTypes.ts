@@ -14,6 +14,15 @@ export enum PipelineType {
   ObjectDetection = 7
 }
 
+/**
+ * Fiducial detection algorithm selectable within the AprilTag pipeline. Selecting
+ * Aruco makes the frontend drive the backend's Aruco pipeline instead of the AprilTag one.
+ */
+export enum FiducialAlgorithm {
+  AprilTag = PipelineType.AprilTag,
+  Aruco = PipelineType.Aruco
+}
+
 export enum AprilTagFamily {
   Family36h11 = 0,
   Family16h5 = 1

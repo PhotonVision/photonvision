@@ -18,6 +18,11 @@ import IconMenu from "~icons/mdi/menu";
 // Common RegEx used for naming both pipelines and cameras
 const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
 
+// ArUco pipelines are surfaced as AprilTag pipelines that use the ArUco fiducial algorithm,
+// so the type selectors only ever show AprilTag for both backend pipeline types.
+const selectablePipelineType = (type: WebsocketPipelineType): WebsocketPipelineType =>
+  type === WebsocketPipelineType.Aruco ? WebsocketPipelineType.AprilTag : type;
+
 // Camera Name Edit
 const isCameraNameEdit = ref(false);
 const currentCameraName = ref(useCameraSettingsStore().currentCameraSettings.nickname);
@@ -108,13 +113,14 @@ const cancelPipelineNameEdit = () => {
 // Pipeline Creation
 const showPipelineCreationDialog = ref(false);
 const newPipelineName = ref("");
-const newPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
+const newPipelineType = ref<WebsocketPipelineType>(
+  selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType)
+);
 const validNewPipelineTypes = computed(() => {
   const pipelineTypes = [
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
     { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
-    { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
-    { name: "ArUco", value: WebsocketPipelineType.Aruco }
+    { name: "AprilTag", value: WebsocketPipelineType.AprilTag }
   ];
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
@@ -123,7 +129,7 @@ const validNewPipelineTypes = computed(() => {
 });
 const showCreatePipelineDialog = () => {
   newPipelineName.value = "";
-  newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  newPipelineType.value = selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType);
   showPipelineCreationDialog.value = true;
 };
 const createNewPipeline = () => {
@@ -135,7 +141,7 @@ const createNewPipeline = () => {
 const cancelPipelineCreation = () => {
   showPipelineCreationDialog.value = false;
   newPipelineName.value = "";
-  newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  newPipelineType.value = selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType);
 };
 
 // Pipeline Deletion
@@ -151,8 +157,7 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
   const pipelineTypes = [
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
     { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
-    { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
-    { name: "ArUco", value: WebsocketPipelineType.Aruco }
+    { name: "AprilTag", value: WebsocketPipelineType.AprilTag }
   ];
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
@@ -170,7 +175,9 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
 
   return pipelineTypes;
 });
-const pipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
+const pipelineType = ref<WebsocketPipelineType>(
+  selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType)
+);
 const currentPipelineType = computed<WebsocketPipelineType>({
   get: () => {
     if (useCameraSettingsStore().isDriverMode) return WebsocketPipelineType.DriverMode;
@@ -189,7 +196,7 @@ const confirmChangePipelineType = () => {
   showPipelineTypeChangeDialog.value = false;
 };
 const cancelChangePipelineType = () => {
-  pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  pipelineType.value = selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType);
   showPipelineTypeChangeDialog.value = false;
 };
 
@@ -210,10 +217,8 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       pipelineType.value = WebsocketPipelineType.ColoredShape;
       break;
     case PipelineType.AprilTag:
-      pipelineType.value = WebsocketPipelineType.AprilTag;
-      break;
     case PipelineType.Aruco:
-      pipelineType.value = WebsocketPipelineType.Aruco;
+      pipelineType.value = WebsocketPipelineType.AprilTag;
       break;
     case PipelineType.ObjectDetection:
       pipelineType.value = WebsocketPipelineType.ObjectDetection;
@@ -228,7 +233,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
 );
 const selectCamera = (cameraUniqueName: string) => {
   useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
-  pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  pipelineType.value = selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType);
 };
 </script>
 
