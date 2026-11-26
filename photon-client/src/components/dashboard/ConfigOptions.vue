@@ -62,13 +62,7 @@ const getTabGroups = (): ConfigOption[][] => {
   } else if (xxlAndUp.value) {
     return [
       [allTabs.inputTab],
-      [
-        allTabs.thresholdTab,
-        allTabs.contoursTab,
-        allTabs.apriltagTab,
-        allTabs.objectDetectionTab,
-        allTabs.outputTab
-      ],
+      [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   }

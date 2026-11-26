@@ -22,9 +22,7 @@ const currentPipelineSettings = computed<AprilTagPipelineSettings | ArucoPipelin
 const apriltagSettings = computed<AprilTagPipelineSettings>(
   () => currentPipelineSettings.value as AprilTagPipelineSettings
 );
-const arucoSettings = computed<ArucoPipelineSettings>(
-  () => currentPipelineSettings.value as ArucoPipelineSettings
-);
+const arucoSettings = computed<ArucoPipelineSettings>(() => currentPipelineSettings.value as ArucoPipelineSettings);
 const isAruco = computed(() => useCameraSettingsStore().currentPipelineType === PipelineType.Aruco);
 
 const algorithm = computed<FiducialAlgorithm>(() =>
@@ -44,7 +42,12 @@ const interactiveCols = computed(() =>
 </script>
 
 <template>
-  <div v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag || currentPipelineSettings.pipelineType === PipelineType.Aruco">
+  <div
+    v-if="
+      currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+      currentPipelineSettings.pipelineType === PipelineType.Aruco
+    "
+  >
     <pv-select
       :model-value="algorithm"
       label="Algorithm"
@@ -192,7 +195,8 @@ const interactiveCols = computed(() =>
         :switch-cols="interactiveCols"
         @update:modelValue="
           (value: boolean | undefined) =>
-            value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)
+            value !== undefined &&
+            useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)
         "
       />
       <pv-switch
@@ -202,8 +206,7 @@ const interactiveCols = computed(() =>
         :switch-cols="interactiveCols"
         @update:modelValue="
           (value: boolean | undefined) =>
-            value !== undefined &&
-            useCameraSettingsStore().changeCurrentPipelineSetting({ useAruco3: value }, false)
+            value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ useAruco3: value }, false)
         "
       />
       <pv-slider
