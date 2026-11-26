@@ -105,17 +105,16 @@ public class VisionRunnerTest {
      * Pipelines under test, with needsColor/needsProcessed hardcoded from whether {@code process}
      * reads {@code frame.colorImage} or {@code frame.processedImage} as input.
      *
-     * <p>Aruco's {@code debugThreshold} color-copy behavior is covered separately.
-     */
-    @SuppressWarnings("rawtypes")
-    public enum PipelineUnderTest {
+    * <p>Aruco's {@code debugThreshold} color-copy behavior is covered separately.
+    */
+   @SuppressWarnings("rawtypes")
+   public enum PipelineUnderTest {
         APRILTAG(AprilTagPipeline::new, false, true),
-
-        ARUCO(ArucoPipeline::new, false, true),
         // When Aruco is used with debug threshold, we need to copy the color image
-        ARUCO_DEBUG(
+        ARUCO(
                 () -> {
-                    ArucoPipeline pipeline = new ArucoPipeline();
+                    AprilTagPipeline pipeline = new AprilTagPipeline();
+                    pipeline.getSettings().algorithm = FiducialAlgorithm.Aruco;
                     pipeline.getSettings().debugThreshold = true;
                     return pipeline;
                 },
