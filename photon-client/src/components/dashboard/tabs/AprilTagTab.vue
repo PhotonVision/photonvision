@@ -16,16 +16,13 @@ import { normalizeNumberPair } from "@/lib/PhotonUtils";
 const currentPipelineSettings = computed<AprilTagPipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
-const apriltagSettings = computed<AprilTagPipelineSettings>(
-  () => currentPipelineSettings.value as AprilTagPipelineSettings
-);
 const isAruco = computed(() => currentPipelineSettings.value.algorithm === FiducialAlgorithm.Aruco);
 
 const algorithm = computed<FiducialAlgorithm>(() =>
   currentPipelineSettings.value.algorithm
 );
 const setAlgorithm = (value: FiducialAlgorithm) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting({ algorithm: value }, false);
+  useCameraSettingsStore().changeCurrentPipelineSetting({ algorithm: value }, true);
 };
 const breakpoints = useCustomBreakpoints();
 const mdAndDown = breakpoints.smallerOrEqual("md");
@@ -66,7 +63,7 @@ const interactiveCols = computed(() =>
     />
     <template v-if="!isAruco">
       <pv-slider
-        v-model="apriltagSettings.decimate"
+        v-model="currentPipelineSettings.decimate"
         :slider-cols="interactiveCols"
         label="Decimate"
         tooltip="Increases FPS at the expense of range by reducing image resolution initially"
@@ -77,7 +74,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="apriltagSettings.blur"
+        v-model="currentPipelineSettings.blur"
         :slider-cols="interactiveCols"
         label="Blur"
         tooltip="Gaussian blur added to the image, high FPS cost for slightly decreased noise"
@@ -89,7 +86,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="apriltagSettings.threads"
+        v-model="currentPipelineSettings.threads"
         :slider-cols="interactiveCols"
         label="Threads"
         tooltip="Number of threads spawned by the AprilTag detector"
@@ -100,7 +97,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="apriltagSettings.decisionMargin"
+        v-model="currentPipelineSettings.decisionMargin"
         :slider-cols="interactiveCols"
         label="Decision Margin Cutoff"
         tooltip="Tags with a 'margin' (decoding quality score) less than this wil be rejected. Increase this to reduce the number of false positive detections"
@@ -111,7 +108,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="apriltagSettings.numIterations"
+        v-model="currentPipelineSettings.numIterations"
         :slider-cols="interactiveCols"
         label="Pose Estimation Iterations"
         tooltip="Number of iterations the pose estimation algorithm will run, 50-100 is a good starting point"
@@ -122,7 +119,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-switch
-        v-model="apriltagSettings.refineEdges"
+        v-model="currentPipelineSettings.refineEdges"
         :switch-cols="interactiveCols"
         label="Refine Edges"
         tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
@@ -134,7 +131,7 @@ const interactiveCols = computed(() =>
     </template>
     <template v-if="isAruco">
       <pv-range-slider
-        v-model="apriltagSettings.threshWinSizes"
+        v-model="currentPipelineSettings.threshWinSizes"
         label="Thresh Min/Max Size"
         tooltip="The minimum and maximum adaptive threshold window size. Larger windows tend more towards global thresholding, but small windows can be weak to noise."
         :min="3"
@@ -147,7 +144,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="apriltagSettings.threshStepSize"
+        v-model="currentPipelineSettings.threshStepSize"
         :slider-cols="interactiveCols"
         label="Thresh Step Size"
         tooltip="Smaller values will cause more steps between the min/max sizes. More, varied steps can improve detection robustness to lighting, but may decrease performance."
@@ -159,7 +156,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="apriltagSettings.threshConstant"
+        v-model="currentPipelineSettings.threshConstant"
         :slider-cols="interactiveCols"
         label="Thresh Constant"
         tooltip="Affects the threshold window mean value cutoff for all steps. Higher values can improve performance, but may harm detection rate."
@@ -171,7 +168,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-switch
-        v-model="apriltagSettings.useCornerRefinement"
+        v-model="currentPipelineSettings.useCornerRefinement"
         label="Refine Corners"
         tooltip="Further refine the initial corners with subpixel accuracy."
         :switch-cols="interactiveCols"
@@ -182,7 +179,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-switch
-        v-model="apriltagSettings.debugThreshold"
+        v-model="currentPipelineSettings.debugThreshold"
         label="Debug Threshold"
         tooltip="Display the first threshold step to the color stream."
         :switch-cols="interactiveCols"
@@ -193,7 +190,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-switch
-        v-model="apriltagSettings.useAruco3"
+        v-model="currentPipelineSettings.useAruco3"
         label="ArUco3"
         tooltip="Use ArUco3 markers."
         :switch-cols="interactiveCols"
@@ -203,7 +200,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="apriltagSettings.aruco3MinMarkerSideRatio"
+        v-model="currentPipelineSettings.aruco3MinMarkerSideRatio"
         :slider-cols="interactiveCols"
         label="ArUco3 Min Marker Side Ratio"
         :min="0.01"
@@ -215,7 +212,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="apriltagSettings.aruco3MinCanonicalImgSide"
+        v-model="currentPipelineSettings.aruco3MinCanonicalImgSide"
         :slider-cols="interactiveCols"
         label="ArUco3 Min Canonical Image Side"
         :min="16"
