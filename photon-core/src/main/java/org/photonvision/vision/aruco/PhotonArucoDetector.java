@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.aruco;
 
+import org.wpilib.vision.apriltag.AprilTagDetection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -59,13 +60,13 @@ public class PhotonArucoDetector implements Releasable {
      * Parameters for detection can be modified with {@link #setParams(DetectorParameters)}.
      *
      * @param grayscaleImg A grayscaled image
-     * @return An array of ArucoDetectionResult, which contain tag corners and id.
+     * @return An array of AprilTagDetection, which contain tag corners and id.
      */
-    public ArucoDetectionResult[] detect(Mat grayscaleImg) {
+    public AprilTagDetection[] detect(Mat grayscaleImg) {
         // detect tags
         detector.detectMarkers(grayscaleImg, cornerMats, ids);
 
-        ArucoDetectionResult[] results = new ArucoDetectionResult[cornerMats.size()];
+        AprilTagDetection[] results = new AprilTagDetection[cornerMats.size()];
         for (int i = 0; i < cornerMats.size(); i++) {
             // each detection has a Mat of corners
             Mat cornerMat = cornerMats.get(i);
@@ -86,7 +87,19 @@ public class PhotonArucoDetector implements Releasable {
             };
             cornerMat.release();
 
-            results[i] = new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0]);
+            // AprilTagDetection corners: [x0,y0,x1,y1,x2,y2,x3,y3] in order BL,BR,TR,TL
+            double[] corners = {
+                xCorners[0], yCorners[0],
+                xCorners[1], yCorners[1],
+                xCorners[2], yCorners[2],
+                xCorners[3], yCorners[3]
+            };
+            double centerX = (xCorners[0] + xCorners[1] + xCorners[2] + xCorners[3]) / 4.0;
+            double centerY = (yCorners[0] + yCorners[1] + yCorners[2] + yCorners[3]) / 4.0;
+            int id = (int) ids.get(i, 0)[0];
+
+            // OpenCV's ArucoDetector does not provide hamming, decision margin, or homography.
+            results[i] = new AprilTagDetection("", id, 0, 0f, null, centerX, centerY, corners);
         }
 
         ids.release();
@@ -94,7 +107,7 @@ public class PhotonArucoDetector implements Releasable {
         cornerMats.clear();
 
         // sort tags by ID
-        Arrays.sort(results, Comparator.comparingInt(ArucoDetectionResult::getId));
+        Arrays.sort(results, Comparator.comparingInt(AprilTagDetection::getId));
 
         return results;
     }

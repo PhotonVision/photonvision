@@ -58,13 +58,7 @@ const resetCurrentBuffer = () => {
           <template #default>
             <thead>
               <tr>
-                <th
-                  v-if="
-                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco
-                  "
-                  class="text-pv-on-surface"
-                >
+                <th v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag" class="text-pv-on-surface">
                   Fiducial ID
                 </th>
                 <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
@@ -84,8 +78,7 @@ const resetCurrentBuffer = () => {
                 </template>
                 <template
                   v-if="
-                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
                     useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                   "
                 >
@@ -95,13 +88,7 @@ const resetCurrentBuffer = () => {
             </thead>
             <tbody class="target-results-body">
               <tr v-for="(target, index) in displayedTargets" :key="index" class="text-pv-on-surface">
-                <td
-                  v-if="
-                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco
-                  "
-                  class="text-center"
-                >
+                <td v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag" class="text-center">
                   <div class="cell-inner">{{ target.fiducialId }}</div>
                 </td>
                 <td
@@ -143,8 +130,7 @@ const resetCurrentBuffer = () => {
                 </template>
                 <template
                   v-if="
-                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
                     useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                   "
                 >
@@ -160,13 +146,7 @@ const resetCurrentBuffer = () => {
                 :key="`placeholder-${index}`"
                 class="placeholder-row text-pv-on-surface"
               >
-                <td
-                  v-if="
-                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco
-                  "
-                  class="text-center"
-                >
+                <td v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag" class="text-center">
                   <div class="cell-inner"></div>
                 </td>
                 <td
@@ -191,11 +171,11 @@ const resetCurrentBuffer = () => {
                   <td class="text-center"><div class="cell-inner"></div></td>
                   <td class="text-center"><div class="cell-inner"></div></td>
                   <td class="text-center"><div class="cell-inner"></div></td>
+                  <td class="text-center"><div class="cell-inner"></div></td>
                 </template>
                 <template
                   v-if="
-                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
                     useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                   "
                 >
@@ -211,8 +191,7 @@ const resetCurrentBuffer = () => {
     </div>
     <div
       v-if="
-        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         currentPipelineSettings.doMultiTarget &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled

@@ -10,8 +10,15 @@ export enum PipelineType {
   Reflective = 3,
   ColoredShape = 4,
   AprilTag = 5,
-  Aruco = 6,
-  ObjectDetection = 7
+  ObjectDetection = 6
+}
+
+/**
+ * Fiducial detection algorithm used within the AprilTag pipeline.
+ */
+export enum FiducialAlgorithm {
+  AprilTag,
+  Aruco
 }
 
 export enum AprilTagFamily {
@@ -265,6 +272,7 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
 
 export interface AprilTagPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.AprilTag;
+  algorithm: FiducialAlgorithm;
   hammingDist: number;
   numIterations: number;
   decimate: number;
@@ -276,6 +284,18 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   tagFamily: AprilTagFamily;
   doMultiTarget: boolean;
   doSingleTargetAlways: boolean;
+
+  // ArUco fields (used when algorithm === FiducialAlgorithm.Aruco)
+  threshWinSizes: WebsocketNumberPair | [number, number];
+  threshStepSize: number;
+  threshConstant: number;
+  debugThreshold: boolean;
+
+  useCornerRefinement: boolean;
+
+  useAruco3: boolean;
+  aruco3MinMarkerSideRatio: number;
+  aruco3MinCanonicalImgSide: number;
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
   Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">
@@ -289,6 +309,7 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   outputMaximumTargets: 127,
   cameraExposureRaw: 20,
   pipelineType: PipelineType.AprilTag,
+  algorithm: FiducialAlgorithm.AprilTag,
   hammingDist: 0,
   numIterations: 40,
   decimate: 1,
@@ -299,40 +320,7 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   threads: 4,
   tagFamily: AprilTagFamily.Family36h11,
   doMultiTarget: false,
-  doSingleTargetAlways: false
-};
-
-export interface ArucoPipelineSettings extends PipelineSettings {
-  pipelineType: PipelineType.Aruco;
-
-  tagFamily: AprilTagFamily;
-
-  threshWinSizes: WebsocketNumberPair | [number, number];
-  threshStepSize: number;
-  threshConstant: number;
-  debugThreshold: boolean;
-
-  useCornerRefinement: boolean;
-
-  useAruco3: boolean;
-  aruco3MinMarkerSideRatio: number;
-  aruco3MinCanonicalImgSide: number;
-
-  doMultiTarget: boolean;
-  doSingleTargetAlways: boolean;
-}
-export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettings, "pipelineType">> &
-  ConfigurablePipelineSettings;
-export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
-  ...DefaultPipelineSettings,
-  cameraGain: 75,
-  outputMaximumTargets: 127,
-  targetModel: TargetModel.AprilTag6p5in_36h11,
-  cameraExposureRaw: -1,
-  cameraAutoExposure: true,
-  ledMode: false,
-  pipelineType: PipelineType.Aruco,
-  tagFamily: AprilTagFamily.Family36h11,
+  doSingleTargetAlways: false,
   threshWinSizes: { first: 11, second: 91 },
   threshStepSize: 40,
   threshConstant: 10,
@@ -340,9 +328,7 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   useCornerRefinement: true,
   useAruco3: false,
   aruco3MinMarkerSideRatio: 0.02,
-  aruco3MinCanonicalImgSide: 32,
-  doMultiTarget: false,
-  doSingleTargetAlways: false
+  aruco3MinCanonicalImgSide: 32
 };
 
 export interface ObjectDetectionPipelineSettings extends PipelineSettings {
@@ -396,7 +382,6 @@ export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
-  | ArucoPipelineSettings
   | ObjectDetectionPipelineSettings
   | Calibration3dPipelineSettings;
 
@@ -404,6 +389,5 @@ export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
-  | ConfigurableArucoPipelineSettings
   | ConfigurableObjectDetectionPipelineSettings
   | ConfigurableCalibration3dPipelineSettings;

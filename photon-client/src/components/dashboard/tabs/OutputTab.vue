@@ -12,11 +12,7 @@ import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
-const isTagPipeline = computed(
-  () =>
-    useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
-);
+const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag);
 
 interface MetricItem {
   header: string;
@@ -75,8 +71,7 @@ const interactiveCols = computed(() =>
     />
     <pv-switch
       v-if="
-        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
@@ -92,8 +87,7 @@ const interactiveCols = computed(() =>
     />
     <pv-switch
       v-if="
-        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "

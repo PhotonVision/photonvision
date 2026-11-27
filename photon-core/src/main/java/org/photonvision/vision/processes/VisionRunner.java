@@ -36,8 +36,9 @@ import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
-import org.photonvision.vision.pipeline.ArucoPipelineSettings;
+import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
+import org.photonvision.vision.pipeline.FiducialAlgorithm;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /**
@@ -110,8 +111,10 @@ public class VisionRunner implements AutoCloseable {
         // so we can request the correct frame copies for CSI cameras.
         boolean needsColor = wantedProcessType == FrameThresholdType.NONE;
 
-        if (settings instanceof ArucoPipelineSettings ar) {
-            needsColor = ar.debugThreshold;
+        if (settings instanceof AprilTagPipelineSettings at
+                && at.algorithm == FiducialAlgorithm.Aruco
+                && at.debugThreshold) {
+            needsColor = true;
         }
 
         frameSupplier.requestFrameRotation(settings.inputImageRotationMode);

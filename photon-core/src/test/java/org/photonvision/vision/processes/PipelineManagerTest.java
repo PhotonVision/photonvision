@@ -77,6 +77,6 @@ public class PipelineManagerTest {
         manager.setIndex(0);
         manager.getCurrentPipeline();
         // and change
-        manager.changePipelineType(PipelineType.Aruco.baseIndex);
+        manager.changePipelineType(PipelineType.ObjectDetection.baseIndex);
     }
 }

@@ -17,10 +17,13 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.util.Objects;
+import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
+    public FiducialAlgorithm algorithm = FiducialAlgorithm.AprilTag;
     public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
     public int decimate = 1;
     public double blur = 0;
@@ -32,6 +35,20 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int decisionMargin = 35;
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
+
+    // ArUco fields (used when algorithm == FiducialAlgorithm.Aruco)
+    public IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
+    public int threshStepSize = 40;
+    public double threshConstant = 10;
+    public boolean debugThreshold = false;
+
+    public boolean useCornerRefinement = true;
+    public int refineNumIterations = 30;
+    public double refineMinErrorPx = 0.005;
+
+    public boolean useAruco3 = false;
+    public double aruco3MinMarkerSideRatio = 0.02;
+    public int aruco3MinCanonicalImgSide = 32;
 
     // 3d settings
 
@@ -48,6 +65,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
+        result = prime * result + ((algorithm == null) ? 0 : algorithm.hashCode());
         result = prime * result + ((tagFamily == null) ? 0 : tagFamily.hashCode());
         result = prime * result + decimate;
         long temp;
@@ -61,6 +79,19 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + decisionMargin;
         result = prime * result + (doMultiTarget ? 1231 : 1237);
         result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
+        result = prime * result + Objects.hashCode(threshWinSizes);
+        result = prime * result + threshStepSize;
+        temp = Double.doubleToLongBits(threshConstant);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + (debugThreshold ? 1231 : 1237);
+        result = prime * result + (useCornerRefinement ? 1231 : 1237);
+        result = prime * result + refineNumIterations;
+        temp = Double.doubleToLongBits(refineMinErrorPx);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + (useAruco3 ? 1231 : 1237);
+        temp = Double.doubleToLongBits(aruco3MinMarkerSideRatio);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + aruco3MinCanonicalImgSide;
         return result;
     }
 
@@ -70,6 +101,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (!super.equals(obj)) return false;
         if (getClass() != obj.getClass()) return false;
         AprilTagPipelineSettings other = (AprilTagPipelineSettings) obj;
+        if (algorithm != other.algorithm) return false;
         if (tagFamily != other.tagFamily) return false;
         if (decimate != other.decimate) return false;
         if (Double.doubleToLongBits(blur) != Double.doubleToLongBits(other.blur)) return false;
@@ -81,6 +113,21 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (decisionMargin != other.decisionMargin) return false;
         if (doMultiTarget != other.doMultiTarget) return false;
         if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
+        if (threshWinSizes != null
+                ? !threshWinSizes.equals(other.threshWinSizes)
+                : other.threshWinSizes != null) return false;
+        if (threshStepSize != other.threshStepSize) return false;
+        if (Double.doubleToLongBits(threshConstant) != Double.doubleToLongBits(other.threshConstant))
+            return false;
+        if (debugThreshold != other.debugThreshold) return false;
+        if (useCornerRefinement != other.useCornerRefinement) return false;
+        if (refineNumIterations != other.refineNumIterations) return false;
+        if (Double.doubleToLongBits(refineMinErrorPx)
+                != Double.doubleToLongBits(other.refineMinErrorPx)) return false;
+        if (useAruco3 != other.useAruco3) return false;
+        if (Double.doubleToLongBits(aruco3MinMarkerSideRatio)
+                != Double.doubleToLongBits(other.aruco3MinMarkerSideRatio)) return false;
+        if (aruco3MinCanonicalImgSide != other.aruco3MinCanonicalImgSide) return false;
         return true;
     }
 }

@@ -257,10 +257,6 @@ public class PipelineManager implements AutoCloseable {
                 currentUserPipeline =
                         new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
             }
-            case Aruco -> {
-                logger.debug("Creating ArUco Pipeline");
-                currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
-            }
             case ObjectDetection -> {
                 logger.debug("Creating ObjectDetection Pipeline");
                 currentUserPipeline =
@@ -338,7 +334,6 @@ public class PipelineManager implements AutoCloseable {
                     case Reflective -> new ReflectivePipelineSettings();
                     case ColoredShape -> new ColoredShapePipelineSettings();
                     case AprilTag -> new AprilTagPipelineSettings();
-                    case Aruco -> new ArucoPipelineSettings();
                     case ObjectDetection -> new ObjectDetectionPipelineSettings();
                     case Calib3d, DriverMode, FocusCamera -> {
                         logger.error("Got invalid pipeline type: " + type);
