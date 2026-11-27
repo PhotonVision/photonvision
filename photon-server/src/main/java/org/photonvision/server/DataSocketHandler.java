@@ -66,10 +66,8 @@ public class DataSocketHandler {
     }
 
     private DataSocketHandler() {
-        dcService.addSubscribers(
-                uiOutboundSubscriber,
-                new UIInboundSubscriber()); // Subscribe outgoing messages to the data change
-        // service
+        // Subscribe outgoing messages to the data change service
+        dcService.addSubscribers(uiOutboundSubscriber, new UIInboundSubscriber());
     }
 
     public void onConnect(WsConnectContext context) {

@@ -584,9 +584,8 @@ public class PhotonCameraSim implements AutoCloseable {
                     VideoSimUtil.warp36h11TagImage(tgt.fiducialID, corn, true, videoSimFrameRaw);
                 } else if (!tgt.getModel().isSpherical) { // non-spherical targets
                     var contour = corn;
-                    if (!tgt.getModel()
-                            .isPlanar) { // visualization cant handle non-convex projections of 3d
-                        // models
+                    if (!tgt.getModel().isPlanar) {
+                        // visualization can't handle non-convex projections of 3d models
                         contour = OpenCVHelp.getConvexHull(contour);
                     }
                     VideoSimUtil.drawPoly(contour, -1, new Scalar(255), true, videoSimFrameRaw);

@@ -321,9 +321,8 @@ public class CalibrationRotationPipeTest {
         var retRotated = pipe.run(List.of(new TrackedTarget(rotatedDistortedPoints)));
 
         var pose_base = ret.output.get(0).getBestCameraToTarget3d();
-        // So this is ostensibly a rotation about camera +Z,
-        // but this is actually camera +X for our AprilTag pipe since we rotate to stay in
-        // ""WPILib""".
+        // So this is ostensibly a rotation about camera +Z, but this is actually camera +X for our
+        // AprilTag pipe since we rotate to stay in ""WPILib""".
         // Negative to return to upright
         var pose_unrotated = retRotated.output.get(0).getBestCameraToTarget3d();
 

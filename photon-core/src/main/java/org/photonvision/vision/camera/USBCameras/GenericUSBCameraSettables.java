@@ -271,8 +271,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
     @Override
     public VideoMode getCurrentVideoMode() {
-        return camera.getVideoMode(); // This returns the current video mode even if the camera is
-        // disconnected
+        // This returns the current video mode even if the camera is disconnected
+        return camera.getVideoMode();
     }
 
     @Override
