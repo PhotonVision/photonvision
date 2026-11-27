@@ -15,8 +15,8 @@ import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
-
-import { FiducialAlgorithm, PipelineType, type AprilTagPipelineSettings } from "@/types/PipelineTypes";
+import { PipelineType } from "@/types/PipelineTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 interface ConfigOption {
@@ -70,23 +70,22 @@ const getTabGroups = (): ConfigOption[][] => {
 const tabGroups = computed<ConfigOption[][]>(() => {
   // Just return the input tab because we know that is always the case in driver mode
   if (useCameraSettingsStore().isDriverMode) return [[allTabs.inputTab]];
+
   const allow3d = useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled;
-  const settings = useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings;
-  const isAprilTag = settings.pipelineType === PipelineType.AprilTag;
-  const isAruco = settings.algorithm === FiducialAlgorithm.Aruco;
+  const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
   const isObjectDetection =
-    useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ObjectDetection;
+    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.ObjectDetection;
 
   return getTabGroups()
     .map((tabGroup) =>
       tabGroup.filter(
         (tabConfig) =>
           !(!allow3d && tabConfig.tabName === "3D") && //Filter out 3D tab any time 3D isn't calibrated
-          !((!allow3d || isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
-          !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
-          !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
-          !(!isAprilTag && !isAruco && tabConfig.tabName === "AprilTag") && //Filter out fiducial tab unless we're doing AprilTags or ArUco
-          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out Object Detection unless we actually are doing Object Detection
+          !((!allow3d || isAprilTag || isObjectDetection) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
+          !((isAprilTag || isObjectDetection) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
+          !((isAprilTag || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
+          !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
+          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out OD unless we actually are doing OD
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
@@ -95,6 +94,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
 // This boolean is used to satisfy type-checking requirements.
 const shouldUseWideSecondTabGroup = computed(() => {
   const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+
   return currentPipelineSettings.pipelineType === PipelineType.AprilTag && currentPipelineSettings.doMultiTarget;
 });
 
