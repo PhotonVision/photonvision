@@ -30,7 +30,9 @@ const interactiveCols = computed(() =>
         { name: 'ArUco', value: FiducialAlgorithm.Aruco }
       ]"
       :select-cols="interactiveCols"
-      @update:modelValue="(value: FiducialAlgorithm) => useCameraSettingsStore().changeCurrentPipelineSetting({ algorithm: value }, true)"
+      @update:modelValue="
+        (value: FiducialAlgorithm) => useCameraSettingsStore().changeCurrentPipelineSetting({ algorithm: value }, true)
+      "
     />
     <pv-select
       v-model="currentPipelineSettings.tagFamily"
