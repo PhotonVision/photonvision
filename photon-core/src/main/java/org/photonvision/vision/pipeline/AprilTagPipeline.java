@@ -95,8 +95,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     }
 
     private void setAprilTagPipeParams() {
-        // for now, hard code tag width based on enum value
-        // From 2024 best guess is 6.5
         double tagWidth = Units.inchesToMeters(6.5);
         TargetModel tagModel = TargetModel.kAprilTag36h11;
         if (settings.tagFamily == AprilTagFamily.kTag16h5) {
