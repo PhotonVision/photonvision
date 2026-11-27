@@ -18,9 +18,6 @@ import IconMenu from "~icons/mdi/menu";
 // Common RegEx used for naming both pipelines and cameras
 const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
 
-// Pipeline selectors always show the actual pipeline type; algorithm is chosen within AprilTagTab.
-const selectablePipelineType = (type: WebsocketPipelineType): WebsocketPipelineType => type;
-
 // Camera Name Edit
 const isCameraNameEdit = ref(false);
 const currentCameraName = ref(useCameraSettingsStore().currentCameraSettings.nickname);
@@ -111,9 +108,7 @@ const cancelPipelineNameEdit = () => {
 // Pipeline Creation
 const showPipelineCreationDialog = ref(false);
 const newPipelineName = ref("");
-const newPipelineType = ref<WebsocketPipelineType>(
-  selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType)
-);
+const newPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
 const validNewPipelineTypes = computed(() => {
   const pipelineTypes = [
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
@@ -127,7 +122,7 @@ const validNewPipelineTypes = computed(() => {
 });
 const showCreatePipelineDialog = () => {
   newPipelineName.value = "";
-  newPipelineType.value = selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType);
+  newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
   showPipelineCreationDialog.value = true;
 };
 const createNewPipeline = () => {
@@ -139,7 +134,7 @@ const createNewPipeline = () => {
 const cancelPipelineCreation = () => {
   showPipelineCreationDialog.value = false;
   newPipelineName.value = "";
-  newPipelineType.value = selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType);
+  newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
 };
 
 // Pipeline Deletion
@@ -173,9 +168,7 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
 
   return pipelineTypes;
 });
-const pipelineType = ref<WebsocketPipelineType>(
-  selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType)
-);
+const pipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
 const currentPipelineType = computed<WebsocketPipelineType>({
   get: () => {
     if (useCameraSettingsStore().isDriverMode) return WebsocketPipelineType.DriverMode;
@@ -194,7 +187,7 @@ const confirmChangePipelineType = () => {
   showPipelineTypeChangeDialog.value = false;
 };
 const cancelChangePipelineType = () => {
-  pipelineType.value = selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType);
+  pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
   showPipelineTypeChangeDialog.value = false;
 };
 
@@ -230,7 +223,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
 );
 const selectCamera = (cameraUniqueName: string) => {
   useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
-  pipelineType.value = selectablePipelineType(useCameraSettingsStore().currentWebsocketPipelineType);
+  pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
 };
 </script>
 
