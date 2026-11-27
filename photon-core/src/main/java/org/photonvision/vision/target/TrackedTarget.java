@@ -30,7 +30,6 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
-import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVShape;
@@ -174,77 +173,6 @@ public class TrackedTarget implements Releasable {
      */
     public int getClassID() {
         return m_classId;
-    }
-
-    public TrackedTarget(
-            ArucoDetectionResult result,
-            AprilTagPoseEstimate tagPose,
-            TargetCalculationParameters params) {
-        m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
-        m_robotOffsetPoint = new Point();
-        var yawPitch =
-                TargetCalculations.calculateYawPitch(
-                        params.cameraCenterPoint.x,
-                        result.getCenterX(),
-                        params.horizontalFocalLength,
-                        params.cameraCenterPoint.y,
-                        result.getCenterY(),
-                        params.verticalFocalLength,
-                        params.cameraCal);
-        m_yaw = yawPitch.getFirst();
-        m_pitch = yawPitch.getSecond();
-
-        double[] xCorners = result.getXCorners();
-        double[] yCorners = result.getYCorners();
-
-        Point[] cornerPoints = {
-            new Point(xCorners[0], yCorners[0]),
-            new Point(xCorners[1], yCorners[1]),
-            new Point(xCorners[2], yCorners[2]),
-            new Point(xCorners[3], yCorners[3])
-        };
-        m_targetCorners = List.of(cornerPoints);
-        MatOfPoint contourMat = new MatOfPoint(cornerPoints);
-        m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
-        m_mainContour = new Contour(contourMat);
-        m_area = m_mainContour.getArea() / params.imageArea * 100;
-        m_fiducialId = result.getId();
-        m_shape = null;
-
-        // TODO implement skew? or just yeet
-        m_skew = 0;
-
-        var bestPose = new Transform3d();
-        var altPose = new Transform3d();
-        if (tagPose != null) {
-            if (tagPose.error1 <= tagPose.error2) {
-                bestPose = tagPose.pose1;
-                altPose = tagPose.pose2;
-            } else {
-                bestPose = tagPose.pose2;
-                altPose = tagPose.pose1;
-            }
-
-            m_bestCameraToTarget3d = bestPose;
-            m_altCameraToTarget3d = altPose;
-
-            m_poseAmbiguity = tagPose.getAmbiguity();
-
-            var tvec = new Mat(3, 1, CvType.CV_64FC1);
-            tvec.put(
-                    0,
-                    0,
-                    bestPose.getTranslation().getX(),
-                    bestPose.getTranslation().getY(),
-                    bestPose.getTranslation().getZ());
-            setCameraRelativeTvec(tvec);
-            tvec.release();
-
-            var rvec = new Mat(3, 1, CvType.CV_64FC1);
-            MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
-            setCameraRelativeRvec(rvec);
-            rvec.release();
-        }
     }
 
     public void setFiducialId(int id) {

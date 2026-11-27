@@ -25,18 +25,18 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
-import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.vision.apriltag.AprilTagDetection;
 import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
 
 public class ArucoPoseEstimatorPipe
         extends CVPipe<
-                ArucoDetectionResult,
+                AprilTagDetection,
                 AprilTagPoseEstimate,
                 ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams> {
     // image points of marker corners
@@ -56,22 +56,22 @@ public class ArucoPoseEstimatorPipe
     private final int kNaNRetries = 1;
 
     private Translation3d tvecToTranslation3d(Mat mat) {
-        double[] tvec = new double[3];
-        mat.get(0, 0, tvec);
-        return new Translation3d(tvec[0], tvec[1], tvec[2]);
+        return new Translation3d(mat.get(0, 0)[0], mat.get(1, 0)[0], mat.get(2, 0)[0]);
     }
 
     private Rotation3d rvecToRotation3d(Mat mat) {
-        double[] rvec = new double[3];
-        mat.get(0, 0, rvec);
-        return new Rotation3d(VecBuilder.fill(rvec[0], rvec[1], rvec[2]));
+        return new Rotation3d(mat.get(0, 0)[0], mat.get(1, 0)[0], mat.get(2, 0)[0]);
     }
 
     @Override
-    protected AprilTagPoseEstimate process(ArucoDetectionResult in) {
+    protected AprilTagPoseEstimate process(AprilTagDetection in) {
         // We receive 2d corners as (BL, BR, TR, TL) but we want (BR, BL, TL, TR)
-        double[] xCorn = in.getXCorners();
-        double[] yCorn = in.getYCorners();
+        double[] xCorn = new double[4];
+        double[] yCorn = new double[4];
+        for (int i = 0; i < 4; i++) {
+            xCorn[i] = in.getCornerX(i);
+            yCorn[i] = in.getCornerY(i);
+        }
         imagePoints.put(0, 0, new float[] {(float) xCorn[1], (float) yCorn[1]});
         imagePoints.put(1, 0, new float[] {(float) xCorn[0], (float) yCorn[0]});
         imagePoints.put(2, 0, new float[] {(float) xCorn[3], (float) yCorn[3]});

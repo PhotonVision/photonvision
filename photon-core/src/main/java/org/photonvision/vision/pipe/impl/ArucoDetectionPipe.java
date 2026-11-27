@@ -26,13 +26,13 @@ import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
-import org.photonvision.vision.aruco.ArucoDetectionResult;
+import org.wpilib.vision.apriltag.AprilTagDetection;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
-        extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
+        extends CVPipe<CVMat, List<AprilTagDetection>, ArucoDetectionPipeParams> {
     // ArucoDetector wrapper class
     private final PhotonArucoDetector photonDetector = new PhotonArucoDetector();
 
@@ -44,7 +44,7 @@ public class ArucoDetectionPipe
     private final MatOfPoint2f cornersMat = new MatOfPoint2f();
 
     @Override
-    protected List<ArucoDetectionResult> process(CVMat in) {
+    protected List<AprilTagDetection> process(CVMat in) {
         var imgMat = in.getMat();
 
         // Sanity check -- image should not be empty
@@ -56,9 +56,14 @@ public class ArucoDetectionPipe
         var detections = photonDetector.detect(imgMat);
         // manually do corner refinement ourselves
         if (params.useCornerRefinement) {
-            for (var detection : detections) {
-                double[] xCorners = detection.getXCorners();
-                double[] yCorners = detection.getYCorners();
+            for (int detIdx = 0; detIdx < detections.length; detIdx++) {
+                var detection = detections[detIdx];
+                double[] xCorners = new double[4];
+                double[] yCorners = new double[4];
+                for (int i = 0; i < 4; i++) {
+                    xCorners[i] = detection.getCornerX(i);
+                    yCorners[i] = detection.getCornerY(i);
+                }
                 Point[] cornerPoints = {
                     new Point(xCorners[0], yCorners[0]),
                     new Point(xCorners[1], yCorners[1]),
@@ -92,6 +97,22 @@ public class ArucoDetectionPipe
                         drawCornerRefineWindow(imgMat, pt, halfWindowLength);
                     }
                 }
+                // Update the detection's corners in place
+                double[] corners = new double[8];
+                for (int i = 0; i < 4; i++) {
+                    corners[i * 2] = xCorners[i];
+                    corners[i * 2 + 1] = yCorners[i];
+                }
+                var updated = new AprilTagDetection(
+                        detection.getFamily(),
+                        detection.getId(),
+                        detection.getHamming(),
+                        detection.getDecisionMargin(),
+                        detection.getHomography(),
+                        detection.getCenterX(),
+                        detection.getCenterY(),
+                        corners);
+                detections[detIdx] = updated;
             }
         }
         return List.of(detections);
@@ -128,10 +149,9 @@ public class ArucoDetectionPipe
     }
 
     private void drawCornerRefineWindow(Mat outputMat, Point corner, int windowSize) {
-        int thickness = (int) (Math.ceil(Math.max(outputMat.cols(), outputMat.rows()) * 0.003));
-        var pt1 = new Point(corner.x - windowSize, corner.y - windowSize);
-        var pt2 = new Point(corner.x + windowSize, corner.y + windowSize);
-        Imgproc.rectangle(outputMat, pt1, pt2, new Scalar(0, 0, 255), thickness);
+        var rectTopLeft = new Point(corner.x - windowSize / 2, corner.y - windowSize / 2);
+        var rectBottomRight = new Point(corner.x + windowSize / 2, corner.y + windowSize / 2);
+        Imgproc.rectangle(outputMat, rectTopLeft, rectBottomRight, new Scalar(0, 255, 0));
     }
 
     @Override

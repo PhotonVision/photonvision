@@ -31,7 +31,6 @@ import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.apriltag.AprilTagFamily;
-import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -227,12 +226,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         settings.threshConstant);
             }
 
-            CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult =
+            CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
                     arucoDetectionPipe.run(frame.processedImage);
             sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
             targetList = new ArrayList<>();
-            for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
+            for (AprilTagDetection detection : tagDetectionPipeResult.output) {
                 // Populate target list for multitag
                 // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
                 // not be necessary.)
@@ -259,7 +258,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 // TODO global state again ew
                 var field = ConfigProvider.getInstance().getConfig().getFieldLayout();
 
-                for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
+                for (AprilTagDetection detection : tagDetectionPipeResult.output) {
                     AprilTagPoseEstimate tagPoseEstimate = null;
                     // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
                     if (settings.doSingleTargetAlways
@@ -267,7 +266,17 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                     && multiTagResult.get().fiducialIDsUsed.contains((short) detection.getId()))) {
                         var poseResult = arucoPoseEstimatorPipe.run(detection);
                         sumPipeNanosElapsed += poseResult.nanosElapsed;
-                        tagPoseEstimate = poseResult.output;
+                        // ArucoPoseEstimatorPipe returns poses in OpenCV (EDN) coordinates. TrackedTarget's
+                        // AprilTagDetection constructor applies convertApriltagtoOpenCV internally; since that
+                        // conversion is self-inverse, pre-convert so the stored pose stays in OpenCV coords,
+                        // matching prior ArucoDetectionResult behavior.
+                        var rawPose = poseResult.output;
+                        tagPoseEstimate =
+                                new AprilTagPoseEstimate(
+                                        MathUtils.convertApriltagtoOpenCV(rawPose.pose1),
+                                        MathUtils.convertApriltagtoOpenCV(rawPose.pose2),
+                                        rawPose.error1,
+                                        rawPose.error2);
                     }
 
                     // If single-tag estimation was not done, this is a multi-target tag from the layout
