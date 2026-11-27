@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
-  type AprilTagPipelineSettings,
+  type ActivePipelineSettings,
   PipelineType,
   RobotOffsetPointMode,
   ContourTargetOrientation,
@@ -12,11 +12,7 @@ import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
-
-const settings = computed<AprilTagPipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
-);
-const isTagPipeline = computed(() => settings.value.pipelineType === PipelineType.AprilTag);
+const isTagPipeline = computed(() => useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag);
 
 interface MetricItem {
   header: string;
@@ -24,15 +20,15 @@ interface MetricItem {
 }
 
 const offsetPoints = computed<MetricItem[]>(() => {
-  switch (settings.value.offsetRobotOffsetMode) {
+  switch (useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode) {
     case RobotOffsetPointMode.Single:
-      const value = Object.values(settings.value.offsetSinglePoint);
+      const value = Object.values(useCameraSettingsStore().currentPipelineSettings.offsetSinglePoint);
       return [{ header: "Offset Point", value: `(${value[0].toFixed(2)}°, ${value[1].toFixed(2)}°)` }];
     case RobotOffsetPointMode.Dual:
-      const firstPoint = Object.values(settings.value.offsetDualPointA);
-      const firstPointArea = settings.value.offsetDualPointAArea;
-      const secondPoint = Object.values(settings.value.offsetDualPointB);
-      const secondPointArea = settings.value.offsetDualPointBArea;
+      const firstPoint = Object.values(useCameraSettingsStore().currentPipelineSettings.offsetDualPointA);
+      const firstPointArea = useCameraSettingsStore().currentPipelineSettings.offsetDualPointAArea;
+      const secondPoint = Object.values(useCameraSettingsStore().currentPipelineSettings.offsetDualPointB);
+      const secondPointArea = useCameraSettingsStore().currentPipelineSettings.offsetDualPointBArea;
       return [
         { header: "First Offset Point", value: `(${firstPoint[0].toFixed(2)}°, ${firstPoint[1].toFixed(2)}°)` },
         { header: "First Offset Point Area", value: `${firstPointArea.toFixed(2)}%` },
@@ -45,8 +41,14 @@ const offsetPoints = computed<MetricItem[]>(() => {
   }
 });
 
+// TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
+// Defer reference to store access method
+const currentPipelineSettings = computed<ActivePipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings
+);
 const breakpoints = useCustomBreakpoints();
 const mdAndDown = breakpoints.smallerOrEqual("md");
+
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
@@ -55,7 +57,7 @@ const interactiveCols = computed(() =>
 <template>
   <div>
     <pv-slider
-      v-model="settings.outputMaximumTargets"
+      v-model="useCameraSettingsStore().currentPipelineSettings.outputMaximumTargets"
       label="Maximum Targets"
       tooltip="The maximum number of targets to display and send."
       :hidden="isTagPipeline"
@@ -69,11 +71,11 @@ const interactiveCols = computed(() =>
     />
     <pv-switch
       v-if="
-        settings.pipelineType === PipelineType.AprilTag &&
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-        settings.solvePNPEnabled
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
-      v-model="settings.doMultiTarget"
+      v-model="currentPipelineSettings.doMultiTarget"
       label="Do Multi-Target Estimation"
       tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
       :switch-cols="interactiveCols"
@@ -85,15 +87,15 @@ const interactiveCols = computed(() =>
     />
     <pv-switch
       v-if="
-        settings.pipelineType === PipelineType.AprilTag &&
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
-        settings.solvePNPEnabled
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
-      v-model="settings.doSingleTargetAlways"
+      v-model="currentPipelineSettings.doSingleTargetAlways"
       label="Always Do Single-Target Estimation"
       tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
       :switch-cols="interactiveCols"
-      :disabled="!isTagPipeline || !settings.doMultiTarget"
+      :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
       @update:modelValue="
         (value: boolean | undefined) =>
           value !== undefined &&
@@ -101,7 +103,7 @@ const interactiveCols = computed(() =>
       "
     />
     <pv-select
-      v-model="settings.contourTargetOffsetPointEdge"
+      v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
       label="Target Offset Point"
       tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
       :items="[
@@ -119,7 +121,7 @@ const interactiveCols = computed(() =>
     />
     <pv-select
       v-if="!isTagPipeline"
-      v-model="settings.contourTargetOrientation"
+      v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
       :items="[
@@ -133,7 +135,7 @@ const interactiveCols = computed(() =>
       "
     />
     <pv-select
-      v-model="settings.offsetRobotOffsetMode"
+      v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
       label="Robot Offset Mode"
       tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
       :items="[
@@ -147,7 +149,10 @@ const interactiveCols = computed(() =>
           useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
       "
     />
-    <table v-if="settings.offsetRobotOffsetMode !== RobotOffsetPointMode.None" class="metrics-table mt-3 mb-3">
+    <table
+      v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
+      class="metrics-table mt-3 mb-3"
+    >
       <thead>
         <tr>
           <th v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item metric-item-title">
@@ -163,8 +168,14 @@ const interactiveCols = computed(() =>
         </tr>
       </tbody>
     </table>
-    <div v-if="settings.offsetRobotOffsetMode !== RobotOffsetPointMode.None" class="flex items-center">
-      <div v-if="settings.offsetRobotOffsetMode === RobotOffsetPointMode.Single" class="flex flex-wrap p-0">
+    <div
+      v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
+      class="flex items-center"
+    >
+      <div
+        v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Single"
+        class="flex flex-wrap p-0"
+      >
         <div class="w-1/2 pl-0">
           <pv-button
             size="sm"
@@ -186,7 +197,10 @@ const interactiveCols = computed(() =>
           </pv-button>
         </div>
       </div>
-      <div v-else-if="settings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual" class="flex flex-wrap p-0">
+      <div
+        v-else-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual"
+        class="flex flex-wrap p-0"
+      >
         <div class="w-1/2 pr-2 pl-0 lg:w-1/3">
           <pv-button
             size="sm"
