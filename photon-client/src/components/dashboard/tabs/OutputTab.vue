@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
-  FiducialAlgorithm,
   type AprilTagPipelineSettings,
   PipelineType,
   RobotOffsetPointMode,
@@ -17,10 +16,7 @@ import { useCustomBreakpoints } from "@/lib/Breakpoints";
 const settings = computed<AprilTagPipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
-const isTagPipeline = computed(
-  () => settings.value.pipelineType === PipelineType.AprilTag
-);
-const isAruco = computed(() => settings.value.algorithm === FiducialAlgorithm.Aruco);
+const isTagPipeline = computed(() => settings.value.pipelineType === PipelineType.AprilTag);
 
 interface MetricItem {
   header: string;
@@ -151,10 +147,7 @@ const interactiveCols = computed(() =>
           useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
       "
     />
-    <table
-      v-if="settings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
-      class="metrics-table mt-3 mb-3"
-    >
+    <table v-if="settings.offsetRobotOffsetMode !== RobotOffsetPointMode.None" class="metrics-table mt-3 mb-3">
       <thead>
         <tr>
           <th v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item metric-item-title">
@@ -170,14 +163,8 @@ const interactiveCols = computed(() =>
         </tr>
       </tbody>
     </table>
-    <div
-      v-if="settings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
-      class="flex items-center"
-    >
-      <div
-        v-if="settings.offsetRobotOffsetMode === RobotOffsetPointMode.Single"
-        class="flex flex-wrap p-0"
-      >
+    <div v-if="settings.offsetRobotOffsetMode !== RobotOffsetPointMode.None" class="flex items-center">
+      <div v-if="settings.offsetRobotOffsetMode === RobotOffsetPointMode.Single" class="flex flex-wrap p-0">
         <div class="w-1/2 pl-0">
           <pv-button
             size="sm"
@@ -199,10 +186,7 @@ const interactiveCols = computed(() =>
           </pv-button>
         </div>
       </div>
-      <div
-        v-else-if="settings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual"
-        class="flex flex-wrap p-0"
-      >
+      <div v-else-if="settings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual" class="flex flex-wrap p-0">
         <div class="w-1/2 pr-2 pl-0 lg:w-1/3">
           <pv-button
             size="sm"

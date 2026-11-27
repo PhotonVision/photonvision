@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.configuration.ConfigProvider;
@@ -31,11 +30,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
-import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.AprilTagDetectionPipeParams;
@@ -284,7 +282,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                             new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
                             // match expected OpenCV coordinate system
                             camToTag =
-                                    CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
+                                    CoordinateSystem.convert(
+                                            camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
 
                             tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
                         }
@@ -378,7 +377,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                             new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
                             // match expected AprilTag coordinate system
                             camToTag =
-                                    CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
+                                    CoordinateSystem.convert(
+                                            camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
                             // (AprilTag expects Z axis going into tag)
                             camToTag =
                                     new Transform3d(

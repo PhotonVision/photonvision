@@ -58,10 +58,7 @@ const resetCurrentBuffer = () => {
           <template #default>
             <thead>
               <tr>
-                <th
-                  v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag"
-                  class="text-pv-on-surface"
-                >
+                <th v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag" class="text-pv-on-surface">
                   Fiducial ID
                 </th>
                 <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
@@ -91,10 +88,7 @@ const resetCurrentBuffer = () => {
             </thead>
             <tbody class="target-results-body">
               <tr v-for="(target, index) in displayedTargets" :key="index" class="text-pv-on-surface">
-                <td
-                  v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag"
-                  class="text-center"
-                >
+                <td v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag" class="text-center">
                   <div class="cell-inner">{{ target.fiducialId }}</div>
                 </td>
                 <td
@@ -152,10 +146,7 @@ const resetCurrentBuffer = () => {
                 :key="`placeholder-${index}`"
                 class="placeholder-row text-pv-on-surface"
               >
-                <td
-                  v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag"
-                  class="text-center"
-                >
+                <td v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag" class="text-center">
                   <div class="cell-inner"></div>
                 </td>
                 <td
@@ -242,27 +233,27 @@ const resetCurrentBuffer = () => {
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      toDeg(
-                        useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0
-                      ).toFixed(2)
+                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(
+                        2
+                      )
                     }}&deg;
                   </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      toDeg(
-                        useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0
-                      ).toFixed(2)
+                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0).toFixed(
+                        2
+                      )
                     }}&deg;
                   </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      toDeg(
-                        useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0
-                      ).toFixed(2)
+                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0).toFixed(
+                        2
+                      )
                     }}&deg;
                   </div>
                 </td>
@@ -327,8 +318,7 @@ const resetCurrentBuffer = () => {
                   <div class="cell-inner">
                     {{
                       calculateStdDev(
-                        useStateStore()
-                          .currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
+                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
                       ).toFixed(5)
                     }}&deg;
                   </div>
@@ -337,8 +327,7 @@ const resetCurrentBuffer = () => {
                   <div class="cell-inner">
                     {{
                       calculateStdDev(
-                        useStateStore()
-                          .currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
+                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
                       ).toFixed(5)
                     }}&deg;
                   </div>
@@ -347,8 +336,7 @@ const resetCurrentBuffer = () => {
                   <div class="cell-inner">
                     {{
                       calculateStdDev(
-                        useStateStore()
-                          .currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []
+                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []
                       ).toFixed(5)
                     }}&deg;
                   </div>

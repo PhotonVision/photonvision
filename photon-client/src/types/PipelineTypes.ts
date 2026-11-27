@@ -21,7 +21,6 @@ export enum FiducialAlgorithm {
   Aruco
 }
 
-
 export enum AprilTagFamily {
   Family36h11 = 0,
   Family16h5 = 1

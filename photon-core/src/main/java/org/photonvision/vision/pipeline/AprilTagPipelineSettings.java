@@ -113,17 +113,20 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (decisionMargin != other.decisionMargin) return false;
         if (doMultiTarget != other.doMultiTarget) return false;
         if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
-        if (threshWinSizes != null ? !threshWinSizes.equals(other.threshWinSizes) : other.threshWinSizes != null)
-            return false;
+        if (threshWinSizes != null
+                ? !threshWinSizes.equals(other.threshWinSizes)
+                : other.threshWinSizes != null) return false;
         if (threshStepSize != other.threshStepSize) return false;
-        if (Double.doubleToLongBits(threshConstant) != Double.doubleToLongBits(other.threshConstant)) return false;
+        if (Double.doubleToLongBits(threshConstant) != Double.doubleToLongBits(other.threshConstant))
+            return false;
         if (debugThreshold != other.debugThreshold) return false;
         if (useCornerRefinement != other.useCornerRefinement) return false;
         if (refineNumIterations != other.refineNumIterations) return false;
-        if (Double.doubleToLongBits(refineMinErrorPx) != Double.doubleToLongBits(other.refineMinErrorPx)) return false;
+        if (Double.doubleToLongBits(refineMinErrorPx)
+                != Double.doubleToLongBits(other.refineMinErrorPx)) return false;
         if (useAruco3 != other.useAruco3) return false;
-        if (Double.doubleToLongBits(aruco3MinMarkerSideRatio) != Double.doubleToLongBits(other.aruco3MinMarkerSideRatio))
-            return false;
+        if (Double.doubleToLongBits(aruco3MinMarkerSideRatio)
+                != Double.doubleToLongBits(other.aruco3MinMarkerSideRatio)) return false;
         if (aruco3MinCanonicalImgSide != other.aruco3MinCanonicalImgSide) return false;
         return true;
     }

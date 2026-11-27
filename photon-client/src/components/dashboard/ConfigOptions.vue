@@ -16,11 +16,7 @@ import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 
-import {
-  FiducialAlgorithm,
-  PipelineType,
-  type AprilTagPipelineSettings
-} from "@/types/PipelineTypes";
+import { FiducialAlgorithm, PipelineType, type AprilTagPipelineSettings } from "@/types/PipelineTypes";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 interface ConfigOption {
@@ -99,10 +95,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
 // This boolean is used to satisfy type-checking requirements.
 const shouldUseWideSecondTabGroup = computed(() => {
   const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
-  return (
-    currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
-    currentPipelineSettings.doMultiTarget
-  );
+  return currentPipelineSettings.pipelineType === PipelineType.AprilTag && currentPipelineSettings.doMultiTarget;
 });
 
 const onBeforeTabUpdate = () => {

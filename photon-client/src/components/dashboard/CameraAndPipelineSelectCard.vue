@@ -19,8 +19,7 @@ import IconMenu from "~icons/mdi/menu";
 const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
 
 // Pipeline selectors always show the actual pipeline type; algorithm is chosen within AprilTagTab.
-const selectablePipelineType = (type: WebsocketPipelineType): WebsocketPipelineType =>
-  type;
+const selectablePipelineType = (type: WebsocketPipelineType): WebsocketPipelineType => type;
 
 // Camera Name Edit
 const isCameraNameEdit = ref(false);

@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import {
-  FiducialAlgorithm,
-  PipelineType,
-  type AprilTagPipelineSettings,
-  AprilTagFamily
-} from "@/types/PipelineTypes";
-import { WebsocketPipelineType, type WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+import { FiducialAlgorithm, PipelineType, type AprilTagPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
+import { type WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
@@ -18,9 +13,7 @@ const currentPipelineSettings = computed<AprilTagPipelineSettings>(
 );
 const isAruco = computed(() => currentPipelineSettings.value.algorithm === FiducialAlgorithm.Aruco);
 
-const algorithm = computed<FiducialAlgorithm>(() =>
-  currentPipelineSettings.value.algorithm
-);
+const algorithm = computed<FiducialAlgorithm>(() => currentPipelineSettings.value.algorithm);
 const setAlgorithm = (value: FiducialAlgorithm) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ algorithm: value }, true);
 };
@@ -32,12 +25,7 @@ const interactiveCols = computed(() =>
 </script>
 
 <template>
-
-<div
-  v-if="
-      currentPipelineSettings.pipelineType === PipelineType.AprilTag
-    "
->
+  <div v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag">
     <pv-select
       :model-value="algorithm"
       label="Algorithm"
