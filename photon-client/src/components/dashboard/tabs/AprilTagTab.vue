@@ -3,7 +3,6 @@ import {
   FiducialAlgorithm,
   PipelineType,
   type AprilTagPipelineSettings,
-  type ArucoPipelineSettings,
   AprilTagFamily
 } from "@/types/PipelineTypes";
 import { WebsocketPipelineType, type WebsocketNumberPair } from "@/types/WebsocketDataTypes";
@@ -14,26 +13,20 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
 import { normalizeNumberPair } from "@/lib/PhotonUtils";
 
-// TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
-// Defer reference to store access method
-const currentPipelineSettings = computed<AprilTagPipelineSettings | ArucoPipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings | ArucoPipelineSettings
+const currentPipelineSettings = computed<AprilTagPipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
 const apriltagSettings = computed<AprilTagPipelineSettings>(
   () => currentPipelineSettings.value as AprilTagPipelineSettings
 );
-const arucoSettings = computed<ArucoPipelineSettings>(() => currentPipelineSettings.value as ArucoPipelineSettings);
-const isAruco = computed(() => useCameraSettingsStore().currentPipelineType === PipelineType.Aruco);
+const isAruco = computed(() => currentPipelineSettings.value.algorithm === FiducialAlgorithm.Aruco);
 
 const algorithm = computed<FiducialAlgorithm>(() =>
-  isAruco.value ? FiducialAlgorithm.Aruco : FiducialAlgorithm.AprilTag
+  currentPipelineSettings.value.algorithm
 );
 const setAlgorithm = (value: FiducialAlgorithm) => {
-  useCameraSettingsStore().changeCurrentPipelineType(
-    value === FiducialAlgorithm.Aruco ? WebsocketPipelineType.Aruco : WebsocketPipelineType.AprilTag
-  );
+  useCameraSettingsStore().changeCurrentPipelineSetting({ algorithm: value }, false);
 };
-
 const breakpoints = useCustomBreakpoints();
 const mdAndDown = breakpoints.smallerOrEqual("md");
 const interactiveCols = computed(() =>
@@ -42,12 +35,12 @@ const interactiveCols = computed(() =>
 </script>
 
 <template>
-  <div
-    v-if="
-      currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-      currentPipelineSettings.pipelineType === PipelineType.Aruco
+
+<div
+  v-if="
+      currentPipelineSettings.pipelineType === PipelineType.AprilTag
     "
-  >
+>
     <pv-select
       :model-value="algorithm"
       label="Algorithm"
@@ -141,7 +134,7 @@ const interactiveCols = computed(() =>
     </template>
     <template v-if="isAruco">
       <pv-range-slider
-        v-model="arucoSettings.threshWinSizes"
+        v-model="apriltagSettings.threshWinSizes"
         label="Thresh Min/Max Size"
         tooltip="The minimum and maximum adaptive threshold window size. Larger windows tend more towards global thresholding, but small windows can be weak to noise."
         :min="3"
@@ -154,7 +147,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="arucoSettings.threshStepSize"
+        v-model="apriltagSettings.threshStepSize"
         :slider-cols="interactiveCols"
         label="Thresh Step Size"
         tooltip="Smaller values will cause more steps between the min/max sizes. More, varied steps can improve detection robustness to lighting, but may decrease performance."
@@ -166,7 +159,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="arucoSettings.threshConstant"
+        v-model="apriltagSettings.threshConstant"
         :slider-cols="interactiveCols"
         label="Thresh Constant"
         tooltip="Affects the threshold window mean value cutoff for all steps. Higher values can improve performance, but may harm detection rate."
@@ -178,7 +171,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-switch
-        v-model="arucoSettings.useCornerRefinement"
+        v-model="apriltagSettings.useCornerRefinement"
         label="Refine Corners"
         tooltip="Further refine the initial corners with subpixel accuracy."
         :switch-cols="interactiveCols"
@@ -189,7 +182,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-switch
-        v-model="arucoSettings.debugThreshold"
+        v-model="apriltagSettings.debugThreshold"
         label="Debug Threshold"
         tooltip="Display the first threshold step to the color stream."
         :switch-cols="interactiveCols"
@@ -200,7 +193,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-switch
-        v-model="arucoSettings.useAruco3"
+        v-model="apriltagSettings.useAruco3"
         label="ArUco3"
         tooltip="Use ArUco3 markers."
         :switch-cols="interactiveCols"
@@ -210,7 +203,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="arucoSettings.aruco3MinMarkerSideRatio"
+        v-model="apriltagSettings.aruco3MinMarkerSideRatio"
         :slider-cols="interactiveCols"
         label="ArUco3 Min Marker Side Ratio"
         :min="0.01"
@@ -222,7 +215,7 @@ const interactiveCols = computed(() =>
         "
       />
       <pv-slider
-        v-model="arucoSettings.aruco3MinCanonicalImgSide"
+        v-model="apriltagSettings.aruco3MinCanonicalImgSide"
         :slider-cols="interactiveCols"
         label="ArUco3 Min Canonical Image Side"
         :min="16"

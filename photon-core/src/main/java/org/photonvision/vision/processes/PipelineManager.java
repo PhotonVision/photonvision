@@ -252,7 +252,7 @@ public class PipelineManager implements AutoCloseable {
                 currentUserPipeline =
                         new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
             }
-            case AprilTag, Aruco -> {
+            case AprilTag -> {
                 logger.debug("Creating AprilTag pipeline");
                 currentUserPipeline =
                         new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
@@ -334,12 +334,6 @@ public class PipelineManager implements AutoCloseable {
                     case Reflective -> new ReflectivePipelineSettings();
                     case ColoredShape -> new ColoredShapePipelineSettings();
                     case AprilTag -> new AprilTagPipelineSettings();
-                    case Aruco -> {
-                        var arucoSettings = new AprilTagPipelineSettings();
-                        arucoSettings.algorithm = FiducialAlgorithm.Aruco;
-                        arucoSettings.pipelineType = PipelineType.Aruco;
-                        yield arucoSettings;
-                    }
                     case ObjectDetection -> new ObjectDetectionPipelineSettings();
                     case Calib3d, DriverMode, FocusCamera -> {
                         logger.error("Got invalid pipeline type: " + type);

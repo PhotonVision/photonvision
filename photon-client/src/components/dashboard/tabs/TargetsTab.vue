@@ -59,10 +59,7 @@ const resetCurrentBuffer = () => {
             <thead>
               <tr>
                 <th
-                  v-if="
-                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco
-                  "
+                  v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag"
                   class="text-pv-on-surface"
                 >
                   Fiducial ID
@@ -84,8 +81,7 @@ const resetCurrentBuffer = () => {
                 </template>
                 <template
                   v-if="
-                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
                     useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                   "
                 >
@@ -96,10 +92,7 @@ const resetCurrentBuffer = () => {
             <tbody class="target-results-body">
               <tr v-for="(target, index) in displayedTargets" :key="index" class="text-pv-on-surface">
                 <td
-                  v-if="
-                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco
-                  "
+                  v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag"
                   class="text-center"
                 >
                   <div class="cell-inner">{{ target.fiducialId }}</div>
@@ -143,8 +136,7 @@ const resetCurrentBuffer = () => {
                 </template>
                 <template
                   v-if="
-                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
                     useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                   "
                 >
@@ -161,10 +153,7 @@ const resetCurrentBuffer = () => {
                 class="placeholder-row text-pv-on-surface"
               >
                 <td
-                  v-if="
-                    currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco
-                  "
+                  v-if="currentPipelineSettings.pipelineType === PipelineType.AprilTag"
                   class="text-center"
                 >
                   <div class="cell-inner"></div>
@@ -191,11 +180,11 @@ const resetCurrentBuffer = () => {
                   <td class="text-center"><div class="cell-inner"></div></td>
                   <td class="text-center"><div class="cell-inner"></div></td>
                   <td class="text-center"><div class="cell-inner"></div></td>
+                  <td class="text-center"><div class="cell-inner"></div></td>
                 </template>
                 <template
                   v-if="
-                    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
                     useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                   "
                 >
@@ -211,8 +200,7 @@ const resetCurrentBuffer = () => {
     </div>
     <div
       v-if="
-        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+        currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
         currentPipelineSettings.doMultiTarget &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
@@ -254,27 +242,27 @@ const resetCurrentBuffer = () => {
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(
-                        2
-                      )
+                      toDeg(
+                        useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0
+                      ).toFixed(2)
                     }}&deg;
                   </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0).toFixed(
-                        2
-                      )
+                      toDeg(
+                        useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0
+                      ).toFixed(2)
                     }}&deg;
                   </div>
                 </td>
                 <td class="text-pv-on-surface text-center">
                   <div class="cell-inner">
                     {{
-                      toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0).toFixed(
-                        2
-                      )
+                      toDeg(
+                        useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0
+                      ).toFixed(2)
                     }}&deg;
                   </div>
                 </td>
@@ -339,7 +327,8 @@ const resetCurrentBuffer = () => {
                   <div class="cell-inner">
                     {{
                       calculateStdDev(
-                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
+                        useStateStore()
+                          .currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
                       ).toFixed(5)
                     }}&deg;
                   </div>
@@ -348,7 +337,8 @@ const resetCurrentBuffer = () => {
                   <div class="cell-inner">
                     {{
                       calculateStdDev(
-                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
+                        useStateStore()
+                          .currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
                       ).toFixed(5)
                     }}&deg;
                   </div>
@@ -357,7 +347,8 @@ const resetCurrentBuffer = () => {
                   <div class="cell-inner">
                     {{
                       calculateStdDev(
-                        useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []
+                        useStateStore()
+                          .currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []
                       ).toFixed(5)
                     }}&deg;
                   </div>

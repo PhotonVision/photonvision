@@ -18,10 +18,9 @@ import IconMenu from "~icons/mdi/menu";
 // Common RegEx used for naming both pipelines and cameras
 const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
 
-// ArUco pipelines are surfaced as AprilTag pipelines that use the ArUco fiducial algorithm,
-// so the type selectors only ever show AprilTag for both backend pipeline types.
+// Pipeline selectors always show the actual pipeline type; algorithm is chosen within AprilTagTab.
 const selectablePipelineType = (type: WebsocketPipelineType): WebsocketPipelineType =>
-  type === WebsocketPipelineType.Aruco ? WebsocketPipelineType.AprilTag : type;
+  type;
 
 // Camera Name Edit
 const isCameraNameEdit = ref(false);
@@ -217,7 +216,6 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       pipelineType.value = WebsocketPipelineType.ColoredShape;
       break;
     case PipelineType.AprilTag:
-    case PipelineType.Aruco:
       pipelineType.value = WebsocketPipelineType.AprilTag;
       break;
     case PipelineType.ObjectDetection:

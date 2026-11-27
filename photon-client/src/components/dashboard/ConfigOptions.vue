@@ -16,9 +16,11 @@ import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 
-import { PipelineType } from "@/types/PipelineTypes";
-import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-
+import {
+  FiducialAlgorithm,
+  PipelineType,
+  type AprilTagPipelineSettings
+} from "@/types/PipelineTypes";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 interface ConfigOption {
@@ -72,12 +74,12 @@ const getTabGroups = (): ConfigOption[][] => {
 const tabGroups = computed<ConfigOption[][]>(() => {
   // Just return the input tab because we know that is always the case in driver mode
   if (useCameraSettingsStore().isDriverMode) return [[allTabs.inputTab]];
-
   const allow3d = useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled;
-  const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
-  const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
+  const settings = useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings;
+  const isAprilTag = settings.pipelineType === PipelineType.AprilTag;
+  const isAruco = settings.algorithm === FiducialAlgorithm.Aruco;
   const isObjectDetection =
-    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.ObjectDetection;
+    useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ObjectDetection;
 
   return getTabGroups()
     .map((tabGroup) =>
@@ -97,10 +99,8 @@ const tabGroups = computed<ConfigOption[][]>(() => {
 // This boolean is used to satisfy type-checking requirements.
 const shouldUseWideSecondTabGroup = computed(() => {
   const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
-
   return (
-    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+    currentPipelineSettings.pipelineType === PipelineType.AprilTag &&
     currentPipelineSettings.doMultiTarget
   );
 });

@@ -260,8 +260,7 @@ public class SQLConfigTest {
             for (CVPipelineSettings ps : cc.pipelineSettings) {
                 if (ps instanceof AdvancedPipelineSettings adps) {
                     AdvancedPipelineSettings finalPs = adps;
-                    if (finalPs.pipelineType.equals(PipelineType.AprilTag)
-                            || finalPs.pipelineType.equals(PipelineType.Aruco)) {
+                    if (finalPs.pipelineType.equals(PipelineType.AprilTag)) {
                         // Tag pipelines don't have max detections, so skip
                         continue;
                     } else if (finalPs.pipelineNickname.equals("TEST MIGRATION")) {
