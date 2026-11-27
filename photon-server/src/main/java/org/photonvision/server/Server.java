@@ -121,12 +121,12 @@ public class Server {
         app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
         app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
         app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
-        app.post("/api/settings/aprilTagFieldLayout", RequestHandler::onAprilTagFieldLayoutRequest);
+        app.post("/api/settings/fieldLayout", RequestHandler::onFieldLayoutRequest);
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
-        app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
         app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
+        app.get("/api/settings/camera/getUncertainty", RequestHandler::onUncertaintyJsonRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
@@ -143,7 +143,9 @@ public class Server {
         app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration
-        app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
+        app.post("/api/calibration/compute", RequestHandler::onCalibrationComputeRequest);
+        app.post("/api/calibration/commit", RequestHandler::onCalibrationCommitRequest);
+        app.post("/api/calibration/cancel", RequestHandler::onCalibrationCancelRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
         app.post("/api/calibration/remove", RequestHandler::onCalibrationRemoveRequest);
 
@@ -165,6 +167,7 @@ public class Server {
 
         app.post("/api/test/activateTestMode", TestRequestHandler::testMode);
         app.post("/api/test/override/platform", TestRequestHandler::handlePlatformOverrideRequest);
+        app.post("/api/test/override/quirks", TestRequestHandler::handleQuirksOverrideRequest);
 
         app.start(port);
     }

@@ -1,0 +1,205 @@
+@import "@fontsource/lato/latin-300.css";
+@import "@fontsource/lato/latin-400.css";
+@import "@fontsource/lato/latin-700.css";
+
+@import "tailwindcss";
+
+@theme inline static {
+  --font-sans: "Lato", sans-serif;
+
+  --color-pv-background: var(--pv-background);
+  --color-pv-surface: var(--pv-surface);
+  --color-pv-primary: var(--pv-primary);
+  --color-pv-secondary: var(--pv-secondary);
+
+  --color-pv-on-background: var(--pv-on-background);
+  --color-pv-on-surface: var(--pv-on-surface);
+  --color-pv-accent: var(--pv-accent);
+  --color-pv-error: var(--pv-error);
+  --color-pv-info: var(--pv-info);
+  --color-pv-success: var(--pv-success);
+  --color-pv-warning: var(--pv-warning);
+  --color-pv-error-on-surface: var(--pv-error-on-surface);
+  --color-pv-info-on-surface: var(--pv-info-on-surface);
+  --color-pv-success-on-surface: var(--pv-success-on-surface);
+  --color-pv-warning-on-surface: var(--pv-warning-on-surface);
+  --color-pv-button-active: var(--pv-button-active);
+  --color-pv-button-passive: var(--pv-button-passive);
+  --color-pv-logs-background: var(--pv-logs-background);
+  --color-pv-sidebar: var(--pv-sidebar);
+
+  --color-pv-surface-text: var(--pv-on-surface);
+  --animate-progress: progress 1s infinite linear;
+  --animate-toast-in: toast-in 200ms ease-out;
+  --animate-toast-out: toast-out 150ms ease-in forwards;
+  --animate-toast-swipe-out: toast-swipe-out 150ms ease-out forwards;
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-fade-out: fade-out 150ms ease-in forwards;
+  --animate-dialog-in: dialog-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dialog-out: dialog-out 150ms ease-in forwards;
+  --animate-popover-in: popover-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-popover-out: popover-out 100ms ease-in forwards;
+}
+
+:root {
+  --pv-on-background: oklch(from var(--pv-background) round(1.21 - L) 0 0);
+  --pv-on-surface: oklch(from var(--pv-surface) round(1.21 - L) 0 0);
+  --pv-accent: var(--pv-primary);
+  --pv-error: var(--color-red-700);
+  --pv-info: var(--color-blue-400);
+  --pv-success: var(--color-green-600);
+  --pv-warning: var(--color-yellow-400);
+  --pv-button-active: var(--pv-primary);
+  --pv-button-passive: var(--pv-secondary);
+  --pv-logs-background: var(--color-slate-800);
+  --pv-sidebar: var(--color-slate-700);
+
+  /*
+   * Status colors for text on a pv-surface.
+   * Surface is user-customizable, so these are calculated from --pv-on-surface
+   */
+  --pv-error-on-surface: oklch(from var(--pv-on-surface) calc(0.32 + 0.61 * l) calc(0.2 - 0.12 * l) 25);
+  --pv-info-on-surface: oklch(from var(--pv-on-surface) calc(0.32 + 0.61 * l) calc(0.15 - 0.12 * l) 250);
+  --pv-success-on-surface: oklch(from var(--pv-on-surface) calc(0.32 + 0.61 * l) calc(0.17 - 0.12 * l) 150);
+  --pv-warning-on-surface: oklch(from var(--pv-on-surface) calc(0.32 + 0.61 * l) calc(0.17 - 0.12 * l) 85);
+}
+
+@supports (color: contrast-color(red)) {
+  :root {
+    --pv-on-background: contrast-color(var(--pv-background));
+    --pv-on-surface: contrast-color(var(--pv-surface));
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --pv-accent: var(--pv-surface);
+  --pv-error: var(--color-red-400);
+  --pv-logs-background: var(--color-slate-900);
+  --pv-sidebar: var(--color-slate-600);
+  --pv-button-active: var(--pv-secondary);
+}
+
+@keyframes progress {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 30px 30px;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes toast-swipe-out {
+  from {
+    opacity: 1;
+    transform: translateY(var(--reka-toast-swipe-end-y));
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translate(var(--popover-slide-x, 0), var(--popover-slide-y, 0));
+  }
+}
+
+@keyframes popover-out {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-state][class*="animate-"] {
+    animation-duration: 1ms !important;
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background-color: var(--color-pv-background);
+    color: var(--color-pv-on-background);
+    overscroll-behavior: none;
+    scrollbar-gutter: stable;
+  }
+
+  /* Custom scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-pv-background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-pv-accent);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-pv-primary);
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--color-pv-background);
+    color: var(--color-pv-on-background);
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}

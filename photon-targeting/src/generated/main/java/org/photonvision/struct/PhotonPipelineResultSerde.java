@@ -28,9 +28,14 @@ package org.photonvision.struct;
 
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.utils.PacketUtils;
 
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
+
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
@@ -42,9 +47,9 @@ import org.wpilib.util.struct.Struct;
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
 
     @Override
-    public final String getInterfaceUUID() { return "4b2ff16a964b5e2bf04be0c1454d91c4"; }
+    public final String getInterfaceUUID() { return "fd353b11f3a818e9c5b457c7dc5a8f5c"; }
     @Override
-    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
+    public final String getSchema() { return "PhotonPipelineMetadata:5231116d7f87ff560e6aa5263d0eee02 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
     @Override
     public final String getTypeName() { return "PhotonPipelineResult"; }
 
@@ -53,17 +58,16 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, PhotonPipelineResult value) {
         // field metadata is of non-intrinsic type PhotonPipelineMetadata
         PhotonPipelineMetadata.photonStruct.pack(packet, value.metadata);
 
         // targets is a custom VLA!
-        packet.encodeList(value.targets);
+        packet.encodeListImpl(value.targets,PhotonTrackedTarget.photonStruct::pack);
 
         // multitagResult is optional! it better not be a VLA too
-        packet.encodeOptional(value.multitagResult);
+        packet.encodeOptionalImpl(value.multitagResult,MultiTargetPNPResult.photonStruct::pack);
     }
 
     @Override
@@ -74,10 +78,10 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         ret.metadata = PhotonPipelineMetadata.photonStruct.unpack(packet);
 
         // targets is a custom VLA!
-        ret.targets = packet.decodeList(PhotonTrackedTarget.photonStruct);
+        ret.targets = packet.decodeListImpl(PhotonTrackedTarget.photonStruct::unpack);
 
         // multitagResult is optional! it better not be a VLA too
-        ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct);
+        ret.multitagResult = packet.decodeOptionalImpl(MultiTargetPNPResult.photonStruct::unpack);
 
         return ret;
     }
@@ -85,7 +89,7 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-            PhotonTrackedTarget.photonStruct,MultiTargetPNPResult.photonStruct,PhotonPipelineMetadata.photonStruct
+            PhotonTrackedTarget.photonStruct,PhotonPipelineMetadata.photonStruct,MultiTargetPNPResult.photonStruct
         };
     }
 

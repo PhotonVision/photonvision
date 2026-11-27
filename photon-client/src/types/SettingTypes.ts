@@ -75,26 +75,30 @@ export type ConfigurableNetworkSettings = Omit<
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
 
+export const PVUsbCamera = "PVCameraInfo.PVUsbCameraInfo";
+export const PVCSICamera = "PVCameraInfo.PVCSICameraInfo";
+export const PVFileCamera = "PVCameraInfo.PVFileCameraInfo";
+
 interface PVCameraInfoBase {
-  type: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+  type: typeof PVUsbCamera | typeof PVCSICamera | typeof PVFileCamera;
   path: string;
   name: string;
   uniquePath: string;
 }
 
 export interface PVUsbCameraInfo extends PVCameraInfoBase {
-  type: "PVUsbCameraInfo";
+  type: typeof PVUsbCamera;
   dev: number;
   otherPaths: string[];
   vendorId: number;
   productId: number;
 }
 export interface PVCSICameraInfo extends PVCameraInfoBase {
-  type: "PVCSICameraInfo";
+  type: typeof PVCSICamera;
   baseName: string;
 }
 export interface PVFileCameraInfo extends PVCameraInfoBase {
-  type: "PVFileCameraInfo";
+  type: typeof PVFileCamera;
 }
 
 export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
@@ -422,7 +426,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   minWhiteBalanceTemp: 2000,
   maxWhiteBalanceTemp: 10000,
   matchedCameraInfo: {
-    type: "PVFileCameraInfo",
+    type: PVFileCamera,
     name: "Foobar",
     path: "/dev/foobar",
     uniquePath: "/dev/foobar2"
@@ -436,7 +440,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
 
 export enum CalibrationBoardTypes {
   Chessboard = 0,
-  Charuco = 1
+  ChArUco = 1
 }
 
 export enum CalibrationTagFamilies {
@@ -451,4 +455,14 @@ export enum RobotOffsetType {
   Single = 1,
   DualFirst = 2,
   DualSecond = 3
+}
+
+export enum CalibrationPaperTypes {
+  Letter,
+  Legal,
+  Tabloid,
+  A4,
+  A3,
+  A2,
+  Adaptive
 }

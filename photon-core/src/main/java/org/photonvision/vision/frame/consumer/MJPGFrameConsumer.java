@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.frame.consumer;
 
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
+import org.wpilib.networktables.NetworkTablesJNI;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.vision.camera.*;
 import org.wpilib.vision.stream.CameraServer;
@@ -46,7 +46,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
     }
 
     public void accept(CVMat image) {
-        long now = MathUtils.wpiNanoTime();
+        long now = NetworkTablesJNI.now();
 
         if (image == null || image.getMat() == null || image.getMat().empty()) {
             image.copyFrom(StaticFrames.LOST_MAT);

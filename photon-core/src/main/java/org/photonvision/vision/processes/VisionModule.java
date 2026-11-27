@@ -18,7 +18,12 @@
 package org.photonvision.vision.processes;
 
 import io.javalin.websocket.WsContext;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +31,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
@@ -40,6 +45,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
@@ -64,7 +70,7 @@ import org.wpilib.vision.camera.VideoException;
  * <p>VisionModule has a pipeline manager, vision runner, and data providers. The data providers
  * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
  */
-public class VisionModule {
+public class VisionModule implements AutoCloseable {
     private final Logger logger;
     protected final PipelineManager pipelineManager;
     protected final VisionSource visionSource;
@@ -98,7 +104,14 @@ public class VisionModule {
 
     boolean mismatch;
 
-    public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
+    // The most recently computed calibration, kept for inspection from the UI
+    private volatile CameraCalibrationCoefficients pendingCalibration = null;
+    private volatile Path pendingImageDir = null;
+
+    public VisionModule(
+            PipelineManager pipelineManager,
+            VisionSource visionSource,
+            Collection<CVPipelineResultConsumer> extraConsumers) {
         logger =
                 new Logger(
                         VisionModule.class,
@@ -161,25 +174,26 @@ public class VisionModule {
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
-        addResultConsumer(ntConsumer);
-        addResultConsumer(uiDataConsumer);
-        addResultConsumer(statusLEDsConsumer);
-        addResultConsumer(
+        resultConsumers.add(ntConsumer);
+        resultConsumers.add(uiDataConsumer);
+        resultConsumers.add(statusLEDsConsumer);
+        resultConsumers.add(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        resultConsumers.addAll(extraConsumers);
 
         // Sync VisionModule state with the first pipeline index
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
         // Set vendor FOV
         if (isVendorCamera()) {
-            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
+            var fov = ConfigProvider.getInstance().getConfig().getHardwareConfig().vendorFOV;
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
         }
 
-        // Configure LED's if supported by the underlying hardware
-        if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
+        // Configure LED's if supported by the underlying hardware.
+        if (this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
                     .ifPresent(
@@ -189,7 +203,9 @@ public class VisionModule {
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
+        getCameraConfiguration().deactivated = false;
         saveAndBroadcastAll();
+        start();
     }
 
     private void createStreams() {
@@ -257,6 +273,9 @@ public class VisionModule {
                 if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
                     this.latestFrame.release();
+                    if (this.targets != null) {
+                        this.targets.forEach(TrackedTarget::release);
+                    }
                 }
 
                 this.latestFrame = inputOutputFrame;
@@ -264,10 +283,6 @@ public class VisionModule {
                 this.targets = targets;
 
                 shouldRun = inputOutputFrame != null;
-                // && inputOutputFrame.colorImage != null
-                // && !inputOutputFrame.colorImage.getMat().empty()
-                // && inputOutputFrame.processedImage != null
-                // && !inputOutputFrame.processedImage.getMat().empty();
             }
         }
 
@@ -292,15 +307,18 @@ public class VisionModule {
                     try {
                         CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
-
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
-                    }
-                    try {
-                        m_frame.release();
-                    } catch (Exception e) {
-                        logger.error("Exception freeing frames", e);
+                    } finally {
+                        if (targets != null) {
+                            targets.forEach(TrackedTarget::release);
+                        }
+                        try {
+                            m_frame.release();
+                        } catch (Exception e) {
+                            logger.error("Exception freeing frames", e);
+                        }
                     }
                 } else {
                     // busy wait! hurray!
@@ -315,14 +333,12 @@ public class VisionModule {
         }
     }
 
-    public void start() {
-        visionSource.cameraConfiguration.deactivated = false;
+    private void start() {
         visionRunner.startProcess();
         streamRunnable.start();
     }
 
-    public void stop() {
-        visionSource.cameraConfiguration.deactivated = true;
+    private void stop() {
         visionRunner.stopProcess();
 
         try {
@@ -331,16 +347,6 @@ public class VisionModule {
         } catch (InterruptedException e) {
             logger.error("Exception killing process thread", e);
         }
-
-        visionSource.release();
-
-        inputVideoStreamer.close();
-        outputVideoStreamer.close();
-        inputFrameSaver.close();
-        outputFrameSaver.close();
-
-        changeSubscriberHandle.stop();
-        setVisionLEDs(false);
     }
 
     public void setFov(double fov) {
@@ -378,7 +384,12 @@ public class VisionModule {
     }
 
     public void startCalibration(UICalibrationData data) {
+        if (pendingCalibration != null) pendingCalibration.release();
+        pendingCalibration = null;
+        deletePendingImageDir();
+
         var settings = pipelineManager.calibration3dPipeline.getSettings();
+        settings.autoCalibrate = data.autoCalibrate;
 
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
         var resolution = new Size(videoMode.width, videoMode.height);
@@ -426,25 +437,120 @@ public class VisionModule {
         pipelineManager.calibration3dPipeline.takeSnapshot();
     }
 
-    public CameraCalibrationCoefficients endCalibration() {
-        var ret =
-                pipelineManager.calibration3dPipeline.tryCalibration(
-                        ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(
-                                        pipelineManager.calibration3dPipeline.getSettings().resolution,
-                                        visionSource.getCameraConfiguration().uniqueName));
-        pipelineManager.setCalibrationMode(false);
+    /**
+     * Computes a calibration from the currently collected snapshots without committing it.
+     *
+     * @return The computed calibration result, or null if the computation failed
+     */
+    public CameraCalibrationCoefficients computeCalibration() {
+        if (pipelineManager.getCurrentPipelineIndex() != PipelineManager.CAL_3D_INDEX) {
+            throw new IllegalStateException("Camera is not in calibration mode");
+        }
 
-        setPipeline(pipelineManager.getRequestedIndex());
+        final Path imageSavePath;
+        try {
+            imageSavePath =
+                    ConfigProvider.getInstance()
+                            .createPreliminaryCalibrationImageDir(
+                                    visionSource.getCameraConfiguration().uniqueName);
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Could not create a temporary directory for preliminary calibration images", e);
+        }
+
+        var ret = pipelineManager.calibration3dPipeline.tryCalibration(imageSavePath);
+        if (ret != null) {
+            // Only replace the previous pending result once the new solve has succeeded
+            deletePendingImageDir();
+            pendingImageDir = imageSavePath;
+            if (pendingCalibration != null) pendingCalibration.release();
+            pendingCalibration = ret;
+        } else {
+            FileUtils.deleteDirectory(imageSavePath);
+        }
+        return ret;
+    }
+
+    /**
+     * Calls {@link #computeCalibration()} and commits the calibration.
+     *
+     * @return The committed calibration, or null if the computation failed
+     */
+    public CameraCalibrationCoefficients commitCalibration() {
+        var ret = computeCalibration();
+
+        pendingCalibration = null;
+        var imageDir = pendingImageDir;
+        pendingImageDir = null;
 
         if (ret != null) {
             logger.debug("Saving calibration...");
+            movePendingSnapshotImages(ret, imageDir);
             visionSource.getSettables().addCalibration(ret);
         } else {
             logger.error("Calibration failed...");
+            // We only want to release the pending calibration when compute fails
+            // since the endingCalibration and the ret object are the same
+            if (pendingCalibration != null) pendingCalibration.release();
         }
+        if (imageDir != null) {
+            FileUtils.deleteDirectory(imageDir);
+        }
+
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
         return ret;
+    }
+
+    /**
+     * Moves a committed calibration's snapshot images from their temporary directory to the
+     * persistent calibration image directory, updating the observations to point at the new
+     * locations.
+     */
+    private void movePendingSnapshotImages(CameraCalibrationCoefficients cal, Path tempImageDir) {
+        if (tempImageDir == null) return;
+
+        var persistentDir =
+                ConfigProvider.getInstance()
+                        .getCalibrationImageSavePathWithRes(
+                                cal.resolution, visionSource.getCameraConfiguration().uniqueName);
+
+        for (var observation : cal.observations) {
+            if (observation.snapshotDataLocation == null) continue;
+
+            var target = persistentDir.resolve(observation.snapshotName);
+            try {
+                Files.move(observation.snapshotDataLocation, target, StandardCopyOption.REPLACE_EXISTING);
+                observation.snapshotDataLocation = target;
+            } catch (IOException e) {
+                logger.error("Failed to move calibration snapshot image to " + target, e);
+            }
+        }
+    }
+
+    /** Aborts the calibration session and discards pending information. */
+    public void cancelCalibration() {
+        logger.info("Calibration canceled -- not computing or saving a result");
+        if (pendingCalibration != null) pendingCalibration.release();
+        pendingCalibration = null;
+        deletePendingImageDir();
+
+        pipelineManager.setCalibrationMode(false);
+        setPipeline(pipelineManager.getRequestedIndex());
+        saveAndBroadcastAll();
+    }
+
+    private void deletePendingImageDir() {
+        var dir = pendingImageDir;
+        pendingImageDir = null;
+        if (dir != null) {
+            FileUtils.deleteDirectory(dir);
+        }
+    }
+
+    public CameraCalibrationCoefficients getPendingCalibration() {
+        return pendingCalibration;
     }
 
     boolean setPipeline(int index) {
@@ -526,7 +632,7 @@ public class VisionModule {
     }
 
     public void saveModule() {
-        ConfigManager.getInstance()
+        ConfigProvider.getInstance()
                 .saveModule(
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
     }
@@ -537,15 +643,15 @@ public class VisionModule {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
 
-        HashMap<String, Object> map = new HashMap<>();
-        HashMap<String, Object> subMap = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> subMap = new HashMap<>();
         subMap.put(propertyName, value);
         map.put("mutatePipelineSettings", subMap);
 
@@ -623,7 +729,7 @@ public class VisionModule {
                         .toList();
 
         ret.isFovConfigurable =
-                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
+                !(ConfigProvider.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
@@ -679,10 +785,6 @@ public class VisionModule {
         config.currentPipelineIndex = Math.max(pipelineManager.getRequestedIndex(), -1);
 
         return config;
-    }
-
-    public void addResultConsumer(CVPipelineResultConsumer dataConsumer) {
-        resultConsumers.add(dataConsumer);
     }
 
     private void consumeResult(CVPipelineResult result) {
@@ -751,7 +853,7 @@ public class VisionModule {
      *
      * @param quirksToChange map of true/false for quirks we should change
      */
-    public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
+    public void changeCameraQuirks(Map<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
         visionSource.remakeSettables();
         saveAndBroadcastAll();
@@ -763,5 +865,31 @@ public class VisionModule {
 
     public CameraConfiguration getCameraConfiguration() {
         return this.visionSource.cameraConfiguration;
+    }
+
+    @Override
+    public void close() {
+        if (visionRunner.isRunning()) {
+            stop();
+        }
+
+        // Ensure config is saved and synced before closing
+        saveAndBroadcastAll();
+
+        inputVideoStreamer.close();
+        outputVideoStreamer.close();
+        inputFrameSaver.close();
+        outputFrameSaver.close();
+
+        deletePendingImageDir();
+        if (pendingCalibration != null) pendingCalibration.release();
+
+        changeSubscriberHandle.stop();
+        setVisionLEDs(false);
+
+        visionRunner.close();
+        pipelineManager.close();
+        visionSource.close();
+        if (lastPipelineResultBestTarget != null) lastPipelineResultBestTarget.close();
     }
 }

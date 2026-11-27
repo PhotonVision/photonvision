@@ -33,6 +33,10 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
 import org.wpilib.math.geometry.Transform3d;
@@ -54,29 +58,32 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
     @Override
     public void pack(Packet packet, PnpResult value) {
+        // best is of shimmed type Transform3d
         PacketUtils.packTransform3d(packet, value.best);
 
+        // alt is of shimmed type Transform3d
         PacketUtils.packTransform3d(packet, value.alt);
 
         // field bestReprojErr is of intrinsic type float64
-        packet.encode((double) value.bestReprojErr);
+        packet.encode(value.bestReprojErr);
 
         // field altReprojErr is of intrinsic type float64
-        packet.encode((double) value.altReprojErr);
+        packet.encode(value.altReprojErr);
 
         // field ambiguity is of intrinsic type float64
-        packet.encode((double) value.ambiguity);
+        packet.encode(value.ambiguity);
     }
 
     @Override
     public PnpResult unpack(Packet packet) {
         var ret = new PnpResult();
 
+        // best is of shimmed type Transform3d
         ret.best = PacketUtils.unpackTransform3d(packet);
 
+        // alt is of shimmed type Transform3d
         ret.alt = PacketUtils.unpackTransform3d(packet);
 
         // bestReprojErr is of intrinsic type float64

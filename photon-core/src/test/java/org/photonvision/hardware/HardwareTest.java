@@ -18,6 +18,7 @@
 package org.photonvision.hardware;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.diozero.internal.provider.builtin.DefaultDeviceFactory;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.VisionLED;
 import org.photonvision.common.util.TestUtils;
@@ -111,6 +113,14 @@ public class HardwareTest {
                 }
                 assertEquals(1, seenValues.size());
             }
+        }
+
+        @Test
+        public void testInvalidConfigInit() {
+            HardwareManager.initialize(hardwareConfig, new HardwareSettings());
+
+            // The status led config is invalid, so it should have been skipped
+            assertFalse(HardwareManager.getInstance().hasStatusLed());
         }
     }
 }

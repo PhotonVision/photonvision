@@ -62,11 +62,11 @@ digraph CristianAlgorithm {
 
 Time Synchronization Protocol (TSP) participants can assume either a server role or a client role. The server role is responsible for listening for incoming time synchronization requests from clients and replying appropriately. The client role is responsible for sending "Ping" messages to the server and listening for "Pong" replies to estimate the offset between the server and client time bases.
 
-All time values shall use units of microseconds. The epoch of the time base this is measured against is unspecified.
+All time values shall use units of nanoseconds. The epoch of the time base this is measured against is unspecified.
 
 Clients shall periodically (e.g. every few seconds) send, in a manner that minimizes transmission delays, a **TSP Ping Message** that contains the client's current local time.
 
-When the server receives a **TSP Ping Message** from any client, it shall respond to the client, in a manner that minimizes transmission delays, with a **TSP Pong message** encoding a timestamp of its (the server's) current local time (in microseconds), and the client-provided data value.
+When the server receives a **TSP Ping Message** from any client, it shall respond to the client, in a manner that minimizes transmission delays, with a **TSP Pong message** encoding a timestamp of its (the server's) current local time (in nanoseconds), and the client-provided data value.
 
 When the client receives a **TSP Pong Message** from the server, it shall verify that the `Client Local Time` corresponds to the currently in-flight TSP Ping message; if not, it shall drop this packet. The round trip time (RTT) shall be computed from the delta between the message's data value and the current local time.  If the RTT is less than that from previous measurements, the client shall use the timestamp in the message plus ½ the RTT as the server time equivalent to the current local time, and use this equivalence to compute server time base timestamps from local time for future messages.
 
@@ -102,11 +102,11 @@ Clients may publish statistics to NetworkTables. If they do, they shall publish 
 
 | Key | Type | Notes |
 | ------ | ------ | ---- |
-| offset_us | Integer | The time offset that, when added to the client's local clock, provides server time |
+| offset_ns | Integer | The time offset (in nanoseconds) that, when added to the client's local clock, provides server time |
 | ping_tx_count | Integer | The total number of TSP Ping packets transmitted |
 | ping_rx_count | Integer | The total number of TSP Ping packets received |
-| pong_rx_time_us | Integer | The time, in client local time, that the last pong was received |
-| rtt2_us | Integer | The time in us from last complete (ping transmission to pong reception) |
+| pong_rx_time_ns | Integer | The time, in client local time, that the last pong was received |
+| rtt2_ns | Integer | The time in ns from last complete (ping transmission to pong reception) |
 
 PhotonVision has chosen to publish to the sub-table `/photonvision/.timesync/{DEVICE_HOSTNAME}`. Future implementations of this protocol may decide to implement this as a structured data type.
 

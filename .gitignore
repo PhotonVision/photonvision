@@ -126,7 +126,7 @@ compile_commands.json
 *.bin
 .gradle
 .gradle/*
-photonvision_config
+photonvision_config*
 bin*/
 build*/
 
@@ -137,8 +137,8 @@ photonlib-cpp-examples/*/vendordeps/*
 */networktables.json.bck
 photonlib-cpp-examples/*/networktables.json.bck
 photonlib-java-examples/*/networktables.json.bck
-*.sqlite
 venv
+
 .venv/*
 .venv
 networktables.json
@@ -162,4 +162,12 @@ shell.nix
 flake.nix
 flake.lock
 
+# Auto Serde Tests
+photon-serde-tests/src/
+photon-serde-tests/py/
+
 /workspace
+
+# SQLite files, except those in test-resources
+*.sqlite*
+!test-resources/**/*.sqlite*

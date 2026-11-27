@@ -68,11 +68,11 @@ public class USBFrameProvider extends CpuImageProcessor {
         if (m_blockForFrames) {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             var mat = new CVMat();
-            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
+            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is nS since
             // Hal::initialize was called
             // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
             // can.
-            long captureTimeNs = cvSink.grabFrame(mat.getMat(), CSCORE_DEFAULT_FRAME_TIMEOUT) * 1000;
+            long captureTimeNs = cvSink.grabFrame(mat.getMat(), CSCORE_DEFAULT_FRAME_TIMEOUT);
 
             if (captureTimeNs == 0) {
                 var error = cvSink.getError();
@@ -93,16 +93,16 @@ public class USBFrameProvider extends CpuImageProcessor {
                     cameraMode.width * 3,
                     PixelFormat.BGR);
 
-            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
+            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is nS since
             // Hal::initialize was called
-            long captureTimeUs =
+            long captureTimeNs =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
                             cvSink.getHandle(), frame.getNativeObj(), CSCORE_DEFAULT_FRAME_TIMEOUT, lastTime);
-            lastTime = captureTimeUs;
+            lastTime = captureTimeNs;
 
             CVMat ret;
 
-            if (captureTimeUs == 0) {
+            if (captureTimeNs == 0) {
                 var error = cvSink.getError();
                 logger.error("Error grabbing image: " + error);
 
@@ -115,7 +115,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                 ret = new CVMat(mat, frame);
             }
 
-            return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);
+            return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeNs);
         }
     }
 

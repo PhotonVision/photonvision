@@ -30,12 +30,16 @@ dependencies {
     implementation "org.wpilib.ntcore:ntcore-java:$wpilibVersion"
     implementation "org.wpilib.hal:hal-java:$wpilibVersion"
     implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
+    implementation "org.wpilib.telemetry:telemetry-java:$wpilibVersion"
+    implementation "org.wpilib.tunables:tunables-java:$wpilibVersion"
     implementation "org.wpilib.apriltag:apriltag-java:$wpilibVersion"
+    implementation "org.wpilib.fields:fields-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
     implementation wpilibTools.deps.wpilibOpenCvJava(openCVversion)
 
     implementation group: "io.avaje", name: "avaje-jsonb", version: avajeJsonbVersion
     annotationProcessor group: "io.avaje", name: "avaje-jsonb-generator", version: avajeJsonbVersion
+    implementation group: "io.avaje", name: "avaje-json-node", version: avajeJsonbVersion
     implementation group: "io.avaje", name: "avaje-jsonb-jackson", version: avajeJsonbVersion
     implementation group: "io.avaje", name: "avaje-jsonb-javalin-mapper", version: avajeJsonbVersion
 
@@ -43,7 +47,8 @@ dependencies {
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: quickbufVersion;
 
     implementation "commons-io:commons-io:2.11.0"
-    implementation "commons-cli:commons-cli:1.5.0"
+
+    implementation "info.picocli:picocli:4.7.7"
 
     testImplementation(platform('org.junit:junit-bom:5.11.4'))
     testImplementation 'org.junit.jupiter:junit-jupiter-api'

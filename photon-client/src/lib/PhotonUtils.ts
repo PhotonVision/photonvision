@@ -1,9 +1,51 @@
 import { useStateStore } from "@/stores/StateStore";
-import type { Resolution } from "@/types/SettingTypes";
+import {
+  CalibrationPaperTypes,
+  CalibrationTagFamilies,
+  type BoardObservation,
+  type CameraCalibrationResult,
+  type Resolution
+} from "@/types/SettingTypes";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import axios, { type AxiosRequestConfig } from "axios";
+import { length, type Length } from "@adam-rocska/units-and-measurement/length";
 
-export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
-  return a.height === b.height && a.width === b.width;
+export const resolutionsAreEqual = (a: Resolution, b?: Resolution) => {
+  return a.height === b?.height && a.width === b?.width;
+};
+
+export const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
+  Array.isArray(value) ? value : [value.first, value.second];
+
+export const meanReprojectionError = (obs: BoardObservation): number => {
+  const used = obs.reprojectionErrors.filter((_, i) => obs.cornersUsed[i]);
+  if (used.length === 0) return NaN;
+  return used.reduce((sum, pt) => sum + Math.hypot(pt.x, pt.y), 0) / used.length;
+};
+
+export interface CalibrationSummaryStatistics {
+  // Mean overall reprojection error in pixels, averaged over each observation's mean error
+  mean: number;
+  horizontalFOV: number;
+  verticalFOV: number;
+  diagonalFOV: number;
+}
+
+export const getCalibrationSummaryStatistics = (cal: CameraCalibrationResult): CalibrationSummaryStatistics => {
+  const fx = cal.cameraIntrinsics.data[0];
+  const fy = cal.cameraIntrinsics.data[4];
+  const { width, height } = cal.resolution;
+
+  const observationMeans = cal.meanErrors ?? cal.observations?.map(meanReprojectionError) ?? [];
+  const mean = observationMeans.length ? observationMeans.reduce((a, b) => a + b, 0) / observationMeans.length : NaN;
+
+  return {
+    mean,
+    horizontalFOV: (2 * Math.atan2(width / 2, fx) * 180) / Math.PI,
+    verticalFOV: (2 * Math.atan2(height / 2, fy) * 180) / Math.PI,
+    // Scales the vertical axis by the pixel aspect ratio (fx / fy) to handle non-square pixels
+    diagonalFOV: (2 * Math.atan2(Math.sqrt(width ** 2 + (height / (fy / fx)) ** 2) / 2, fx) * 180) / Math.PI
+  };
 };
 
 /**
@@ -22,7 +64,7 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
   while (pollLimit > 0) {
     try {
       pollLimit--;
-      await axios.get(ip ? `http://${ip}/api/status` : "/status");
+      await axios.get(ip ? `http://${ip}/api/status` : "status");
       return true;
     } catch {
       // Backend not ready yet, wait and retry
@@ -37,7 +79,7 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
  * Forces a page reload after a brief delay and a status check.
  */
 export const forceReloadPage = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
   useStateStore().showSnackbarMessage({
     message: "Reloading the page to apply changes...",
@@ -107,5 +149,58 @@ export const axiosPost = async (
       });
     }
     return false;
+  }
+};
+
+export const arucoTagFamilyNameFor = (tagFamily: CalibrationTagFamilies) => {
+  switch (tagFamily) {
+    case CalibrationTagFamilies.Dict_4X4_1000:
+      return "ArUco 4x4 1000";
+    case CalibrationTagFamilies.Dict_5X5_1000:
+      return "ArUco 5x5 1000";
+    case CalibrationTagFamilies.Dict_6X6_1000:
+      return "ArUco 6x6 1000";
+    case CalibrationTagFamilies.Dict_7X7_1000:
+      return "ArUco 7x7 1000";
+    default:
+      return "ArUco Original";
+  }
+};
+
+export const arucoTagDictionaryFor = async (tagFamily: CalibrationTagFamilies) => {
+  switch (tagFamily) {
+    case CalibrationTagFamilies.Dict_4X4_1000:
+      const { ARUCO_4X4_1000 } = await import("aruco-marker/dictionaries/aruco_4x4_1000");
+      return ARUCO_4X4_1000;
+    case CalibrationTagFamilies.Dict_5X5_1000:
+      const { ARUCO_5X5_1000 } = await import("aruco-marker/dictionaries/aruco_5x5_1000");
+      return ARUCO_5X5_1000;
+    case CalibrationTagFamilies.Dict_6X6_1000:
+      const { ARUCO_6X6_1000 } = await import("aruco-marker/dictionaries/aruco_6x6_1000");
+      return ARUCO_6X6_1000;
+    case CalibrationTagFamilies.Dict_7X7_1000:
+      const { ARUCO_7X7_1000 } = await import("aruco-marker/dictionaries/aruco_7x7_1000");
+      return ARUCO_7X7_1000;
+    default:
+      return undefined;
+  }
+};
+
+export const paperDimensionsFor = (paperType: CalibrationPaperTypes): [Length, Length] => {
+  switch (paperType) {
+    case CalibrationPaperTypes.Letter:
+      return [length.in(8.5), length.in(11)];
+    case CalibrationPaperTypes.Legal:
+      return [length.in(8.5), length.in(14)];
+    case CalibrationPaperTypes.Tabloid:
+      return [length.in(11), length.in(17)];
+    case CalibrationPaperTypes.A4:
+      return [length.mm(210), length.mm(297)];
+    case CalibrationPaperTypes.A3:
+      return [length.mm(297), length.mm(420)];
+    case CalibrationPaperTypes.A2:
+      return [length.mm(420), length.mm(594)];
+    default:
+      return [length.mm(0), length.mm(0)];
   }
 };

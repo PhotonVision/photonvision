@@ -21,12 +21,11 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
@@ -197,26 +196,22 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                             List.of(),
                             result.inputAndOutputFrame);
         else acceptedResult = result;
-        var now = NetworkTablesJNI.now();
-        var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
-
-        var offset = NetworkTablesManager.getInstance().getOffset();
+        var offsetNanos = NetworkTablesManager.getInstance().getOffset();
 
         // Transform the metadata timestamps from the local wpi::nt::Now timebase to the Time Sync
-        // Server's
-        // timebase
+        // Server's timebase. Timestamps are published in nanoseconds.
         var simplified =
                 new PhotonPipelineResult(
                         acceptedResult.sequenceID,
-                        captureMicros + offset,
-                        now + offset,
+                        result.getImageCaptureTimestampNanos() + offsetNanos,
+                        NetworkTablesJNI.now() + offsetNanos,
                         NetworkTablesManager.getInstance().getTimeSinceLastPong(),
                         TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
                         acceptedResult.multiTagResult);
 
         // random guess at size of the array
         ts.resultPublisher.set(simplified, 1024);
-        if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
+        if (ConfigProvider.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
             ts.protoResultPublisher.set(simplified);
         }
 

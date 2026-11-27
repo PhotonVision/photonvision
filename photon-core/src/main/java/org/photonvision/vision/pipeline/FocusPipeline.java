@@ -55,17 +55,18 @@ public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipeline
         long totalNanos = 0;
 
         var inputMat = frame.colorImage.getMat();
-        boolean emptyIn = inputMat.empty();
-        Mat displayMat = new Mat();
+        Mat displayMat;
         double variance = 0.0;
 
-        if (!emptyIn) {
+        if (!inputMat.empty()) {
             totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
 
             var focusResult = focusPipe.run(inputMat);
             totalNanos += focusResult.nanosElapsed;
             variance = focusResult.output.variance;
             displayMat = focusResult.output.frame;
+        } else {
+            displayMat = inputMat;
         }
 
         var fpsResult = calculateFPSPipe.run(null);
@@ -92,7 +93,9 @@ public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipeline
 
     @Override
     public void release() {
-        // we never actually need to give resources up since pipelinemanager only makes
-        // one of us
+        focusPipe.release();
+        calculateFPSPipe.release();
+        resizeImagePipe.release();
+        super.release();
     }
 }

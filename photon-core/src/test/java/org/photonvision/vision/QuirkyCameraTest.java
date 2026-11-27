@@ -91,4 +91,18 @@ public class QuirkyCameraTest {
         assertTrue(see3Cam.hasQuirk(CameraQuirk.Gain));
         assertTrue(see3Cam.hasQuirk(CameraQuirk.See3Cam_24CUG));
     }
+
+    @Test
+    public void thriftyOv9281Test() {
+        HashMap<CameraQuirk, Boolean> thriftyQuirks = new HashMap<>();
+        thriftyQuirks.put(CameraQuirk.ThriftyOV9281Controls, true);
+        thriftyQuirks.put(CameraQuirk.Gain, true);
+        thriftyQuirks.put(CameraQuirk.MJPEGOnly, true);
+        for (var q : CameraQuirk.values()) {
+            thriftyQuirks.putIfAbsent(q, false);
+        }
+
+        QuirkyCamera thrifty = QuirkyCamera.getQuirkyCamera(0x1BCF, 0x28C5);
+        assertEquals(thrifty.quirks, thriftyQuirks);
+    }
 }

@@ -1,0 +1,591 @@
+import math
+
+import cscore as cs
+import cv2 as cv
+import numpy as np
+import wpilib
+from robotpy_fields import Field, FieldId, get_field
+from wpimath import Pose3d, Transform3d
+from wpimath.units import meters, seconds
+from wpiutil import PixelFormat
+
+from ..estimation import OpenCVHelp, RotTrlTransform3d, TargetModel, VisionEstimation
+from ..estimation.camera_target_relation import CameraTargetRelation
+from ..networktables.nt_topic_set import NTTopicSet
+from ..photon_camera import PhotonCamera
+from ..targeting import (
+    MultiTargetPNPResult,
+    PhotonPipelineMetadata,
+    PhotonPipelineResult,
+    PhotonTrackedTarget,
+    PnpResult,
+    TargetCorner,
+)
+from .sim_camera_properties import SimCameraProperties
+from .video_sim_util import VideoSimUtil
+from .vision_target_sim import VisionTargetSim
+
+
+class PhotonCameraSim:
+    """A handle for simulating :class:`.PhotonCamera` values. Processing simulated targets through this
+    class will change the associated PhotonCamera's results.
+    """
+
+    kDefaultMinAreaPx: float = 100
+
+    def __init__(
+        self,
+        camera: PhotonCamera,
+        props: SimCameraProperties | None = None,
+        tagLayout: Field | None = None,
+        minTargetAreaPercent: float | None = None,
+        maxSightRange: meters | None = None,
+    ):
+        """Constructs a handle for simulating :class:`.PhotonCamera` values. Processing simulated targets
+        through this class will change the associated PhotonCamera's results.
+
+        By default, this constructor's camera has a 90 deg FOV with no simulated lag if props!
+        By default, the minimum target area is 100 pixels and there is no maximum sight range unless both params are passed to override.
+
+
+        :param camera:               The camera to be simulated
+        :param prop:                 Properties of this camera such as FOV and FPS
+        :param minTargetAreaPercent: The minimum percentage (0 - 100) a detected target must take up of
+                                     the camera's image to be processed. Match this with your contour filtering settings in the
+                                     PhotonVision GUI.
+        :param maxSightRangeMeters:  Maximum distance at which the target is illuminated to your camera.
+                                     Note that minimum target area of the image is separate from this.
+        """
+
+        self.minTargetAreaPercent: float = 0.0
+        self.maxSightRange: float = 1.0e99
+        self.videoSimRawEnabled: bool = False
+        self.videoSimWireframeEnabled: bool = False
+        self.videoSimWireframeResolution: float = 0.1
+        # TODO switch this back to default True when the functionality is enabled
+        self.videoSimProcEnabled: bool = False
+        self.heartbeatCounter: int = 0
+        self.nextNtEntryTime = wpilib.Timer.get_monotonic_timestamp()
+        self.tagLayout = (
+            tagLayout if tagLayout is not None else get_field(FieldId.DEFAULT_FIELD)
+        )
+
+        self.cam = camera
+        self.prop = props if props is not None else SimCameraProperties.PERFECT_90DEG()
+        self.setMinTargetAreaPixels(PhotonCameraSim.kDefaultMinAreaPx)
+
+        self.videoSimRaw = cs.CameraServer.put_video(
+            self.cam.getName() + "-raw",
+            self.prop.getResWidth(),
+            self.prop.getResHeight(),
+        )
+        self.videoSimFrameRaw = np.zeros(
+            (self.prop.getResHeight(), self.prop.getResWidth()), dtype=np.uint8
+        )
+        self.videoSimRaw.set_pixel_format(PixelFormat.GRAY)
+
+        self.videoSimProcessed = cs.CameraServer.put_video(
+            self.cam.getName() + "-processed",
+            self.prop.getResWidth(),
+            self.prop.getResHeight(),
+        )
+        self.videoSimFrameProcessed = np.zeros(
+            (self.prop.getResHeight(), self.prop.getResWidth(), 3), dtype=np.uint8
+        )
+
+        self.ts = NTTopicSet(self.cam._cameraTable)
+        self.ts.updateEntries()
+
+        # Handle this last explicitly for this function signature because the other constructor is called in the initialiser list
+        if minTargetAreaPercent is not None and maxSightRange is not None:
+            self.minTargetAreaPercent = minTargetAreaPercent
+            self.maxSightRange = maxSightRange
+
+    def getCamera(self) -> PhotonCamera:
+        return self.cam
+
+    def getMinTargetAreaPercent(self) -> float:
+        return self.minTargetAreaPercent
+
+    def getMinTargetAreaPixels(self) -> float:
+        return self.minTargetAreaPercent / 100.0 * self.prop.getResArea()
+
+    def getMaxSightRange(self) -> meters:
+        return self.maxSightRange
+
+    def getVideoSimRaw(self) -> cs.CvSource:
+        return self.videoSimRaw
+
+    def getVideoSimFrameRaw(self) -> np.ndarray:
+        return self.videoSimFrameRaw
+
+    def canSeeTargetPose(self, camPose: Pose3d, target: VisionTargetSim) -> bool:
+        """Determines if this target's pose should be visible to the camera without considering its
+        projected image points. Does not account for image area.
+
+        :param camPose: Camera's 3d pose
+        :param target:  Vision target containing pose and shape
+
+        :returns: If this vision target can be seen before image projection.
+        """
+
+        rel = CameraTargetRelation(camPose, target.getPose())
+        return (
+            (
+                # target translation is outside of camera's FOV
+                abs(rel.camToTargYaw.degrees())
+                < self.prop.getHorizFOV().degrees() / 2.0
+                and abs(rel.camToTargPitch.degrees())
+                < self.prop.getVertFOV().degrees() / 2.0
+            )
+            and (
+                # camera is behind planar target and it should be occluded
+                not target.getModel().getIsPlanar()
+                or abs(rel.targtoCamAngle.degrees()) < 90
+            )
+            # target is too far
+            and rel.camToTarg.translation().norm() <= self.maxSightRange
+        )
+
+    def canSeeCorner(self, points: np.ndarray) -> bool:
+        """Determines if all target points are inside the camera's image.
+
+        :param points: The target's 2d image points
+        """
+
+        assert points.shape[1] == 1
+        assert points.shape[2] == 2
+        for pt in points:
+            x = pt[0, 0]
+            y = pt[0, 1]
+            if (
+                x < 0
+                or x > self.prop.getResWidth()
+                or y < 0
+                or y > self.prop.getResHeight()
+            ):
+                return False  # point is outside of resolution
+
+        return True
+
+    def consumeNextEntryTime(self) -> float | None:
+        """Determine if this camera should process a new frame based on performance metrics and the time
+        since the last update. This returns an Optional which is either empty if no update should occur
+        or a float of the timestamp in seconds of when the frame which should be received by NT. If
+        a timestamp is returned, the last frame update time becomes that timestamp.
+
+        :returns: Optional float which is empty while blocked or the NT entry timestamp in seconds if
+                  ready
+        """
+        # check if this camera is ready for another frame update
+        now = wpilib.Timer.get_monotonic_timestamp()
+        timestamp = 0.0
+        iter = 0
+        # prepare next latest update
+        while now >= self.nextNtEntryTime:
+            timestamp = self.nextNtEntryTime
+            frameTime = self.prop.estSecUntilNextFrame()
+            self.nextNtEntryTime += frameTime
+
+            # if frame time is very small, avoid blocking
+            iter += 1
+            if iter > 50:
+                timestamp = now
+                self.nextNtEntryTime = now + frameTime
+                break
+
+        # return the timestamp of the latest update
+        if timestamp != 0:
+            return timestamp
+
+        # or this camera isn't ready to process yet
+        return None
+
+    def setMinTargetAreaPercent(self, areaPercent: float) -> None:
+        """The minimum percentage (0 - 100) a detected target must take up of the camera's image to be
+        processed.
+        """
+        self.minTargetAreaPercent = areaPercent
+
+    def setMinTargetAreaPixels(self, areaPx: float) -> None:
+        """The minimum number of pixels a detected target must take up in the camera's image to be
+        processed.
+        """
+        self.minTargetAreaPercent = areaPx / self.prop.getResArea() * 100.0
+
+    def setMaxSightRange(self, range: meters) -> None:
+        """Maximum distance at which the target is illuminated to your camera. Note that minimum target
+        area of the image is separate from this.
+        """
+        self.maxSightRange = range
+
+    def enableRawStream(self, enabled: bool) -> None:
+        """Sets whether the raw video stream simulation is enabled.
+
+        Note: This may increase loop times.
+        """
+        self.videoSimRawEnabled = enabled
+
+    def enableDrawWireframe(self, enabled: bool) -> None:
+        """Sets whether a wireframe of the field is drawn to the raw video stream.
+
+        Note: This will dramatically increase loop times.
+        """
+        self.videoSimWireframeEnabled = enabled
+
+    def setWireframeResolution(self, resolution: float) -> None:
+        """Sets the resolution of the drawn wireframe if enabled. Drawn line segments will be subdivided
+        into smaller segments based on a threshold set by the resolution.
+
+        :param resolution: Resolution as a fraction(0 - 1) of the video frame's diagonal length in
+                           pixels
+        """
+        self.videoSimWireframeResolution = resolution
+
+    def enableProcessedStream(self, enabled: bool) -> None:
+        """Sets whether the processed video stream simulation is enabled."""
+        self.videoSimProcEnabled = enabled
+
+    def process(
+        self, latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]
+    ) -> PhotonPipelineResult:
+        # Sort targets by distance to camera - furthest to closest
+        def distance(target: VisionTargetSim):
+            return target.getPose().translation().distance(cameraPose.translation())
+
+        targets.sort(key=distance, reverse=True)
+
+        # all targets visible before noise
+        visibleTgts: list[tuple[VisionTargetSim, np.ndarray]] = []
+        # all targets actually detected by camera (after noise)
+        detectableTgts: list[PhotonTrackedTarget] = []
+
+        # basis change from world coordinates to camera coordinates
+        camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
+
+        # reset our frame
+        VideoSimUtil.updateVideoProp(self.videoSimRaw, self.prop)
+        VideoSimUtil.updateVideoProp(self.videoSimProcessed, self.prop)
+        self.videoSimFrameRaw = np.zeros(
+            (self.prop.getResHeight(), self.prop.getResWidth()), dtype=np.uint8
+        )
+
+        for tgt in targets:
+            if len(detectableTgts) >= 50:
+                break
+
+            # pose isn't visible, skip to next
+            if not self.canSeeTargetPose(cameraPose, tgt):
+                continue
+
+            # find target's 3d corner points
+            fieldCorners = tgt.getFieldVertices()
+            isSpherical = tgt.getModel().getIsSpherical()
+            if isSpherical:  # target is spherical
+                model = tgt.getModel()
+                # orient the model to the camera (like a sprite/decal) so it appears similar regardless of view
+                fieldCorners = model.getFieldVertices(
+                    TargetModel.getOrientedPose(
+                        tgt.getPose().translation(), cameraPose.translation()
+                    )
+                )
+
+            # project 3d target points into 2d image points
+            imagePoints = OpenCVHelp.projectPoints(
+                self.prop.getIntrinsics(),
+                self.prop.getDistCoeffs(),
+                camRt,
+                fieldCorners,
+            )
+
+            # spherical targets need a rotated rectangle of their midpoints for visualization
+            if isSpherical:
+                center = OpenCVHelp.avgPoint(imagePoints)
+                left_idx: int = 0
+                # reference point (left side midpoint)
+                for i in range(4):
+                    if imagePoints[i, 0, 0] < imagePoints[left_idx, 0, 0].x:
+                        left_idx = i
+
+                lc = imagePoints[left_idx]
+                angles = [
+                    0.0,
+                ] * 4
+                t = (left_idx + 1) % 4
+                b = (left_idx + 1) % 4
+                r = 0
+                for i in range(4):
+                    if i == left_idx:
+                        continue
+                    ic = imagePoints[i]
+                    angles[i] = math.atan2(lc[0, 1] - ic[0, 1], ic[0, 0] - lc[0, 0])
+                    if angles[i] >= angles[t]:
+                        t = i
+                    if angles[i] <= angles[b]:
+                        b = i
+                for i in range(4):
+                    if i != t and i != left_idx and i != b:
+                        r = i
+                # create RotatedRect from midpoints
+                rect = cv.RotatedRect(
+                    (center[0, 0], center[0, 1]),
+                    (
+                        imagePoints[r, 0, 0] - lc[0, 0],
+                        imagePoints[b, 0, 1] - imagePoints[t, 0, 1],
+                    ),
+                    -angles[r],
+                )
+                # set target corners to rect corners
+                imagePoints = np.array([[p[0], p[1], p[2]] for p in rect.points()])
+
+            # save visible targets for raw video stream simulation
+            visibleTgts.append((tgt, imagePoints))
+            # estimate pixel noise
+            noisyTargetCorners = self.prop.estPixelNoise(imagePoints)
+            # find the minimum area rectangle of target corners
+            minAreaRect = OpenCVHelp.getMinAreaRect(noisyTargetCorners)
+            minAreaRectPts = minAreaRect.points()
+            # find the (naive) 2d yaw/pitch
+            centerPt = minAreaRect.center
+            centerRot = self.prop.getPixelRot(centerPt)
+            # find contour area
+            areaPercent = self.prop.getContourAreaPercent(noisyTargetCorners)
+
+            # projected target can't be detected, skip to next
+            if (
+                not self.canSeeCorner(noisyTargetCorners)
+                or not areaPercent >= self.minTargetAreaPercent
+            ):
+                continue
+
+            pnpSim: PnpResult | None = None
+            if tgt.fiducialId >= 0 and len(tgt.getFieldVertices()) == 4:
+                # single AprilTag solvePNP
+                pnpSim = OpenCVHelp.solvePNP_Square(
+                    self.prop.getIntrinsics(),
+                    self.prop.getDistCoeffs(),
+                    tgt.getModel().getVertices(),
+                    noisyTargetCorners,
+                )
+
+            # Compute object detection confidence if this is an obj det target
+            classId = tgt.objDetClassId
+            conf = tgt.objDetConf
+            if classId >= 0 and conf < 0:
+                # Simulate confidence using sqrt-scaled area for a more realistic
+                # curve. Raw areaPercent/100 is tiny for most targets; sqrt scaling
+                # gives reasonable values even for small-but-visible objects.
+                conf = max(0.0, min(1.0, math.sqrt(areaPercent / 100.0) * 2.0))
+
+            smallVec: list[TargetCorner] = []
+            for corner in minAreaRectPts:
+                smallVec.append(TargetCorner(corner[0], corner[1]))
+
+            cornersFloat = OpenCVHelp.pointsToTargetCorners(noisyTargetCorners)
+
+            detectableTgts.append(
+                PhotonTrackedTarget(
+                    yaw=math.degrees(-centerRot.z),
+                    pitch=math.degrees(-centerRot.y),
+                    area=areaPercent,
+                    skew=math.degrees(centerRot.x),
+                    fiducialId=tgt.fiducialId,
+                    objDetectId=classId,
+                    objDetectConf=conf,
+                    detectedCorners=cornersFloat,
+                    minAreaRectCorners=smallVec,
+                    bestCameraToTarget=pnpSim.best if pnpSim else Transform3d(),
+                    altCameraToTarget=pnpSim.alt if pnpSim else Transform3d(),
+                    poseAmbiguity=pnpSim.ambiguity if pnpSim else -1,
+                )
+            )
+
+        if self.videoSimRawEnabled:
+            if self.videoSimWireframeEnabled:
+                VideoSimUtil.drawFieldWireFrame(
+                    camRt,
+                    self.prop,
+                    self.videoSimWireframeResolution,
+                    1.5,
+                    [80],
+                    6,
+                    1,
+                    [30],
+                    self.videoSimFrameRaw,
+                )
+            for visible_target, corners in visibleTgts:
+                if visible_target.fiducialId >= 0:
+                    VideoSimUtil.warp165h5TagImage(
+                        visible_target.fiducialId, corners, True, self.videoSimFrameRaw
+                    )
+                elif not visible_target.getModel().getIsSpherical():
+                    contour = corners.copy()
+                    if not visible_target.getModel().getIsPlanar():
+                        contour = OpenCVHelp.getConvexHull(contour)
+                    VideoSimUtil.drawPoly(
+                        contour, -1, [-255], True, self.videoSimFrameRaw
+                    )
+                else:
+                    VideoSimUtil.drawInscribedEllipse(
+                        corners, [255], self.videoSimFrameRaw
+                    )
+            self.videoSimRaw.put_frame(self.videoSimFrameRaw)
+        else:
+            self.videoSimRaw.set_connection_strategy(
+                cs.VideoSource.ConnectionStrategy.CONNECTION_FORCE_CLOSE
+            )
+
+        if self.videoSimProcEnabled:
+            cv.cvtColor(
+                self.videoSimFrameRaw, cv.COLOR_GRAY2BGR, self.videoSimFrameProcessed
+            )
+            cv.drawMarker(
+                self.videoSimFrameProcessed,
+                (
+                    int(self.prop.getResWidth() / 2.0),
+                    int(self.prop.getResHeight() / 2.0),
+                ),
+                [0, 255, 0],
+                markerType=cv.MARKER_CROSS,
+                markerSize=int(
+                    VideoSimUtil.getScaledThickness(15, self.videoSimFrameProcessed)
+                ),
+                thickness=int(
+                    VideoSimUtil.getScaledThickness(1, self.videoSimFrameProcessed)
+                ),
+                line_type=cv.LINE_AA,
+            )
+            for detectable_target in detectableTgts:
+                detectedCornersDouble = detectable_target.getDetectedCorners()
+                if detectable_target.fiducialId >= 0:
+                    VideoSimUtil.drawTagDetection(
+                        detectable_target.fiducialId,
+                        OpenCVHelp.cornersToPoints(detectedCornersDouble),
+                        self.videoSimFrameProcessed,
+                    )
+                else:
+                    cv.rectangle(
+                        self.videoSimFrameProcessed,
+                        OpenCVHelp.getBoundingRect(
+                            OpenCVHelp.cornersToPoints(detectedCornersDouble)
+                        ),
+                        [0, 0, 255],
+                        int(
+                            VideoSimUtil.getScaledThickness(
+                                1, self.videoSimFrameProcessed
+                            )
+                        ),
+                        cv.LINE_AA,
+                    )
+                    smallVec = detectable_target.getMinAreaRectCorners()
+                    VideoSimUtil.drawPoly(
+                        OpenCVHelp.cornersToPoints(smallVec),
+                        int(
+                            VideoSimUtil.getScaledThickness(
+                                1, self.videoSimFrameProcessed
+                            )
+                        ),
+                        [255, 30, 30],
+                        True,
+                        self.videoSimFrameProcessed,
+                    )
+                    self.videoSimProcessed.put_frame(self.videoSimFrameProcessed)
+        else:
+            self.videoSimProcessed.set_connection_strategy(
+                cs.VideoSource.ConnectionStrategy.CONNECTION_FORCE_CLOSE
+            )
+
+        multiTagResults: MultiTargetPNPResult | None = None
+
+        visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(
+            detectableTgts, self.tagLayout
+        )
+
+        if len(visibleLayoutTags) > 1:
+            usedIds = [tag.id for tag in visibleLayoutTags]
+            # sort target order sorts in ascending order by default
+            usedIds.sort()
+            pnpResult = VisionEstimation.estimateCamPosePNP(
+                self.prop.getIntrinsics(),
+                self.prop.getDistCoeffs(),
+                detectableTgts,
+                self.tagLayout,
+                TargetModel.AprilTag36h11(),
+            )
+            if pnpResult is not None:
+                multiTagResults = MultiTargetPNPResult(pnpResult, usedIds)
+
+        # put this simulated data to NT
+        self.heartbeatCounter += 1
+        publishTimestampNanos = wpilib.Timer.get_monotonic_timestamp() * 1e9
+        return PhotonPipelineResult(
+            ntReceiveTimestampNanos=int(publishTimestampNanos + 10_000),
+            metadata=PhotonPipelineMetadata(
+                captureTimestampNanos=int(publishTimestampNanos - latency * 1e9),
+                publishTimestampNanos=int(publishTimestampNanos),
+                sequenceID=self.heartbeatCounter,
+                # Pretend like we heard a pong recently
+                timeSinceLastPong=int(np.random.uniform(950_000, 1_050_000)),
+            ),
+            targets=detectableTgts,
+            multitagResult=multiTagResults,
+        )
+
+    def submitProcessedFrame(
+        self,
+        result: PhotonPipelineResult,
+        receiveTimestampNanos: float | None = None,
+    ):
+        """Simulate one processed frame of vision data, putting one result to NT. Image capture timestamp
+        overrides :meth:`.PhotonPipelineResult.getTimestampSeconds` for more
+        precise latency simulation.
+
+        :param result:           The pipeline result to submit
+        :param receiveTimestamp: The (sim) timestamp when this result was read by NT in nanoseconds. If not passed image capture time is assumed be (current time - latency)
+        """
+        if receiveTimestampNanos is None:
+            receiveTimestampNanos = wpilib.Timer.get_monotonic_timestamp() * 1e9
+        receiveTimestampNanos = int(receiveTimestampNanos)
+
+        self.ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestampNanos)
+
+        newPacket = PhotonPipelineResult.photonStruct.pack(result)
+        self.ts.rawBytesEntry.set(newPacket.getData(), receiveTimestampNanos)
+
+        hasTargets = result.hasTargets()
+        self.ts.hasTargetEntry.set(hasTargets, receiveTimestampNanos)
+        if not hasTargets:
+            self.ts.targetPitchEntry.set(0.0, receiveTimestampNanos)
+            self.ts.targetYawEntry.set(0.0, receiveTimestampNanos)
+            self.ts.targetAreaEntry.set(0.0, receiveTimestampNanos)
+            self.ts.targetPoseEntry.set(Transform3d(), receiveTimestampNanos)
+            self.ts.targetSkewEntry.set(0.0, receiveTimestampNanos)
+        else:
+            bestTarget = result.getBestTarget()
+            assert bestTarget
+
+            self.ts.targetPitchEntry.set(bestTarget.getPitch(), receiveTimestampNanos)
+            self.ts.targetYawEntry.set(bestTarget.getYaw(), receiveTimestampNanos)
+            self.ts.targetAreaEntry.set(bestTarget.getArea(), receiveTimestampNanos)
+            self.ts.targetSkewEntry.set(bestTarget.getSkew(), receiveTimestampNanos)
+
+            self.ts.targetPoseEntry.set(
+                bestTarget.getBestCameraToTarget(), receiveTimestampNanos
+            )
+
+        intrinsics = self.prop.getIntrinsics()
+        intrinsicsView = intrinsics.flatten().tolist()
+        self.ts.cameraIntrinsicsPublisher.set(
+            list(intrinsicsView), receiveTimestampNanos
+        )
+
+        distortion = self.prop.getDistCoeffs()
+        distortionView = distortion.flatten().tolist()
+        self.ts.cameraDistortionPublisher.set(
+            list(distortionView), receiveTimestampNanos
+        )
+
+        self.ts.heartbeatPublisher.set(self.heartbeatCounter, receiveTimestampNanos)
+        self.heartbeatCounter += 1
+
+        self.ts.subTable.get_instance().flush()

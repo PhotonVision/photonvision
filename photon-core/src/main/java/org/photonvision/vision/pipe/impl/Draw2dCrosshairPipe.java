@@ -31,7 +31,7 @@ import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.RobotOffsetPointMode;
 import org.photonvision.vision.target.TargetCalculations;
 import org.photonvision.vision.target.TrackedTarget;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 public class Draw2dCrosshairPipe
         extends MutatingPipe<
@@ -83,6 +83,9 @@ public class Draw2dCrosshairPipe
         }
         return null;
     }
+
+    @Override
+    public void release() {}
 
     public static record Draw2dCrosshairParams(
             boolean shouldDraw,

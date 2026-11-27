@@ -18,12 +18,7 @@
 package org.photonvision.vision.camera;
 
 import io.avaje.jsonb.Json;
-import io.avaje.jsonb.JsonType;
-import io.avaje.jsonb.Jsonb;
-import io.avaje.jsonb.Types;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
@@ -126,7 +121,7 @@ public sealed interface PVCameraInfo {
             if (obj == null) return false;
             if (!(obj instanceof PVUsbCameraInfo info)) return false;
 
-            return super.name.equals(info.name)
+            return name().equals(info.name())
                     && super.vendorId == info.vendorId
                     && super.productId == info.productId
                     && uniquePath().equals(info.uniquePath());
@@ -285,26 +280,5 @@ public sealed interface PVCameraInfo {
 
     public static PVCameraInfo fromFileInfo(String path, String baseName) {
         return new PVFileCameraInfo(path, baseName);
-    }
-
-    // MIGRATION: 2026
-    public static String remapConfigJson(String configJson, String cameraType) {
-        final JsonType<Map<String, Object>> objMapJsonb =
-                Jsonb.instance().type(Types.mapOf(Object.class));
-
-        Map<String, Object> cameraMigration = objMapJsonb.fromJson(configJson);
-
-        @SuppressWarnings("unchecked")
-        var cameraMigrationIn = (Map<String, Object>) cameraMigration.get("matchedCameraInfo");
-
-        @SuppressWarnings("unchecked")
-        var cameraData = (Map<String, Object>) cameraMigrationIn.get(cameraType);
-
-        Map<String, Object> cameraMigrationOut = new HashMap<>();
-        cameraMigrationOut.putAll(cameraData);
-        cameraMigrationOut.put("type", "PVCameraInfo." + cameraType);
-
-        cameraMigration.put("matchedCameraInfo", cameraMigrationOut);
-        return objMapJsonb.toJson(cameraMigration);
     }
 }

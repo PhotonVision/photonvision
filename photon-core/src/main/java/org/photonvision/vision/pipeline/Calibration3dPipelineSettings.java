@@ -32,7 +32,9 @@ public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public Size resolution = new Size(640, 480);
     public boolean useMrCal = true;
     public boolean useOldPattern = false;
+    public boolean autoCalibrate = false;
     public boolean drawAllSnapshots;
+    public boolean showExclusionZone = false;
 
     public Calibration3dPipelineSettings() {
         super();

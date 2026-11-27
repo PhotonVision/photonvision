@@ -18,7 +18,6 @@
 package org.photonvision.vision.camera;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
@@ -51,8 +50,9 @@ public class FileVisionSource extends VisionSource {
         if (getCameraConfiguration().cameraQuirks == null)
             getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
-        settables =
-                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+        try (var frame = frameProvider.get()) {
+            settables = new FileSourceSettables(cameraConfiguration, frame.frameStaticProperties);
+        }
     }
 
     public FileVisionSource(String name, String imagePath, double fov) {
@@ -63,8 +63,9 @@ public class FileVisionSource extends VisionSource {
                         name,
                         name));
         frameProvider = new FileFrameProvider(imagePath, fov);
-        settables =
-                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+        try (var frame = frameProvider.get()) {
+            settables = new FileSourceSettables(cameraConfiguration, frame.frameStaticProperties);
+        }
     }
 
     @Override
@@ -100,8 +101,6 @@ public class FileVisionSource extends VisionSource {
 
     public static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
-
-        private final ArrayList<VideoMode> videoModes = new ArrayList<>();
 
         FileSourceSettables(
                 CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {

@@ -29,6 +29,7 @@
 
 #define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include <opencv2/core/eigen.hpp>
+#include <wpi/util/print.hpp>
 
 #include "photon/targeting/PnpResult.h"
 #include "photon/targeting/TargetCorner.h"
@@ -256,7 +257,7 @@ static wpi::math::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   }
 
   if (std::isnan(errors[0])) {
-    fmt::print("SolvePNP_Square failed!\n");
+    wpi::util::print("SolvePNP_Square failed!\n");
     return std::nullopt;
   }
   if (alt) {
@@ -304,7 +305,7 @@ static wpi::math::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
                                 RVecToRotation(rvecs[0])};
 
   if (std::isnan(error)) {
-    fmt::print("SolvePNP_Square failed!\n");
+    wpi::util::print("SolvePNP_Square failed!\n");
   }
   photon::PnpResult result;
   result.best = best;

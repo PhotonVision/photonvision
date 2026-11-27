@@ -40,7 +40,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
-import org.wpilib.math.util.Pair;
+import org.wpilib.util.Pair;
 
 @SuppressWarnings("rawtypes")
 public class DataSocketHandler {

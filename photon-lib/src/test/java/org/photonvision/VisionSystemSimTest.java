@@ -49,6 +49,9 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.wpilib.backend.NetworkTablesTelemetryBackend;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.FieldTag;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Pose3d;
@@ -59,10 +62,8 @@ import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.util.Units;
 import org.wpilib.networktables.NetworkTableInstance;
-import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.telemetry.TelemetryRegistry;
 import org.wpilib.util.runtime.RuntimeLoader;
-import org.wpilib.vision.apriltag.AprilTag;
-import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.camera.OpenCvLoader;
 
 class VisionSystemSimTest {
@@ -80,17 +81,19 @@ class VisionSystemSimTest {
 
     @BeforeEach
     public void setup() {
-        HAL.initialize(500, 0);
+        HAL.initialize();
 
         inst = NetworkTableInstance.create();
         inst.stopClient();
         inst.stopServer();
         inst.startLocal();
-        SmartDashboard.setNetworkTableInstance(inst);
+        TelemetryRegistry.registerBackend("", new NetworkTablesTelemetryBackend(inst, "/Telemetry"));
     }
 
     @AfterEach
     public void teardown() {
+        TelemetryRegistry.reset();
+
         inst.close();
         inst = null;
 
@@ -386,7 +389,7 @@ class VisionSystemSimTest {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI * 0.98));
         final var robotPose =
-                new Pose3d(new Translation3d(15.98 - Units.feetToMeters(testDist), 0, 0), Rotation3d.kZero);
+                new Pose3d(new Translation3d(15.98 - Units.feetToMeters(testDist), 0, 0), Rotation3d.ZERO);
         final var robotToCamera =
                 new Transform3d(
                         new Translation3d(0, 0, Units.feetToMeters(testHeight)),
@@ -448,67 +451,67 @@ class VisionSystemSimTest {
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         1));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseC.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         2));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseR.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 0.00), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         3));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         4));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseC.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         5));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseR.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 1.00), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         6));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.50), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 0.50), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         7));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseC.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.50), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 0.50), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         8));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.75), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 0.75), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         9));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseR.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.75), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 0.75), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         10));
         visionSysSim.addVisionTargets(
                 new VisionTargetSim(
                         targetPoseL.transformBy(
-                                new Transform3d(new Translation3d(0, 0, 0.25), Rotation3d.kZero)),
+                                new Transform3d(new Translation3d(0, 0, 0.25), Rotation3d.ZERO)),
                         TargetModel.kAprilTag16h5,
                         11));
 
@@ -532,17 +535,17 @@ class VisionSystemSimTest {
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(90));
         cameraSim.setMinTargetAreaPixels(20.0);
 
-        List<AprilTag> tagList = new ArrayList<>();
-        tagList.add(new AprilTag(0, new Pose3d(12, 3, 1, new Rotation3d(0, 0, Math.PI))));
-        tagList.add(new AprilTag(1, new Pose3d(12, 1, -1, new Rotation3d(0, 0, Math.PI))));
-        tagList.add(new AprilTag(2, new Pose3d(11, 0, 2, new Rotation3d(0, 0, Math.PI))));
+        List<FieldTag> tagList = new ArrayList<>();
+        tagList.add(new FieldTag(0, new Pose3d(12, 3, 1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new FieldTag(1, new Pose3d(12, 1, -1, new Rotation3d(0, 0, Math.PI))));
+        tagList.add(new FieldTag(2, new Pose3d(11, 0, 2, new Rotation3d(0, 0, Math.PI))));
         double fieldLength = Units.feetToMeters(54.0);
         double fieldWidth = Units.feetToMeters(27.0);
-        AprilTagFieldLayout layout = new AprilTagFieldLayout(tagList, fieldLength, fieldWidth);
+        Field layout = new Field("test", "test", "test", null, fieldLength, fieldWidth, "frc", tagList);
         Pose2d robotPose = new Pose2d(5, 1, Rotation2d.fromDegrees(5));
 
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(tagList.get(0).pose, TargetModel.kAprilTag16h5, 0));
+                new VisionTargetSim(tagList.get(0).getPose(), TargetModel.kAprilTag16h5, 0));
 
         visionSysSim.update(robotPose);
 
@@ -561,9 +564,9 @@ class VisionSystemSimTest {
         assertEquals(Math.toRadians(5), pose.getRotation().getZ(), 0.01);
 
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(tagList.get(1).pose, TargetModel.kAprilTag16h5, 1));
+                new VisionTargetSim(tagList.get(1).getPose(), TargetModel.kAprilTag16h5, 1));
         visionSysSim.addVisionTargets(
-                new VisionTargetSim(tagList.get(2).pose, TargetModel.kAprilTag16h5, 2));
+                new VisionTargetSim(tagList.get(2).getPose(), TargetModel.kAprilTag16h5, 2));
 
         visionSysSim.update(robotPose);
 
@@ -594,7 +597,7 @@ class VisionSystemSimTest {
         final var targetPose = new Pose3d(new Translation3d(2, 0, 0), new Rotation3d(0, 0, Math.PI));
         visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, TargetModel.kAprilTag36h11, 3));
 
-        var robotPose = Pose2d.kZero;
+        var robotPose = Pose2d.ZERO;
         visionSysSim.update(robotPose);
         double ambiguity = waitForSequenceNumber(camera, 1).getBestTarget().getPoseAmbiguity();
         assertTrue(ambiguity > 0.5, "Tag ambiguity expected to be high");
@@ -627,7 +630,7 @@ class VisionSystemSimTest {
 
         visionSysSim.addVisionTargets(ballTarget);
 
-        var robotPose = Pose2d.kZero;
+        var robotPose = Pose2d.ZERO;
         visionSysSim.update(robotPose);
         var target1 = waitForSequenceNumber(camera, 1).getBestTarget();
         assertEquals(classId, target1.objDetectId);

@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -37,7 +37,6 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.ProtobufPublisher;
 import org.wpilib.vision.camera.CameraServerJNI;
-import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
 import oshi.hardware.GlobalMemory;
@@ -45,6 +44,8 @@ import oshi.hardware.GraphicsCard;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.NetworkIF;
 import oshi.software.os.OperatingSystem;
+import oshi.spi.SystemInfoFactory;
+import oshi.spi.SystemInfoProvider;
 import oshi.util.FormatUtil;
 import oshi.util.GlobalConfig;
 
@@ -62,7 +63,7 @@ public class SystemMonitor {
                     .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
 
-    private SystemInfo si;
+    private SystemInfoProvider si;
     private CentralProcessor cpu;
     private OperatingSystem os;
     private GlobalMemory mem;
@@ -115,9 +116,9 @@ public class SystemMonitor {
     protected SystemMonitor() {
         logger.info("Starting SystemMonitor");
         GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, true);
-        GlobalConfig.set("oshi.os.linux.sensors.cpuTemperature.types", getThermalZoneTypes());
+        GlobalConfig.set("oshi.os.linux.sensors.cputemperature.types", getThermalZoneTypes());
 
-        si = new SystemInfo();
+        si = SystemInfoFactory.create();
         hal = si.getHardware();
         os = si.getOperatingSystem();
         cpu = hal.getProcessor();
@@ -136,7 +137,7 @@ public class SystemMonitor {
 
         // initialize network traffic monitoring
         selectNetworkIfByName(
-                ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
+                ConfigProvider.getInstance().getConfig().getNetworkConfig().networkManagerIface);
     }
 
     /**
@@ -154,7 +155,7 @@ public class SystemMonitor {
         //     `cat /sys/class/thermal/thermal_zone*/type`
         // This command will show the types for all thermal zones.
         //
-        return GlobalConfig.get("oshi.os.linux.sensors.cpuTemperature.types");
+        return GlobalConfig.get("oshi.os.linux.sensors.cputemperature.types");
     }
 
     /**
@@ -233,7 +234,7 @@ public class SystemMonitor {
                 String.format("CPU Throttle: %s, ", metrics.cpuThr().isBlank() ? "N/A" : metrics.cpuThr()));
         sb.append(
                 String.format(
-                        "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                        "Data sent: %.0f Kbps, Data received: %.0f Kbps",
                         metrics.sentBitRate() / 1000, metrics.recvBitRate() / 1000));
         logger.debug(sb.toString());
     }
@@ -470,12 +471,12 @@ public class SystemMonitor {
      * @return The IP address as a string, or an empty string if the command fails.
      */
     public String getIpAddress() {
-        String dev = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
+        String dev = ConfigProvider.getInstance().getConfig().getNetworkConfig().networkManagerIface;
         return NetworkUtils.getIPAddresses(dev);
     }
 
     /**
-     * Returns a NetworkTraffic instance containing the average sent and recieved network traffic
+     * Returns a NetworkTraffic instance containing the average sent and received network traffic
      * since the last time this was called.
      *
      * @return NetworkTraffic instance with data in bits/second. The traffic values will be -1 if the
@@ -483,7 +484,7 @@ public class SystemMonitor {
      */
     private synchronized NetworkTraffic getNetworkTraffic() {
         String activeIFaceName =
-                ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
+                ConfigProvider.getInstance().getConfig().getNetworkConfig().networkManagerIface;
         var iFace = selectNetworkIfByName(activeIFaceName);
         if (iFace == null) {
             return new NetworkTraffic(-1, -1);
@@ -537,7 +538,7 @@ public class SystemMonitor {
                         () -> {
                             var nt = getNetworkTraffic();
                             return String.format(
-                                    "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                                    "Data sent: %.0f Kbps, Data received: %.0f Kbps",
                                     nt.sentBitRate() / 1000, nt.recvBitRate() / 1000);
                         });
 

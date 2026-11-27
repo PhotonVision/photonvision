@@ -34,7 +34,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/objdetect.hpp>
-#include <wpi/apriltag/AprilTag.hpp>
+#include <wpi/apriltag/AprilTagImageGenerator.hpp>
 #include <wpi/cs/CvSource.hpp>
 #include <wpi/units/length.hpp>
 
@@ -58,7 +58,7 @@ static constexpr wpi::units::meter_t fieldWidth{8.0137_m};
 
 static cv::Mat Get36h11TagImage(int id) {
   wpi::util::RawFrame frame;
-  wpi::apriltag::AprilTag::Generate36h11AprilTagImage(&frame, id);
+  wpi::apriltag::Generate36h11AprilTagImage(&frame, id);
   cv::Mat markerImage{frame.height, frame.width, CV_8UC1, frame.data,
                       static_cast<size_t>(frame.stride)};
   cv::Mat markerClone = markerImage.clone();

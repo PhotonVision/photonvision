@@ -26,6 +26,7 @@
 
 #include "photon/serde/PhotonTrackedTargetSerde.h"
 
+
 namespace photon {
 
 using StructType = SerdeType<PhotonTrackedTarget>;

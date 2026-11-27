@@ -30,7 +30,7 @@ import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -58,7 +58,7 @@ public class CalibrationRotationPipeTest {
         Logger.setLevel(LogGroup.Data, logLevel);
         Logger.setLevel(LogGroup.Config, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
-        ConfigManager.getInstance().load();
+        ConfigProvider.getInstance().load();
     }
 
     @Test
@@ -124,7 +124,8 @@ public class CalibrationRotationPipeTest {
                         List.of(),
                         new Size(),
                         1,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
 
         FrameStaticProperties frameProps =
                 new FrameStaticProperties(
@@ -198,7 +199,8 @@ public class CalibrationRotationPipeTest {
                         List.of(),
                         new Size(),
                         1,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
 
         // WHEN the camera calibration is rotated 180 degrees
         var coeffs2 = coeffs.rotateCoefficients(rot);
@@ -245,7 +247,8 @@ public class CalibrationRotationPipeTest {
                         List.of(),
                         new Size(),
                         1,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
         // WHEN A camera calibration is rotated 4 times
         for (int i = 0; i < 4; i++) {
             coeffs = coeffs.rotateCoefficients(rot);
@@ -286,7 +289,8 @@ public class CalibrationRotationPipeTest {
                         List.of(),
                         new Size(),
                         1,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
 
         // Matt's lifecam pointing at a wall
         var distortedCorners =

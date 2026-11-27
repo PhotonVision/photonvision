@@ -216,7 +216,7 @@ public class CVMat implements Releasable {
 
     // Paranoia
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     protected void finalize() throws Throwable {
         try {
             if (!released) {

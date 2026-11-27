@@ -44,12 +44,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     currentWebsocketPipelineType(): WebsocketPipelineType {
       return this.currentPipelineType - 3;
     },
-    currentVideoFormat(): VideoFormat {
+    currentVideoFormat(): VideoFormat | undefined {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
     },
     isCurrentVideoFormatCalibrated(): boolean {
       return this.currentCameraSettings.completeCalibrations.some((v) =>
-        resolutionsAreEqual(v.resolution, this.currentVideoFormat.resolution)
+        resolutionsAreEqual(v.resolution, this.currentVideoFormat?.resolution)
       );
     },
     cameraNames(): string[] {
@@ -176,7 +176,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         quirksToChange: data.quirksToChange,
         cameraUniqueName: cameraUniqueName
       };
-      return axios.post("/settings/camera", payload);
+      return axios.post("settings/camera", payload);
     },
     /**
      * Create a new Pipeline for the provided camera.
@@ -358,7 +358,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       if (updateStore) {
         this.currentCameraSettings.nickname = newName;
       }
-      return axios.post("/settings/camera/setNickname", payload);
+      return axios.post("settings/camera/setNickname", payload);
     },
     /**
      * Start the 3D calibration process for the provided camera.
@@ -375,6 +375,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         boardType: CalibrationBoardTypes;
         useOldPattern: boolean;
         tagFamily: CalibrationTagFamilies;
+        autoCalibrate: boolean;
       },
       cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
@@ -390,13 +391,32 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       useStateStore().websocket?.send(payload);
     },
     /**
-     * End the 3D calibration process for the provided camera.
+     * Compute a calibration from the currently collected calibration snapshots, without committing
+     * it to the camera configuration.
+     * @param cameraUniqueName the unique name of the camera that is currently in the calibration process
+     * @return HTTP request promise resolving to the computed calibration data
+     */
+    computeCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      return axios.post<CameraCalibrationResult>("calibration/compute", {
+        cameraUniqueName: cameraUniqueName
+      });
+    },
+    /**
+     * Save the 3D calibration for the provided camera.
+     * @param cameraUniqueName the unique name of the camera.
+     * @return HTTP request promise to the backend
+     */
+    commitCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      return axios.post("calibration/commit", { cameraUniqueName: cameraUniqueName });
+    },
+    /**
+     * Cancel the 3D calibration process for the provided camera.
      *
      * @param cameraUniqueName the unique name of the camera.
      * @return HTTP request promise to the backend
      */
-    endPnPCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
-      return axios.post("/calibration/end", { cameraUniqueName: cameraUniqueName });
+    cancelCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      return axios.post("calibration/cancel", { cameraUniqueName: cameraUniqueName });
     },
 
     importCalibrationFromData(
@@ -407,7 +427,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         ...data,
         cameraUniqueName: cameraUniqueName
       };
-      return axios.post("/calibration/importFromData", payload);
+      return axios.post("calibration/importFromData", payload);
     },
     /**
      * Take a snapshot for the calibration processes

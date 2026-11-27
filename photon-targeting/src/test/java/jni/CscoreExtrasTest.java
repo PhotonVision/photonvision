@@ -44,7 +44,7 @@ public class CscoreExtrasTest {
         }
         RuntimeLoader.loadLibrary("photontargetingJNI");
 
-        HAL.initialize(1000, 0);
+        HAL.initialize();
     }
 
     @AfterAll

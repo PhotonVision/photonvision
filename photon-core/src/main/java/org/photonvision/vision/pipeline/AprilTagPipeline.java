@@ -20,7 +20,7 @@ package org.photonvision.vision.pipeline;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -123,9 +123,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                 settings.numIterations));
 
                 // TODO global state ew
-                var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+                var field = ConfigProvider.getInstance().getConfig().getFieldLayout();
                 multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl, tagModel));
+                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, field, tagModel));
             }
         }
     }
@@ -181,7 +181,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             // Clear target list that was used for multitag so we can add target transforms
             targetList.clear();
             // TODO global state again ew
-            var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+            var field = ConfigProvider.getInstance().getConfig().getFieldLayout();
 
             for (AprilTagDetection detection : usedDetections) {
                 AprilTagPoseEstimate tagPoseEstimate = null;
@@ -197,7 +197,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 // If single-tag estimation was not done, this is a multi-target tag from the layout
                 if (tagPoseEstimate == null && multiTagResult.isPresent()) {
                     // compute this tag's camera-to-tag transform using the multitag result
-                    var tagPose = atfl.getTagPose(detection.getId());
+                    var tagPose = field.getTagPose(detection.getId());
                     if (tagPose.isPresent()) {
                         var camToTag =
                                 new Transform3d(
@@ -254,6 +254,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     public void release() {
         aprilTagDetectionPipe.release();
         singleTagPoseEstimatorPipe.release();
+        multiTagPNPPipe.release();
+        calculateFPSPipe.release();
         super.release();
     }
 }

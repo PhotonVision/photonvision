@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.ConfigProvider;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
@@ -33,14 +33,19 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.ArucoPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-/** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
+/**
+ * VisionRunner has a frame supplier, a pipeline supplier, and a result consumer; it must be closed
+ * prior to the frame supplier closing
+ */
 @SuppressWarnings("rawtypes")
-public class VisionRunner {
+public class VisionRunner implements AutoCloseable {
     private final Logger logger;
     private final Thread visionProcessThread;
     private final FrameProvider frameSupplier;
@@ -89,6 +94,33 @@ public class VisionRunner {
         changeSubscriber.processSettingChanges();
     }
 
+    static void configureFrameProviderForPipeline(FrameProvider frameSupplier, CVPipeline pipeline) {
+        var wantedProcessType = pipeline.getThresholdType();
+
+        frameSupplier.requestFrameThresholdType(wantedProcessType);
+        var settings = pipeline.getSettings();
+        if (settings instanceof AdvancedPipelineSettings advanced) {
+            var hsvParams =
+                    new HSVPipe.HSVParams(
+                            advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
+            frameSupplier.requestHsvSettings(hsvParams);
+        }
+
+        // Use the pipeline threshold type to determine whether a color image is required,
+        // so we can request the correct frame copies for CSI cameras.
+        boolean needsColor = wantedProcessType == FrameThresholdType.NONE;
+
+        if (settings instanceof ArucoPipelineSettings ar) {
+            needsColor = ar.debugThreshold;
+        }
+
+        frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
+        frameSupplier.requestFrameCopies(
+                settings.inputShouldShow || needsColor,
+                settings.outputShouldShow || wantedProcessType != FrameThresholdType.NONE);
+        frameSupplier.requestBlockForFrames(settings.blockForFrames);
+    }
+
     public void startProcess() {
         visionProcessThread.start();
     }
@@ -101,6 +133,10 @@ public class VisionRunner {
         } catch (InterruptedException e) {
             logger.error("Exception killing process thread", e);
         }
+    }
+
+    public boolean isRunning() {
+        return visionProcessThread.isAlive();
     }
 
     public Future<Void> runSynchronously(Runnable runnable) {
@@ -176,7 +212,7 @@ public class VisionRunner {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
 
         while (!Thread.interrupted()) {
             long start = System.currentTimeMillis();
@@ -198,20 +234,7 @@ public class VisionRunner {
             // be doing
             // (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
-            var wantedProcessType = pipeline.getThresholdType();
-
-            frameSupplier.requestFrameThresholdType(wantedProcessType);
-            var settings = pipeline.getSettings();
-            if (settings instanceof AdvancedPipelineSettings advanced) {
-                var hsvParams =
-                        new HSVPipe.HSVParams(
-                                advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
-                // TODO who should deal with preventing this from happening _every single loop_?
-                frameSupplier.requestHsvSettings(hsvParams);
-            }
-            frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
-            frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
-            frameSupplier.requestBlockForFrames(settings.blockForFrames);
+            configureFrameProviderForPipeline(frameSupplier, pipeline);
 
             // Grab the new camera frame
             var frame = frameSupplier.get();
@@ -243,12 +266,25 @@ public class VisionRunner {
                 waitUntilNextTick(start);
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
-                    pipelineResultConsumer.accept(pipelineResult);
+                    try {
+                        pipelineResultConsumer.accept(pipelineResult);
+                    } catch (Exception ex) {
+                        logger.error("Exception on loop " + loopCount, ex);
+                        pipelineResult.release();
+                    }
                 } catch (Exception ex) {
-                    logger.error("Exception on loop " + loopCount, ex);
+                    logger.error("Pipeline exception on loop " + loopCount, ex);
+                    frame.release();
                 }
                 loopCount++;
             }
+        }
+    }
+
+    @Override
+    public void close() {
+        if (visionProcessThread.isAlive()) {
+            stopProcess();
         }
     }
 }

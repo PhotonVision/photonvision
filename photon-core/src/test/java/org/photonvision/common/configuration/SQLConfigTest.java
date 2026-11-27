@@ -17,25 +17,44 @@
 
 package org.photonvision.common.configuration;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import io.avaje.json.JsonDataException;
+import io.avaje.jsonb.Jsonb;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.configuration.migrations.DbMigration.Columns;
+import org.photonvision.common.configuration.migrations.DbMigration.Tables;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -43,32 +62,107 @@ import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.wpilib.fields.Field;
+import org.wpilib.fields.Fields;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
+@TestMethodOrder(OrderAnnotation.class)
 public class SQLConfigTest {
     @TempDir private Path tmpDir;
 
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
+        CVMat.enablePrint(false);
+
+        var logLevel = LogLevel.DEBUG;
+        Logger.setLevel(LogGroup.Camera, logLevel);
+        Logger.setLevel(LogGroup.WebServer, logLevel);
+        Logger.setLevel(LogGroup.VisionModule, logLevel);
+        Logger.setLevel(LogGroup.Data, logLevel);
+        Logger.setLevel(LogGroup.Config, logLevel);
+        Logger.setLevel(LogGroup.General, logLevel);
+    }
+
+    @AfterAll
+    public static void cleanup() {
+        // Reset the NNM singleton
+        NeuralNetworkModelManager.getInstance(true);
     }
 
     @Test
     @Order(1)
-    public void testMigration() {
-        SqlConfigProvider cfgLoader = new SqlConfigProvider(tmpDir);
+    public void testNewDatabase() {
+        ConfigProvider cfgLoader = new ConfigProvider(tmpDir);
         cfgLoader.load();
 
         assertEquals(
-                DatabaseSchema.migrations.length,
-                cfgLoader.getUserVersion(),
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
                 "Database isn't at the correct version");
     }
 
     @Test
     @Order(2)
+    public void testNewDatabaseFromDefault() throws IOException {
+        var defaultDir = tmpDir.resolve("conf.d");
+        defaultDir.toFile().mkdirs();
+        FileUtils.copyFile(
+                TestUtils.getConfigDirectoriesPath(false)
+                        .resolve("2026.3.4-windows/photon.sqlite")
+                        .toFile(),
+                defaultDir.resolve("photon2026.3.4-windows.sqlite").toFile());
+
+        var configDir = tmpDir.resolve("photonvision_config");
+        configDir.toFile().mkdirs();
+
+        ConfigProvider cfgLoader = new ConfigProvider(configDir);
+        cfgLoader.load();
+
+        assertEquals(
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
+                "Database isn't at the correct version");
+    }
+
+    @Test
+    @Order(3)
+    public void testFailureRecovery() throws IOException, SQLException {
+        var originalDatabase = tmpDir.resolve("photon.sqlite");
+        FileUtils.copyFile(
+                TestUtils.getConfigDirectoriesPath(false)
+                        .resolve("2026.3.4-windows/photon.sqlite")
+                        .toFile(),
+                originalDatabase.toFile());
+        try (Connection conn =
+                DriverManager.getConnection("jdbc:sqlite:" + originalDatabase.toAbsolutePath())) {
+            Statement stmt = conn.createStatement();
+            stmt.execute("PRAGMA user_version = 0;"); // Force a failure by setting an unsupported version
+        }
+        ;
+        var databaseBeforeRecovery = tmpDir.resolve("photon.sqlite.before-recovery");
+        Files.copy(originalDatabase, databaseBeforeRecovery);
+
+        var cfgLoader = new ConfigProvider(tmpDir);
+        cfgLoader.load();
+
+        var backupDatabase = tmpDir.resolve("photon.sqlite.backup.1");
+        assertTrue(Files.exists(backupDatabase), "Failed database backup was not created");
+        assertEquals(
+                -1L,
+                Files.mismatch(databaseBeforeRecovery, backupDatabase),
+                "Database backup does not match the database with the unsupported schema version");
+
+        assertEquals(
+                cfgLoader.getExpectedVersion(),
+                cfgLoader.getDbVersion(),
+                "Database isn't at the correct version");
+    }
+
+    @Test
+    @Order(4)
     public void testLoad() {
-        var cfgLoader = new SqlConfigProvider(tmpDir);
+        var cfgLoader = new ConfigProvider(tmpDir);
 
         cfgLoader.load();
 
@@ -88,7 +182,7 @@ public class SQLConfigTest {
         cfgLoader.saveToDisk();
 
         cfgLoader.load();
-        System.out.println(cfgLoader.getConfig());
+        // System.out.println(cfgLoader.getConfig()); // was this left in on purpose?
 
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
@@ -115,14 +209,14 @@ public class SQLConfigTest {
                 TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
                 folder.toFile());
 
-        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+        var cfgManager = new ConfigProvider(folder);
 
         // Replace global configmanager
-        ConfigManager.INSTANCE = cfgManager;
+        ConfigProvider.INSTANCE = cfgManager;
 
         assertDoesNotThrow(cfgManager::load);
 
-        System.out.println(cfgManager.getConfig());
+        // System.out.println(cfgManager.getConfig());  // was this left in on purpose?
         common2025p3p1Assertions(cfgManager.getConfig());
 
         // And we now see two models
@@ -132,17 +226,17 @@ public class SQLConfigTest {
         NeuralNetworkModelManager.getInstance().discoverModels();
         assertEquals(5, NeuralNetworkModelManager.getInstance().models.get(Family.RKNN).size());
 
-        ConfigManager.getInstance().saveToDisk();
+        ConfigProvider.getInstance().saveToDisk();
 
         // Now that we have the config saved, load it again
-        var reloadedProvider = new SqlConfigProvider(folder);
+        var reloadedProvider = new ConfigProvider(folder);
         reloadedProvider.load();
         common2025p3p1Assertions(reloadedProvider.getConfig());
 
         // And make sure NNPM has all 5 models
         assertEquals(5, reloadedProvider.getConfig().getNeuralNetworkProperties().getModels().length);
 
-        ConfigManager.INSTANCE = null;
+        ConfigProvider.INSTANCE = null;
     }
 
     @Test
@@ -152,10 +246,10 @@ public class SQLConfigTest {
                 TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
                 folder.toFile());
 
-        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+        var cfgManager = new ConfigProvider(folder);
 
         // Replace global configmanager
-        ConfigManager.INSTANCE = cfgManager;
+        ConfigProvider.INSTANCE = cfgManager;
 
         assertDoesNotThrow(cfgManager::load);
 
@@ -183,7 +277,73 @@ public class SQLConfigTest {
             }
         }
 
-        ConfigManager.INSTANCE = null;
+        ConfigProvider.INSTANCE = null;
+    }
+
+    private static Field testField(String name) {
+        // Note: a null tag list round-trips as an empty list through JSON, so use List.of()
+        return new Field(name, "2026", "UnitTestGame", null, 12.0, 6.0, "FRC", List.of());
+    }
+
+    private static void writeGlobalKey(Path dir, String key, String contents) throws SQLException {
+        var url = "jdbc:sqlite:" + dir.resolve("photon.sqlite").toAbsolutePath();
+        try (Connection conn = DriverManager.getConnection(url);
+                PreparedStatement ps =
+                        conn.prepareStatement(
+                                String.format(
+                                        "REPLACE INTO %s (%s, %s) VALUES (?,?)",
+                                        Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS))) {
+            ps.setString(1, key);
+            ps.setString(2, contents);
+            ps.executeUpdate();
+        }
+    }
+
+    @Test
+    public void testFieldLayoutNewKeyRoundTrip() throws IOException {
+        var folder = tmpDir.resolve("field-new-key");
+        var provider = new ConfigProvider(folder);
+        provider.load();
+
+        var field = testField("NewKeyRoundTrip");
+        var upload = folder.resolve("field-upload.json");
+        Files.writeString(upload, Jsonb.instance().type(Field.class).toJson(field));
+        assertTrue(provider.saveUploadedFieldLayout(upload));
+
+        // TODO: Shouldn't we close the ConfigProvider before creating a new one?
+        // Need to make ConfigProvider implement AutoCloseable and close the database connection in
+        // close().
+        var reloaded = new ConfigProvider(folder);
+        reloaded.load();
+        assertEquals(field, reloaded.getConfig().getFieldLayout());
+    }
+
+    @Test
+    public void testLegacyAprilTagFieldLayout() throws IOException {
+        var folder = tmpDir.resolve("2026.3.4-apriltag");
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve("2026.3.4-apriltag").toFile(),
+                folder.toFile());
+        var provider = new ConfigProvider(folder);
+        provider.load();
+
+        var updatedField = provider.getConfig().getFieldLayout();
+        var field = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
+        assertAll(
+                "Field layout checks",
+                // () -> assertEquals(field.tags, updatedField.tags),  // Works now, but will break when the
+                // tags in WPILib 2027 are updated for the new coordinate system
+                () -> assertEquals(field.tags.size(), updatedField.tags.size()),
+                () -> assertEquals(field.length, updatedField.length),
+                () -> assertEquals(field.width, updatedField.width));
+    }
+
+    @Test
+    public void testFieldLayoutDefaultsWhenAbsent() throws UncheckedIOException {
+        var provider = new ConfigProvider(tmpDir.resolve("field-absent"));
+        provider.load();
+
+        assertEquals(Field.loadField(Fields.DEFAULT_FIELD), provider.getConfig().getFieldLayout());
     }
 
     @Test
@@ -196,7 +356,7 @@ public class SQLConfigTest {
         FileUtils.copyDirectory(
                 TestUtils.getConfigDirectoriesPath(false).resolve(configName).toFile(), folder.toFile());
 
-        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+        var cfgManager = new ConfigProvider(folder);
 
         cfgManager.load();
 

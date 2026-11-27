@@ -29,11 +29,13 @@
 #include <utility>
 #include <vector>
 
+#include <wpi/fields/Field.hpp>
+#include <wpi/fields/FieldTag.hpp>
 #include <wpi/math/interpolation/TimeInterpolatableBuffer.hpp>
 #include <wpi/smartdashboard/Field2d.hpp>
 #include <wpi/smartdashboard/FieldObject2d.hpp>
-#include <wpi/smartdashboard/SmartDashboard.hpp>
 #include <wpi/system/Timer.hpp>
+#include <wpi/telemetry/Telemetry.hpp>
 
 #include "photon/simulation/PhotonCameraSim.h"
 
@@ -59,8 +61,7 @@ class VisionSystemSim {
    * NetworkTables.
    */
   explicit VisionSystemSim(std::string visionSystemName) {
-    std::string tableName = "VisionSystemSim-" + visionSystemName;
-    wpi::SmartDashboard::PutData(tableName + "/Sim Field", &dbgField);
+    tableName = "VisionSystemSim-" + visionSystemName;
   }
 
   /** Get one of the simulated cameras. */
@@ -315,9 +316,9 @@ class VisionSystemSim {
    *
    * @param layout The field tag layout to get Apriltag poses and IDs from
    */
-  void AddAprilTags(const wpi::apriltag::AprilTagFieldLayout& layout) {
+  void AddAprilTags(const wpi::fields::Field& layout) {
     std::vector<VisionTargetSim> targets;
-    for (const wpi::apriltag::AprilTag& tag : layout.GetTags()) {
+    for (const wpi::fields::FieldTag& tag : layout.GetTags()) {
       targets.emplace_back(VisionTargetSim{layout.GetTagPose(tag.ID).value(),
                                            photon::kAprilTag36h11, tag.ID});
     }
@@ -452,7 +453,7 @@ class VisionSystemSim {
       uint64_t timestampNt = optTimestamp.value();
       wpi::units::second_t latency = camSim->prop.EstLatency();
       wpi::units::second_t timestampCapture =
-          wpi::units::microsecond_t{static_cast<double>(timestampNt)} - latency;
+          wpi::units::nanosecond_t{static_cast<double>(timestampNt)} - latency;
 
       wpi::math::Pose3d lateRobotPose = GetRobotPose(timestampCapture);
       wpi::math::Pose3d lateCameraPose =
@@ -475,9 +476,12 @@ class VisionSystemSim {
     if (cameraPoses2d.size() != 0) {
       dbgField.GetObject("cameras")->SetPoses(cameraPoses2d);
     }
+
+    wpi::telemetry::Log(tableName + "/Sim Field", dbgField);
   }
 
  private:
+  std::string tableName;
   std::unordered_map<std::string, PhotonCameraSim*> camSimMap{};
   static constexpr wpi::units::second_t bufferLength{1.5_s};
   std::unordered_map<PhotonCameraSim*,

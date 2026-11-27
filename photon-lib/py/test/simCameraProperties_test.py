@@ -76,14 +76,14 @@ def test_GetVisibleLine(scp) -> None:
     a = Translation3d(-5.0, -0.1, 0)
     b = Translation3d(5.0, 0.1, 0)
     retval = scp.getVisibleLine(camRt, a, b)
-    assert retval == (0.5, 0.5)
+    assert retval == pytest.approx((0.5, 1.0))
 
 
 def test_EstPixelNoise(scp) -> None:
-    with pytest.raises(Exception):
-        scp.test_EstPixelNoise(np.array([0, 0]))
-    with pytest.raises(Exception):
-        scp.test_EstPixelNoise(np.array([[0], [0]]))
+    with pytest.raises(IndexError):
+        scp.estPixelNoise(np.array([0, 0]))
+    with pytest.raises(IndexError):
+        scp.estPixelNoise(np.array([[0], [0]]))
 
     pts = np.array([[[0, 0]], [[0, 0]]])
 

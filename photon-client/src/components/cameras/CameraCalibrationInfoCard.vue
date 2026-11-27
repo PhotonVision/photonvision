@@ -1,22 +1,58 @@
 <script setup lang="ts">
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
+
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, inject, ref, useTemplateRef } from "vue";
-import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
-import { useTheme } from "vuetify";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
+import { computed, inject, ref, useTemplateRef, watch } from "vue";
+import axios from "axios";
+import {
+  axiosPost,
+  getCalibrationSummaryStatistics,
+  getResolutionString,
+  meanReprojectionError,
+  parseJsonFile
+} from "@/lib/PhotonUtils";
+import IconImport from "~icons/mdi/import";
+import IconExport from "~icons/mdi/export";
+import IconEye from "~icons/mdi/eye";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
+import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-visualizer.vue";
 
-const theme = useTheme();
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
+// While a calibration session is active this card only ever shows the pending calibration
+const isCalibrating = computed(
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
+);
+
+// The full calibration (with observations) for this resolution.
+const fetchedCalibration = ref<CameraCalibrationResult | null>(null);
+
+const fetchCalibration = async () => {
+  try {
+    const response = await axios.get("settings/camera/getCalibration", {
+      params: {
+        cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
+        width: props.videoFormat.resolution.width,
+        height: props.videoFormat.resolution.height
+      }
+    });
+    fetchedCalibration.value = response.data;
+  } catch {
+    fetchedCalibration.value = null;
+  }
+};
+
+watch(() => props.videoFormat.resolution, fetchCalibration, { immediate: true });
+
 const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
 const removeCalibration = async (vf: VideoFormat) => {
-  await axiosPost("/calibration/remove", "delete a camera calibration", {
+  await axiosPost("calibration/remove", "delete a camera calibration", {
     cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
     width: vf.resolution.width,
     height: vf.resolution.height
@@ -52,11 +88,13 @@ const importCalibration = async () => {
 
   useCameraSettingsStore()
     .importCalibrationFromData({ calibration: data })
-    .then((response) => {
+    .then(async (response) => {
       useStateStore().showSnackbarMessage({
         color: "success",
         message: response.data.text || response.data
       });
+      // We need to refetch the calibration since the cache will be outdated
+      await fetchCalibration();
     })
     .catch((error) => {
       if (error.response) {
@@ -85,48 +123,105 @@ interface ObservationDetails {
   numMissing: number;
 }
 
-const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(() =>
-  useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
-);
-
-const getObservationDetails = (): ObservationDetails[] | undefined => {
-  const coefficients = currentCalibrationCoeffs.value;
-
-  return coefficients?.meanErrors.map((m, i) => ({
-    index: i,
-    mean: parseFloat(m.toFixed(2)),
-    numOutliers: coefficients.numOutliers[i],
-    numMissing: coefficients.numMissing[i]
-  }));
+type TabItem = {
+  label: string;
+  value: string;
 };
 
-const exportCalibrationURL = computed<string>(() =>
-  useCameraSettingsStore().getCalJSONUrl(inject("backendHost") as string, props.videoFormat.resolution)
+const currentCalibrationCoeffs = computed<CameraCalibrationResult | undefined>(
+  () => fetchedCalibration.value ?? useCameraSettingsStore().getCalibrationCoeffs(props.videoFormat.resolution)
+);
+
+const totalOutlierPoints = computed<number>(() =>
+  observationDetails.value.reduce((sum, observation) => sum + observation.numOutliers, 0)
+);
+
+const totalObservationPoints = computed<number>(() => {
+  const coefficients = currentCalibrationCoeffs.value;
+  return coefficients
+    ? Math.max(0, coefficients.calobjectSize.width - 1) *
+        Math.max(0, coefficients.calobjectSize.height - 1) *
+        (coefficients.numSnapshots ?? coefficients.observations?.length ?? 0)
+    : 0;
+});
+
+const totalInlierPoints = computed<number>(() => totalObservationPoints.value - totalOutlierPoints.value);
+
+const inlierRatioPercent = computed<string>(() => {
+  const total = totalObservationPoints.value;
+  if (total === 0) return "0.00";
+  return ((totalInlierPoints.value / total) * 100).toFixed(2);
+});
+
+const observationDetails = computed<ObservationDetails[]>(() => {
+  const coefficients = currentCalibrationCoeffs.value;
+  if (!coefficients) return [];
+
+  // Re-derive stats if they're missing
+  if (coefficients.meanErrors !== undefined) {
+    return coefficients.meanErrors.map((m, i) => ({
+      index: i,
+      mean: parseFloat(m.toFixed(2)),
+      numOutliers: coefficients.numOutliers[i],
+      numMissing: coefficients.numMissing[i]
+    }));
+  }
+
+  return (
+    coefficients.observations?.map((obs, i) => {
+      const numMissing = obs.locationInImageSpace.filter((pt) => pt.x < 0 || pt.y < 0).length;
+      return {
+        index: i,
+        mean: parseFloat(meanReprojectionError(obs).toFixed(2)),
+        // Mirrors UICameraCalibrationCoefficients -- outliers exclude corners that were never detected
+        numOutliers: obs.cornersUsed.filter((used) => !used).length - numMissing,
+        numMissing
+      };
+    }) ?? []
+  );
+});
+
+const summaryStatistics = computed(() => {
+  const c = currentCalibrationCoeffs.value;
+  return c ? getCalibrationSummaryStatistics(c) : undefined;
+});
+const formatStat = (value: number | undefined, unit: string): string =>
+  value !== undefined ? (isNaN(value) ? "NaN" : value.toFixed(2) + unit) : "-";
+
+const exportCalibrationURL = computed<string | undefined>(() =>
+  props.videoFormat
+    ? useCameraSettingsStore().getCalJSONUrl(inject("backendHost") as string, props.videoFormat.resolution)
+    : undefined
 );
 const calibrationImageURL = (index: number) =>
-  useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
+  props.videoFormat
+    ? useCameraSettingsStore().getCalImageUrl(
+        inject<string>("backendHost") as string,
+        props.videoFormat.resolution,
+        index
+      )
+    : "";
 
-const tab = ref("details");
+const tab = ref(0);
 const viewingImg = ref(0);
+const tabItems: TabItem[] = [
+  { label: "Details", value: "details" },
+  { label: "Observations", value: "observations" },
+  { label: "Uncertainty", value: "uncertainty" }
+];
 </script>
 
 <template>
-  <v-card color="surface" dark>
-    <v-card-title class="pb-2">
-      <div class="d-flex flex-wrap">
-        <v-col cols="12" md="6" class="pa-0">
-          <v-card-title class="pa-0"> Calibration Details </v-card-title>
-        </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
-          <v-btn
-            color="buttonPassive"
-            style="width: 100%"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="openUploadPhotonCalibJsonPrompt"
+  <pv-card>
+    <div>
+      <div class="flex flex-wrap justify-between">
+        <div class="w-full flex-1 p-0">
+          <div class="text-base font-semibold">Calibration Details</div>
+        </div>
+        <div v-if="!isCalibrating" class="mr-2 flex items-center">
+          <pv-button variant="passive" :icon="IconImport" block @click="openUploadPhotonCalibJsonPrompt"
+            >Import</pv-button
           >
-            <v-icon start size="large"> mdi-import</v-icon>
-            <span>Import</span>
-          </v-btn>
           <input
             ref="importCalibrationFromPhotonJson"
             type="file"
@@ -134,37 +229,33 @@ const viewingImg = ref(0);
             style="display: none"
             @change="importCalibration"
           />
-        </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
-          <v-btn
-            color="buttonPassive"
+        </div>
+        <div v-if="!isCalibrating" class="flex items-center">
+          <pv-button
+            variant="passive"
+            :icon="IconExport"
+            block
             :disabled="!currentCalibrationCoeffs"
-            style="width: 100%"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="openExportCalibrationPrompt"
           >
-            <v-icon start size="large">mdi-export</v-icon>
-            <span>Export</span>
-          </v-btn>
+            Export
+          </pv-button>
           <a
             ref="exportCalibration"
             style="color: black; text-decoration: none; display: none"
             :href="exportCalibrationURL"
             target="_blank"
           />
-        </v-col>
+        </div>
       </div>
-    </v-card-title>
+    </div>
 
-    <v-card-text class="d-flex flex-row pt-0">
-      <v-col cols="4" class="pa-0">
-        <v-tabs v-model="tab" grow bg-color="surface" height="48" slider-color="buttonActive">
-          <v-tab key="details" value="details">Details</v-tab>
-          <v-tab key="observations" value="observations">Observations</v-tab>
-        </v-tabs>
-        <v-tabs-window v-model="tab" class="pt-3">
-          <v-tabs-window-item key="details" value="details">
-            <v-table style="width: 100%" density="compact">
+    <div class="flex flex-row pt-0 pb-4">
+      <div class="w-1/3 p-0">
+        <pv-tabs v-model="tab" :items="tabItems" class="mt-2" />
+        <div class="pt-3">
+          <div v-if="tab === 0">
+            <pv-table style="width: 100%">
               <template #default>
                 <tbody>
                   <tr>
@@ -182,86 +273,52 @@ const viewingImg = ref(0);
                   <tr>
                     <td>Fx</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[0].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[0].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Fy</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[4].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[4].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Cx</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[2].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[2].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Cy</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.cameraIntrinsics.data[5].toFixed(2) || 0.0
-                      }}
+                      {{ currentCalibrationCoeffs?.cameraIntrinsics.data[5].toFixed(2) || 0.0 }}
                       px
                     </td>
                   </tr>
                   <tr>
                     <td>Distortion</td>
                     <td>
-                      {{
-                        useCameraSettingsStore()
-                          .getCalibrationCoeffs(props.videoFormat.resolution)
-                          ?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || []
-                      }}
+                      {{ currentCalibrationCoeffs?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || [] }}
                     </td>
                   </tr>
                   <tr>
-                    <td>Mean Err</td>
-                    <td>
-                      {{
-                        videoFormat.mean !== undefined
-                          ? isNaN(videoFormat.mean)
-                            ? "NaN"
-                            : videoFormat.mean.toFixed(2) + "px"
-                          : "-"
-                      }}
-                    </td>
+                    <td>Mean Error</td>
+                    <td>{{ formatStat(summaryStatistics?.mean, "px") }}</td>
                   </tr>
                   <tr>
                     <td>Horizontal FOV</td>
-                    <td>
-                      {{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.horizontalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Vertical FOV</td>
-                    <td>
-                      {{ videoFormat.verticalFOV !== undefined ? videoFormat.verticalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.verticalFOV, "°") }}</td>
                   </tr>
                   <tr>
                     <td>Diagonal FOV</td>
-                    <td>
-                      {{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}
-                    </td>
+                    <td>{{ formatStat(summaryStatistics?.diagonalFOV, "°") }}</td>
                   </tr>
                   <!-- Board warp, only shown for mrcal-calibrated cameras -->
                   <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">
@@ -272,71 +329,107 @@ const viewingImg = ref(0);
                       }}
                     </td>
                   </tr>
+                  <tr>
+                    <td>Inliers</td>
+                    <td>
+                      <template v-if="currentCalibrationCoeffs">
+                        {{ totalInlierPoints }} / {{ totalObservationPoints }} points ({{ inlierRatioPercent }}%)
+                      </template>
+                      <template v-else>-</template>
+                    </td>
+                  </tr>
                 </tbody>
               </template>
-            </v-table>
-          </v-tabs-window-item>
-          <v-tabs-window-item key="observations" value="observations">
-            <v-data-table
+            </pv-table>
+          </div>
+          <div v-else-if="tab === 1">
+            <pv-data-table
               id="observations-table"
-              items-per-page-text="Page size:"
-              density="compact"
               style="width: 100%"
-              :headers="[
-                { title: 'Id', key: 'index' },
-                { title: 'Mean Reprojection Error', key: 'mean' }
+              :columns="[
+                { header: 'Id', accessorKey: 'index' },
+                { header: 'Mean Reprojection Error', accessorKey: 'mean' }
               ]"
-              :items="getObservationDetails()"
+              :data="observationDetails"
               item-value="index"
               show-expand
             >
               <template #item.data-table-expand="{ internalItem }">
-                <v-btn
-                  class="text-none"
-                  size="small"
+                <pv-button
+                  size="icon"
                   variant="text"
-                  slim
-                  rounded
-                  @click="viewingImg = internalItem.index"
+                  :class="
+                    viewingImg === (internalItem as { index: number }).index
+                      ? 'text-pv-button-active'
+                      : 'text-pv-on-surface/70'
+                  "
+                  @click="viewingImg = (internalItem as { index: number }).index"
                 >
-                  <v-icon
-                    size="large"
-                    :color="viewingImg === internalItem.index ? 'buttonActive' : 'rgba(255, 255, 255, 0.7)'"
-                    >mdi-eye</v-icon
-                  >
-                </v-btn>
+                  <IconEye class="size-5" aria-hidden="true" />
+                </pv-button>
               </template>
-            </v-data-table>
-          </v-tabs-window-item>
-        </v-tabs-window>
-      </v-col>
-      <v-col cols="8" class="pa-0 pl-6">
-        <v-card-text class="pa-0 fill-height d-flex justify-center align-center">
+            </pv-data-table>
+          </div>
+          <div v-else-if="tab === 2" class="flex flex-col gap-3">
+            <p>Calibration uncertainty, in pixels, looking out to infinity. Lower numbers are better.</p>
+            <p>
+              Uncertainty measures how sure we are about the pixel location that a ray entering our camera would fall
+              onto. Lower numbers imply higher certainty. To decrease uncertainty, capture more varied pictures across
+              the full field of view of your camera.
+            </p>
+            <p>
+              A lower uncertainty doesn't necesarrily mean that the calibration is more accurate -- just that our solver
+              had more information that seemed to correspond. Confounding factors (like incorrect square size) can still
+              lead to inaccurate results.
+            </p>
+            <p>
+              For more information, review
+              <a
+                href="https://mrcal.secretsauce.net/uncertainty.html"
+                target="_blank"
+                class="text-pv-primary underline"
+              >
+                Mrcal's uncertainty documentation
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="w-2/3 p-0 pl-6">
+        <div class="flex h-full items-center justify-center p-0">
           <div v-if="!currentCalibrationCoeffs">
-            <v-alert
+            <pv-alert
               class="pt-3 pb-3"
               color="primary"
               text="The selected video format has not been calibrated."
-              icon="mdi-alert-circle-outline"
-              :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+              :icon="IconAlertCircleOutline"
             />
           </div>
-          <Suspense v-else-if="tab === 'details'">
+          <Suspense v-else-if="tab === 0">
             <!-- Allows us to import three js when it's actually needed  -->
             <PhotonCalibrationVisualizer
               :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
               :resolution="props.videoFormat.resolution"
               title="Camera to Board Transforms"
             />
-            <template #fallback> Loading... </template>
+            <template #fallback>Loading...</template>
           </Suspense>
+          <!-- <Suspense v-else-if="tab === 'uncertainty'" style="display: flex; justify-content: center; width: 100%"> -->
+          <PhotonUncertaintyVisualizer
+            v-else-if="tab === 2"
+            :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
+            :resolution="props.videoFormat.resolution"
+            title="Camera reprojection uncertainty"
+          />
+          <!-- <template #fallback>Loading...</template> -->
+          <!-- </Suspense> -->
           <div v-else style="display: flex; justify-content: center; width: 100%">
-            <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+            <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="max-h-full max-w-full py-2" />
           </div>
-        </v-card-text>
-      </v-col>
-    </v-card-text>
-  </v-card>
+        </div>
+      </div>
+    </div>
+  </pv-card>
 
   <pv-delete-modal
     v-model="confirmRemoveDialog.show"
@@ -346,10 +439,3 @@ const viewingImg = ref(0);
     :on-confirm="() => removeCalibration(confirmRemoveDialog.vf)"
   />
 </template>
-
-<style scoped>
-.snapshot-preview {
-  max-width: 100%;
-  max-height: 100%;
-}
-</style>

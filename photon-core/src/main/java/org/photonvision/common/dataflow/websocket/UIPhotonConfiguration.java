@@ -70,7 +70,7 @@ public class UIPhotonConfiguration {
                                 Platform.getNativePlatform(),
                                 NetworkTablesManager.getInstance().conflictingHostname,
                                 NetworkTablesManager.getInstance().conflictingCameras),
-                        c.getApriltagFieldLayout()),
+                        c.getFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
                         .toList());

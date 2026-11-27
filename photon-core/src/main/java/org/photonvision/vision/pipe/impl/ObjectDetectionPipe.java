@@ -25,13 +25,11 @@ import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.NullModel;
 import org.photonvision.vision.objects.ObjectDetector;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ObjectDetectionPipe
         extends CVPipe<
-                CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
-        implements Releasable {
+                CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams> {
     private ObjectDetector detector;
 
     public ObjectDetectionPipe() {
@@ -55,14 +53,14 @@ public class ObjectDetectionPipe
         return detector.detect(in.getMat(), params.nms(), params.confidence());
     }
 
+    @Override
+    public void release() {
+        detector.release();
+    }
+
     public static record ObjectDetectionPipeParams(double confidence, double nms, Model model) {}
 
     public List<String> getClassNames() {
         return detector.getClasses();
-    }
-
-    @Override
-    public void release() {
-        detector.release();
     }
 }
