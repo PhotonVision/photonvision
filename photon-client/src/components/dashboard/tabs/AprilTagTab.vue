@@ -11,12 +11,7 @@ import { normalizeNumberPair } from "@/lib/PhotonUtils";
 const currentPipelineSettings = computed<AprilTagPipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
-const isAruco = computed(() => currentPipelineSettings.value.algorithm === FiducialAlgorithm.Aruco);
-
 const algorithm = computed<FiducialAlgorithm>(() => currentPipelineSettings.value.algorithm);
-const setAlgorithm = (value: FiducialAlgorithm) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting({ algorithm: value }, true);
-};
 const breakpoints = useCustomBreakpoints();
 const mdAndDown = breakpoints.smallerOrEqual("md");
 const interactiveCols = computed(() =>
@@ -35,7 +30,7 @@ const interactiveCols = computed(() =>
         { name: 'ArUco', value: FiducialAlgorithm.Aruco }
       ]"
       :select-cols="interactiveCols"
-      @update:modelValue="(value: FiducialAlgorithm) => setAlgorithm(value)"
+      @update:modelValue="(value: FiducialAlgorithm) => useCameraSettingsStore().changeCurrentPipelineSetting({ algorithm: value }, true)"
     />
     <pv-select
       v-model="currentPipelineSettings.tagFamily"
@@ -49,7 +44,7 @@ const interactiveCols = computed(() =>
         (value: AprilTagFamily) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)
       "
     />
-    <template v-if="!isAruco">
+    <template v-if="algorithm === FiducialAlgorithm.AprilTag">
       <pv-slider
         v-model="currentPipelineSettings.decimate"
         :slider-cols="interactiveCols"
@@ -117,7 +112,7 @@ const interactiveCols = computed(() =>
         "
       />
     </template>
-    <template v-if="isAruco">
+    <template v-if="algorithm === FiducialAlgorithm.Aruco">
       <pv-range-slider
         v-model="currentPipelineSettings.threshWinSizes"
         label="Thresh Min/Max Size"
