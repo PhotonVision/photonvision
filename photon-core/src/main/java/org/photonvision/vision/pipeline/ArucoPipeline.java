@@ -43,7 +43,7 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 import org.wpilib.math.geometry.CoordinateSystem;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Transform3d;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
 
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
@@ -71,20 +71,20 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         // for now, hard code tag width based on enum value
         // 2023/other: best guess is 6in
-        double tagWidth = Units.inchesToMeters(6);
+        double tagWidth = UnitConversions.inchesToMeters(6);
         TargetModel tagModel = TargetModel.kAprilTag16h5;
 
         params.tagFamily =
                 switch (settings.tagFamily) {
                     case kTag36h11 -> {
                         // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6.5);
+                        tagWidth = UnitConversions.inchesToMeters(6.5);
                         tagModel = TargetModel.kAprilTag36h11;
                         yield Objdetect.DICT_APRILTAG_36h11;
                     }
                     case kTag16h5 -> {
                         // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6);
+                        tagWidth = UnitConversions.inchesToMeters(6);
                         tagModel = TargetModel.kAprilTag16h5;
                         yield Objdetect.DICT_APRILTAG_16h5;
                     }

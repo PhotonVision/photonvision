@@ -60,7 +60,7 @@ import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Translation3d;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.telemetry.TelemetryRegistry;
 import org.wpilib.util.runtime.RuntimeLoader;
@@ -353,7 +353,7 @@ class VisionSystemSimTest {
                 cameraSim,
                 new Transform3d(
                         new Translation3d(),
-                        new Rotation3d(0, Units.degreesToRadians(testPitch), 0)));
+                        new Rotation3d(0, UnitConversions.degreesToRadians(testPitch), 0)));
 
         visionSysSim.update(robotPose);
         var res = waitForSequenceNumber(camera, 1);
@@ -398,12 +398,12 @@ class VisionSystemSimTest {
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI * 0.98));
         final var robotPose =
                 new Pose3d(
-                        new Translation3d(15.98 - Units.feetToMeters(testDist), 0, 0),
+                        new Translation3d(15.98 - UnitConversions.feetToMeters(testDist), 0, 0),
                         Rotation3d.ZERO);
         final var robotToCamera =
                 new Transform3d(
-                        new Translation3d(0, 0, Units.feetToMeters(testHeight)),
-                        new Rotation3d(0, Units.degreesToRadians(testPitch), 0));
+                        new Translation3d(0, 0, UnitConversions.feetToMeters(testHeight)),
+                        new Rotation3d(0, UnitConversions.degreesToRadians(testPitch), 0));
 
         var visionSysSim =
                 new VisionSystemSim(
@@ -435,9 +435,9 @@ class VisionSystemSimTest {
                 PhotonUtils.calculateDistanceToTargetMeters(
                         robotToCamera.getZ(),
                         targetPose.getZ(),
-                        Units.degreesToRadians(-testPitch),
-                        Units.degreesToRadians(tgt.getPitch()));
-        assertEquals(Units.feetToMeters(testDist), distMeas, 0.15);
+                        UnitConversions.degreesToRadians(-testPitch),
+                        UnitConversions.degreesToRadians(tgt.getPitch()));
+        assertEquals(UnitConversions.feetToMeters(testDist), distMeas, 0.15);
     }
 
     @Test
@@ -547,8 +547,8 @@ class VisionSystemSimTest {
         tagList.add(new FieldTag(0, new Pose3d(12, 3, 1, new Rotation3d(0, 0, Math.PI))));
         tagList.add(new FieldTag(1, new Pose3d(12, 1, -1, new Rotation3d(0, 0, Math.PI))));
         tagList.add(new FieldTag(2, new Pose3d(11, 0, 2, new Rotation3d(0, 0, Math.PI))));
-        double fieldLength = Units.feetToMeters(54.0);
-        double fieldWidth = Units.feetToMeters(27.0);
+        double fieldLength = UnitConversions.feetToMeters(54.0);
+        double fieldWidth = UnitConversions.feetToMeters(27.0);
         Field layout =
                 new Field("test", "test", "test", null, fieldLength, fieldWidth, "frc", tagList);
         Pose2d robotPose = new Pose2d(5, 1, Rotation2d.fromDegrees(5));
@@ -637,7 +637,7 @@ class VisionSystemSimTest {
                 new Pose3d(new Translation3d(2, 0, 0), new Rotation3d(0, 0, Math.PI));
         final int classId = 3;
         final float conf = 0.67f;
-        final TargetModel ballModel = new TargetModel(Units.inchesToMeters(6));
+        final TargetModel ballModel = new TargetModel(UnitConversions.inchesToMeters(6));
         final var ballTarget = new VisionTargetSim(targetPose, ballModel, classId, conf);
 
         visionSysSim.addVisionTargets(ballTarget);

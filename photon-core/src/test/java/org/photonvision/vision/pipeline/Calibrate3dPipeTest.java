@@ -52,7 +52,7 @@ import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
@@ -218,8 +218,8 @@ public class Calibrate3dPipeTest {
                 imgRes,
                 rootFolder,
                 boardDim,
-                Units.inchesToMeters(1),
-                Units.inchesToMeters(0.75),
+                UnitConversions.inchesToMeters(1),
+                UnitConversions.inchesToMeters(0.75),
                 boardType,
                 TagFamily.Dict_4X4_1000,
                 imgRes.width / 2,
@@ -243,7 +243,7 @@ public class Calibrate3dPipeTest {
                 imgRes,
                 rootFolder,
                 boardDim,
-                Units.inchesToMeters(1),
+                UnitConversions.inchesToMeters(1),
                 markerSize,
                 boardType,
                 tagFamily,

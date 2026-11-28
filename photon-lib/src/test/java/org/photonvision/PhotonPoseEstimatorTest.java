@@ -51,7 +51,6 @@ import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
 import org.wpilib.fields.Field;
 import org.wpilib.fields.FieldTag;
-import org.wpilib.fields.Fields;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Quaternion;
@@ -62,7 +61,7 @@ import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.linalg.MatBuilder;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.util.Nat;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 import org.wpilib.util.runtime.RuntimeLoader;
 
 class PhotonPoseEstimatorTest {
@@ -81,8 +80,8 @@ class PhotonPoseEstimatorTest {
         List<FieldTag> tagList = new ArrayList<>(2);
         tagList.add(new FieldTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
         tagList.add(new FieldTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
-        double fieldLength = Units.feetToMeters(54.0);
-        double fieldWidth = Units.feetToMeters(27.0);
+        double fieldLength = UnitConversions.feetToMeters(54.0);
+        double fieldWidth = UnitConversions.feetToMeters(27.0);
         aprilTags =
                 new Field("test", "test", "test", null, fieldLength, fieldWidth, "frc", tagList);
     }
@@ -576,13 +575,13 @@ class PhotonPoseEstimatorTest {
             /* Compound Rolled + Pitched + Yaw */
             Transform3d compoundTestTransform =
                     new Transform3d(
-                            -Units.inchesToMeters(12),
-                            -Units.inchesToMeters(11),
+                            -UnitConversions.inchesToMeters(12),
+                            -UnitConversions.inchesToMeters(11),
                             3,
                             new Rotation3d(
-                                    Units.degreesToRadians(37),
-                                    Units.degreesToRadians(6),
-                                    Units.degreesToRadians(60)));
+                                    UnitConversions.degreesToRadians(37),
+                                    UnitConversions.degreesToRadians(6),
+                                    UnitConversions.degreesToRadians(60)));
 
             var estimator = new PhotonPoseEstimator(aprilTags, compoundTestTransform);
 
@@ -989,12 +988,29 @@ class PhotonPoseEstimatorTest {
                                                 0.1),
                                         new ArrayList<Short>(8))));
 
-        final double camPitch = Units.degreesToRadians(30.0);
+        final double camPitch = UnitConversions.degreesToRadians(30.0);
         final Transform3d kRobotToCam =
                 new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));
 
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(Field.loadField(Fields.FRC_2024_CRESCENDO), kRobotToCam);
+        Field oldCrescendo =
+                new Field(
+                        "test",
+                        "test",
+                        "test",
+                        null,
+                        16.541,
+                        8.211,
+                        "frc",
+                        List.of(
+                                new FieldTag(
+                                        8,
+                                        new Pose3d(
+                                                -0.0381,
+                                                4.982717999999999,
+                                                1.4511020000000001,
+                                                new Rotation3d()))));
+
+        PhotonPoseEstimator estimator = new PhotonPoseEstimator(oldCrescendo, kRobotToCam);
 
         var multiTagEstimate = estimator.estimateCoprocMultiTagPose(result);
         estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.ZERO);

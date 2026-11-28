@@ -36,7 +36,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
-import org.wpilib.math.util.Units;
+import org.wpilib.math.util.UnitConversions;
 
 public class TestUtils {
     @SuppressWarnings("unused")
@@ -164,8 +164,8 @@ public class TestUtils {
 
         Translation2d getPose() {
             var names = this.toString().substring(1).split("_");
-            var x = Units.inchesToMeters(Integer.parseInt(names[0]));
-            var y = Units.inchesToMeters(Integer.parseInt(names[1]));
+            var x = UnitConversions.inchesToMeters(Integer.parseInt(names[0]));
+            var y = UnitConversions.inchesToMeters(Integer.parseInt(names[1]));
             return new Translation2d(x, y);
         }
 
@@ -176,8 +176,8 @@ public class TestUtils {
     }
 
     public enum WPI2022Image {
-        kTerminal12ft6in(Units.feetToMeters(12.5)),
-        kTerminal22ft6in(Units.feetToMeters(22.5));
+        kTerminal12ft6in(UnitConversions.feetToMeters(12.5)),
+        kTerminal22ft6in(UnitConversions.feetToMeters(22.5));
 
         public static final double FOV = 68.5;
 

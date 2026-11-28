@@ -30,7 +30,7 @@ ext.localMavenURL = file("$project.buildDir/outputs/maven")
 ext.allOutputsFolder = file("$project.buildDir/outputs")
 
 ext {
-    wpilibVersion = "2027.0.0-alpha-8"
+    wpilibVersion = "2027.0.0-alpha-8-133-g677bf7875"
     mrclibVersion = "2027.1.0-alpha-1-116-g5288562"
     openCVversion = "2027-4.13.0-4"
     ejmlVersion = "0.46.0";
@@ -44,7 +44,7 @@ ext {
     libcameraDriverVersion = "v2027.0.0-alpha-1"
     rknnVersion = "v2027.0.0"
     tfliteVersion = "v2027.0.2-alpha-1"
-    wpilibYear = "2027_alpha7"
+    wpilibYear = "2027_beta1"
     mrcalVersion = "dev-v2027.0.2-12-gdc31176";
 
     pubVersion = versionString
