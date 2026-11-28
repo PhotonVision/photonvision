@@ -106,6 +106,7 @@ export type PVCameraInfo = PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo;
 export interface VsmState {
   disabledConfigs: WebsocketCameraSettingsUpdate[];
   allConnectedCameras: PVCameraInfo[];
+  completelyBrokenCameraUniquePaths: string[];
 }
 
 export interface LightingSettings {

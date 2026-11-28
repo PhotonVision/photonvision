@@ -112,6 +112,7 @@ export const useStateStore = defineStore("state", {
 
       vsmState: {
         allConnectedCameras: [],
+        completelyBrokenCameraUniquePaths: [],
         disabledConfigs: []
       }
     };

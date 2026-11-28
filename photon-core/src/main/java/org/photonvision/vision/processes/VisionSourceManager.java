@@ -42,9 +42,12 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.camera.PVCameraInfo.PVUsbCameraInfo;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.wpilib.vision.camera.UsbCamera;
@@ -77,6 +80,7 @@ public class VisionSourceManager implements AutoCloseable {
     public static class VisionSourceManagerState {
         public List<UICameraConfiguration> disabledConfigs;
         public List<PVCameraInfo> allConnectedCameras;
+        public List<String> completelyBrokenCameraUniquePaths;
     }
 
     // Map of (unique name) -> (all CameraConfigurations) that have been registered
@@ -273,6 +277,19 @@ public class VisionSourceManager implements AutoCloseable {
         ret.allConnectedCameras = filterAllowedDevices(getConnectedCameras());
         ret.disabledConfigs =
                 disabledCameraConfigs.values().stream().map(it -> it.toUiConfig()).toList();
+        ret.completelyBrokenCameraUniquePaths = new ArrayList<>();
+        for (var camera : ret.allConnectedCameras) {
+            QuirkyCamera quirks;
+            if (camera instanceof PVUsbCameraInfo usbCamera) {
+                quirks =
+                        QuirkyCamera.getQuirkyCamera(usbCamera.vendorId, usbCamera.productId, camera.name());
+            } else {
+                quirks = QuirkyCamera.getQuirkyCamera(-1, -1, camera.name());
+            }
+            if (quirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
+                ret.completelyBrokenCameraUniquePaths.add(camera.uniquePath());
+            }
+        }
 
         return ret;
     }
