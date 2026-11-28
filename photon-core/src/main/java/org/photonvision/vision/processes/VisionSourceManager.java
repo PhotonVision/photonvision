@@ -199,6 +199,11 @@ public class VisionSourceManager implements AutoCloseable {
      * @param cameraInfo
      */
     public synchronized boolean assignUnmatchedCamera(PVCameraInfo cameraInfo) {
+        if (getCameraQuirks(cameraInfo).hasQuirk(CameraQuirk.CompletelyBroken)) {
+            logger.error("Camera is not supported for PhotonVision; cannot assign " + cameraInfo);
+            return false;
+        }
+
         // Check if the camera is already in use by another module
         if (vmm.getModules().stream()
                 .anyMatch(
@@ -279,19 +284,19 @@ public class VisionSourceManager implements AutoCloseable {
                 disabledCameraConfigs.values().stream().map(it -> it.toUiConfig()).toList();
         ret.completelyBrokenCameraUniquePaths = new ArrayList<>();
         for (var camera : ret.allConnectedCameras) {
-            QuirkyCamera quirks;
-            if (camera instanceof PVUsbCameraInfo usbCamera) {
-                quirks =
-                        QuirkyCamera.getQuirkyCamera(usbCamera.vendorId, usbCamera.productId, camera.name());
-            } else {
-                quirks = QuirkyCamera.getQuirkyCamera(-1, -1, camera.name());
-            }
-            if (quirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
+            if (getCameraQuirks(camera).hasQuirk(CameraQuirk.CompletelyBroken)) {
                 ret.completelyBrokenCameraUniquePaths.add(camera.uniquePath());
             }
         }
 
         return ret;
+    }
+
+    private static QuirkyCamera getCameraQuirks(PVCameraInfo camera) {
+        if (camera instanceof PVUsbCameraInfo usbCamera) {
+            return QuirkyCamera.getQuirkyCamera(usbCamera.vendorId, usbCamera.productId, camera.name());
+        }
+        return QuirkyCamera.getQuirkyCamera(-1, -1, camera.name());
     }
 
     protected void pushUiUpdate() {
