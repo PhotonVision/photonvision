@@ -220,8 +220,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            artifact-name: Win64
+          # - os: windows-latest
+          #   artifact-name: Win64
           - os: macos-26
             artifact-name: macOS
 
