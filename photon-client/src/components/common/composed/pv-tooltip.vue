@@ -18,7 +18,7 @@ withDefaults(
 
 <template>
   <tooltip-provider :delay-duration="delay" :disabled="disabled">
-    <tooltip-root>
+    <tooltip-root :ignore-non-keyboard-focus="true">
       <tooltip-trigger as-child>
         <slot />
       </tooltip-trigger>
