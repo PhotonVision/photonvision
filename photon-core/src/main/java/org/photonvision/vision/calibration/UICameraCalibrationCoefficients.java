@@ -57,7 +57,8 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
                 optimizationInputs);
 
         this.numSnapshots = observations.size();
-        this.meanErrors = observations.stream().map(BoardObservation::meanReprojectionError).toList();
+        this.meanErrors =
+                observations.stream().map(BoardObservation::meanReprojectionError).toList();
 
         this.numOutliers =
                 observations.stream()

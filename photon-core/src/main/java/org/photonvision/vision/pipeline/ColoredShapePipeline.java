@@ -88,7 +88,9 @@ public class ColoredShapePipeline
                         settings.contourRadius.getSecond(),
                         settings.maxCannyThresh,
                         settings.circleAccuracy,
-                        Math.hypot(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight)));
+                        Math.hypot(
+                                frameStaticProperties.imageWidth,
+                                frameStaticProperties.imageHeight)));
 
         filterShapesPipe.setParams(
                 new FilterShapesPipe.FilterShapesPipeParams(
@@ -101,7 +103,9 @@ public class ColoredShapePipeline
 
         sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
-                        settings.contourSortMode, settings.outputMaximumTargets, frameStaticProperties));
+                        settings.contourSortMode,
+                        settings.outputMaximumTargets,
+                        frameStaticProperties));
 
         collect2dTargetsPipe.setParams(
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
@@ -167,7 +171,8 @@ public class ColoredShapePipeline
         List<CVShape> shapes = null;
         if (settings.contourShape == ContourShape.Circle) {
             CVPipeResult<List<CVShape>> findCirclesResult =
-                    findCirclesPipe.run(Pair.of(frame.processedImage.getMat(), speckleRejectResult.output));
+                    findCirclesPipe.run(
+                            Pair.of(frame.processedImage.getMat(), speckleRejectResult.output));
             sumPipeNanosElapsed += findCirclesResult.nanosElapsed;
             shapes = findCirclesResult.output;
         } else {

@@ -71,7 +71,10 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
 
     public static record HSVParams(Scalar hsvLower, Scalar hsvUpper, boolean hueInverted) {
         public HSVParams(
-                IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueInverted) {
+                IntegerCouple hue,
+                IntegerCouple saturation,
+                IntegerCouple value,
+                boolean hueInverted) {
             this(
                     new Scalar(hue.getFirst(), saturation.getFirst(), value.getFirst()),
                     new Scalar(hue.getSecond(), saturation.getSecond(), value.getSecond()),

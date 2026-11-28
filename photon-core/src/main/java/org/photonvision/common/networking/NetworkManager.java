@@ -93,7 +93,8 @@ public class NetworkManager {
         if (physicalDevices.stream()
                 .noneMatch(it -> (it.devName().equals(config.networkManagerIface)))) {
             try {
-                // if the configured interface isn't in the list of available ones, select one that is
+                // if the configured interface isn't in the list of available ones, select one that
+                // is
                 var iFace = physicalDevices.stream().findFirst().orElseThrow();
                 logger.warn(
                         "The configured interface doesn't match any available interface. Applying configuration to "
@@ -157,7 +158,8 @@ public class NetworkManager {
             if (!oldHostname.equals(config.hostname)) {
                 var setHostnameRetCode =
                         shell.executeBashCommand(
-                                "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));
+                                "echo $NEW_HOSTNAME > /etc/hostname"
+                                        .replace("$NEW_HOSTNAME", config.hostname));
                 setHostnameRetCode =
                         shell.executeBashCommand("hostnamectl set-hostname " + config.hostname);
 
@@ -208,7 +210,8 @@ public class NetworkManager {
             // activate it
             logger.info("Activating DHCP connection " + connName);
             shell.executeBashCommand(
-                    "nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
+                    "nmcli connection up \"${connection}\"".replace("${connection}", connName),
+                    false);
             activeConnections.put(config.networkManagerIface, connName);
         } catch (Exception e) {
             logger.error("Exception while setting DHCP!", e);
@@ -249,7 +252,8 @@ public class NetworkManager {
             // activate it
             logger.info("Activating the Static connection " + connName);
             shell.executeBashCommand(
-                    "nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
+                    "nmcli connection up \"${connection}\"".replace("${connection}", connName),
+                    false);
             activeConnections.put(config.networkManagerIface, connName);
         } catch (Exception e) {
             logger.error("Error while setting static IP!", e);
@@ -281,10 +285,16 @@ public class NetworkManager {
                         if (carrier != last.carrier) {
                             if (carrier) {
                                 // carrier came back
-                                logger.info("Interface " + devName + " has re-connected, reinitializing");
+                                logger.info(
+                                        "Interface "
+                                                + devName
+                                                + " has re-connected, reinitializing");
                                 reinitialize();
                             } else {
-                                logger.warn("Interface " + devName + " is disconnected, check Ethernet!");
+                                logger.warn(
+                                        "Interface "
+                                                + devName
+                                                + " is disconnected, check Ethernet!");
                             }
                         }
                         var iFace = NetworkInterface.getByName(devName);
@@ -294,7 +304,11 @@ public class NetworkManager {
                             if (!last.addresses.equals(tmpAddresses)) {
                                 // addresses have changed, log the difference
                                 last.addresses = tmpAddresses;
-                                logger.info("Interface " + devName + " has address(es): " + last.addresses);
+                                logger.info(
+                                        "Interface "
+                                                + devName
+                                                + " has address(es): "
+                                                + last.addresses);
                             }
                             var conn = NetworkUtils.getActiveConnection(devName);
                             if (!conn.equals(activeConnections.get(devName))) {

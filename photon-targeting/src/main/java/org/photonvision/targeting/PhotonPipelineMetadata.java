@@ -122,7 +122,8 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
         return true;
     }
 
-    public static final PhotonPipelineMetadataSerde photonStruct = new PhotonPipelineMetadataSerde();
+    public static final PhotonPipelineMetadataSerde photonStruct =
+            new PhotonPipelineMetadataSerde();
 
     @Override
     public PacketSerde<PhotonPipelineMetadata> getSerde() {

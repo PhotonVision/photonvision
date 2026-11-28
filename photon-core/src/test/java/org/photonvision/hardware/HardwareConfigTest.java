@@ -39,7 +39,8 @@ public class HardwareConfigTest {
             var config = Jsonb.instance().type(HardwareConfig.class).fromJson(stream);
             assertEquals(config.deviceName, "PhotonVision");
             // Ensure defaults are not null
-            assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
+            assertArrayEquals(
+                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
             try (NativeDeviceFactoryInterface deviceFactory =
                     HardwareManager.configureCustomGPIO(config)) {
                 assertTrue(deviceFactory instanceof CustomDeviceFactory);

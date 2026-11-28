@@ -66,8 +66,8 @@ public class VisionTargetSim {
 
     /**
      * Describes an object-detection vision target located somewhere on the field that your vision
-     * system can detect. Class ID is the (zero-indexed) index of the object's class ID in the list of
-     * all classes. Confidence can be specified, or pass -1 to estimate confidence based on 2 *
+     * system can detect. Class ID is the (zero-indexed) index of the object's class ID in the list
+     * of all classes. Confidence can be specified, or pass -1 to estimate confidence based on 2 *
      * sqrt(target area / total image area)
      *
      * @param pose Pose3d of the target in field-relative coordinates

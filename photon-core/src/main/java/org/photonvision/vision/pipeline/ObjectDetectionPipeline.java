@@ -57,7 +57,8 @@ public class ObjectDetectionPipeline
     protected void setPipeParamsImpl() {
         Optional<Model> selectedModel =
                 settings.model != null
-                        ? NeuralNetworkModelManager.getInstance().getModel(settings.model.modelPath())
+                        ? NeuralNetworkModelManager.getInstance()
+                                .getModel(settings.model.modelPath())
                         : Optional.empty();
 
         // If the desired model couldn't be found, log an error and try to use the default model
@@ -70,7 +71,8 @@ public class ObjectDetectionPipeline
             selectedModel = Optional.of(NullModel.getInstance());
         }
         objectDetectorPipe.setParams(
-                new ObjectDetectionPipeParams(settings.confidence, settings.nms, selectedModel.get()));
+                new ObjectDetectionPipeParams(
+                        settings.confidence, settings.nms, selectedModel.get()));
 
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
@@ -81,7 +83,9 @@ public class ObjectDetectionPipeline
 
         sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
-                        settings.contourSortMode, settings.outputMaximumTargets, frameStaticProperties));
+                        settings.contourSortMode,
+                        settings.outputMaximumTargets,
+                        frameStaticProperties));
 
         filterContoursPipe.setParams(
                 new FilterObjectDetectionsPipe.FilterContoursParams(
@@ -117,7 +121,9 @@ public class ObjectDetectionPipeline
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
                 sortContoursPipe.run(
-                        filterContoursResult.output.stream().map(shape -> new PotentialTarget(shape)).toList());
+                        filterContoursResult.output.stream()
+                                .map(shape -> new PotentialTarget(shape))
+                                .toList());
         sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
 
         CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
@@ -128,7 +134,12 @@ public class ObjectDetectionPipeline
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                collect2dTargetsResult.output,
+                frame,
+                names);
     }
 
     @Override

@@ -174,13 +174,16 @@ public class CustomDeviceFactory extends BaseNativeDeviceFactory {
             SpiClockMode spiClockMode,
             boolean lsbFirst)
             throws RuntimeIOException {
-        throw new UnsupportedOperationException("SPI devices are not supported by this device factory");
+        throw new UnsupportedOperationException(
+                "SPI devices are not supported by this device factory");
     }
 
     @Override
     public InternalI2CDeviceInterface createI2CDevice(
-            String key, int controller, int address, AddressSize addressSize) throws RuntimeIOException {
-        throw new UnsupportedOperationException("I2C devices are not supported by this device factory");
+            String key, int controller, int address, AddressSize addressSize)
+            throws RuntimeIOException {
+        throw new UnsupportedOperationException(
+                "I2C devices are not supported by this device factory");
     }
 
     @Override

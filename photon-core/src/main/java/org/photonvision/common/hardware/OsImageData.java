@@ -43,11 +43,16 @@ public class OsImageData {
 
     @Json(naming = Json.Naming.LowerUnderscore)
     public static record ImageMetadata(
-            String buildDate, String commitSha, String commitTag, String imageName, String imageSource) {}
+            String buildDate,
+            String commitSha,
+            String commitTag,
+            String imageName,
+            String imageSource) {}
 
     private static Optional<ImageMetadata> getImageMetadata() {
         if (!imageMetadataFile.exists()) {
-            logger.warn("Photon cannot locate OS image metadata at " + imageMetadataFile.toString());
+            logger.warn(
+                    "Photon cannot locate OS image metadata at " + imageMetadataFile.toString());
             return Optional.empty();
         }
 

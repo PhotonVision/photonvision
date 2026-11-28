@@ -69,7 +69,8 @@ public class FileSaveFrameConsumerTest {
         inst.stopClient();
         inst.stopServer();
         inst.startLocal();
-        TelemetryRegistry.registerBackend("", new NetworkTablesTelemetryBackend(inst, "/Telemetry"));
+        TelemetryRegistry.registerBackend(
+                "", new NetworkTablesTelemetryBackend(inst, "/Telemetry"));
 
         // DriverStation uses the default instance internally
         assertEquals(NetworkTableInstance.getDefault(), inst);
@@ -86,7 +87,8 @@ public class FileSaveFrameConsumerTest {
 
     @CartesianTest
     public void testNoMatch(
-            @Enum(MatchType.class) MatchType matchType, @Values(ints = {0, 1, 0xffff}) int matchNumber) {
+            @Enum(MatchType.class) MatchType matchType,
+            @Values(ints = {0, 1, 0xffff}) int matchNumber) {
         String camNickname = "foobar";
         String cameraUniqueName = "some_unique";
         String streamPrefix = "input";
@@ -100,7 +102,8 @@ public class FileSaveFrameConsumerTest {
         Date currentTime;
         try (var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in, false),
+                        TestUtils.getWPIImagePath(
+                                TestUtils.WPI2019Image.kCargoSideStraightDark72in, false),
                         TestUtils.WPI2019Image.FOV)) {
             // AND fake FMS data
             eventName = "CASJ";

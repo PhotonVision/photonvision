@@ -49,8 +49,8 @@ public class DrawCalibrationPipe
         var imgSz = image.size();
         var diag = Math.hypot(imgSz.width, imgSz.height);
 
-        // heuristic: about 4px at a diagonal of 750px, or .5%, 'looks good'. keep it at least 3px at
-        // worst tho
+        // heuristic: about 4px at a diagonal of 750px, or .5%, 'looks good'. keep it at least 3px
+        // at worst tho
         int r = (int) Math.max(diag * 4.0 / 750.0, 3);
         int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
 
@@ -71,9 +71,17 @@ public class DrawCalibrationPipe
                 var color = chessboardColors[i % chessboardColors.length];
                 Imgproc.circle(image, c, r, color, thickness);
                 Imgproc.line(
-                        image, new Point(c.x - r2, c.y - r2), new Point(c.x + r2, c.y + r2), color, thickness);
+                        image,
+                        new Point(c.x - r2, c.y - r2),
+                        new Point(c.x + r2, c.y + r2),
+                        color,
+                        thickness);
                 Imgproc.line(
-                        image, new Point(c.x + r2, c.y - r2), new Point(c.x - r2, c.y + r2), color, thickness);
+                        image,
+                        new Point(c.x + r2, c.y - r2),
+                        new Point(c.x - r2, c.y + r2),
+                        color,
+                        thickness);
             }
 
             i++;
@@ -85,5 +93,6 @@ public class DrawCalibrationPipe
     @Override
     public void release() {}
 
-    public static record DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawAllSnapshots) {}
+    public static record DrawCalibrationPipeParams(
+            FrameDivisor divisor, boolean drawAllSnapshots) {}
 }

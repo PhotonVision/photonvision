@@ -63,7 +63,8 @@ public class NetworkTablesManager {
     // This is used to subscribe to all coprocessor tables, so we can detect conflicts
     @SuppressWarnings("unused")
     private final MultiSubscriber sub =
-            new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
+            new MultiSubscriber(
+                    ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
     private final Alert conflictAlert = new Alert("PhotonAlerts", "conflict", "", Level.MEDIUM);
@@ -162,7 +163,9 @@ public class NetworkTablesManager {
             var msg =
                     String.format(
                             "NT lost connection to %s:%d! (NT version %d). Will retry in background.",
-                            event.connInfo.remoteIp, event.connInfo.remotePort, event.connInfo.protocolVersion);
+                            event.connInfo.remoteIp,
+                            event.connInfo.remotePort,
+                            event.connInfo.protocolVersion);
             logger.error(msg);
             HardwareManager.getInstance().setNTConnected(false);
 
@@ -171,7 +174,9 @@ public class NetworkTablesManager {
             var msg =
                     String.format(
                             "NT connected to %s:%d! (NT version %d)",
-                            event.connInfo.remoteIp, event.connInfo.remotePort, event.connInfo.protocolVersion);
+                            event.connInfo.remoteIp,
+                            event.connInfo.remotePort,
+                            event.connInfo.protocolVersion);
             logger.info(msg);
             HardwareManager.getInstance().setNTConnected(true);
 
@@ -182,7 +187,8 @@ public class NetworkTablesManager {
         } else if (isConnEvent) {
             logger.warn("Got connection event with no connection info??");
         } else {
-            logger.warn("Got a non-sensical connection message that is neither connect nor disconnect?");
+            logger.warn(
+                    "Got a non-sensical connection message that is neither connect nor disconnect?");
         }
     }
 
@@ -237,14 +243,18 @@ public class NetworkTablesManager {
     }
 
     /**
-     * Publishes the hostname and camera names to a table using the MAC address as a key. Then checks
-     * for conflicts of hostname or camera names across other coprocessors that are also publishing to
-     * this table.
+     * Publishes the hostname and camera names to a table using the MAC address as a key. Then
+     * checks for conflicts of hostname or camera names across other coprocessors that are also
+     * publishing to this table.
      */
     private void checkHostnameAndCameraNames() {
         String mac = NetworkUtils.getMacAddress();
         if (!mac.equals(currentMacAddress)) {
-            logger.debug("MAC address changed! New MAC address is " + mac + ", was " + currentMacAddress);
+            logger.debug(
+                    "MAC address changed! New MAC address is "
+                            + mac
+                            + ", was "
+                            + currentMacAddress);
             kCoprocTable.getSubTable(currentMacAddress).getEntry("hostname").unpublish();
             kCoprocTable.getSubTable(currentMacAddress).getEntry("cameraNames").unpublish();
             currentMacAddress = mac;
@@ -305,17 +315,19 @@ public class NetworkTablesManager {
 
             // Check for camera name conflicts
             for (String cameraName : cameraNames) {
-                if (Arrays.stream(otherCameraNames).anyMatch(otherName -> otherName.equals(cameraName))) {
+                if (Arrays.stream(otherCameraNames)
+                        .anyMatch(otherName -> otherName.equals(cameraName))) {
                     logger.warn("Camera name conflict detected: " + cameraName);
-                    conflictingCameras.append(conflictingCameras.isEmpty() ? cameraName : ", " + cameraName);
+                    conflictingCameras.append(
+                            conflictingCameras.isEmpty() ? cameraName : ", " + cameraName);
                 }
             }
         }
 
         if (conflictingHostname != this.conflictingHostname
                 || !conflictingCameras.toString().equals(this.conflictingCameras)) {
-            // Only publish the conflict status when it's changed to prevent the settings cards from being
-            // forcibly reset
+            // Only publish the conflict status when it's changed to prevent the settings cards from
+            // being forcibly reset
             DataChangeService.getInstance()
                     .publishEvent(
                             new OutgoingUIEvent<>(
@@ -346,8 +358,8 @@ public class NetworkTablesManager {
     }
 
     /**
-     * @return The offset, in nanoseconds, which when added to the local wpi::nt::Now timebase yields
-     *     the Time Sync Server's timebase
+     * @return The offset, in nanoseconds, which when added to the local wpi::nt::Now timebase
+     *     yields the Time Sync Server's timebase
      */
     public long getOffset() {
         return m_timeSync.getOffset();

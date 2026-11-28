@@ -29,7 +29,11 @@ public class QuirkyCamera {
             List.of(
                     // SeeCam, which has an odd exposure range
                     new QuirkyCamera(
-                            0x2560, 0xc128, "See3Cam_24CUG", CameraQuirk.Gain, CameraQuirk.See3Cam_24CUG),
+                            0x2560,
+                            0xc128,
+                            "See3Cam_24CUG",
+                            CameraQuirk.Gain,
+                            CameraQuirk.See3Cam_24CUG),
                     // Chris's older generic "Logitech HD Webcam"
                     new QuirkyCamera(0x9331, 0x5A3, CameraQuirk.CompletelyBroken),
                     // Logitech C270
@@ -46,7 +50,11 @@ public class QuirkyCamera {
                     new QuirkyCamera(-1, -1, "LifeCam Cinema (TM)", CameraQuirk.LifeCamControls),
                     // PS3Eye
                     new QuirkyCamera(
-                            0x1415, 0x2000, CameraQuirk.Gain, CameraQuirk.FPSCap100, CameraQuirk.PsEyeControls),
+                            0x1415,
+                            0x2000,
+                            CameraQuirk.Gain,
+                            CameraQuirk.FPSCap100,
+                            CameraQuirk.PsEyeControls),
                     // Logitech C925-e
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus),
                     // Generic arducam. Since OV2311 can't be differentiated
@@ -87,7 +95,11 @@ public class QuirkyCamera {
                             CameraQuirk.ArduOV9782Controls),
                     // Innomaker OV9281
                     new QuirkyCamera(
-                            0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls),
+                            0x0c45,
+                            0x636d,
+                            "USB Camera",
+                            "Innomaker OV9281",
+                            CameraQuirk.InnoOV9281Controls),
                     // Thrifty OV9281
                     new QuirkyCamera(
                             0x1BCF,
@@ -103,7 +115,8 @@ public class QuirkyCamera {
                     -1,
                     "unicam",
                     CameraQuirk.Gain,
-                    CameraQuirk.AwbRedBlueGain); // PiCam (using libcamera GPU Driver on raspberry pi)
+                    CameraQuirk
+                            .AwbRedBlueGain); // PiCam (using libcamera GPU Driver on raspberry pi)
 
     public final String baseName;
 

@@ -30,9 +30,8 @@ public final class SerializationUtils {
         for (var field : src.getClass().getFields()) {
             try {
                 field.setAccessible(true);
-                if (!field
-                        .getType()
-                        .isEnum()) { // if the field is not an enum, get it based on the current pipeline
+                if (!field.getType().isEnum()) {
+                    // if the field is not an enum, get it based on the current pipeline
                     ret.put(field.getName(), field.get(src));
                 } else {
                     var ordinal = (Enum) field.get(src);

@@ -59,7 +59,10 @@ public class GreenYellowStatusLED implements StatusLED {
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
     public GreenYellowStatusLED(
-            NativeDeviceFactoryInterface deviceFactory, int greenPin, int yellowPin, boolean activeHigh) {
+            NativeDeviceFactoryInterface deviceFactory,
+            int greenPin,
+            int yellowPin,
+            boolean activeHigh) {
         // Outputs are active-low for a common-anode RGB LED
         greenLED = new LED(deviceFactory, greenPin, activeHigh, false);
         yellowLED = new LED(deviceFactory, yellowPin, activeHigh, false);

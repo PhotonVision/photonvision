@@ -81,7 +81,8 @@ public class PhotonTrackedTargetProto
                 .setObjDetectionId(value.getDetectedObjectClassID());
 
         Transform3d.proto.pack(msg.getMutableBestCameraToTarget(), value.getBestCameraToTarget());
-        Transform3d.proto.pack(msg.getMutableAltCameraToTarget(), value.getAlternateCameraToTarget());
+        Transform3d.proto.pack(
+                msg.getMutableAltCameraToTarget(), value.getAlternateCameraToTarget());
 
         TargetCorner.proto.pack(msg.getMutableMinAreaRectCorners(), value.getMinAreaRectCorners());
         TargetCorner.proto.pack(msg.getMutableDetectedCorners(), value.getDetectedCorners());

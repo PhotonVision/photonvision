@@ -139,7 +139,8 @@ public class VisionEstimation {
         else {
             var objectTrls = new ArrayList<Translation3d>();
             for (var tag : knownTags) objectTrls.addAll(tagModel.getFieldVertices(tag.getPose()));
-            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, points);
+            var camToOrigin =
+                    OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, points);
             if (camToOrigin.isEmpty()) return Optional.empty();
             return Optional.of(
                     new PnpResult(
@@ -160,16 +161,16 @@ public class VisionEstimation {
      * @param cameraMatrix The camera intrinsics matrix in standard opencv form
      * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param visTags The visible tags reported by PV. Non-tag targets are automatically excluded.
-     * @param robot2camera The {@link Transform3d} from the robot odometry frame to the camera optical
-     *     frame
+     * @param robot2camera The {@link Transform3d} from the robot odometry frame to the camera
+     *     optical frame
      * @param robotPoseSeed An initial guess at robot pose, refined via optimization. Better guesses
      *     will converge faster.
      * @param tagLayout The known tag layout on the field
      * @param tagModel The physical size of the AprilTags
      * @param headingFree If heading is completely free, or if our measured gyroθ is taken into
      *     account
-     * @param gyroθ If headingFree is false, the best estimate at robot yaw. Excursions from this are
-     *     penalized in our cost function.
+     * @param gyroθ If headingFree is false, the best estimate at robot yaw. Excursions from this
+     *     are penalized in our cost function.
      * @param gyroErrorScaleFac A relative weight for gyro heading excursions against tag corner
      *     reprojection error.
      * @return The transformation that maps the field origin to the camera pose. Ensure the {@link
@@ -218,7 +219,8 @@ public class VisionEstimation {
 
         // Rotate from wpilib to opencv camera CS
         var robot2cameraBase =
-                MatBuilder.fill(Nat.N4(), Nat.N4(), 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1);
+                MatBuilder.fill(
+                        Nat.N4(), Nat.N4(), 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1);
         var robotToCamera = robot2camera.toMatrix().times(robot2cameraBase);
 
         // Where we saw corners
@@ -267,7 +269,8 @@ public class VisionEstimation {
             return Optional.empty();
         } else {
             var pnpresult = new PnpResult();
-            pnpresult.best = new Transform3d(new Transform2d(ret[0], ret[1], new Rotation2d(ret[2])));
+            pnpresult.best =
+                    new Transform3d(new Transform2d(ret[0], ret[1], new Rotation2d(ret[2])));
             return Optional.of(pnpresult);
         }
     }

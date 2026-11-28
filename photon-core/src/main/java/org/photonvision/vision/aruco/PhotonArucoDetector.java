@@ -30,7 +30,8 @@ import org.photonvision.vision.opencv.Releasable;
 
 /** This class wraps an {@link ArucoDetector} for convenience. */
 public class PhotonArucoDetector implements Releasable {
-    private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
+    private static final Logger logger =
+            new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
 
     private final ArucoDetector detector =
             new ArucoDetector(Objdetect.getPredefinedDictionary(Objdetect.DICT_APRILTAG_16h5));

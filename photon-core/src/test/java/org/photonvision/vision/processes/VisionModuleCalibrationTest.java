@@ -132,7 +132,8 @@ public class VisionModuleCalibrationTest {
                         .allMatch(
                                 it ->
                                         it.imagePoints.width() == it.objectPoints.width()
-                                                && it.imagePoints.height() == it.objectPoints.height()));
+                                                && it.imagePoints.height()
+                                                        == it.objectPoints.height()));
     }
 
     @AfterEach
@@ -161,8 +162,8 @@ public class VisionModuleCalibrationTest {
     }
 
     /**
-     * The pipeline manager applies changes asynchronously so we poll until the mode switch lands (or
-     * fail after a timeout).
+     * The pipeline manager applies changes asynchronously so we poll until the mode switch lands
+     * (or fail after a timeout).
      */
     private void awaitCalibrationMode(boolean inCalibration) throws InterruptedException {
         long deadline = System.currentTimeMillis() + 5000;
@@ -193,10 +194,11 @@ public class VisionModuleCalibrationTest {
     /** Preliminary calibration image dirs currently sitting in the system temp directory. */
     private List<Path> preliminaryImageDirs() throws IOException {
         try (var stream = Files.list(Path.of(System.getProperty("java.io.tmpdir")))) {
-            return stream
-                    .filter(
+            return stream.filter(
                             p ->
-                                    p.getFileName().toString().startsWith(PRELIMINARY_DIR_PREFIX + config.uniqueName))
+                                    p.getFileName()
+                                            .toString()
+                                            .startsWith(PRELIMINARY_DIR_PREFIX + config.uniqueName))
                     .toList();
         }
     }
@@ -332,7 +334,8 @@ public class VisionModuleCalibrationTest {
         var persistentDir = persistentImageDir();
         try (var stream = Files.list(persistentDir)) {
             assertTrue(
-                    stream.findAny().isEmpty(), "Cancel must not leave snapshot images in " + persistentDir);
+                    stream.findAny().isEmpty(),
+                    "Cancel must not leave snapshot images in " + persistentDir);
         }
     }
 
@@ -356,7 +359,8 @@ public class VisionModuleCalibrationTest {
         var persistentDir = persistentImageDir();
         try (var stream = Files.list(persistentDir)) {
             assertTrue(
-                    stream.findAny().isEmpty(), "Cancel must not leave snapshot images in " + persistentDir);
+                    stream.findAny().isEmpty(),
+                    "Cancel must not leave snapshot images in " + persistentDir);
         }
     }
 }

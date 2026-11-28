@@ -28,7 +28,9 @@ import org.photonvision.vision.target.*;
 /** Represents a pipe that collects available 2d targets. */
 public class Collect2dTargetsPipe
         extends CVPipe<
-                List<PotentialTarget>, List<TrackedTarget>, Collect2dTargetsPipe.Collect2dTargetsParams> {
+                List<PotentialTarget>,
+                List<TrackedTarget>,
+                Collect2dTargetsPipe.Collect2dTargetsParams> {
     /**
      * Processes this pipeline.
      *

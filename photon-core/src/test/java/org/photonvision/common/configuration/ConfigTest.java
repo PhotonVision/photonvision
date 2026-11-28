@@ -137,7 +137,8 @@ public class ConfigTest {
         var json =
                 "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"cameraLEDs\":[]}";
 
-        CameraConfiguration result = Jsonb.instance().type(CameraConfiguration.class).fromJson(json);
+        CameraConfiguration result =
+                Jsonb.instance().type(CameraConfiguration.class).fromJson(json);
     }
 
     @Test
@@ -145,7 +146,8 @@ public class ConfigTest {
         var json =
                 "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"usbVID\":3, \"usbPID\":4, \"cameraLEDs\":[]}";
 
-        CameraConfiguration result = Jsonb.instance().type(CameraConfiguration.class).fromJson(json);
+        CameraConfiguration result =
+                Jsonb.instance().type(CameraConfiguration.class).fromJson(json);
         String ser = Jsonb.instance().toJson(result);
         System.out.println(ser);
     }

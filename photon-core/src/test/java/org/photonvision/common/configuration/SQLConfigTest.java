@@ -137,7 +137,8 @@ public class SQLConfigTest {
         try (Connection conn =
                 DriverManager.getConnection("jdbc:sqlite:" + originalDatabase.toAbsolutePath())) {
             Statement stmt = conn.createStatement();
-            stmt.execute("PRAGMA user_version = 0;"); // Force a failure by setting an unsupported version
+            stmt.execute("PRAGMA user_version = 0;"); // Force a failure by setting an unsupported
+            // version
         }
         ;
         var databaseBeforeRecovery = tmpDir.resolve("photon.sqlite.before-recovery");
@@ -169,7 +170,8 @@ public class SQLConfigTest {
         var testCamCfg =
                 new CameraConfiguration(
                         PVCameraInfo.fromUsbCameraInfo(
-                                new UsbCameraInfo(0, "/dev/videoN", "some_name", new String[0], -1, 01)));
+                                new UsbCameraInfo(
+                                        0, "/dev/videoN", "some_name", new String[0], -1, 01)));
 
         testCamCfg.pipelineSettings =
                 List.of(
@@ -187,6 +189,11 @@ public class SQLConfigTest {
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
 
+    static boolean cameraConfigHasODPipeline(CameraConfiguration config) {
+        return config.pipelineSettings.stream()
+                .anyMatch(s -> s instanceof ObjectDetectionPipelineSettings);
+    }
+
     void common2025p3p1Assertions(PhotonConfiguration config) {
         // Make sure we got 8 cameras
         assertEquals(8, config.getCameraConfigurations().size());
@@ -194,10 +201,7 @@ public class SQLConfigTest {
         // Make sure exactly 2 have object detection pipelines
         long count =
                 config.getCameraConfigurations().values().stream()
-                        .filter(
-                                c ->
-                                        c.pipelineSettings.stream()
-                                                .anyMatch(s -> s instanceof ObjectDetectionPipelineSettings))
+                        .filter(SQLConfigTest::cameraConfigHasODPipeline)
                         .count();
         assertEquals(2, count);
     }
@@ -234,7 +238,8 @@ public class SQLConfigTest {
         common2025p3p1Assertions(reloadedProvider.getConfig());
 
         // And make sure NNPM has all 5 models
-        assertEquals(5, reloadedProvider.getConfig().getNeuralNetworkProperties().getModels().length);
+        assertEquals(
+                5, reloadedProvider.getConfig().getNeuralNetworkProperties().getModels().length);
 
         ConfigProvider.INSTANCE = null;
     }
@@ -272,7 +277,8 @@ public class SQLConfigTest {
                         assertEquals(20, finalPs.outputMaximumTargets);
                     }
                 } else {
-                    System.out.println("Skipping pipeline settings type: " + ps.getClass().getSimpleName());
+                    System.out.println(
+                            "Skipping pipeline settings type: " + ps.getClass().getSimpleName());
                 }
             }
         }
@@ -292,7 +298,9 @@ public class SQLConfigTest {
                         conn.prepareStatement(
                                 String.format(
                                         "REPLACE INTO %s (%s, %s) VALUES (?,?)",
-                                        Tables.GLOBAL, Columns.GLB_CONFIG_NAME, Columns.GLB_CONTENTS))) {
+                                        Tables.GLOBAL,
+                                        Columns.GLB_CONFIG_NAME,
+                                        Columns.GLB_CONTENTS))) {
             ps.setString(1, key);
             ps.setString(2, contents);
             ps.executeUpdate();
@@ -331,8 +339,9 @@ public class SQLConfigTest {
         var field = Field.loadField(Fields.FRC_2026_REBUILT_WELDED);
         assertAll(
                 "Field layout checks",
-                // () -> assertEquals(field.tags, updatedField.tags),  // Works now, but will break when the
-                // tags in WPILib 2027 are updated for the new coordinate system
+                // () -> assertEquals(field.tags, updatedField.tags),
+                // ^ Works now, but will break when the tags in WPILib 2027 are updated for the new
+                // coordinate system
                 () -> assertEquals(field.tags.size(), updatedField.tags.size()),
                 () -> assertEquals(field.length, updatedField.length),
                 () -> assertEquals(field.width, updatedField.width));
@@ -349,12 +358,14 @@ public class SQLConfigTest {
     @Test
     public void testV2026p3p4WindowsPaths() throws JsonDataException, IOException {
         assumeTrue(
-                Platform.isWindows(), "This test is only relevant on Windows, skipping on other platforms");
+                Platform.isWindows(),
+                "This test is only relevant on Windows, skipping on other platforms");
 
         var configName = "2026.3.4-windows";
         var folder = tmpDir.resolve(configName);
         FileUtils.copyDirectory(
-                TestUtils.getConfigDirectoriesPath(false).resolve(configName).toFile(), folder.toFile());
+                TestUtils.getConfigDirectoriesPath(false).resolve(configName).toFile(),
+                folder.toFile());
 
         var cfgManager = new ConfigProvider(folder);
 

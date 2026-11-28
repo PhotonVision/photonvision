@@ -25,10 +25,8 @@ import org.photonvision.vision.pipe.impl.HSVPipe;
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
 
-    // Escape hatch to allow us to synchronously (from the main vision thread) run
-    // extra
-    // setup/callbacks once cscore connects to our underlying device for the first
-    // time
+    // Escape hatch to allow us to synchronously (from the main vision thread) run extra
+    // setup/callbacks once cscore connects to our underlying device for the first time
     public boolean cameraPropertiesCached = false;
 
     protected void onCameraConnected() {

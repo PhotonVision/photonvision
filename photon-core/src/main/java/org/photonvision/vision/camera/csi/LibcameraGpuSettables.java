@@ -81,10 +81,13 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 640, 480, 30, 30, .39));
             // TODO: fix 1280x720 in the native code and re-add it
             videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 1920, 1080, 15, 20, .53));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 3280 / 2, 2464 / 2, 15, 20, 1));
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 3280 / 4, 2464 / 4, 15, 20, 1));
+            videoModes.add(
+                    new FPSRatedVideoMode(PixelFormat.UNKNOWN, 3280 / 2, 2464 / 2, 15, 20, 1));
+            videoModes.add(
+                    new FPSRatedVideoMode(PixelFormat.UNKNOWN, 3280 / 4, 2464 / 4, 15, 20, 1));
         } else if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            // Taken from https://www.ovt.com/wp-content/uploads/2022/01/OV9281-OV9282-PB-v1.3-WEB.pdf
+            // Taken from
+            // https://www.ovt.com/wp-content/uploads/2022/01/OV9281-OV9282-PB-v1.3-WEB.pdf
             videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 640, 400, 120, 240, 1));
             videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 1280, 800, 120, 120, 1));
 
@@ -105,7 +108,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 640, 480, 85, 90, 1));
             videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 960, 720, 45, 49, 0.74));
             // Half the size of the active areas on the OV5647
-            videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 2592 / 2, 1944 / 2, 20, 20, 1));
+            videoModes.add(
+                    new FPSRatedVideoMode(PixelFormat.UNKNOWN, 2592 / 2, 1944 / 2, 20, 20, 1));
             videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 1280, 720, 30, 45, 0.91));
             videoModes.add(new FPSRatedVideoMode(PixelFormat.UNKNOWN, 1920, 1080, 15, 20, 0.72));
         }
@@ -167,8 +171,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     public void setGain(int gain) {
         lastGain = gain;
 
-        // Map and clamp gain to values between 1 and 10 (libcamera min and gain that just seems higher
-        // than ever needed) from 0 to 100 (UI values).
+        // Map and clamp gain to values between 1 and 10 (libcamera min and gain that just seems
+        // higher than ever needed) from 0 to 100 (UI values).
         var success =
                 LibCameraJNI.setAnalogGain(
                         r_ptr, Math.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
@@ -207,8 +211,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     protected void setVideoModeInternal(VideoMode videoMode) {
         var mode = (FPSRatedVideoMode) videoMode;
 
-        // We need to make sure that other threads don't try to do anything funny while we're recreating
-        // the camera
+        // We need to make sure that other threads don't try to do anything funny while we're
+        // recreating the camera
         synchronized (CAMERA_LOCK) {
             if (r_ptr != 0) {
                 logger.debug("Stopping libcamera");
@@ -217,7 +221,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
                 }
                 logger.debug("Destroying libcamera");
                 if (!LibCameraJNI.destroyCamera(r_ptr)) {
-                    logger.error("Couldn't destroy a zero copy Pi Camera while switching video modes");
+                    logger.error(
+                            "Couldn't destroy a zero copy Pi Camera while switching video modes");
                 }
             }
 
@@ -231,7 +236,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             if (r_ptr == 0) {
                 logger.error("Couldn't create a zero copy Pi Camera while switching video modes");
                 if (!LibCameraJNI.destroyCamera(r_ptr)) {
-                    logger.error("Couldn't destroy a zero copy Pi Camera while switching video modes");
+                    logger.error(
+                            "Couldn't destroy a zero copy Pi Camera while switching video modes");
                 }
             }
             logger.debug("Starting libcamera");
@@ -279,7 +285,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setWhiteBalanceTemp(double temp) {
-        throw new RuntimeException("Libcamera doesn't support AWB temp -- use red/blue gain instead");
+        throw new RuntimeException(
+                "Libcamera doesn't support AWB temp -- use red/blue gain instead");
     }
 
     @Override

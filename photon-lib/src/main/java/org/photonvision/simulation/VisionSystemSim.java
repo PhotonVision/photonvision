@@ -55,7 +55,8 @@ public class VisionSystemSim {
     private final Map<String, PhotonCameraSim> camSimMap = new HashMap<>();
     private static final double kBufferLengthSeconds = 1.5;
     // save robot-to-camera for each camera over time (Pose3d is easily interpolatable)
-    private final Map<PhotonCameraSim, TimeInterpolatableBuffer<Pose3d>> camTrfMap = new HashMap<>();
+    private final Map<PhotonCameraSim, TimeInterpolatableBuffer<Pose3d>> camTrfMap =
+            new HashMap<>();
 
     // interpolate drivetrain with twists
     private final TimeInterpolatableBuffer<Pose3d> robotPoseBuffer =
@@ -71,10 +72,10 @@ public class VisionSystemSim {
 
     /**
      * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
-     * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
-     * this class will be detected by the {@link PhotonCameraSim}s added to this class. This class
-     * should be updated periodically with the robot's current pose in order to publish the simulated
-     * camera target info.
+     * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added
+     * to this class will be detected by the {@link PhotonCameraSim}s added to this class. This
+     * class should be updated periodically with the robot's current pose in order to publish the
+     * simulated camera target info.
      *
      * @param visionSystemName The specific identifier for this vision system in NetworkTables.
      */
@@ -94,9 +95,9 @@ public class VisionSystemSim {
     }
 
     /**
-     * Adds a simulated camera to this vision system with a specified robot-to-camera transformation.
-     * The vision targets registered with this vision system simulation will be observed by the
-     * simulated {@link PhotonCamera}.
+     * Adds a simulated camera to this vision system with a specified robot-to-camera
+     * transformation. The vision targets registered with this vision system simulation will be
+     * observed by the simulated {@link PhotonCamera}.
      *
      * @param cameraSim The camera simulation
      * @param robotToCamera The transform from the robot pose to the camera pose
@@ -131,8 +132,8 @@ public class VisionSystemSim {
     }
 
     /**
-     * Get a simulated camera's position relative to the robot. If the requested camera is invalid, an
-     * empty optional is returned.
+     * Get a simulated camera's position relative to the robot. If the requested camera is invalid,
+     * an empty optional is returned.
      *
      * @param cameraSim The specific camera to get the robot-to-camera transform of
      * @return The transform of this camera, or an empty optional if it is invalid
@@ -142,8 +143,8 @@ public class VisionSystemSim {
     }
 
     /**
-     * Get a simulated camera's position relative to the robot. If the requested camera is invalid, an
-     * empty optional is returned.
+     * Get a simulated camera's position relative to the robot. If the requested camera is invalid,
+     * an empty optional is returned.
      *
      * @param cameraSim The specific camera to get the robot-to-camera transform of
      * @param timeSeconds Timestamp in seconds of when the transform should be observed
@@ -259,8 +260,8 @@ public class VisionSystemSim {
      * the subset of these targets which are visible from the given camera position.
      *
      * <p>The AprilTags from this layout will be added as vision targets under the type "apriltag".
-     * The poses added preserve the tag layout's current alliance origin. If the tag layout's alliance
-     * origin is changed, these added tags will have to be cleared and re-added.
+     * The poses added preserve the tag layout's current alliance origin. If the tag layout's
+     * alliance origin is changed, these added tags will have to be cleared and re-added.
      *
      * @param tagLayout The field tag layout to get Apriltag poses and IDs from
      */
@@ -321,8 +322,7 @@ public class VisionSystemSim {
         var removeList = List.of(targets);
         var removedSet = new HashSet<VisionTargetSim>();
         for (var entry : targetSets.entrySet()) {
-            entry
-                    .getValue()
+            entry.getValue()
                     .removeIf(
                             t -> {
                                 if (removeList.contains(t)) {
@@ -377,8 +377,8 @@ public class VisionSystemSim {
     }
 
     /**
-     * Periodic update. Ensure this is called repeatedly-- camera performance is used to automatically
-     * determine if a new frame should be submitted.
+     * Periodic update. Ensure this is called repeatedly-- camera performance is used to
+     * automatically determine if a new frame should be submitted.
      *
      * @param robotPoseMeters The simulated robot pose in meters
      */
@@ -387,8 +387,8 @@ public class VisionSystemSim {
     }
 
     /**
-     * Periodic update. Ensure this is called repeatedly-- camera performance is used to automatically
-     * determine if a new frame should be submitted.
+     * Periodic update. Ensure this is called repeatedly-- camera performance is used to
+     * automatically determine if a new frame should be submitted.
      *
      * @param robotPoseMeters The simulated robot pose in meters
      */
@@ -397,9 +397,11 @@ public class VisionSystemSim {
         // update vision targets on field
         targetTypes.forEach(
                 entry ->
-                        dbgField
-                                .getObject(entry.getKey())
-                                .setPoses(entry.getValue().stream().map(t -> t.getPose().toPose2d()).toList()));
+                        dbgField.getObject(entry.getKey())
+                                .setPoses(
+                                        entry.getValue().stream()
+                                                .map(t -> t.getPose().toPose2d())
+                                                .toList()));
 
         if (robotPoseMeters == null) {
             // publish the field state to telemetry
@@ -432,7 +434,8 @@ public class VisionSystemSim {
 
             // use camera pose from the image capture timestamp
             Pose3d lateRobotPose = getRobotPose(timestampCapture);
-            Pose3d lateCameraPose = lateRobotPose.plus(getRobotToCamera(camSim, timestampCapture).get());
+            Pose3d lateCameraPose =
+                    lateRobotPose.plus(getRobotToCamera(camSim, timestampCapture).get());
             cameraPoses2d.add(lateCameraPose.toPose2d());
 
             // process a PhotonPipelineResult with visible targets

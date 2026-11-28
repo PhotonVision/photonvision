@@ -100,7 +100,8 @@ public class ColoredShapePipelineTest {
         settings.circleDetectThreshold = 5;
         try (var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
+                        TestUtils.getPowercellImagePath(
+                                TestUtils.PowercellTestImages.kPowercell_test_6, false),
                         TestUtils.WPI2019Image.FOV); ) {
             testCircleShapeDetection(pipeline, settings, frameProvider);
         }
@@ -126,7 +127,8 @@ public class ColoredShapePipelineTest {
         try (ColoredShapePipeline pipeline = new ColoredShapePipeline();
                 var frameProvider =
                         new FileFrameProvider(
-                                TestUtils.getPolygonImagePath(TestUtils.PolygonTestImages.kPolygons, false),
+                                TestUtils.getPolygonImagePath(
+                                        TestUtils.PolygonTestImages.kPolygons, false),
                                 TestUtils.WPI2019Image.FOV); ) {
             testTriangleDetection(pipeline, settings, frameProvider);
             testQuadrilateralDetection(pipeline, settings, frameProvider);

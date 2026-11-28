@@ -72,8 +72,8 @@ public class PhotonPoseEstimator {
         AVERAGE_BEST_TARGETS,
 
         /**
-         * Use all visible tags to compute a single pose estimate on coprocessor. This option needs to
-         * be enabled on the PhotonVision web UI as well.
+         * Use all visible tags to compute a single pose estimate on coprocessor. This option needs
+         * to be enabled on the PhotonVision web UI as well.
          */
         MULTI_TAG_PNP_ON_COPROCESSOR,
 
@@ -84,9 +84,9 @@ public class PhotonPoseEstimator {
         MULTI_TAG_PNP_ON_RIO,
 
         /**
-         * Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
-         * to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
-         * data is up-to-date.
+         * Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in
+         * order to access the robot's yaw heading, and MUST have addHeadingData called every frame
+         * so heading data is up-to-date.
          *
          * <p>Yields a Pose2d in estimatedRobotPose (0 for z, roll, pitch)
          *
@@ -96,26 +96,26 @@ public class PhotonPoseEstimator {
 
         /**
          * Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
-         * flat on the floor. This computation takes place on the RoboRIO, and typically takes not more
-         * than 2ms. See {@link PhotonPoseEstimator.ConstrainedSolvepnpParams} and {@link
+         * flat on the floor. This computation takes place on the RoboRIO, and typically takes not
+         * more than 2ms. See {@link PhotonPoseEstimator.ConstrainedSolvepnpParams} and {@link
          * org.photonvision.jni.ConstrainedSolvepnpJni} for details and tuning handles this strategy
-         * exposes. This strategy needs addHeadingData called every frame so heading data is up-to-date.
-         * If Multi-Tag PNP is enabled on the coprocessor, it will be used to provide an initial seed to
-         * the optimization algorithm -- otherwise, the multi-tag fallback strategy will be used as the
-         * seed.
+         * exposes. This strategy needs addHeadingData called every frame so heading data is
+         * up-to-date. If Multi-Tag PNP is enabled on the coprocessor, it will be used to provide an
+         * initial seed to the optimization algorithm -- otherwise, the multi-tag fallback strategy
+         * will be used as the seed.
          */
         CONSTRAINED_SOLVEPNP
     }
 
     /**
-     * Tuning handles we have over the CONSTRAINED_SOLVEPNP {@link PhotonPoseEstimator.PoseStrategy}.
-     * Internally, the cost function is a sum-squared of pixel reprojection error + (optionally)
-     * heading error * heading scale factor.
+     * Tuning handles we have over the CONSTRAINED_SOLVEPNP {@link
+     * PhotonPoseEstimator.PoseStrategy}. Internally, the cost function is a sum-squared of pixel
+     * reprojection error + (optionally) heading error * heading scale factor.
      *
      * @param headingFree If true, heading is completely free to vary. If false, heading excursions
      *     from the provided heading measurement will be penalized
-     * @param headingScaleFactor If headingFree is false, this weights the cost of changing our robot
-     *     heading estimate against the tag corner reprojection error cost.
+     * @param headingScaleFactor If headingFree is false, this weights the cost of changing our
+     *     robot heading estimate against the tag corner reprojection error cost.
      */
     public static final record ConstrainedSolvepnpParams(
             boolean headingFree, double headingScaleFactor) {}
@@ -131,13 +131,13 @@ public class PhotonPoseEstimator {
     /**
      * Create a new PhotonPoseEstimator.
      *
-     * @param fieldTags A WPILib {@link Field} linking AprilTag IDs to Pose3d objects with respect to
-     *     the FIRST field using the <a href=
+     * @param fieldTags A WPILib {@link Field} linking AprilTag IDs to Pose3d objects with respect
+     *     to the FIRST field using the <a href=
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
      *     Coordinate System</a>. Note that setting the origin of this layout object will affect the
      *     results from this class.
-     * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
-     *     robot ➔ camera) in the <a href=
+     * @param robotToCamera Transform3d from the center of the robot to the camera mount position
+     *     (ie, robot ➔ camera) in the <a href=
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
      *     Coordinate System</a>.
      */
@@ -145,7 +145,8 @@ public class PhotonPoseEstimator {
         this.fieldTags = fieldTags;
         this.robotToCamera = robotToCamera;
 
-        UsageReporting.reportUsage("PhotonVision/PhotonPoseEstimator", Integer.toString(InstanceCount));
+        UsageReporting.reportUsage(
+                "PhotonVision/PhotonPoseEstimator", Integer.toString(InstanceCount));
         InstanceCount++;
     }
 
@@ -319,7 +320,11 @@ public class PhotonPoseEstimator {
                 tagPose2d.getTranslation().plus(camToTagTranslation.unaryMinus());
 
         Translation2d camToRobotTranslation =
-                robotToCamera.getTranslation().toTranslation2d().unaryMinus().rotateBy(headingSample);
+                robotToCamera
+                        .getTranslation()
+                        .toTranslation2d()
+                        .unaryMinus()
+                        .rotateBy(headingSample);
 
         Pose2d robotPose =
                 new Pose2d(fieldToCameraTranslation.plus(camToRobotTranslation), headingSample);
@@ -338,8 +343,8 @@ public class PhotonPoseEstimator {
      * takes place on the RoboRIO, and typically takes not more than 2ms. See {@link
      * org.photonvision.jni.ConstrainedSolvepnpJni} for tuning handles this strategy exposes.
      * Internally, the cost function is a sum-squared of pixel reprojection error + (optionally)
-     * heading error * heading scale factor. This strategy needs addHeadingData called every frame so
-     * heading data is up-to-date.
+     * heading error * heading scale factor. This strategy needs addHeadingData called every frame
+     * so heading data is up-to-date.
      *
      * @param cameraResult A pipeline result from the camera.
      * @param cameraMatrix Camera intrinsics from camera calibration data.
@@ -350,11 +355,11 @@ public class PhotonPoseEstimator {
      *     #estimateLowestAmbiguityPose(PhotonPipelineResult)} if MultiTag results aren't available.
      * @param headingFree If true, heading is completely free to vary. If false, heading excursions
      *     from the provided heading measurement will be penalized
-     * @param headingScaleFactor If headingFree is false, this weights the cost of changing our robot
-     *     heading estimate against the tag corner reprojection error cont.
+     * @param headingScaleFactor If headingFree is false, this weights the cost of changing our
+     *     robot heading estimate against the tag corner reprojection error cont.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate, or an empty optional if there's no targets or heading data, or if the
-     *     solver fails to solve the problem.
+     *     create the estimate, or an empty optional if there's no targets or heading data, or if
+     *     the solver fails to solve the problem.
      */
     public Optional<EstimatedRobotPose> estimateConstrainedSolvepnpPose(
             PhotonPipelineResult cameraResult,
@@ -375,7 +380,10 @@ public class PhotonPoseEstimator {
                 seedPose =
                         new Pose3d(
                                 seedPose.getTranslation(),
-                                new Rotation3d(headingBuffer.getSample(cameraResult.getTimestampSeconds()).get()));
+                                new Rotation3d(
+                                        headingBuffer
+                                                .getSample(cameraResult.getTimestampSeconds())
+                                                .get()));
             }
         }
         var pnpResult =
@@ -442,7 +450,9 @@ public class PhotonPoseEstimator {
      *     SolvePnP fails.
      */
     public Optional<EstimatedRobotPose> estimateRioMultiTagPose(
-            PhotonPipelineResult cameraResult, Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs) {
+            PhotonPipelineResult cameraResult,
+            Matrix<N3, N3> cameraMatrix,
+            Matrix<N8, N1> distCoeffs) {
         if (cameraResult.getTargets().size() < 2 || !shouldEstimate(cameraResult)) {
             return Optional.empty();
         }
@@ -508,7 +518,8 @@ public class PhotonPoseEstimator {
                 new EstimatedRobotPose(
                         targetPosition
                                 .get()
-                                .transformBy(lowestAmbiguityTarget.getBestCameraToTarget().inverse())
+                                .transformBy(
+                                        lowestAmbiguityTarget.getBestCameraToTarget().inverse())
                                 .transformBy(robotToCamera.inverse()),
                         cameraResult.getTimestampSeconds(),
                         List.of(lowestAmbiguityTarget),
@@ -552,7 +563,8 @@ public class PhotonPoseEstimator {
                             robotToCamera.getZ()
                                     - targetPosition
                                             .get()
-                                            .transformBy(target.getAlternateCameraToTarget().inverse())
+                                            .transformBy(
+                                                    target.getAlternateCameraToTarget().inverse())
                                             .getZ());
             double bestTransformDelta =
                     Math.abs(
@@ -594,8 +606,8 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Return the estimated position of the robot using the target with the lowest delta in the vector
-     * magnitude between it and the reference pose.
+     * Return the estimated position of the robot using the target with the lowest delta in the
+     * vector magnitude between it and the reference pose.
      *
      * @param cameraResult A pipeline result from the camera.
      * @param referencePose reference pose to check vector magnitude difference against.
@@ -644,8 +656,10 @@ public class PhotonPoseEstimator {
                             .transformBy(target.getBestCameraToTarget().inverse())
                             .transformBy(robotToCamera.inverse());
 
-            double altDifference = Math.abs(calculateDifference(referencePose, altTransformPosition));
-            double bestDifference = Math.abs(calculateDifference(referencePose, bestTransformPosition));
+            double altDifference =
+                    Math.abs(calculateDifference(referencePose, altTransformPosition));
+            double bestDifference =
+                    Math.abs(calculateDifference(referencePose, bestTransformPosition));
 
             if (altDifference < smallestPoseDelta) {
                 smallestPoseDelta = altDifference;
@@ -761,7 +775,8 @@ public class PhotonPoseEstimator {
     private void reportFiducialPoseError(int fiducialId) {
         if (!reportedErrors.contains(fiducialId)) {
             DriverStationErrors.reportError(
-                    "[PhotonPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId, false);
+                    "[PhotonPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId,
+                    false);
             reportedErrors.add(fiducialId);
         }
     }

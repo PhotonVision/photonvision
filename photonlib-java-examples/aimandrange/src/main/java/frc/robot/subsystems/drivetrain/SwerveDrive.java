@@ -76,9 +76,9 @@ public class SwerveDrive {
 
     public SwerveDrive() {
         // Define the standard deviations for the pose estimator, which determine how fast the pose
-        // estimate converges to the vision measurement. This should depend on the vision measurement
-        // noise
-        // and how many or how frequently vision measurements are applied to the pose estimator.
+        // estimate converges to the vision measurement. This should depend on the vision
+        // measurement noise and how many or how frequently vision measurements are applied to the
+        // pose estimator.
         var stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
         var visionStdDevs = VecBuilder.fill(1, 1, 1);
         poseEstimator =
@@ -137,7 +137,8 @@ public class SwerveDrive {
      */
     public void setChassisSpeeds(
             ChassisSpeeds targetChassisSpeeds, boolean openLoop, boolean steerInPlace) {
-        setModuleStates(kinematics.toSwerveModuleStates(targetChassisSpeeds), openLoop, steerInPlace);
+        setModuleStates(
+                kinematics.toSwerveModuleStates(targetChassisSpeeds), openLoop, steerInPlace);
         this.targetChassisSpeeds = targetChassisSpeeds;
     }
 
@@ -183,8 +184,8 @@ public class SwerveDrive {
     public void resetPose(Pose2d pose, boolean resetSimPose) {
         if (resetSimPose) {
             swerveDriveSim.reset(pose, false);
-            // we shouldnt realistically be resetting pose after startup, but we will handle it anyway for
-            // testing
+            // we shouldnt realistically be resetting pose after startup, but we will handle it
+            // anyway for testing
             for (int i = 0; i < swerveMods.length; i++) {
                 swerveMods[i].simulationUpdate(0, 0, 0, 0, 0, 0);
             }
@@ -229,8 +230,8 @@ public class SwerveDrive {
     }
 
     /**
-     * Get the SwerveModulePosition of each swerve module (position, angle). The returned array order
-     * matches the kinematics module order.
+     * Get the SwerveModulePosition of each swerve module (position, angle). The returned array
+     * order matches the kinematics module order.
      */
     public SwerveModulePosition[] getModulePositions() {
         return new SwerveModulePosition[] {
@@ -253,7 +254,8 @@ public class SwerveDrive {
                     getPose()
                             .transformBy(
                                     new Transform2d(
-                                            module.getModuleConstants().centerOffset, module.getAbsoluteHeading()));
+                                            module.getModuleConstants().centerOffset,
+                                            module.getAbsoluteHeading()));
         }
         return modulePoses;
     }

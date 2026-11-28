@@ -17,30 +17,30 @@
 
 package org.photonvision.common.networking;
 
-// using a separate class because Spotless fails on text blocks
-// spotless:off
 public class NetworkingCommands {
-    public static final String addConnectionCommand = """
-        nmcli connection add
-        con-name "${connection}"
-        ifname "${interface}"
-        type ethernet
-        """.replaceAll("[\\n]", " ");
+    public static final String addConnectionCommand =
+            """
+            nmcli connection add \
+            con-name "${connection}" \
+            ifname "${interface}" \
+            type ethernet\
+            """;
 
-    public static final String modStaticCommand = """
-        nmcli connection modify ${connection}
-        autoconnect yes
-        ipv4.method manual
-        ipv6.method disabled
-        ipv4.addresses ${ipaddr}/8
-        ipv4.gateway ${gateway}
-        """.replaceAll("[\\n]", " ");
+    public static final String modStaticCommand =
+            """
+            nmcli connection modify ${connection} \
+            autoconnect yes \
+            ipv4.method manual \
+            ipv6.method disabled \
+            ipv4.addresses ${ipaddr}/8 \
+            ipv4.gateway ${gateway}\
+            """;
 
-    public static final String modDHCPCommand = """
-        nmcli connection modify "${connection}"
-        autoconnect yes
-        ipv4.method auto
-        ipv6.method disabled
-        """.replaceAll("[\\n]", " ");
+    public static final String modDHCPCommand =
+            """
+            nmcli connection modify "${connection}" \
+            autoconnect yes \
+            ipv4.method auto \
+            ipv6.method disabled\
+            """;
 }
-//spotless:on

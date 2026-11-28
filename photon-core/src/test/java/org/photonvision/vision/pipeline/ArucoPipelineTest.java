@@ -48,7 +48,8 @@ public class ArucoPipelineTest {
         try (var pipeline = new ArucoPipeline();
                 var frameProvider =
                         new FileFrameProvider(
-                                TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                                TestUtils.getApriltagImagePath(
+                                        TestUtils.ApriltagTestImages.kTag1_640_480, false),
                                 TestUtils.WPI2020Image.FOV,
                                 TestUtils.get2020LifeCamCoeffs(false)); ) {
             pipeline.getSettings().inputShouldShow = true;
@@ -69,7 +70,9 @@ public class ArucoPipelineTest {
                 var outputPipe = new OutputStreamPipeline();
                 var ret =
                         outputPipe.process(
-                                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                                pipelineResult.inputAndOutputFrame,
+                                pipeline.getSettings(),
+                                pipelineResult.targets);
 
                 TestUtils.showImage(
                         ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);

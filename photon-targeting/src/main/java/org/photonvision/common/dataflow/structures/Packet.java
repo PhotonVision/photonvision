@@ -122,8 +122,8 @@ public class Packet {
     }
 
     /**
-     * Increases the capacity to ensure that it can hold at least the number of elements specified by
-     * the minimum capacity argument.
+     * Increases the capacity to ensure that it can hold at least the number of elements specified
+     * by the minimum capacity argument.
      *
      * <p>This logic is copied from ArrayList, which is licensed GPL V2
      *
@@ -454,7 +454,8 @@ public class Packet {
         return decodeListImpl(serde::unpack);
     }
 
-    public <T extends PhotonStructSerializable<T>> Optional<T> decodeOptional(PacketSerde<T> serde) {
+    public <T extends PhotonStructSerializable<T>> Optional<T> decodeOptional(
+            PacketSerde<T> serde) {
         return decodeOptionalImpl(serde::unpack);
     }
 }

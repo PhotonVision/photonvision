@@ -103,12 +103,17 @@ public class NetworkUtils {
 
                 do {
                     shell.executeBashCommand(
-                            "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, true);
+                            "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show",
+                            true,
+                            true);
                     // nmcli returns an error of 8 if NetworkManager isn't running
                     networkManagerRunning = shell.getExitCode() != 8;
                     tryagain = System.currentTimeMillis() - start < timeout;
                     if (!networkManagerRunning && tryagain) {
-                        logger.debug("NetworkManager not running, retrying in " + (retry) + " milliseconds");
+                        logger.debug(
+                                "NetworkManager not running, retrying in "
+                                        + (retry)
+                                        + " milliseconds");
                         Thread.sleep(retry);
                     }
                 } while (!networkManagerRunning && tryagain);
@@ -123,18 +128,22 @@ public class NetworkUtils {
                 }
 
             } catch (IOException e) {
-                logger.error("IO Exception occurred when calling nmcli to get network interfaces!", e);
+                logger.error(
+                        "IO Exception occurred when calling nmcli to get network interfaces!", e);
             } catch (InterruptedException e) {
                 logger.error("Interrupted while waiting for NetworkManager", e);
             }
             if (out != null) {
                 Pattern pattern =
-                        Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
+                        Pattern.compile(
+                                "GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
                 Matcher matcher = pattern.matcher(out);
                 while (matcher.find()) {
                     if (!matcher.group(2).equals("lo")) {
                         // only include non-loopback devices
-                        ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+                        ret.add(
+                                new NMDeviceInfo(
+                                        matcher.group(1), matcher.group(2), matcher.group(3)));
                     }
                 }
             }
@@ -158,8 +167,8 @@ public class NetworkUtils {
      * @return The list.
      */
     public static List<NMDeviceInfo> getAllActiveInterfaces() {
-        // Seems like if an interface exists but isn't actually connected, the connection name will be
-        // an empty string. Check here and only return connections with non-empty names
+        // Seems like if an interface exists but isn't actually connected, the connection name will
+        // be an empty string. Check here and only return connections with non-empty names
         return getAllInterfaces().stream().filter(it -> !it.connName.trim().isEmpty()).toList();
     }
 
@@ -253,28 +262,29 @@ public class NetworkUtils {
      * Gets a MAC address of a network interface. On devices where networking is managed by
      * PhotonVision, this will return the MAC address of the configured interface. Otherwise, this
      * will attempt to search for the network interface in current use and use that interface's MAC
-     * address, and if that fails, it will return a MAC address from the first network interface with
-     * a MAC address, as sorted by {@link NetworkInterface#networkInterfaces()}.
+     * address, and if that fails, it will return a MAC address from the first network interface
+     * with a MAC address, as sorted by {@link NetworkInterface#networkInterfaces()}.
      *
      * @return The MAC address.
      */
     public static String getMacAddress() {
         var config = ConfigProvider.getInstance().getConfig().getNetworkConfig();
         try {
-            // Not managed? See if we're connected to a network. General assumption is one interface in
-            // use at a time
+            // Not managed? See if we're connected to a network. General assumption is one interface
+            // in use at a time
             if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
                 // Use NT client IP address to find the interface in use
                 if (!config.runNTServer) {
                     var conn = NetworkTableInstance.getDefault().getConnections();
                     if (conn.length > 0 && !conn[0].remoteIp.equals("127.0.0.1")) {
                         var addr = InetAddress.getByName(conn[0].remoteIp);
-                        return formatMacAddress(NetworkInterface.getByInetAddress(addr).getHardwareAddress());
+                        return formatMacAddress(
+                                NetworkInterface.getByInetAddress(addr).getHardwareAddress());
                     }
                 }
-                // Connected to a localhost server or we are the server? Try resolving ourselves. Only
-                // returns a localhost address when there's no other interface available on Windows, but
-                // like to return a localhost address on Linux
+                // Connected to a localhost server or we are the server? Try resolving ourselves.
+                // Only returns a localhost address when there's no other interface available on
+                // Windows, but like to return a localhost address on Linux
                 var localIface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
                 if (localIface != null) {
                     byte[] mac = localIface.getHardwareAddress();

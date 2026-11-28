@@ -213,8 +213,8 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Returns the singleton instance of the NeuralNetworkModelManager. Call getInstance() to use the
-     * default (no reset), or getInstance(true) to reset.
+     * Returns the singleton instance of the NeuralNetworkModelManager. Call getInstance() to use
+     * the default (no reset), or getInstance(true) to reset.
      *
      * @return The singleton instance
      */
@@ -236,7 +236,8 @@ public class NeuralNetworkModelManager {
     }
 
     /** Logger for the NeuralNetworkModelManager */
-    private static final Logger logger = new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
+    private static final Logger logger =
+            new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
 
     public enum Family {
         RKNN(".rknn"),
@@ -293,7 +294,9 @@ public class NeuralNetworkModelManager {
         for (Family backend : supportedBackends) {
             if (models.containsKey(backend)) {
                 Optional<Model> model =
-                        models.get(backend).stream().filter(m -> m.getPath().equals(modelPath)).findFirst();
+                        models.get(backend).stream()
+                                .filter(m -> m.getPath().equals(modelPath))
+                                .findFirst();
                 if (model.isPresent()) {
                     return model;
                 }
@@ -319,7 +322,10 @@ public class NeuralNetworkModelManager {
         }
 
         ModelProperties properties =
-                ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties().getModel(path);
+                ConfigProvider.getInstance()
+                        .getConfig()
+                        .getNeuralNetworkProperties()
+                        .getModel(path);
 
         if (properties == null) {
             logger.warn(
@@ -329,8 +335,8 @@ public class NeuralNetworkModelManager {
             try {
                 properties = ModelProperties.createFromFilename(path.getFileName().toString());
 
-                // At this point this property is not serialized or known to our configuration. add to
-                // NeuralNetworkModelsSettings
+                // At this point this property is not serialized or known to our configuration. add
+                // to NeuralNetworkModelsSettings
                 ConfigProvider.getInstance()
                         .getConfig()
                         .getNeuralNetworkProperties()
@@ -361,7 +367,8 @@ public class NeuralNetworkModelManager {
                     models.get(properties.family()).add(new RknnModel(properties));
                 }
                 case RUBIK -> {
-                    models.get(properties.family()).add(new TFLiteModel(properties, TFLiteSource.RUBIK));
+                    models.get(properties.family())
+                            .add(new TFLiteModel(properties, TFLiteSource.RUBIK));
                 }
             }
             logger.info(
@@ -393,19 +400,20 @@ public class NeuralNetworkModelManager {
         models = new HashMap<>();
 
         try (Stream<Path> files = Files.walk(modelsDirectory.toPath())) {
-            files
-                    .filter(Files::isRegularFile)
+            files.filter(Files::isRegularFile)
                     .filter(
                             path ->
                                     supportedBackends.stream()
-                                            .anyMatch(family -> path.toString().endsWith(family.extension())))
+                                            .anyMatch(
+                                                    family ->
+                                                            path.toString()
+                                                                    .endsWith(family.extension())))
                     .forEach(this::loadModel);
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
 
-        // After loading all of the models, sort them by name to ensure a consistent
-        // ordering
+        // After loading all of the models, sort them by name to ensure a consistent ordering
         models.forEach(
                 (backend, backendModels) ->
                         backendModels.sort((a, b) -> a.getPath().compareTo(b.getPath())));
@@ -422,7 +430,8 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Extracts models from the JAR and copies them to disk. Also copies properties into the database.
+     * Extracts models from the JAR and copies them to disk. Also copies properties into the
+     * database.
      */
     public void extractModels() {
         File modelsDirectory = ConfigProvider.getInstance().getModelsDirectory();
@@ -450,7 +459,12 @@ public class NeuralNetworkModelManager {
 
         try {
             String jarPath =
-                    getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+                    getClass()
+                            .getProtectionDomain()
+                            .getCodeSource()
+                            .getLocation()
+                            .toURI()
+                            .getPath();
             try (JarFile jarFile = new JarFile(jarPath)) {
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while (entries.hasMoreElements()) {
@@ -459,13 +473,18 @@ public class NeuralNetworkModelManager {
                         continue;
                     }
                     Path outputPath =
-                            modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
+                            modelsDirectory
+                                    .toPath()
+                                    .resolve(entry.getName().substring(resource.length() + 1));
 
                     // Check if the file already exists or if it is a supported model file
                     if ((Files.exists(outputPath))
                             || !(entry.getName().endsWith("txt")
                                     || supportedModelFileNames.contains(
-                                            entry.getName().substring(entry.getName().lastIndexOf('/') + 1)))) {
+                                            entry.getName()
+                                                    .substring(
+                                                            entry.getName().lastIndexOf('/')
+                                                                    + 1)))) {
                         logger.info("Skipping extraction of DNN resource: " + entry.getName());
                         continue;
                     }
@@ -488,7 +507,9 @@ public class NeuralNetworkModelManager {
                 .getConfig()
                 .setNeuralNetworkProperties(
                         supportedProperties.sum(
-                                ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties()));
+                                ConfigProvider.getInstance()
+                                        .getConfig()
+                                        .getNeuralNetworkProperties()));
     }
 
     public boolean clearModels() {
@@ -496,8 +517,7 @@ public class NeuralNetworkModelManager {
 
         if (modelsDirectory.exists()) {
             try (Stream<Path> files = Files.walk(modelsDirectory.toPath())) {
-                files
-                        .sorted((a, b) -> b.compareTo(a))
+                files.sorted((a, b) -> b.compareTo(a))
                         .forEach(
                                 path -> {
                                     try {

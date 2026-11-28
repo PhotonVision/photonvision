@@ -83,8 +83,7 @@ public class NTTopicSet {
 
     public void updateEntries() {
         var rawBytesEntry =
-                subTable
-                        .getRawTopic("rawBytes")
+                subTable.getRawTopic("rawBytes")
                         .publish(
                                 PhotonPipelineResult.photonStruct.getTypeString(),
                                 PubSubOption.periodic(0.01),
@@ -92,10 +91,10 @@ public class NTTopicSet {
                                 PubSubOption.KEEP_DUPLICATES);
 
         resultPublisher =
-                new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);
+                new PacketPublisher<PhotonPipelineResult>(
+                        rawBytesEntry, PhotonPipelineResult.photonStruct);
         protoResultPublisher =
-                subTable
-                        .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
+                subTable.getProtobufTopic("result_proto", PhotonPipelineResult.proto)
                         .publish(PubSubOption.periodic(0.01), PubSubOption.SEND_ALL);
 
         pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();

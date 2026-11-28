@@ -85,7 +85,9 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
-                        settings.contourSortMode, settings.outputMaximumTargets, frameStaticProperties));
+                        settings.contourSortMode,
+                        settings.outputMaximumTargets,
+                        frameStaticProperties));
 
         collect2dTargetsPipe.setParams(
                 new Collect2dTargetsPipe.Collect2dTargetsParams(

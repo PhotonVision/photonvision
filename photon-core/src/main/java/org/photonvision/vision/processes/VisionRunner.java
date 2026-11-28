@@ -94,7 +94,8 @@ public class VisionRunner implements AutoCloseable {
         changeSubscriber.processSettingChanges();
     }
 
-    static void configureFrameProviderForPipeline(FrameProvider frameSupplier, CVPipeline pipeline) {
+    static void configureFrameProviderForPipeline(
+            FrameProvider frameSupplier, CVPipeline pipeline) {
         var wantedProcessType = pipeline.getThresholdType();
 
         frameSupplier.requestFrameThresholdType(wantedProcessType);
@@ -102,7 +103,10 @@ public class VisionRunner implements AutoCloseable {
         if (settings instanceof AdvancedPipelineSettings advanced) {
             var hsvParams =
                     new HSVPipe.HSVParams(
-                            advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
+                            advanced.hsvHue,
+                            advanced.hsvSaturation,
+                            advanced.hsvValue,
+                            advanced.hueInverted);
             frameSupplier.requestHsvSettings(hsvParams);
         }
 
@@ -175,7 +179,8 @@ public class VisionRunner implements AutoCloseable {
     }
 
     /**
-     * Waits until the next time this VisionRunner should run its pipeline, based on current FPS limit
+     * Waits until the next time this VisionRunner should run its pipeline, based on current FPS
+     * limit
      */
     private void waitUntilNextTick(long start) {
         int fpsLimit = fpsLimitSupplier.get();
@@ -212,7 +217,8 @@ public class VisionRunner implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
 
         while (!Thread.interrupted()) {
             long start = System.currentTimeMillis();
@@ -230,9 +236,8 @@ public class VisionRunner implements AutoCloseable {
 
             var pipeline = pipelineSupplier.get();
 
-            // Tell our camera implementation here what kind of pre-processing we need it to
-            // be doing
-            // (pipeline-dependent). I kinda hate how much leak this has...
+            // Tell our camera implementation here what kind of pre-processing we need it to be
+            // doing (pipeline-dependent). I kinda hate how much leak this has...
             // TODO would a callback object be a better fit?
             configureFrameProviderForPipeline(frameSupplier, pipeline);
 
@@ -248,9 +253,11 @@ public class VisionRunner implements AutoCloseable {
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
             } else if (pipeline == pipelineSupplier.get()) {
                 if (!enabledSupplier.get()) {
-                    // If we are skipping processing due to the camera being disabled, we still want to send a
-                    // result with the new frame and settings, just with a null pipeline result
-                    pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+                    // If we are skipping processing due to the camera being disabled, we still want
+                    // to send a result with the new frame and settings, just with a null pipeline
+                    // result
+                    pipelineResultConsumer.accept(
+                            new CVPipelineResult(0l, 0, 0, null, new Frame()));
                     frame.release();
                     continue;
                 }
@@ -261,8 +268,8 @@ public class VisionRunner implements AutoCloseable {
                 // There's no guarantee the processing type change will occur this tick, so
                 // pipelines should check themselves
 
-                // If we have an FPS limit, check if it's 0, in which case we skip processing and just send
-                // a blank frame, otherwise we sleep until the next tick
+                // If we have an FPS limit, check if it's 0, in which case we skip processing and
+                // just send a blank frame, otherwise we sleep until the next tick
                 waitUntilNextTick(start);
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);

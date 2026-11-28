@@ -27,7 +27,8 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.PotentialTarget;
 
 public class GroupContoursPipe
-        extends CVPipe<List<Contour>, List<PotentialTarget>, GroupContoursPipe.GroupContoursParams> {
+        extends CVPipe<
+                List<Contour>, List<PotentialTarget>, GroupContoursPipe.GroupContoursParams> {
     private final List<PotentialTarget> m_targets = new ArrayList<>();
 
     @Override
@@ -73,7 +74,9 @@ public class GroupContoursPipe
                         // FYI: This method only takes 2 contours!
                         Contour groupedContour =
                                 Contour.groupContoursByIntersection(
-                                        groupingSet.get(0), groupingSet.get(1), params.intersection());
+                                        groupingSet.get(0),
+                                        groupingSet.get(1),
+                                        params.intersection());
 
                         if (groupedContour != null) {
                             m_targets.add(new PotentialTarget(groupedContour, groupingSet));

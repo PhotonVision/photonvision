@@ -53,7 +53,8 @@ public class AprilTagTest {
 
             try (var frameProvider =
                     new FileFrameProvider(
-                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                            TestUtils.getApriltagImagePath(
+                                    TestUtils.ApriltagTestImages.kTag1_640_480, false),
                             TestUtils.WPI2020Image.FOV,
                             TestUtils.get2020LifeCamCoeffs(false))) {
                 frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
@@ -71,7 +72,9 @@ public class AprilTagTest {
                                     pipelineResult.targets);
 
                     TestUtils.showImage(
-                            ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+                            ret.inputAndOutputFrame.processedImage.getMat(),
+                            "Pipeline output",
+                            999999);
 
                     // these numbers are not *accurate*, but they are known and expected
                     var target = pipelineResult.targets.get(0);
@@ -120,7 +123,8 @@ public class AprilTagTest {
 
             try (var frameProvider =
                     new FileFrameProvider(
-                            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
+                            TestUtils.getApriltagImagePath(
+                                    TestUtils.ApriltagTestImages.kTag_corner_1280, false),
                             TestUtils.WPI2020Image.FOV,
                             TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false))) {
                 frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
@@ -138,7 +142,9 @@ public class AprilTagTest {
                                     pipelineResult.targets);
 
                     TestUtils.showImage(
-                            ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+                            ret.inputAndOutputFrame.processedImage.getMat(),
+                            "Pipeline output",
+                            999999);
 
                     // these numbers are not *accurate*, but they are known and expected
                     var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();

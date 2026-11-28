@@ -116,7 +116,10 @@ public class Calibrate3dPipeline
 
         calibrate3dPipe.setParams(
                 new Calibrate3dPipe.CalibratePipeParams(
-                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal));
+                        settings.boardHeight,
+                        settings.boardWidth,
+                        settings.gridSize,
+                        settings.useMrCal));
     }
 
     @Override
@@ -128,9 +131,8 @@ public class Calibrate3dPipeline
         }
 
         if (getSettings().inputImageRotationMode != ImageRotationMode.DEG_0) {
-            // All this calibration assumes zero rotation. If we want a rotation, it should
-            // be applied at
-            // the output
+            // All this calibration assumes zero rotation. If we want a rotation, it should be
+            // applied at the output
             logger.error(
                     "Input image rotation was non-zero! Calibration wasn't designed to deal with this. Attempting to manually change back to zero");
             getSettings().inputImageRotationMode = ImageRotationMode.DEG_0;
@@ -240,7 +242,9 @@ public class Calibrate3dPipeline
                 thickness);
     }
 
-    /** Draws the detected centroid of the board in the current frame as a bright green crosshair. */
+    /**
+     * Draws the detected centroid of the board in the current frame as a bright green crosshair.
+     */
     private void drawCurrentCentroid(Mat image, Point centroid) {
         double frameDiagonal = Math.hypot(image.size().width, image.size().height);
 
@@ -271,9 +275,9 @@ public class Calibrate3dPipeline
     }
 
     /**
-     * In auto mode, takes a snapshot if the board has moved far enough from the last snapshot and has
-     * been stable over the last {@link #STABILITY_WINDOW} detections. Also updates the UI with a hint
-     * for when users ought to move the board.
+     * In auto mode, takes a snapshot if the board has moved far enough from the last snapshot and
+     * has been stable over the last {@link #STABILITY_WINDOW} detections. Also updates the UI with
+     * a hint for when users ought to move the board.
      */
     private void autoTakeSnapshot(FindBoardCornersPipeResult findBoardResult, Mat inputColorMat) {
         Boolean newMovedFarEnough;
@@ -285,7 +289,8 @@ public class Calibrate3dPipeline
             newMovedFarEnough = null;
         } else {
             Point centroid = computeCentroid(findBoardResult.imagePoints.toList());
-            double frameDiagonal = Math.hypot(findBoardResult.size.width, findBoardResult.size.height);
+            double frameDiagonal =
+                    Math.hypot(findBoardResult.size.width, findBoardResult.size.height);
 
             recentCentroids.addLast(centroid);
             while (recentCentroids.size() > STABILITY_WINDOW) {
@@ -294,7 +299,8 @@ public class Calibrate3dPipeline
 
             double minMovementPx = MIN_MOVEMENT_FRACTION * frameDiagonal;
             boolean movedEnough =
-                    lastSnapshotCentroid == null || distance(centroid, lastSnapshotCentroid) >= minMovementPx;
+                    lastSnapshotCentroid == null
+                            || distance(centroid, lastSnapshotCentroid) >= minMovementPx;
             if (!movedEnough) {
                 newMovedFarEnough = false;
             } else if (!isStable(STABILITY_FRACTION * frameDiagonal)) {
@@ -379,7 +385,8 @@ public class Calibrate3dPipeline
          */
         calibrationOutput =
                 calibrate3dPipe.run(
-                        new CalibrationInput(foundCornersList, frameStaticProperties, imageSavePath));
+                        new CalibrationInput(
+                                foundCornersList, frameStaticProperties, imageSavePath));
 
         this.calibrating = false;
 

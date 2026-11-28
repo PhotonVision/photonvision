@@ -127,8 +127,7 @@ public class RequestHandler {
 
         ConfigProvider.getInstance().setWriteTaskEnabled(false);
         ConfigProvider.getInstance().disableFlushOnShutdown();
-        // We want to delete the -whole- zip file, so we need to teardown loggers for
-        // now
+        // We want to delete the -whole- zip file, so we need to teardown loggers for now
         logger.info("Writing new settings zip (logs may be truncated)...");
         Logger.closeAllLoggers();
         if (ConfigProvider.saveUploadedSettingsZip(tempFilePath.get())) {
@@ -151,7 +150,8 @@ public class RequestHandler {
 
             ctx.contentType("application/zip");
             ctx.header(
-                    "Content-Disposition", "attachment; filename=\"photonvision-settings-export.zip\"");
+                    "Content-Disposition",
+                    "attachment; filename=\"photonvision-settings-export.zip\"");
 
             ctx.result(stream);
             ctx.status(200);
@@ -236,7 +236,8 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigProvider.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
+        if (ConfigProvider.getInstance()
+                .saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded hardware settings, rebooting...");
             logger.info("Successfully saved the uploaded hardware settings, rebooting...");
@@ -502,7 +503,9 @@ public class RequestHandler {
             if (module == null) {
                 ctx.status(404);
                 ctx.result(
-                        "No vision module was found with cameraUniqueName (" + request.cameraUniqueName + ")");
+                        "No vision module was found with cameraUniqueName ("
+                                + request.cameraUniqueName
+                                + ")");
                 return;
             }
 
@@ -542,7 +545,9 @@ public class RequestHandler {
             if (module == null) {
                 ctx.status(404);
                 ctx.result(
-                        "No vision module was found with cameraUniqueName (" + request.cameraUniqueName + ")");
+                        "No vision module was found with cameraUniqueName ("
+                                + request.cameraUniqueName
+                                + ")");
                 return;
             }
 
@@ -551,7 +556,9 @@ public class RequestHandler {
             ctx.result("The calibration process was canceled");
             ctx.status(200);
             logger.info(
-                    "Calibration canceled for module at cameraUniqueName (" + request.cameraUniqueName + ")");
+                    "Calibration canceled for module at cameraUniqueName ("
+                            + request.cameraUniqueName
+                            + ")");
         } catch (JsonException e) {
             ctx.status(400);
             ctx.result("The provided calibration data was malformed.");
@@ -571,7 +578,9 @@ public class RequestHandler {
             if (module == null) {
                 ctx.status(404);
                 ctx.result(
-                        "No vision module was found with cameraUniqueName (" + request.cameraUniqueName + ")");
+                        "No vision module was found with cameraUniqueName ("
+                                + request.cameraUniqueName
+                                + ")");
                 return;
             }
 
@@ -609,21 +618,30 @@ public class RequestHandler {
 
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
-            DataCalibrationImportRequest request = ctx.bodyAsClass(DataCalibrationImportRequest.class);
+            DataCalibrationImportRequest request =
+                    ctx.bodyAsClass(DataCalibrationImportRequest.class);
 
             // A negative focal length is physically impossible, so reject the calibration
             var intrinsics =
                     request.calibration != null && request.calibration.cameraIntrinsics != null
                             ? request.calibration.cameraIntrinsics.data
                             : null;
-            if (intrinsics == null || intrinsics.length < 5 || intrinsics[0] < 0 || intrinsics[4] < 0) {
+            if (intrinsics == null
+                    || intrinsics.length < 5
+                    || intrinsics[0] < 0
+                    || intrinsics[4] < 0) {
                 ctx.status(400);
-                ctx.result("The provided calibration data was malformed: invalid camera intrinsics");
+                ctx.result(
+                        "The provided calibration data was malformed: invalid camera intrinsics");
                 logger.error(
                         "Rejected calibration import with invalid intrinsics (fx="
-                                + (intrinsics != null && intrinsics.length > 0 ? intrinsics[0] : "n/a")
+                                + (intrinsics != null && intrinsics.length > 0
+                                        ? intrinsics[0]
+                                        : "n/a")
                                 + ", fy="
-                                + (intrinsics != null && intrinsics.length > 4 ? intrinsics[4] : "n/a")
+                                + (intrinsics != null && intrinsics.length > 4
+                                        ? intrinsics[4]
+                                        : "n/a")
                                 + ")");
                 return;
             }
@@ -703,7 +721,10 @@ public class RequestHandler {
                 return;
             }
 
-            if (width < 0 || height < 0 || width != Math.floor(width) || height != Math.floor(height)) {
+            if (width < 0
+                    || height < 0
+                    || width != Math.floor(width)
+                    || height != Math.floor(height)) {
                 ctx.status(400);
                 ctx.result(
                         "The provided width and height were malformed. They must be integers greater than one.");
@@ -748,7 +769,8 @@ public class RequestHandler {
 
             Path modelPath =
                     Paths.get(
-                            ConfigProvider.getInstance().getModelsDirectory().toString(), modelFile.filename());
+                            ConfigProvider.getInstance().getModelsDirectory().toString(),
+                            modelFile.filename());
 
             if (modelPath.toFile().exists()) {
                 ctx.status(400);
@@ -767,7 +789,8 @@ public class RequestHandler {
             String nickname = modelFile.filename().substring(0, idx);
 
             ModelProperties modelProperties =
-                    new ModelProperties(modelPath, nickname, labels, width, height, family, version);
+                    new ModelProperties(
+                            modelPath, nickname, labels, width, height, family, version);
 
             if (!testMode) {
                 ObjectDetector objDetector = null;
@@ -775,7 +798,8 @@ public class RequestHandler {
                 try {
                     objDetector =
                             switch (family) {
-                                case RUBIK -> new TFLiteModel(modelProperties, TFLiteSource.RUBIK).load();
+                                case RUBIK ->
+                                        new TFLiteModel(modelProperties, TFLiteSource.RUBIK).load();
                                 case RKNN -> new RknnModel(modelProperties).load();
                             };
                 } catch (RuntimeException e) {
@@ -791,9 +815,6 @@ public class RequestHandler {
                     logger.error("Failed to load object detection model", e);
                     return;
                 } finally {
-                    // this finally block will run regardless of what happens in try/catch
-                    // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
-                    // for a summary on how finally works
                     if (objDetector != null) {
                         objDetector.release();
                     }
@@ -805,7 +826,10 @@ public class RequestHandler {
                     .addModelProperties(modelProperties);
 
             logger.debug(
-                    ConfigProvider.getInstance().getConfig().getNeuralNetworkProperties().toString());
+                    ConfigProvider.getInstance()
+                            .getConfig()
+                            .getNeuralNetworkProperties()
+                            .toString());
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 
@@ -819,7 +843,8 @@ public class RequestHandler {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
     }
 
     public static void onExportObjectDetectionModelsRequest(Context ctx) {
@@ -838,7 +863,8 @@ public class RequestHandler {
             ctx.result(stream);
             ctx.status(200);
         } catch (IOException e) {
-            logger.error("Unable to export object detection models archive, bad recode from zip to byte");
+            logger.error(
+                    "Unable to export object detection models archive, bad recode from zip to byte");
             ctx.status(500);
             ctx.result("There was an error while exporting the object detection models archive");
         }
@@ -913,8 +939,7 @@ public class RequestHandler {
 
             Path targetModelsDir = ConfigProvider.getInstance().getModelsDirectory().toPath();
 
-            // Copy all files from the source models directory to the target models
-            // directory
+            // Copy all files from the source models directory to the target models directory
             try (var stream = Files.list(tempDir)) {
                 for (Path modelFile : stream.toList()) {
                     if (Files.isRegularFile(modelFile)
@@ -922,7 +947,9 @@ public class RequestHandler {
                         logger.debug("Copying model file: " + modelFile.getFileName());
                         Files.copy(
                                 modelFile,
-                                Path.of(targetModelsDir.toString(), modelFile.getFileName().toString()),
+                                Path.of(
+                                        targetModelsDir.toString(),
+                                        modelFile.getFileName().toString()),
                                 StandardCopyOption.REPLACE_EXISTING);
                     }
                 }
@@ -931,9 +958,11 @@ public class RequestHandler {
 
         } catch (Exception e) {
             ctx.status(500);
-            ctx.result("There was an error while extracting and coyping the object detection models");
+            ctx.result(
+                    "There was an error while extracting and coyping the object detection models");
             logger.error(
-                    "There was an error while extracting and copying the object detection models", e);
+                    "There was an error while extracting and copying the object detection models",
+                    e);
             return;
         }
 
@@ -954,7 +983,8 @@ public class RequestHandler {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
     }
 
     @Json
@@ -1088,7 +1118,8 @@ public class RequestHandler {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
     }
 
     public static void onDeviceRestartRequest(Context ctx) {
@@ -1100,7 +1131,8 @@ public class RequestHandler {
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            CameraNicknameChangeRequest request = ctx.bodyAsClass(CameraNicknameChangeRequest.class);
+            CameraNicknameChangeRequest request =
+                    ctx.bodyAsClass(CameraNicknameChangeRequest.class);
 
             VisionSourceManager.getInstance()
                     .vmm
@@ -1119,8 +1151,8 @@ public class RequestHandler {
     }
 
     /**
-     * The calibration to serve for a resolution: the pending calibration while a calibration session
-     * is active (it is cleared when the session ends), otherwise the saved calibration.
+     * The calibration to serve for a resolution: the pending calibration while a calibration
+     * session is active (it is cleared when the session ends), otherwise the saved calibration.
      */
     private static CameraCalibrationCoefficients getActiveCalibration(
             String cameraUniqueName, double width, double height) {
@@ -1182,7 +1214,9 @@ public class RequestHandler {
             ctx.status(200);
         } catch (Exception e) {
             ctx.status(422)
-                    .result("Unable to estimate uncertainty for this calibration: " + e.getMessage());
+                    .result(
+                            "Unable to estimate uncertainty for this calibration: "
+                                    + e.getMessage());
             logger.error(
                     "Unable to estimate uncertainty for camera "
                             + cameraUniqueName
@@ -1256,7 +1290,8 @@ public class RequestHandler {
         }
 
         var jpegBytes = new MatOfByte();
-        Imgcodecs.imencode(".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+        Imgcodecs.imencode(
+                ".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
         ctx.result(jpegBytes.toArray());
 
         mat.release();
@@ -1271,7 +1306,10 @@ public class RequestHandler {
         var height = Integer.parseInt(ctx.queryParam("height"));
 
         var cc =
-                VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
+                VisionSourceManager.getInstance()
+                        .vmm
+                        .getModule(cameraUniqueName)
+                        .getStateAsCameraConfig();
 
         CameraCalibrationCoefficients calList =
                 cc.calibrations.stream()
@@ -1313,7 +1351,8 @@ public class RequestHandler {
                         ImageIO.write(bufferedImage, "jpg", buffer);
                         byte[] data = buffer.toByteArray();
 
-                        snapshots.add(new ImageSnapshot(snapshot.getName(), cameraUniqueName, data));
+                        snapshots.add(
+                                new ImageSnapshot(snapshot.getName(), cameraUniqueName, data));
                     }
                 }
             } catch (IOException e) {
@@ -1372,7 +1411,9 @@ public class RequestHandler {
                         () -> {
                             if (Platform.isLinux()) {
                                 try {
-                                    new ShellExec().executeBashCommand("systemctl restart photonvision.service");
+                                    new ShellExec()
+                                            .executeBashCommand(
+                                                    "systemctl restart photonvision.service");
                                 } catch (IOException e) {
                                     logger.error("Could not restart device!", e);
                                     System.exit(0);
@@ -1479,7 +1520,8 @@ public class RequestHandler {
         try {
             CommonCameraUniqueName request = ctx.bodyAsClass(CommonCameraUniqueName.class);
 
-            if (VisionSourceManager.getInstance().deactivateVisionSource(request.cameraUniqueName)) {
+            if (VisionSourceManager.getInstance()
+                    .deactivateVisionSource(request.cameraUniqueName)) {
                 ctx.status(200);
             } else {
                 ctx.status(403);

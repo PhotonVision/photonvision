@@ -118,8 +118,8 @@ public class SimCameraProperties {
      * @param path Path to the <code>config.json</code> file
      * @param width The width of the desired resolution in the JSON
      * @param height The height of the desired resolution in the JSON
-     * @throws IOException If reading the JSON fails, either from an invalid path or a missing/invalid
-     *     calibrated resolution.
+     * @throws IOException If reading the JSON fails, either from an invalid path or a
+     *     missing/invalid calibrated resolution.
      */
     public SimCameraProperties(String path, int width, int height) throws IOException {
         this(Path.of(path), width, height);
@@ -133,8 +133,8 @@ public class SimCameraProperties {
      * @param path Path to the <code>config.json</code> file
      * @param width The width of the desired resolution in the JSON
      * @param height The height of the desired resolution in the JSON
-     * @throws IOException If reading the JSON fails, either from an invalid path or a missing/invalid
-     *     calibrated resolution.
+     * @throws IOException If reading the JSON fails, either from an invalid path or a
+     *     missing/invalid calibrated resolution.
      */
     public SimCameraProperties(Path path, int width, int height) throws IOException {
         SimCameraData data;
@@ -205,17 +205,27 @@ public class SimCameraProperties {
         // left, right, up, and down view planes
         Translation3d[] p = {
             new Translation3d(
-                    1, new Rotation3d(0, 0, getPixelYaw(0).plus(new Rotation2d(-Math.PI / 2)).getRadians())),
+                    1,
+                    new Rotation3d(
+                            0, 0, getPixelYaw(0).plus(new Rotation2d(-Math.PI / 2)).getRadians())),
             new Translation3d(
                     1,
                     new Rotation3d(
-                            0, 0, getPixelYaw(resWidth).plus(new Rotation2d(Math.PI / 2)).getRadians())),
-            new Translation3d(
-                    1, new Rotation3d(0, getPixelPitch(0).plus(new Rotation2d(Math.PI / 2)).getRadians(), 0)),
+                            0,
+                            0,
+                            getPixelYaw(resWidth).plus(new Rotation2d(Math.PI / 2)).getRadians())),
             new Translation3d(
                     1,
                     new Rotation3d(
-                            0, getPixelPitch(resHeight).plus(new Rotation2d(-Math.PI / 2)).getRadians(), 0))
+                            0, getPixelPitch(0).plus(new Rotation2d(Math.PI / 2)).getRadians(), 0)),
+            new Translation3d(
+                    1,
+                    new Rotation3d(
+                            0,
+                            getPixelPitch(resHeight)
+                                    .plus(new Rotation2d(-Math.PI / 2))
+                                    .getRadians(),
+                            0))
         };
         viewplanes.clear();
         for (Translation3d translation3d : p) {
@@ -235,8 +245,8 @@ public class SimCameraProperties {
     /**
      * Sets the simulated FPS for this camera.
      *
-     * @param fps The average frames per second the camera should process at. <b>Exposure time limits
-     *     FPS if set!</b>
+     * @param fps The average frames per second the camera should process at. <b>Exposure time
+     *     limits FPS if set!</b>
      * @return This camera properties object for use in chaining
      */
     public SimCameraProperties setFPS(double fps) {
@@ -262,8 +272,8 @@ public class SimCameraProperties {
     /**
      * Sets the simulated latency for this camera.
      *
-     * @param avgLatencyMs The average latency (from image capture to data published) in milliseconds
-     *     a frame should have
+     * @param avgLatencyMs The average latency (from image capture to data published) in
+     *     milliseconds a frame should have
      * @return This camera properties object for use in chaining
      */
     public SimCameraProperties setAvgLatencyMs(double avgLatencyMs) {
@@ -405,7 +415,9 @@ public class SimCameraProperties {
         return percent;
     }
 
-    /** The yaw from the principal point of this camera to the pixel x value. Positive values left. */
+    /**
+     * The yaw from the principal point of this camera to the pixel x value. Positive values left.
+     */
     public Rotation2d getPixelYaw(double pixelX) {
         double fx = camIntrinsics.get(0, 0);
         // account for principal point not being centered
@@ -415,7 +427,8 @@ public class SimCameraProperties {
     }
 
     /**
-     * The pitch from the principal point of this camera to the pixel y value. Pitch is positive down.
+     * The pitch from the principal point of this camera to the pixel y value. Pitch is positive
+     * down.
      *
      * <p>Note that this angle is naively computed and may be incorrect. See {@link
      * #getCorrectedPixelRot(Point)}.
@@ -444,17 +457,17 @@ public class SimCameraProperties {
      * Gives the yaw and pitch of the line intersecting the camera lens and the given pixel
      * coordinates on the sensor. Yaw is positive left, and pitch positive down.
      *
-     * <p>The pitch traditionally calculated from pixel offsets do not correctly account for non-zero
-     * values of yaw because of perspective distortion (not to be confused with lens distortion)-- for
-     * example, the pitch angle is naively calculated as:
+     * <p>The pitch traditionally calculated from pixel offsets do not correctly account for
+     * non-zero values of yaw because of perspective distortion (not to be confused with lens
+     * distortion)-- for example, the pitch angle is naively calculated as:
      *
      * <pre>pitch = arctan(pixel y offset / focal length y)</pre>
      *
-     * However, using focal length as a side of the associated right triangle is not correct when the
-     * pixel x value is not 0, because the distance from this pixel (projected on the x-axis) to the
-     * camera lens increases. Projecting a line back out of the camera with these naive angles will
-     * not intersect the 3d point that was originally projected into this 2d pixel. Instead, this
-     * length should be:
+     * However, using focal length as a side of the associated right triangle is not correct when
+     * the pixel x value is not 0, because the distance from this pixel (projected on the x-axis) to
+     * the camera lens increases. Projecting a line back out of the camera with these naive angles
+     * will not intersect the 3d point that was originally projected into this 2d pixel. Instead,
+     * this length should be:
      *
      * <pre>focal length y ⟶ (focal length y / cos(arctan(pixel x offset / focal length x)))</pre>
      *
@@ -497,14 +510,14 @@ public class SimCameraProperties {
     }
 
     /**
-     * Determines where the line segment defined by the two given translations intersects the camera's
-     * frustum/field-of-vision, if at all.
+     * Determines where the line segment defined by the two given translations intersects the
+     * camera's frustum/field-of-vision, if at all.
      *
-     * <p>The line is parametrized so any of its points <code>p = t * (b - a) + a</code>. This method
-     * returns these values of t, minimum first, defining the region of the line segment which is
-     * visible in the frustum. If both ends of the line segment are visible, this simply returns {0,
-     * 1}. If, for example, point b is visible while a is not, and half of the line segment is inside
-     * the camera frustum, {0.5, 1} would be returned.
+     * <p>The line is parametrized so any of its points <code>p = t * (b - a) + a</code>. This
+     * method returns these values of t, minimum first, defining the region of the line segment
+     * which is visible in the frustum. If both ends of the line segment are visible, this simply
+     * returns {0, 1}. If, for example, point b is visible while a is not, and half of the line
+     * segment is inside the camera frustum, {0.5, 1} would be returned.
      *
      * @param camRt The change in basis from world coordinates to camera coordinates. See {@link
      *     RotTrlTransform3d#makeRelativeTo(Pose3d)}.
@@ -514,8 +527,8 @@ public class SimCameraProperties {
      *     <ul>
      *       <li>{Double, Double} : Two parametrized values(t), minimum first, representing which
      *           segment of the line is visible in the camera frustum.
-     *       <li>{Double, null} : One value(t) representing a single intersection point. For example,
-     *           the line only intersects the intersection of two adjacent viewplanes.
+     *       <li>{Double, null} : One value(t) representing a single intersection point. For
+     *           example, the line only intersects the intersection of two adjacent viewplanes.
      *       <li>{null, null} : No values. The line segment is not visible in the camera frustum.
      *     </ul>
      */
@@ -564,11 +577,15 @@ public class SimCameraProperties {
             // a_projn = normal.times(av.dot(normal) / normal.dot(normal));
             var a_projn = new DMatrix3();
             CommonOps_DDF3.scale(
-                    CommonOps_DDF3.dot(av, normal) / CommonOps_DDF3.dot(normal, normal), normal, a_projn);
+                    CommonOps_DDF3.dot(av, normal) / CommonOps_DDF3.dot(normal, normal),
+                    normal,
+                    a_projn);
             // this projection lets us determine the scalar multiple t of ab where
             // (t * ab + a) is a vector which lies on the plane
-            if (Math.abs(CommonOps_DDF3.dot(abv, a_projn)) < 1e-5) continue; // line is parallel to plane
-            intersections[i] = CommonOps_DDF3.dot(a_projn, a_projn) / -CommonOps_DDF3.dot(abv, a_projn);
+            if (Math.abs(CommonOps_DDF3.dot(abv, a_projn)) < 1e-5)
+                continue; // line is parallel to plane
+            intersections[i] =
+                    CommonOps_DDF3.dot(a_projn, a_projn) / -CommonOps_DDF3.dot(abv, a_projn);
 
             // vector a to the viewplane
             var apv = new DMatrix3();
@@ -582,7 +599,8 @@ public class SimCameraProperties {
             for (int j = 1; j < viewplanes.size(); j++) {
                 int oi = (i + j) % viewplanes.size();
                 var onormal = viewplanes.get(oi);
-                // if the dot of the intersection point with any plane normal is negative, it is outside
+                // if the dot of the intersection point with any plane normal is negative, it is
+                // outside
                 if (CommonOps_DDF3.dot(intersectpt, onormal) < 0) {
                     intersections[i] = Double.NaN;
                     ipts.set(i, null);
@@ -649,7 +667,8 @@ public class SimCameraProperties {
             double error = avgErrorPx + rand.nextGaussian() * errorStdDevPx;
             double errorAngle = rand.nextDouble() * 2 * Math.PI - Math.PI;
             noisyPts[i] =
-                    new Point(p.x + error * Math.cos(errorAngle), p.y + error * Math.sin(errorAngle));
+                    new Point(
+                            p.x + error * Math.cos(errorAngle), p.y + error * Math.sin(errorAngle));
         }
         return noisyPts;
     }
@@ -692,8 +711,8 @@ public class SimCameraProperties {
      * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
      * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
      * the calibration data. Always use your camera's calibration data to do vision calculations in
-     * non-sim environments. These properties exist as a sample that may be used to get representative
-     * data in sim.
+     * non-sim environments. These properties exist as a sample that may be used to get
+     * representative data in sim.
      *
      * @return The properties for this camera setup
      */
@@ -738,8 +757,8 @@ public class SimCameraProperties {
      * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
      * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
      * the calibration data. Always use your camera's calibration data to do vision calculations in
-     * non-sim environments. These properties exist as a sample that may be used to get representative
-     * data in sim.
+     * non-sim environments. These properties exist as a sample that may be used to get
+     * representative data in sim.
      *
      * @return The properties for this camera setup
      */
@@ -784,8 +803,8 @@ public class SimCameraProperties {
      * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
      * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
      * the calibration data. Always use your camera's calibration data to do vision calculations in
-     * non-sim environments. These properties exist as a sample that may be used to get representative
-     * data in sim.
+     * non-sim environments. These properties exist as a sample that may be used to get
+     * representative data in sim.
      *
      * @return The properties for this camera setup
      */
@@ -829,8 +848,8 @@ public class SimCameraProperties {
      * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
      * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
      * the calibration data. Always use your camera's calibration data to do vision calculations in
-     * non-sim environments. These properties exist as a sample that may be used to get representative
-     * data in sim.
+     * non-sim environments. These properties exist as a sample that may be used to get
+     * representative data in sim.
      *
      * @return The properties for this camera setup
      */
@@ -875,8 +894,8 @@ public class SimCameraProperties {
      * <p>Note that this set of properties represents <i>a camera setup</i>, not <i>your camera
      * setup</i>. Do not use these camera properties for any non-sim vision calculations, especially
      * the calibration data. Always use your camera's calibration data to do vision calculations in
-     * non-sim environments. These properties exist as a sample that may be used to get representative
-     * data in sim.
+     * non-sim environments. These properties exist as a sample that may be used to get
+     * representative data in sim.
      *
      * @return The properties for this camera setup
      */
