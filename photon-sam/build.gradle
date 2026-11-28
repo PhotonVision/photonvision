@@ -1,0 +1,453 @@
+apply plugin: 'org.photonvision.tools.WpilibTools'
+
+import java.nio.file.Path
+
+ext {
+    nativeName = "photonsam"
+    includePhotonTargeting = true
+    // Include the generated Version file
+    generatedHeaders = "src/generate/native/include"
+    licenseFile = file("LICENSE")
+}
+
+apply plugin: 'cpp'
+apply plugin: 'google-test-test-suite'
+apply plugin: 'org.wpilib.NativeUtils'
+apply plugin: 'org.wpilib.GradleJni'
+
+apply from: "${rootDir}/shared/config.gradle"
+apply from: "${rootDir}/shared/gtsam.gradle"
+apply from: "${rootDir}/shared/javacommon.gradle"
+
+nativeUtils {
+    nativeDependencyContainer {
+        mrclib_sconly(getNativeDependencyTypeClass('WPISharedMavenDependency')) {
+            groupId = "org.wpilib.mrclib"
+            artifactId = "mrclib-cpp"
+            headerClassifier = "headers"
+            ext = "zip"
+            version = mrclibVersion
+            skipAtRuntimePlatforms.add(nativeUtils.wpi.platforms.systemcore)
+            targetPlatforms.add(nativeUtils.wpi.platforms.systemcore)
+            noDebugSplit = true
+        }
+    }
+    exportsConfigs {
+        "${nativeName}" {}
+    }
+}
+
+model {
+    components {
+        "${nativeName}"(NativeLibrarySpec) {
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/cpp', 'src/main/native/internal'
+                        include '**/*.cpp', '**/*.cc'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/main/native/include'
+                        include "**/*.h"
+                    }
+                }
+            }
+
+            binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn generateProto
+                    // Private headers: visible to this component only, not exported to consumers
+                    it.includes 'src/main/native/internal'
+                }
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                }
+                project.gtsamArgs(it)
+            }
+            nativeUtils.useRequiredLibrary(it, "gtsam")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+        }
+        "${nativeName}JNI"(JniNativeLibrarySpec) {
+
+            enableCheckTask project.hasProperty('doJniCheck')
+            javaCompileTasks << compileJava
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.systemcore)
+            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm64)
+
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/jni', 'src/main/native/internal'
+                        include '**/*.cpp', '**/*.cc'
+                    }
+                }
+            }
+
+            binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.includes 'src/main/native/internal'
+                }
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'photontargetingJNI', linkage: 'shared'
+                }
+                lib library: nativeName, linkage: 'shared'
+                project.gtsamArgs(it)
+                // DEBUGGING
+                /*
+                 if (it.toolChain instanceof GccCompatibleToolChain) {
+                 it.linker.args.add("-Wl,--no-undefined")
+                 }
+                 */
+            }
+
+            // JNI sources include gtsam and Eigen (shipped with wpimath) directly,
+            // and `lib library:` does not pass the main component's dependencies on.
+            nativeUtils.useRequiredLibrary(it, "gtsam")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+        }
+    }
+    testSuites {
+        "${nativeName}Test"(GoogleTestTestSuiteSpec) {
+            for(NativeComponentSpec c : $.components) {
+                if (c.name == nativeName) {
+                    testing c
+                    break
+                }
+            }
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/test/native/cpp'
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/test/native/include'
+                    }
+                }
+            }
+
+            binaries.all {
+                lib library: nativeName, linkage: 'shared'
+                lib library: "${nativeName}JNI", linkage: 'shared'
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn generateProto
+                    it.includes 'src/main/native/internal'
+                }
+                if(project.hasProperty('includePhotonTargeting')) {
+                    lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'photontargetingJNI', linkage: 'shared'
+                }
+                if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
+                    nativeUtils.useRequiredLibrary(it, "mrclib_sconly")
+                }
+                project.gtsamArgs(it)
+            }
+            nativeUtils.useRequiredLibrary(it, "gtsam")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "catch2_static")
+            nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
+            nativeUtils.useRequiredLibrary(it, "wpimath_shared")
+            nativeUtils.useRequiredLibrary(it, "wpinet_shared")
+            nativeUtils.useRequiredLibrary(it, "ntcore_shared")
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "fields_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
+        }
+    }
+
+    tasks {
+        def c = $.testSuites
+        project.tasks.create('runCpp', Exec) {
+            description = "Run the photon-sam executable"
+            def found = false
+            def systemArch = getCurrentArch()
+            c.each {
+                if (it in GoogleTestTestSuiteSpec && it.name == "${nativeName}Test") {
+                    it.binaries.each {
+                        if (!found) {
+                            def arch = it.targetPlatform.name
+                            if (arch == systemArch) {
+                                dependsOn it.tasks.install
+                                commandLine it.tasks.install.runScriptFile.get().asFile.toString()
+                                def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                                test.dependsOn it.tasks.install
+                                test.systemProperty 'java.library.path', filePath
+                                test.environment 'LD_LIBRARY_PATH', filePath
+                                test.environment 'DYLD_LIBRARY_PATH', filePath
+                                test.workingDir filePath
+
+                                found = true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+apply from: "${rootDir}/shared/javacpp/publish.gradle"
+
+// Include the version file in the distributed sources
+cppHeadersZip {
+    from('src/generate/native/include') {
+        into '/'
+    }
+}
+
+def photonsamFileInput = file("src/generate/photonsam.json.in")
+ext.photonsamFileOutput = file("$buildDir/generated/vendordeps/photonsam.json")
+
+task generateVendorJson() {
+    description = "Generates the vendor JSON file"
+    group = "PhotonVision"
+
+    outputs.file photonsamFileOutput
+    inputs.file photonsamFileInput
+
+    println "Writing vendor JSON ${pubVersion} to $photonsamFileOutput"
+
+    if (photonsamFileOutput.exists()) {
+        photonsamFileOutput.delete()
+    }
+    photonsamFileOutput.parentFile.mkdirs()
+
+    def read = photonsamFileInput.text
+            .replace('${photon_version}', pubVersion)
+            .replace('${wpilib_year}', wpilibYear)
+    photonsamFileOutput.text = read
+
+    outputs.upToDateWhen { false }
+}
+
+build.dependsOn generateVendorJson
+
+task publishVendorJsonToLocalOutputs(type: Copy) {
+    from photonsamFileOutput
+    into "$allOutputsFolder/vendordeps/"
+
+    // Rename to match the name of the JSON we publish to maven to avoid user confusion
+    rename { String fileName ->
+        fileName.replace(".json", "-json-1.0.json")
+    }
+
+    publish.dependsOn it
+}
+
+task copyVendorJsonToExamples {
+    outputs.upToDateWhen { false }
+    jar.finalizedBy it
+}
+
+[
+    "photonlib-cpp-examples",
+    "photonlib-java-examples"
+].each { exampleFolder ->
+    file("${rootDir}/${exampleFolder}")
+            .listFiles()
+            .findAll {
+                return (it.isDirectory()
+                        && !it.isHidden()
+                        && !it.name.startsWith(".")
+                        && it.toPath().resolve("build.gradle").toFile().exists())
+            }
+            .collect { it.name }
+            .each { exampleVendordepFolder ->
+                task "copyVendorJsonTo${exampleFolder}-${exampleVendordepFolder}"(type: Copy) {
+                    from photonsamFileOutput
+
+                    into "${rootDir}/${exampleFolder}/${exampleVendordepFolder}/vendordeps/"
+                    outputs.upToDateWhen { false }
+                    copyVendorJsonToExamples.dependsOn it
+                }
+            }
+}
+
+clean {
+    [
+        "photonlib-cpp-examples",
+        "photonlib-java-examples"
+    ].each { exampleFolder ->
+        file("${rootDir}/${exampleFolder}")
+                .listFiles()
+                .findAll {
+                    return (it.isDirectory()
+                            && !it.isHidden()
+                            && !it.name.startsWith(".")
+                            && it.toPath().resolve("build.gradle").toFile().exists())
+                }
+                .collect { it.name }
+                .each { exampleVendordepFolder ->
+                    delete "${rootDir}/${exampleFolder}/${exampleVendordepFolder}/vendordeps"
+                }
+    }
+}
+
+task writeCurrentVersion {
+    doLast {
+        def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "java", "org", "photonvision", "PhotonVersion.java"),
+                versionString)
+        versionFileIn = file("${rootDir}/shared/PhotonVersion.cpp.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "native", "cpp", "PhotonVersion.cpp"),
+                versionString)
+    }
+}
+
+// https://github.com/wpilibsuite/allwpilib/blob/main/wpilibj/build.gradle#L52
+sourceSets.main.java.srcDir "${buildDir}/generated/java/"
+compileJava.dependsOn writeCurrentVersion
+
+// Building photon-sam requires photon-targeting to generate its proto files. This technically shouldn't be required but is needed for it to build.
+model {
+    components {
+        all {
+            it.sources.each {
+                it.exportedHeaders {
+                    srcDirs "src/main/native/include"
+                    srcDirs "src/generate/native/include"
+                }
+            }
+            it.binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn writeCurrentVersion
+                    it.dependsOn ":photon-targeting:generateProto"
+                }
+            }
+        }
+    }
+    testSuites {
+        all {
+            it.binaries.all {
+                it.tasks.withType(CppCompile) {
+                    it.dependsOn ":photon-targeting:generateProto"
+                }
+            }
+        }
+    }
+}
+
+def vendorJson = artifacts.add('archives', file("$photonsamFileOutput"))
+
+if (!project.hasProperty('copyOfflineArtifacts')) {
+    // Publish the vendordep json
+    publishing {
+        publications {
+            vendorjson(MavenPublication) {
+                artifact vendorJson
+
+                artifactId = "${nativeName}-json"
+                groupId = "org.photonvision"
+                version = "1.0"
+            }
+        }
+    }
+}
+
+// Add photonversion to cpp sources zip
+tasks.named('cppSourcesZip') {
+    dependsOn writeCurrentVersion
+
+    from("$buildDir/generated/native/cpp") {
+        into '/'
+    }
+    from('src/main/native/internal') {
+        into '/'
+    }
+}
+
+// Publish an uberzip with photon-sam and photon-targeting. This makes python binding easier to have it in one place
+def zipBaseNameCombined = '_GROUP_org.photonvision_combinedcpp_ID_photonvision-combinedcpp_CLS'
+task combinedCppSourcesZip(type: Zip) {
+    dependsOn(':photon-sam:cppSourcesZip', ':photon-targeting:cppSourcesZip')
+
+    destinationDirectory = file("$buildDir/outputs")
+    archiveBaseName = zipBaseNameCombined
+    archiveClassifier = "sources"
+
+    // Include the contents of the photon-sam cppSourcesZip. Magic chatgpt nonsense
+    from(zipTree(project(':photon-sam').tasks.cppSourcesZip.archiveFile.get().asFile)) {
+        into 'photon-sam'
+    }
+    from(zipTree(project(':photon-targeting').tasks.cppSourcesZip.archiveFile.get().asFile)) {
+        into 'photon-targeting'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+task combinedHeadersZip(type: Zip) {
+    dependsOn(':photon-sam:cppHeadersZip', ':photon-targeting:cppHeadersZip')
+
+    destinationDirectory = file("$buildDir/outputs")
+    archiveBaseName = zipBaseNameCombined
+    archiveClassifier = "headers"
+
+    // Include the contents of the photon-sam cppHeadersZip. Magic chatgpt nonsense
+    from(zipTree(project(':photon-sam').tasks.cppHeadersZip.archiveFile.get().asFile)) {
+        into 'photon-sam'
+    }
+    from(zipTree(project(':photon-targeting').tasks.cppHeadersZip.archiveFile.get().asFile)) {
+        into 'photon-targeting'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
+// Add the uberzip to our maven publications
+publishing {
+    publications {
+        // Don't publish if we're creating an offline zip
+        if (!project.hasProperty('copyOfflineArtifacts')) {
+            combinedcpp(MavenPublication) {
+                artifact combinedCppSourcesZip
+                artifact combinedHeadersZip
+
+                artifactId = "${nativeName}-combinedcpp"
+                groupId = artifactGroupId
+                version = pubVersion
+            }
+        }
+    }
+}
+
+// setup wpilib bundled native libs
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.test)
+
+dependencies {
+    wpilibNatives project(":photon-targeting")
+}
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("datalog")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("fields")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("telemetry")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("tunables")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv(openCVversion)

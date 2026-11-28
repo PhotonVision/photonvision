@@ -4,6 +4,16 @@ on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      run-smoketest-native:
+        description: 'Run smoketest-native job'
+        required: false
+        default: 'true'
+      run-playwright-tests:
+        description: 'Run Playwright E2E tests'
+        required: false
+        default: 'true'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -153,6 +163,8 @@ jobs:
         with:
           name: photon-serde-tests-javacpp
           path: photon-serde-tests/src/
+      #- name: Linker Debugging (REMOVE)
+      #  run: ./gradlew photon-targeting:linkPhotontargetingTestLinuxx86-64DebugGoogleTestExe --info
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage
@@ -203,9 +215,10 @@ jobs:
 
       # Generate the JSON and give it the ""standard""" name maven gives it
       - run: |
-          ./gradlew photon-lib:generateVendorJson
+          ./gradlew photon-lib:generateVendorJson photon-sam:generateVendorJson
           export VERSION=$(git describe --tags --match=v*)
           mv photon-lib/build/generated/vendordeps/photonlib.json photon-lib/build/generated/vendordeps/photonlib-$(git describe --tags --match=v*).json
+          mv photon-sam/build/generated/vendordeps/photonsam.json photon-sam/build/generated/vendordeps/photonsam-$VERSION.json
 
       # Upload it here so it shows up in releases
       - uses: actions/upload-artifact@v7
@@ -237,15 +250,15 @@ jobs:
           java-version: 25
           distribution: temurin
       - run: git fetch --tags --force
-      - run: ./gradlew photon-targeting:build photon-lib:build
+      - run: ./gradlew photon-targeting:build photon-lib:build photon-sam:build
         name: Build with Gradle
-      - run: ./gradlew photon-lib:publish photon-targeting:publish
+      - run: ./gradlew photon-lib:publish photon-targeting:publish photon-sam:publish
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
+      - run: ./gradlew photon-lib:publish photon-targeting:publish photon-sam:publish -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v7
         with:
           name: maven-${{ matrix.artifact-name }}
@@ -278,14 +291,14 @@ jobs:
       - run: git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
-        run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
+        run: ./gradlew photon-targeting:build photon-lib:build photon-sam:build ${{ matrix.build-options }} -x test
       - name: Publish
-        run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
+        run: ./gradlew photon-lib:publish photon-targeting:publish photon-sam:publish ${{ matrix.build-options }}
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
+      - run: ./gradlew photon-lib:publish photon-targeting:publish photon-sam:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
       - uses: actions/upload-artifact@v7
         with:
           name: maven-${{ matrix.artifact-name }}

@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,13 @@ public class FileLoggerTest {
     @Test
     public void smoketest() throws InterruptedException {
         assumeTrue(Platform.isLinux());
+
+        Path log = Path.of("/var/log/kern.log");
+
+        if (!log.toFile().exists()) {
+            System.out.println("Skipping test because /var/log/kern.log does not exist");
+            return;
+        }
 
         var logger = new QueuedFileLogger("/var/log/kern.log");
         for (int i = 0; i < 1; i++) {

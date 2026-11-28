@@ -1,0 +1,32 @@
+nativeUtils {
+    nativeDependencyContainer {
+        gtsam(getNativeDependencyTypeClass('WPIStaticMavenDependency')) {
+            groupId = "org.wpilib.thirdparty.gtsam"
+            artifactId = "gtsam-cpp"
+            headerClassifier = "headers"
+            sourceClassifier = "static"
+            ext = "zip"
+            version = rootProject.ext.gtsamThirdPartyVersion
+            targetPlatforms.addAll(nativeUtils.wpi.platforms.allPlatforms)
+        }
+    }
+}
+
+ext {
+    gtsamArgs = { binary ->
+        if (binary.toolChain instanceof GccCompatibleToolChain) {
+            binary.cppCompiler.define '_ENABLE_EXTENDED_ALIGNED_STORAGE'
+
+            binary.cppCompiler.args.add("-Wno-deprecated-declarations")
+            binary.cppCompiler.args.add("-Wno-deprecated-copy")
+            binary.cppCompiler.args.add("-Wno-redundant-move")
+            binary.cppCompiler.args.add("-Wno-undef")
+        }
+
+        if (binary.toolChain instanceof VisualCpp
+                && binary.targetPlatform.name == 'windowsx86-64') {
+            // GTSAM calls UnDecorateSymbolName from dbghelp.dll
+            binary.linker.args.add('/DEFAULTLIB:dbghelp.lib')
+        }
+    }
+}
