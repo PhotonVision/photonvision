@@ -42,9 +42,12 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.camera.PVCameraInfo.PVUsbCameraInfo;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.wpilib.vision.camera.UsbCamera;
@@ -77,6 +80,7 @@ public class VisionSourceManager implements AutoCloseable {
     public static class VisionSourceManagerState {
         public List<UICameraConfiguration> disabledConfigs;
         public List<PVCameraInfo> allConnectedCameras;
+        public List<String> completelyBrokenCameraUniquePaths;
     }
 
     // Map of (unique name) -> (all CameraConfigurations) that have been registered
@@ -207,6 +211,11 @@ public class VisionSourceManager implements AutoCloseable {
      * @param cameraInfo
      */
     public synchronized boolean assignUnmatchedCamera(PVCameraInfo cameraInfo) {
+        if (getCameraQuirks(cameraInfo).hasQuirk(CameraQuirk.CompletelyBroken)) {
+            logger.error("Camera is not supported for PhotonVision; cannot assign " + cameraInfo);
+            return false;
+        }
+
         // Check if the camera is already in use by another module
         if (vmm.getModules().stream()
                 .anyMatch(
@@ -287,8 +296,22 @@ public class VisionSourceManager implements AutoCloseable {
         ret.allConnectedCameras = filterAllowedDevices(getConnectedCameras());
         ret.disabledConfigs =
                 disabledCameraConfigs.values().stream().map(it -> it.toUiConfig()).toList();
+        ret.completelyBrokenCameraUniquePaths = new ArrayList<>();
+        for (var camera : ret.allConnectedCameras) {
+            if (getCameraQuirks(camera).hasQuirk(CameraQuirk.CompletelyBroken)) {
+                ret.completelyBrokenCameraUniquePaths.add(camera.uniquePath());
+            }
+        }
 
         return ret;
+    }
+
+    private static QuirkyCamera getCameraQuirks(PVCameraInfo camera) {
+        if (camera instanceof PVUsbCameraInfo usbCamera) {
+            return QuirkyCamera.getQuirkyCamera(
+                    usbCamera.vendorId, usbCamera.productId, camera.name());
+        }
+        return QuirkyCamera.getQuirkyCamera(-1, -1, camera.name());
     }
 
     protected void pushUiUpdate() {

@@ -1502,11 +1502,11 @@ public class RequestHandler {
 
             if (VisionSourceManager.getInstance().assignUnmatchedCamera(request.cameraInfo)) {
                 ctx.status(200);
+                ctx.result("Successfully assigned camera: " + request.cameraInfo);
             } else {
                 ctx.status(404);
+                ctx.result("Unable to assign camera: " + request.cameraInfo);
             }
-
-            ctx.result("Successfully assigned camera: " + request.cameraInfo);
         } catch (IllegalStateException | JsonException e) {
             ctx.status(401);
             logger.error("Failed to process assign unmatched camera request", e);

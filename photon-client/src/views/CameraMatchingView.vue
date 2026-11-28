@@ -9,6 +9,7 @@ import {
   PVFileCamera,
   type PVCameraInfo
 } from "@/types/SettingTypes";
+import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
@@ -21,19 +22,19 @@ const backendHostname = inject<string>("backendHostname");
 const formatUrl = (port: number) => `http://${backendHostname}:${port}/stream.mjpg`;
 
 const activatingModule = ref(false);
-const activateModule = async (moduleUniqueName: string) => {
-  if (activatingModule.value) return;
+const activateModule = async (module: WebsocketCameraSettingsUpdate) => {
+  if (activatingModule.value || module.cameraQuirks.quirks.CompletelyBroken) return;
   activatingModule.value = true;
 
   await axiosPost("utils/activateMatchedCamera", "activate a matched camera", {
-    cameraUniqueName: moduleUniqueName
+    cameraUniqueName: module.uniqueName
   });
   activatingModule.value = false;
 };
 
 const assigningCamera = ref(false);
 const assignCamera = async (cameraInfo: PVCameraInfo) => {
-  if (assigningCamera.value) return;
+  if (assigningCamera.value || cameraCompletelyBroken(cameraInfo)) return;
   assigningCamera.value = true;
 
   const payload = {
@@ -73,6 +74,9 @@ const cameraConnected = (uniquePath: string | undefined): boolean => {
   if (!uniquePath) return false;
   return useStateStore().vsmState.allConnectedCameras.find((it) => it.uniquePath === uniquePath) !== undefined;
 };
+
+const cameraCompletelyBroken = (camera: PVCameraInfo): boolean =>
+  useStateStore().vsmState.completelyBrokenCameraUniquePaths.includes(camera.uniquePath);
 
 const unmatchedCameras = computed(() => {
   const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map((it) => it.matchedCameraInfo.uniquePath);
@@ -139,7 +143,10 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
         <div class="text-lg font-semibold wrap-break-word">
           {{ module.matchedCameraInfo.name }}
         </div>
-        <div v-if="!cameraConnected(module.matchedCameraInfo.uniquePath)" class="text-sm">
+        <div v-if="module.cameraQuirks.quirks.CompletelyBroken" class="text-sm">
+          Status: <span class="inactive-status">Unsupported</span>
+        </div>
+        <div v-else-if="!cameraConnected(module.matchedCameraInfo.uniquePath)" class="text-sm">
           Status: <span class="inactive-status">Disconnected</span>
         </div>
         <div v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch" class="text-sm">
@@ -257,7 +264,12 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
         <div class="text-lg font-semibold wrap-break-word">
           {{ module.cameraQuirks.baseName }}
         </div>
-        <div class="text-sm">Status: <span class="inactive-status">Deactivated</span></div>
+        <div class="text-sm">
+          Status:
+          <span class="inactive-status">
+            {{ module.cameraQuirks.quirks.CompletelyBroken ? "Unsupported" : "Deactivated" }}
+          </span>
+        </div>
         <div class="pt-3">
           <pv-table>
             <tbody>
@@ -298,7 +310,13 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               </pv-button>
             </div>
             <div class="w-1/2 px-2 md:w-[41.666%]">
-              <pv-button variant="primary" block :loading="activatingModule" @click="activateModule(module.uniqueName)">
+              <pv-button
+                variant="primary"
+                block
+                :loading="activatingModule"
+                :disabled="module.cameraQuirks.quirks.CompletelyBroken"
+                @click="activateModule(module)"
+              >
                 Activate
               </pv-button>
             </div>
@@ -334,7 +352,12 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <span v-else>Unknown Camera:</span>
           &nbsp;<span>{{ camera.name }}</span>
         </div>
-        <div class="text-sm">Status: Unassigned</div>
+        <div class="text-sm">
+          Status:
+          <span :class="cameraCompletelyBroken(camera) ? 'inactive-status' : undefined">
+            {{ cameraCompletelyBroken(camera) ? "Unsupported" : "Unassigned" }}
+          </span>
+        </div>
         <div class="pt-3">
           <span style="word-break: break-all">{{ camera.path }}</span>
         </div>
@@ -346,7 +369,13 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               </pv-button>
             </div>
             <div class="w-1/2 px-2">
-              <pv-button variant="primary" block :loading="assigningCamera" @click="assignCamera(camera)">
+              <pv-button
+                variant="primary"
+                block
+                :loading="assigningCamera"
+                :disabled="cameraCompletelyBroken(camera)"
+                @click="assignCamera(camera)"
+              >
                 Activate
               </pv-button>
             </div>

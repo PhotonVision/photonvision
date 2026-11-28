@@ -149,6 +149,17 @@ public class VisionSourceManagerTest {
     }
 
     @Test
+    public void testAssignCompletelyBrokenCameraIsRejected() {
+        var brokenCamera =
+                PVCameraInfo.fromUsbCameraInfo(
+                        new UsbCameraInfo(
+                                0, "/dev/video0", "Logitech C270", new String[0], 0x046D, 0x0825));
+
+        assertFalse(vsm.assignUnmatchedCamera(brokenCamera));
+        assertEquals(0, vsm.vmm.getModules().size());
+    }
+
+    @Test
     public void testEnabledDisabled() throws InterruptedException {
         // GIVEN a VSM
         try (var vsm = new TestVsm()) {
