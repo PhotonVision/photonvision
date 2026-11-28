@@ -308,7 +308,8 @@ public class VisionSourceManager implements AutoCloseable {
 
     private static QuirkyCamera getCameraQuirks(PVCameraInfo camera) {
         if (camera instanceof PVUsbCameraInfo usbCamera) {
-            return QuirkyCamera.getQuirkyCamera(usbCamera.vendorId, usbCamera.productId, camera.name());
+            return QuirkyCamera.getQuirkyCamera(
+                    usbCamera.vendorId, usbCamera.productId, camera.name());
         }
         return QuirkyCamera.getQuirkyCamera(-1, -1, camera.name());
     }
