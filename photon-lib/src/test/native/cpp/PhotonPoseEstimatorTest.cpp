@@ -699,9 +699,18 @@ TEST_CASE("PhotonPoseEstimatorTest ConstrainedPnpOneTag", "[poseest]") {
       wpi::math::Translation3d(0.5_m, 0.0_m, 0.5_m),
       wpi::math::Rotation3d(0_rad, -camPitch, 0_rad)};
 
-  photon::PhotonPoseEstimator estimator(
-      wpi::fields::GetField(wpi::fields::FieldId::FRC_2024_CRESCENDO),
-      kRobotToCam);
+  wpi::fields::Field oldCrescendo{
+      "test",
+      "test",
+      "test",
+      std::nullopt,
+      16.541_m,
+      8.211_m,
+      "frc",
+      {{8, wpi::math::Pose3d(-0.0381_m, 4.982717999999999_m,
+                             1.4511020000000001_m, wpi::math::Rotation3d())}}};
+
+  photon::PhotonPoseEstimator estimator(oldCrescendo, kRobotToCam);
 
   auto estimatedMultiTagPose =
       estimator.EstimateCoprocMultiTagPose(cameraOne.testResult[0]);

@@ -51,7 +51,6 @@ import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
 import org.wpilib.fields.Field;
 import org.wpilib.fields.FieldTag;
-import org.wpilib.fields.Fields;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Quaternion;
@@ -993,8 +992,25 @@ class PhotonPoseEstimatorTest {
         final Transform3d kRobotToCam =
                 new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));
 
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(Field.loadField(Fields.FRC_2024_CRESCENDO), kRobotToCam);
+        Field oldCrescendo =
+                new Field(
+                        "test",
+                        "test",
+                        "test",
+                        null,
+                        16.541,
+                        8.211,
+                        "frc",
+                        List.of(
+                                new FieldTag(
+                                        8,
+                                        new Pose3d(
+                                                -0.0381,
+                                                4.982717999999999,
+                                                1.4511020000000001,
+                                                new Rotation3d()))));
+
+        PhotonPoseEstimator estimator = new PhotonPoseEstimator(oldCrescendo, kRobotToCam);
 
         var multiTagEstimate = estimator.estimateCoprocMultiTagPose(result);
         estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.ZERO);
