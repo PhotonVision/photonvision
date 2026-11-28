@@ -138,8 +138,8 @@ public class CameraConfiguration {
 
     /**
      * Replace a calibration in our list with the same resolution with a new one, or add it if none
-     * exists yet. If we are replacing an existing calibration, the old one will be "released" and the
-     * underlying data matrices will become invalid.
+     * exists yet. If we are replacing an existing calibration, the old one will be "released" and
+     * the underlying data matrices will become invalid.
      *
      * @param calibration The calibration to add.
      */
@@ -157,8 +157,8 @@ public class CameraConfiguration {
     }
 
     /**
-     * Remove a calibration from our list. If found, the calibration will be "released". If not found,
-     * no-op.
+     * Remove a calibration from our list. If found, the calibration will be "released". If not
+     * found, no-op.
      *
      * @param resolution The resolution to remove.
      */
@@ -175,9 +175,10 @@ public class CameraConfiguration {
     }
 
     /**
-     * cscore will auto-reconnect to the camera path we give it. v4l does not guarantee that if i swap
-     * cameras around, the same /dev/videoN ID will be assigned to that camera. So instead default to
-     * pinning to a particular USB port, or by "path" (appears to be a global identifier on Windows).
+     * cscore will auto-reconnect to the camera path we give it. v4l does not guarantee that if i
+     * swap cameras around, the same /dev/videoN ID will be assigned to that camera. So instead
+     * default to pinning to a particular USB port, or by "path" (appears to be a global identifier
+     * on Windows).
      *
      * <p>This represents our best guess at an immutable path to detect a camera at.
      */
@@ -244,7 +245,9 @@ public class CameraConfiguration {
         ret.pipelineNicknames = pipelineSettings.stream().map(it -> it.pipelineNickname).toList();
         ret.cameraQuirks = cameraQuirks;
         ret.calibrations =
-                calibrations.stream().map(CameraCalibrationCoefficients::cloneWithoutObservations).toList();
+                calibrations.stream()
+                        .map(CameraCalibrationCoefficients::cloneWithoutObservations)
+                        .toList();
 
         return ret;
     }

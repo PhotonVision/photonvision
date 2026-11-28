@@ -60,31 +60,36 @@ public class TestSource extends VisionSource {
             @Override
             public void requestFrameThresholdType(FrameThresholdType type) {
                 // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameThresholdType'");
+                throw new UnsupportedOperationException(
+                        "Unimplemented method 'requestFrameThresholdType'");
             }
 
             @Override
             public void requestFrameRotation(ImageRotationMode rotationMode) {
                 // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameRotation'");
+                throw new UnsupportedOperationException(
+                        "Unimplemented method 'requestFrameRotation'");
             }
 
             @Override
             public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
                 // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameCopies'");
+                throw new UnsupportedOperationException(
+                        "Unimplemented method 'requestFrameCopies'");
             }
 
             @Override
             public void requestHsvSettings(HSVParams params) {
                 // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestHsvSettings'");
+                throw new UnsupportedOperationException(
+                        "Unimplemented method 'requestHsvSettings'");
             }
 
             @Override
             public void requestBlockForFrames(boolean blockForFrames) {
                 // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestBlockForFrames'");
+                throw new UnsupportedOperationException(
+                        "Unimplemented method 'requestBlockForFrames'");
             }
 
             @Override

@@ -91,8 +91,8 @@ public class SystemMonitor {
     private final long mebi = (1024 * 1024);
 
     /**
-     * Returns the singleton instance of SystemMonitor. Creates the instance, thereby initializing it,
-     * on the first call.
+     * Returns the singleton instance of SystemMonitor. Creates the instance, thereby initializing
+     * it, on the first call.
      *
      * @return instance of SystemMonitor.
      */
@@ -142,9 +142,9 @@ public class SystemMonitor {
 
     /**
      * Returns a comma-separated list of addtional thermal zone types that should be checked to get
-     * the CPU temperature on Unix systems. The temperature will be reported for the first temperature
-     * zone with a type that mateches an item of this list. If the CPU temperature isn't being
-     * reported correctly for a coprocessor, override this method to return a string with type
+     * the CPU temperature on Unix systems. The temperature will be reported for the first
+     * temperature zone with a type that mateches an item of this list. If the CPU temperature isn't
+     * being reported correctly for a coprocessor, override this method to return a string with type
      * associated with the thermal zone for that comprocessor.
      *
      * @return String containing a comma-separated list of thermal zone types for reading CPU
@@ -154,7 +154,6 @@ public class SystemMonitor {
         // Find the thermal zone type by logging on to the coprocessor and running:
         //     `cat /sys/class/thermal/thermal_zone*/type`
         // This command will show the types for all thermal zones.
-        //
         return GlobalConfig.get("oshi.os.linux.sensors.cputemperature.types");
     }
 
@@ -172,7 +171,8 @@ public class SystemMonitor {
             logger.debug("Stopping running SystemMonitor!");
             TimedTaskManager.getInstance().cancelTask(taskName);
         }
-        logger.debug("Starting SystemMonitor with " + millisUpdateInterval + " ms update interval.");
+        logger.debug(
+                "Starting SystemMonitor with " + millisUpdateInterval + " ms update interval.");
         TimedTaskManager.getInstance()
                 .addTask(taskName, this::publishMetrics, millisStartDelay, millisUpdateInterval);
     }
@@ -181,7 +181,8 @@ public class SystemMonitor {
         // Check that the hostname hasn't changed
         if (!CameraServerJNI.getHostname()
                 .equals(NetworkTable.basenameKey(metricPublisher.getTopic().getName()))) {
-            logger.warn("Metrics publisher name does not match hostname! Reinitializing publisher...");
+            logger.warn(
+                    "Metrics publisher name does not match hostname! Reinitializing publisher...");
             metricPublisher.close();
             metricPublisher =
                     NetworkTablesManager.getInstance()
@@ -229,9 +230,12 @@ public class SystemMonitor {
         sb.append(String.format("Usable Disk Space: %.0f MiB, ", metrics.diskUsableSpace() / mebi));
         sb.append(String.format("Memory: %.0f / %.0f MiB, ", metrics.ramUtil(), metrics.ramMem()));
         sb.append(
-                String.format("GPU Memory: %.0f / %.0f MiB, ", metrics.gpuMemUtil(), metrics.gpuMem()));
+                String.format(
+                        "GPU Memory: %.0f / %.0f MiB, ", metrics.gpuMemUtil(), metrics.gpuMem()));
         sb.append(
-                String.format("CPU Throttle: %s, ", metrics.cpuThr().isBlank() ? "N/A" : metrics.cpuThr()));
+                String.format(
+                        "CPU Throttle: %s, ",
+                        metrics.cpuThr().isBlank() ? "N/A" : metrics.cpuThr()));
         sb.append(
                 String.format(
                         "Data sent: %.0f Kbps, Data received: %.0f Kbps",
@@ -287,10 +291,15 @@ public class SystemMonitor {
                         + "\n");
         for (PhysicalProcessor core : cpu.getPhysicalProcessors()) {
             sb.append(
-                    "  Core " + core.getPhysicalProcessorNumber() + " (" + core.getEfficiency() + ")\n");
+                    "  Core "
+                            + core.getPhysicalProcessorNumber()
+                            + " ("
+                            + core.getEfficiency()
+                            + ")\n");
         }
         var myProc = os.getCurrentProcess();
-        sb.append("Current Process: " + myProc.getName() + ", PID: " + myProc.getProcessID() + "\n");
+        sb.append(
+                "Current Process: " + myProc.getName() + ", PID: " + myProc.getProcessID() + "\n");
         // sb.append("  Command Line: " + myProc.getCommandLine());
         sb.append("  Kernel Time: " + myProc.getKernelTime() + "\n");
         sb.append("  User Time: " + myProc.getUserTime() + "\n");
@@ -471,7 +480,8 @@ public class SystemMonitor {
      * @return The IP address as a string, or an empty string if the command fails.
      */
     public String getIpAddress() {
-        String dev = ConfigProvider.getInstance().getConfig().getNetworkConfig().networkManagerIface;
+        String dev =
+                ConfigProvider.getInstance().getConfig().getNetworkConfig().networkManagerIface;
         return NetworkUtils.getIPAddresses(dev);
     }
 
@@ -479,8 +489,8 @@ public class SystemMonitor {
      * Returns a NetworkTraffic instance containing the average sent and received network traffic
      * since the last time this was called.
      *
-     * @return NetworkTraffic instance with data in bits/second. The traffic values will be -1 if the
-     *     data isn't available.
+     * @return NetworkTraffic instance with data in bits/second. The traffic values will be -1 if
+     *     the data isn't available.
      */
     private synchronized NetworkTraffic getNetworkTraffic() {
         String activeIFaceName =
@@ -508,8 +518,8 @@ public class SystemMonitor {
     }
 
     /**
-     * Benchmarks SystemMonitor by timing the calls to retrieve metrics and writes the results to the
-     * log.
+     * Benchmarks SystemMonitor by timing the calls to retrieve metrics and writes the results to
+     * the log.
      */
     private void testSM() {
         StringBuilder sb = new StringBuilder();
@@ -523,13 +533,25 @@ public class SystemMonitor {
         total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", getUsedDiskPct()));
         total +=
                 timeIt(
-                        sb, () -> String.format("Usable Disk Space: %.0f MiB, ", getUsableDiskSpace() / mebi));
+                        sb,
+                        () ->
+                                String.format(
+                                        "Usable Disk Space: %.0f MiB, ",
+                                        getUsableDiskSpace() / mebi));
         total +=
                 timeIt(
-                        sb, () -> String.format("Memory: %.0f / %.0f MiB", getUsedMemory(), getTotalMemory()));
+                        sb,
+                        () ->
+                                String.format(
+                                        "Memory: %.0f / %.0f MiB",
+                                        getUsedMemory(), getTotalMemory()));
         total +=
                 timeIt(
-                        sb, () -> String.format("GPU Memory: %.0f / %.0f MiB", getGpuMemUtil(), getGpuMem()));
+                        sb,
+                        () ->
+                                String.format(
+                                        "GPU Memory: %.0f / %.0f MiB",
+                                        getGpuMemUtil(), getGpuMem()));
         total += timeIt(sb, () -> String.format("CPU Throttle: %s", getCpuThrottleReason()));
 
         total +=

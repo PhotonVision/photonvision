@@ -66,7 +66,10 @@ public class VisionLED implements AutoCloseable {
         BoardPinInfo boardPinInfo = deviceFactory.getBoardPinInfo();
         ledPins.forEach(
                 pin -> {
-                    if (ledsCanDim && boardPinInfo.getByPwmOrGpioNumberOrThrow(pin).isPwmOutputSupported()) {
+                    if (ledsCanDim
+                            && boardPinInfo
+                                    .getByPwmOrGpioNumberOrThrow(pin)
+                                    .isPwmOutputSupported()) {
                         PwmLed led = new PwmLed(deviceFactory, pin);
                         if (pwmFrequency > 0) {
                             led.setPwmFrequency(pwmFrequency);
@@ -85,7 +88,9 @@ public class VisionLED implements AutoCloseable {
 
     public void setBrightness(int percentage) {
         mappedBrightness =
-                (float) (MathUtils.map(percentage, 0.0, 100.0, brightnessMin, brightnessMax) / 100.0);
+                (float)
+                        (MathUtils.map(percentage, 0.0, 100.0, brightnessMin, brightnessMax)
+                                / 100.0);
         if (currentOutputState) {
             for (PwmLed led : dimmableVisionLEDs) {
                 led.setValue(mappedBrightness);
@@ -178,7 +183,11 @@ public class VisionLED implements AutoCloseable {
         if (fromNT) {
             currentLedMode = newLedMode;
             logger.info(
-                    "Changing LED mode from \"" + lastLedMode.toString() + "\" to \"" + newLedMode + "\"");
+                    "Changing LED mode from \""
+                            + lastLedMode.toString()
+                            + "\" to \""
+                            + newLedMode
+                            + "\"");
         } else {
             logger.info("Changing LED internal state to " + newLedMode.toString());
         }

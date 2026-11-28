@@ -65,6 +65,7 @@ public class PvCSCoreLogger {
             pvlevel = LogLevel.DEBUG;
         }
         logger.log(
-                "CS: " + levelmsg + " " + level + ": " + msg + " (" + file + ":" + line + ")", pvlevel);
+                "CS: " + levelmsg + " " + level + ": " + msg + " (" + file + ":" + line + ")",
+                pvlevel);
     }
 }

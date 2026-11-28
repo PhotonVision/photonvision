@@ -108,7 +108,11 @@ public class DataChangeService {
                                         .map(Enum::toString)
                                         .collect(Collectors.joining(", "));
 
-                        return "Added subscriber - " + "Sources: " + sources + ", Destinations: " + dests;
+                        return "Added subscriber - "
+                                + "Sources: "
+                                + sources
+                                + ", Destinations: "
+                                + dests;
                     });
             return new SubscriberHandle(subscribers.size() - 1);
         }

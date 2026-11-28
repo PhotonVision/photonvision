@@ -56,7 +56,10 @@ public class SystemMonitorRK3588 extends SystemMonitor {
             var contents = Files.readString(Path.of("/sys/kernel/debug/rknpu/load"));
             Matcher matcher = pattern.matcher(contents);
             double[] results =
-                    matcher.results().map(mr -> mr.group(1)).mapToDouble(Double::parseDouble).toArray();
+                    matcher.results()
+                            .map(mr -> mr.group(1))
+                            .mapToDouble(Double::parseDouble)
+                            .toArray();
             return results;
         } catch (IOException e) {
             return new double[0];

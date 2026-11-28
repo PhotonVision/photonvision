@@ -65,7 +65,8 @@ public class NeuralNetworkModelsSettings {
         // ============= Migration code from v2025.3.1 ===========
 
         private static Pattern modelPattern =
-                Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
+                Pattern.compile(
+                        "^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
 
         static ModelProperties createFromFilename(String modelFileName)
                 throws IllegalArgumentException, IOException {
@@ -80,7 +81,8 @@ public class NeuralNetworkModelsSettings {
             // Get the model extension and check if it is supported
             String modelExtension = model.getName().substring(model.getName().lastIndexOf('.'));
             if (!modelExtension.equals(".rknn")) {
-                throw new IllegalArgumentException("Model " + modelFileName + " is not a supported format");
+                throw new IllegalArgumentException(
+                        "Model " + modelFileName + " is not a supported format");
             }
 
             var backend =
@@ -89,10 +91,12 @@ public class NeuralNetworkModelsSettings {
                             .findFirst();
 
             if (!backend.isPresent()) {
-                throw new IllegalArgumentException("Model " + modelFileName + " cannot find backend");
+                throw new IllegalArgumentException(
+                        "Model " + modelFileName + " cannot find backend");
             }
 
-            String labelFile = model.getAbsolutePath().replace(backend.get().extension(), "-labels.txt");
+            String labelFile =
+                    model.getAbsolutePath().replace(backend.get().extension(), "-labels.txt");
             List<String> labels = Files.readAllLines(Paths.get(labelFile));
 
             String[] parts = parseRKNNName(modelFileName);
@@ -153,7 +157,10 @@ public class NeuralNetworkModelsSettings {
             }
 
             return new String[] {
-                modelMatcher.group(1), modelMatcher.group(2), modelMatcher.group(3), modelMatcher.group(4)
+                modelMatcher.group(1),
+                modelMatcher.group(2),
+                modelMatcher.group(3),
+                modelMatcher.group(4)
             };
         }
     }
@@ -200,7 +207,10 @@ public class NeuralNetworkModelsSettings {
         } else if (unmapped.containsKey("modelPathToProperties")) {
             // MIGRATION: 2026
             modelPropsStream =
-                    modelPropsMapJsonb.fromObject(unmapped.get("modelPathToProperties")).values().stream();
+                    modelPropsMapJsonb
+                            .fromObject(unmapped.get("modelPathToProperties"))
+                            .values()
+                            .stream();
         } else {
             modelPropsStream = Stream.empty();
         }

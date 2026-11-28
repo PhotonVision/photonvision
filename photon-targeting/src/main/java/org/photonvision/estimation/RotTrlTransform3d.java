@@ -68,8 +68,8 @@ public class RotTrlTransform3d {
     }
 
     /**
-     * The rotation-translation transformation that makes poses in the world consider this pose as the
-     * new origin, or change the basis to this pose.
+     * The rotation-translation transformation that makes poses in the world consider this pose as
+     * the new origin, or change the basis to this pose.
      *
      * @param pose The new origin
      */

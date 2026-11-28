@@ -20,9 +20,9 @@ package org.photonvision.common.hardware.metrics;
 public class SystemMonitorWindows extends SystemMonitor {
     /**
      * Monitoring CPU Temperature on Windows is challenging because most vendors don't publish this
-     * data to WMI. As a work-around, OSHI tries to use LibreHardwareMonitor. Since OSHI version
-     * 7.8.0, OSHI has removed the LibreHardwareMonitor dependency for Windows, so we can't use it to
-     * get CPU temperature. Instead, return -1.0 to indicate that the temperature is unavailable.
+     * data to WMI. As a work-around, OSHI has used jLibreHardwareMonitor. With version 7.8.0, OSHI
+     * removed the jLibreHardwareMonitor dependency for Windows, so just return -1.0 to indicate
+     * that the temperature is unavailable.
      *
      * <p>For more information, see <a href="https://github.com/oshi/oshi/issues/3905">OSHI Issue
      * #3905</a>

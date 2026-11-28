@@ -159,11 +159,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         pipelineIndexListener =
                 new NTDataChangeListener(
-                        ts.subTable.getInstance(), ts.pipelineIndexRequestSub, this::onPipelineIndexChange);
+                        ts.subTable.getInstance(),
+                        ts.pipelineIndexRequestSub,
+                        this::onPipelineIndexChange);
 
         driverModeListener =
                 new NTDataChangeListener(
-                        ts.subTable.getInstance(), ts.driverModeSubscriber, this::onDriverModeChange);
+                        ts.subTable.getInstance(),
+                        ts.driverModeSubscriber,
+                        this::onDriverModeChange);
 
         fpsLimitListener =
                 new NTDataChangeListener(
@@ -183,11 +187,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     @Override
     public void accept(CVPipelineResult result) {
         CVPipelineResult acceptedResult;
-        if (result
-                instanceof
-                CalibrationPipelineResult) // If the data is from a calibration pipeline, override the list
-            // of targets to be null to prevent the data from being sent and
-            // continue to post blank/zero data to the network tables
+        if (result instanceof CalibrationPipelineResult)
+            // If the data is from a calibration pipeline, override the list of targets to be null
+            // to prevent the data from being sent and continue to post blank/zero data to the
+            // network tables
             acceptedResult =
                     new CVPipelineResult(
                             result.sequenceID,
@@ -250,7 +253,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         // Something in the result can sometimes be null -- so check probably too many things
         if (acceptedResult.inputAndOutputFrame != null
                 && acceptedResult.inputAndOutputFrame.frameStaticProperties != null
-                && acceptedResult.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
+                && acceptedResult.inputAndOutputFrame.frameStaticProperties.cameraCalibration
+                        != null) {
             var fsp = acceptedResult.inputAndOutputFrame.frameStaticProperties;
             ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
             ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getDistCoeffsArr());

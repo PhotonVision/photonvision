@@ -106,7 +106,10 @@ public class PacketUtils {
 
     public static Quaternion unpackQuaternion(Packet packet) {
         return new Quaternion(
-                packet.decodeDouble(), packet.decodeDouble(), packet.decodeDouble(), packet.decodeDouble());
+                packet.decodeDouble(),
+                packet.decodeDouble(),
+                packet.decodeDouble(),
+                packet.decodeDouble());
     }
 
     public static void packRotation3d(Packet packet, Rotation3d rotation) {
@@ -133,7 +136,8 @@ public class PacketUtils {
     }
 
     public static Translation3d unpackTranslation3d(Packet packet) {
-        return new Translation3d(packet.decodeDouble(), packet.decodeDouble(), packet.decodeDouble());
+        return new Translation3d(
+                packet.decodeDouble(), packet.decodeDouble(), packet.decodeDouble());
     }
 
     public static void packTransform2d(Packet packet, Transform2d transform) {

@@ -66,7 +66,8 @@ public class Vision {
         if (Robot.isSimulation()) {
             // Create the vision system simulation which handles cameras and targets on the field.
             visionSim = new VisionSystemSim("main");
-            // Add all the AprilTags inside the tag layout as visible targets to this simulated field.
+            // Add all the AprilTags inside the tag layout as visible targets to this simulated
+            // field.
             visionSim.addAprilTags(kTagLayout);
             // Create simulated camera properties. These can be set to mimic your actual camera.
             var cameraProp = new SimCameraProperties();
@@ -75,8 +76,8 @@ public class Vision {
             cameraProp.setFPS(15);
             cameraProp.setAvgLatencyMs(50);
             cameraProp.setLatencyStdDevMs(15);
-            // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible
-            // targets.
+            // Create a PhotonCameraSim which will update the linked PhotonCamera's values with
+            // visible targets.
             cameraSim = new PhotonCameraSim(camera, cameraProp);
             // Add the simulated camera to view the targets on this simulated field.
             visionSim.addCamera(cameraSim, kRobotToCam);
@@ -110,14 +111,15 @@ public class Vision {
                         // Change our trust in the measurement based on the tags we can see
                         var estStdDevs = getEstimationStdDevs();
 
-                        estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+                        estConsumer.accept(
+                                est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
                     });
         }
     }
 
     /**
-     * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
-     * deviations based on number of tags, estimation strategy, and distance from the tags.
+     * Calculates new standard deviations This algorithm is a heuristic that creates dynamic
+     * standard deviations based on number of tags, estimation strategy, and distance from the tags.
      *
      * @param estimatedPose The estimated pose to guess standard deviations for.
      * @param targets All targets in this camera frame
@@ -140,11 +142,15 @@ public class Vision {
                 if (tagPose.isEmpty()) continue;
                 numTags++;
                 avgDist +=
-                        tagPose
-                                .get()
+                        tagPose.get()
                                 .toPose2d()
                                 .getTranslation()
-                                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+                                .getDistance(
+                                        estimatedPose
+                                                .get()
+                                                .estimatedPose
+                                                .toPose2d()
+                                                .getTranslation());
             }
 
             if (numTags == 0) {
@@ -157,7 +163,8 @@ public class Vision {
                 if (numTags > 1) estStdDevs = kMultiTagStdDevs;
                 // Increase std devs based on (average) distance
                 if (numTags == 1 && avgDist > 4)
-                    estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+                    estStdDevs =
+                            VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
                 else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
                 curStdDevs = estStdDevs;
             }
@@ -167,8 +174,8 @@ public class Vision {
     /**
      * Returns the latest standard deviations of the estimated pose from {@link
      * #getEstimatedGlobalPose()}, for use with {@link
-     * org.wpilib.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should only
-     * be used when there are targets visible.
+     * org.wpilib.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should
+     * only be used when there are targets visible.
      */
     public Matrix<N3, N1> getEstimationStdDevs() {
         return curStdDevs;

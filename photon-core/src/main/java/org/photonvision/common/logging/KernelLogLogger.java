@@ -45,8 +45,8 @@ public class KernelLogLogger {
             System.out.println("NOT for klogs");
         }
 
-        // arbitrary frequency to grab logs. The underlying native buffer will grow unbounded without
-        // this, lol
+        // arbitrary frequency to grab logs. The underlying native buffer will grow unbounded
+        // without this, lol
         TimedTaskManager.getInstance().addTask("outputPrintk", this::outputNewPrintks, 1000);
     }
 

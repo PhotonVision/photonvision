@@ -57,7 +57,9 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 && cornerDetectionUseConvexHulls == that.cornerDetectionUseConvexHulls
                 && cornerDetectionExactSideCount == that.cornerDetectionExactSideCount
                 && cornerDetectionSideCount == that.cornerDetectionSideCount
-                && Double.compare(that.cornerDetectionAccuracyPercentage, cornerDetectionAccuracyPercentage)
+                && Double.compare(
+                                that.cornerDetectionAccuracyPercentage,
+                                cornerDetectionAccuracyPercentage)
                         == 0
                 && contourShape == that.contourShape
                 && Objects.equals(contourArea, that.contourArea)

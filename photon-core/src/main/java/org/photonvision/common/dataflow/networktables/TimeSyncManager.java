@@ -46,7 +46,8 @@ public class TimeSyncManager {
 
         // Need this subtable to be unique per coprocessor. TODO: consider using MAC address or
         // something similar for metrics?
-        var timeTable = kRootTable.getSubTable(".timesync").getSubTable(CameraServerJNI.getHostname());
+        var timeTable =
+                kRootTable.getSubTable(".timesync").getSubTable(CameraServerJNI.getHostname());
         m_offsetPub = timeTable.getIntegerTopic("offset_ns").publish();
         m_rtt2Pub = timeTable.getIntegerTopic("rtt2_ns").publish();
         m_pingsPub = timeTable.getIntegerTopic("ping_tx_count").publish();
@@ -148,7 +149,9 @@ public class TimeSyncManager {
         if (m_client != null) {
             // restart (in java code; we could just add a reset metrics function...)
             logger.debug(
-                    "NT (re)connected -- restarting Time Sync Client at " + m_client.getServer() + ":5810");
+                    "NT (re)connected -- restarting Time Sync Client at "
+                            + m_client.getServer()
+                            + ":5810");
             m_client.stop();
             m_client = new TimeSyncClient(m_client.getServer(), 5810, 1.0);
         }

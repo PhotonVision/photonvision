@@ -71,10 +71,12 @@ public class VisionModuleManager implements AutoCloseable {
         // The best we can do is try to avoid a case where the stream index runs away to infinity
         // since we can only stream 5 cameras at once
 
-        // Big list, which should contain every vision source (currently loaded plus the new ones being
-        // added)
+        // Big list, which should contain every vision source (currently loaded plus the new ones
+        // being added)
         List<Integer> bigList =
-                this.getModules().stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
+                this.getModules().stream()
+                        .map(it -> it.getCameraConfiguration().streamIndex)
+                        .toList();
 
         int idx = 0;
         while (bigList.contains(idx)) {

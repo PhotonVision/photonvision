@@ -52,7 +52,8 @@ public class LogFileManagementTest {
         for (int fileIdx = 0; fileIdx < Logger.MAX_LOGS_TO_KEEP + 5; fileIdx++) {
             String fname =
                     cfgLoader.taToLogFname(
-                            LocalDateTime.ofEpochSecond(1500000000 + fileIdx * 60, 0, ZoneOffset.UTC));
+                            LocalDateTime.ofEpochSecond(
+                                    1500000000 + fileIdx * 60, 0, ZoneOffset.UTC));
             try {
                 FileWriter testLogWriter = new FileWriter(testDir.resolve(fname).toString());
                 testLogWriter.write("Test log contents created for testing purposes only");
@@ -72,7 +73,9 @@ public class LogFileManagementTest {
 
         // Confirm we deleted log files
         assertEquals(
-                Logger.MAX_LOGS_TO_KEEP, countLogFiles(testDir.toString()), "Not enough log files deleted");
+                Logger.MAX_LOGS_TO_KEEP,
+                countLogFiles(testDir.toString()),
+                "Not enough log files deleted");
 
         // Clean uptest directory
         org.photonvision.common.util.file.FileUtils.deleteDirectory(testDir);

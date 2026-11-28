@@ -33,7 +33,8 @@ public class NeuralNetworkPropertyManagerTest {
     @Test
     void testSerialization() {
         var nnpm = new NeuralNetworkModelsSettings();
-        // Path is always serialized as absolute; for the test to pass, this must also be made absolute
+        // Path is always serialized as absolute; for the test to pass, this must also be made
+        // absolute
         nnpm.addModelProperties(
                 new ModelProperties(
                         Path.of("test", "yolov8nCOCO.rknn").toAbsolutePath(),

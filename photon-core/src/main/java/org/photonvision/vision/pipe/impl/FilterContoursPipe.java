@@ -93,7 +93,8 @@ public class FilterContoursPipe
         // Aspect Ratio Filtering.
         double aspectRatio =
                 TargetCalculations.getAspectRatio(contour.getMinAreaRect(), params.isLandscape());
-        if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond()) return;
+        if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond())
+            return;
 
         m_filteredContours.add(contour);
     }

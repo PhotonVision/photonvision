@@ -70,7 +70,8 @@ public class PathManager {
     }
 
     public Path getLogPath() {
-        var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
+        var logFile =
+                Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
         if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }

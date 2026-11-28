@@ -151,8 +151,12 @@ class PacketTest {
                                         2,
                                         -1,
                                         -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
                                         0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -172,8 +176,12 @@ class PacketTest {
                                         3,
                                         -1,
                                         -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(1, 5, 3)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(1, 5, 3)),
                                         0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -205,8 +213,12 @@ class PacketTest {
                                         2,
                                         -1,
                                         -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
                                         0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -226,8 +238,12 @@ class PacketTest {
                                         3,
                                         -1,
                                         -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(1, 5, 3)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(1, 5, 3)),
                                         0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -242,7 +258,10 @@ class PacketTest {
                         Optional.of(
                                 new MultiTargetPNPResult(
                                         new PnpResult(
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
+                                                0.1),
                                         List.of((short) 1, (short) 2, (short) 3))));
         var p3 = new Packet(10);
         PhotonPipelineResult.photonStruct.pack(p3, ret3);
@@ -268,8 +287,12 @@ class PacketTest {
                                                 2,
                                                 -1,
                                                 -1f,
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
                                                 0.25,
                                                 List.of(
                                                         new TargetCorner(1, 2),
@@ -289,8 +312,12 @@ class PacketTest {
                                                 3,
                                                 -1,
                                                 -1f,
-                                                new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                                new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(4, 2, 3),
+                                                        new Rotation3d(1, 5, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(4, 2, 3),
+                                                        new Rotation3d(1, 5, 3)),
                                                 0.25,
                                                 List.of(
                                                         new TargetCorner(1, 2),
@@ -316,8 +343,12 @@ class PacketTest {
                                                 2,
                                                 -1,
                                                 -1f,
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
                                                 0.25,
                                                 List.of(
                                                         new TargetCorner(1, 2),
@@ -337,8 +368,12 @@ class PacketTest {
                                                 3,
                                                 -1,
                                                 -1f,
-                                                new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                                new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(4, 2, 3),
+                                                        new Rotation3d(1, 5, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(4, 2, 3),
+                                                        new Rotation3d(1, 5, 3)),
                                                 0.25,
                                                 List.of(
                                                         new TargetCorner(1, 2),
@@ -364,8 +399,12 @@ class PacketTest {
                                                 2,
                                                 -1,
                                                 -1f,
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
                                                 0.25,
                                                 List.of(
                                                         new TargetCorner(1, 2),
@@ -385,8 +424,12 @@ class PacketTest {
                                                 3,
                                                 -1,
                                                 -1f,
-                                                new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                                new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(4, 2, 3),
+                                                        new Rotation3d(1, 5, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(4, 2, 3),
+                                                        new Rotation3d(1, 5, 3)),
                                                 0.25,
                                                 List.of(
                                                         new TargetCorner(1, 2),
@@ -457,8 +500,12 @@ class PacketTest {
                                                 2,
                                                 -1,
                                                 -1f,
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(1, 2, 3),
+                                                        new Rotation3d(1, 2, 3)),
                                                 0.25,
                                                 List.of(
                                                         new TargetCorner(1, 2),
@@ -478,8 +525,12 @@ class PacketTest {
                                                 3,
                                                 -1,
                                                 -1f,
-                                                new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                                new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(4, 2, 3),
+                                                        new Rotation3d(1, 5, 3)),
+                                                new Transform3d(
+                                                        new Translation3d(4, 2, 3),
+                                                        new Rotation3d(1, 5, 3)),
                                                 0.25,
                                                 List.of(
                                                         new TargetCorner(1, 2),
@@ -519,8 +570,12 @@ class PacketTest {
                                         2,
                                         -1,
                                         -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
                                         0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -540,8 +595,12 @@ class PacketTest {
                                         3,
                                         -1,
                                         -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(1, 5, 3)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(1, 5, 3)),
                                         0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),

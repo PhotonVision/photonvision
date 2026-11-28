@@ -39,7 +39,8 @@ class PhotonUtilTest {
         var targetPitch = Units.degreesToRadians(30);
 
         var dist =
-                PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
+                PhotonUtils.calculateDistanceToTargetMeters(
+                        camHeight, targetHeight, camPitch, targetPitch);
 
         assertEquals(3.464, dist, 0.01);
 
@@ -49,7 +50,8 @@ class PhotonUtilTest {
         targetPitch = Units.degreesToRadians(-10);
 
         dist =
-                PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
+                PhotonUtils.calculateDistanceToTargetMeters(
+                        camHeight, targetHeight, camPitch, targetPitch);
         assertEquals(5.671, dist, 0.01);
     }
 
@@ -97,7 +99,8 @@ class PhotonUtilTest {
         var currentPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
         assertEquals(4.0, fieldToRobot.getX());
         assertEquals(
-                Math.toDegrees(Math.atan2((Units.inchesToMeters(162)), (Units.inchesToMeters(324)))),
+                Math.toDegrees(
+                        Math.atan2((Units.inchesToMeters(162)), (Units.inchesToMeters(324)))),
                 PhotonUtils.getYawToPose(currentPose, targetPose).getDegrees());
     }
 }

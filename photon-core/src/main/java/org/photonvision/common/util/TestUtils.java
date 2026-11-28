@@ -256,8 +256,8 @@ public class TestUtils {
     public static Path getResourcesFolderPath(boolean testMode) {
         System.out.println("CWD: " + Path.of("").toAbsolutePath());
 
-        // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
-        // if it's wrong
+        // VSCode likes to make this path relative to the wrong root directory, so a fun hack to
+        // tell if it's wrong
         Path ret = Path.of("test-resources").toAbsolutePath();
         if (Path.of("test-resources")
                 .toAbsolutePath()
@@ -349,7 +349,8 @@ public class TestUtils {
 
     public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
         try (var stream =
-                new FileInputStream(Path.of(getCalibrationPath(testMode).toString(), filename).toFile())) {
+                new FileInputStream(
+                        Path.of(getCalibrationPath(testMode).toString(), filename).toFile())) {
             return Jsonb.instance().type(CameraCalibrationCoefficients.class).fromJson(stream);
         } catch (IOException | IllegalStateException | JsonException e) {
             e.printStackTrace();
@@ -421,7 +422,9 @@ public class TestUtils {
         printTestResults(pipelineResult);
         System.out.println(
                 "Found targets at "
-                        + pipelineResult.targets.stream().map(TrackedTarget::getBestCameraToTarget3d).toList());
+                        + pipelineResult.targets.stream()
+                                .map(TrackedTarget::getBestCameraToTarget3d)
+                                .toList());
     }
 
     public static Path getTestMode2023ImagePath() {

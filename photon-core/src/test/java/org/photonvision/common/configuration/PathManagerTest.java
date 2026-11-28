@@ -41,7 +41,8 @@ public class PathManagerTest {
                 "Filename should match the expected pattern with leading zeros");
 
         // THEN: time is in 24-hour format (03 not 03AM or 3PM), already shown implicitly
-        assertTrue(fname.contains("_03-04-05"), "Time should be in 24-hour format with leading zeros");
+        assertTrue(
+                fname.contains("_03-04-05"), "Time should be in 24-hour format with leading zeros");
     }
 
     @Test

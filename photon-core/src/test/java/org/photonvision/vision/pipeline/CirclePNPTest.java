@@ -112,7 +112,9 @@ public class CirclePNPTest {
                     TestUtils.printTestResultsWithLocation(pipelineResult);
 
                     TestUtils.showImage(
-                            pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
+                            pipelineResult.inputAndOutputFrame.colorImage.getMat(),
+                            "Pipeline output",
+                            999999);
                 }
             }
         }
@@ -132,7 +134,8 @@ public class CirclePNPTest {
 
         try (var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(
+                                TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV)) {
             TestUtils.continuouslyRunPipeline(frameProvider, settings);
         }

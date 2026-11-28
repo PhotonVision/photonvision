@@ -113,13 +113,15 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
             if (cameraMatrix != null && cameraMatrix.rows() > 0) {
                 var estimatorParams =
-                        new ArucoPoseEstimatorPipeParams(frameStaticProperties.cameraCalibration, tagWidth);
+                        new ArucoPoseEstimatorPipeParams(
+                                frameStaticProperties.cameraCalibration, tagWidth);
                 singleTagPoseEstimatorPipe.setParams(estimatorParams);
 
                 // TODO global state ew
                 var field = ConfigProvider.getInstance().getConfig().getFieldLayout();
                 multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, field, tagModel));
+                        new MultiTargetPNPPipeParams(
+                                frameStaticProperties.cameraCalibration, field, tagModel));
             }
         }
     }
@@ -148,9 +150,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         List<TrackedTarget> targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
-            // Populate target list for multitag
-            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
-            // not be necessary.)
+            // Populate target list for multitag.
+            // TODO: Address circular dependencies. Multitag only requires corners and IDs, this
+            // should not be necessary.
 
             targetList.add(
                     new TrackedTarget(
@@ -177,10 +179,14 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
             for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
                 AprilTagPoseEstimate tagPoseEstimate = null;
-                // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
+                // Do single-tag estimation when "always enabled" or if a tag was not used for
+                // multitag
                 if (settings.doSingleTargetAlways
                         || !(multiTagResult.isPresent()
-                                && multiTagResult.get().fiducialIDsUsed.contains((short) detection.getId()))) {
+                                && multiTagResult
+                                        .get()
+                                        .fiducialIDsUsed
+                                        .contains((short) detection.getId()))) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
@@ -193,10 +199,12 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                     if (tagPose.isPresent()) {
                         var camToTag =
                                 new Transform3d(
-                                        new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
+                                        new Pose3d().plus(multiTagResult.get().estimatedPose.best),
+                                        tagPose.get());
                         // match expected OpenCV coordinate system
                         camToTag =
-                                CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
+                                CoordinateSystem.convert(
+                                        camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
 
                         tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
                     }
@@ -217,9 +225,12 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                         MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
 
                 target.setBestCameraToTarget3d(
-                        new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
+                        new Transform3d(
+                                correctedBestPose.getTranslation(),
+                                correctedBestPose.getRotation()));
                 target.setAltCameraToTarget3d(
-                        new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
+                        new Transform3d(
+                                correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
 
                 targetList.add(target);
             }
@@ -227,7 +238,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         if (targetList.size() > Packet.MAX_ARRAY_LEN) {
             logger.error(
-                    "We have " + targetList.size() + " targets! Arbitrarily dropping some on the floor");
+                    "We have "
+                            + targetList.size()
+                            + " targets! Arbitrarily dropping some on the floor");
             targetList = targetList.subList(0, Packet.MAX_ARRAY_LEN);
         }
 

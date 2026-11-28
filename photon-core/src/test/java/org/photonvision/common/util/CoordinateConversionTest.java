@@ -36,8 +36,8 @@ public class CoordinateConversionTest {
 
     @Test
     public void testAprilTagToOpenCV() {
-        // AprilTag and OpenCV both use the EDN coordinate system. AprilTag, however, assumes the tag's
-        // z-axis points away from the camera while we expect it to point towards the camera.
+        // AprilTag and OpenCV both use the EDN coordinate system. AprilTag, however, assumes the
+        // tag's z-axis points away from the camera while we expect it to point towards the camera.
         var apriltag =
                 new Transform3d(
                         new Translation3d(1, 2, 3),
@@ -45,7 +45,9 @@ public class CoordinateConversionTest {
         var opencv = MathUtils.convertApriltagtoOpenCV(apriltag);
         final var expectedTrl = new Translation3d(1, 2, 3);
         assertEquals(
-                expectedTrl, opencv.getTranslation(), "AprilTag to OpenCV translation conversion failed");
+                expectedTrl,
+                opencv.getTranslation(),
+                "AprilTag to OpenCV translation conversion failed");
         var apriltagXaxis = new Translation3d(1, 0, 0).rotateBy(apriltag.getRotation());
         var apriltagYaxis = new Translation3d(0, 1, 0).rotateBy(apriltag.getRotation());
         var apriltagZaxis = new Translation3d(0, 0, 1).rotateBy(apriltag.getRotation());
@@ -57,7 +59,9 @@ public class CoordinateConversionTest {
                 opencvXaxis,
                 "AprilTag to OpenCV rotation conversion failed(X-axis)");
         assertEquals(
-                apriltagYaxis, opencvYaxis, "AprilTag to OpenCV rotation conversion failed(Y-axis)");
+                apriltagYaxis,
+                opencvYaxis,
+                "AprilTag to OpenCV rotation conversion failed(Y-axis)");
         assertEquals(
                 apriltagZaxis.unaryMinus(),
                 opencvZaxis,
@@ -69,12 +73,16 @@ public class CoordinateConversionTest {
         // OpenCV uses the EDN coordinate system while wpilib is in NWU.
         var opencv =
                 new Transform3d(
-                        new Translation3d(1, 2, 3), new Rotation3d(VecBuilder.fill(1, 2, 3), Math.PI / 8));
+                        new Translation3d(1, 2, 3),
+                        new Rotation3d(VecBuilder.fill(1, 2, 3), Math.PI / 8));
         var wpilib = MathUtils.convertOpenCVtoPhotonTransform(opencv);
         final var expectedTrl = new Translation3d(3, -1, -2);
         assertEquals(
-                expectedTrl, wpilib.getTranslation(), "OpenCV to WPILib translation conversion failed");
+                expectedTrl,
+                wpilib.getTranslation(),
+                "OpenCV to WPILib translation conversion failed");
         var expectedRot = new Rotation3d(VecBuilder.fill(3, -1, -2), Math.PI / 8);
-        assertEquals(expectedRot, wpilib.getRotation(), "OpenCV to WPILib rotation conversion failed");
+        assertEquals(
+                expectedRot, wpilib.getRotation(), "OpenCV to WPILib rotation conversion failed");
     }
 }

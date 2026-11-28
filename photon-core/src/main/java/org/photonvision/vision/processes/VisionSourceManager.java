@@ -104,29 +104,34 @@ public class VisionSourceManager implements AutoCloseable {
 
         final HashMap<String, CameraConfiguration> deserializedConfigs = new HashMap<>();
 
-        // 1. Verify all camera unique names are unique and paths/types are unique for paranoia. This
-        // seems redundant, consider deleting
+        // 1. Verify all camera unique names are unique and paths/types are unique for paranoia.
+        // This seems redundant, consider deleting
         for (var config : configs) {
             Predicate<PVCameraInfo> checkDuplicateCamera =
                     (other) ->
                             (other.type().equals(config.matchedCameraInfo.type())
-                                    && other.uniquePath().equals(config.matchedCameraInfo.uniquePath()));
+                                    && other.uniquePath()
+                                            .equals(config.matchedCameraInfo.uniquePath()));
 
             if (deserializedConfigs.containsKey(config.uniqueName)) {
                 logger.error(
-                        "Duplicate unique name for config " + config.uniqueName + " -- not overwriting");
+                        "Duplicate unique name for config "
+                                + config.uniqueName
+                                + " -- not overwriting");
             } else if (deserializedConfigs.values().stream()
                     .map(it -> it.matchedCameraInfo)
                     .anyMatch(checkDuplicateCamera)) {
                 logger.error(
-                        "Duplicate camera type & path for config " + config.uniqueName + " -- not overwriting");
+                        "Duplicate camera type & path for config "
+                                + config.uniqueName
+                                + " -- not overwriting");
             } else {
                 deserializedConfigs.put(config.uniqueName, config);
             }
         }
 
-        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't care about if
-        // the underlying device is currently connected or not.
+        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't care if the
+        // underlying device is currently connected or not.
         deserializedConfigs.values().stream()
                 .filter(it -> !it.deactivated)
                 .map(this::loadVisionSourceFromCamConfig)
@@ -162,11 +167,14 @@ public class VisionSourceManager implements AutoCloseable {
         if (vmm.getModules().stream()
                 .anyMatch(
                         module ->
-                                module
-                                        .getCameraConfiguration()
+                                module.getCameraConfiguration()
                                         .matchedCameraInfo
                                         .uniquePath()
-                                        .equals(deactivatedConfig.get().matchedCameraInfo.uniquePath()))) {
+                                        .equals(
+                                                deactivatedConfig
+                                                        .get()
+                                                        .matchedCameraInfo
+                                                        .uniquePath()))) {
             logger.error(
                     "Camera unique-path already in use by active VisionModule! Cannot reactivate "
                             + deactivatedConfig.get().nickname);
@@ -174,7 +182,10 @@ public class VisionSourceManager implements AutoCloseable {
 
         // transform the camera info all the way to a VisionModule and then start it
         var created =
-                deactivatedConfig.map(this::loadVisionSourceFromCamConfig).map(vmm::addSource).isPresent();
+                deactivatedConfig
+                        .map(this::loadVisionSourceFromCamConfig)
+                        .map(vmm::addSource)
+                        .isPresent();
 
         if (!created) {
             // Couldn't create a VM for this config - restore state
@@ -186,7 +197,8 @@ public class VisionSourceManager implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
 
         pushUiUpdate();
 
@@ -208,13 +220,13 @@ public class VisionSourceManager implements AutoCloseable {
         if (vmm.getModules().stream()
                 .anyMatch(
                         module ->
-                                module
-                                        .getCameraConfiguration()
+                                module.getCameraConfiguration()
                                         .matchedCameraInfo
                                         .uniquePath()
                                         .equals(cameraInfo.uniquePath()))) {
             logger.error(
-                    "Camera unique-path already in use by active VisionModule! Cannot add " + cameraInfo);
+                    "Camera unique-path already in use by active VisionModule! Cannot add "
+                            + cameraInfo);
             return false;
         }
 
@@ -226,7 +238,8 @@ public class VisionSourceManager implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
 
         pushUiUpdate();
 
@@ -243,7 +256,8 @@ public class VisionSourceManager implements AutoCloseable {
                 .publishEvent(
                         new OutgoingUIEvent<>(
                                 "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig())));
+                                UIPhotonConfiguration.programStateToUi(
+                                        ConfigProvider.getInstance().getConfig())));
         pushUiUpdate();
 
         return config != null;
@@ -324,8 +338,8 @@ public class VisionSourceManager implements AutoCloseable {
                     .forEach(cameraInfos::add);
         }
 
-        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but I still want my
-        // UI to look like it ought to work
+        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but I still want
+        // my UI to look like it ought to work
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
@@ -349,9 +363,9 @@ public class VisionSourceManager implements AutoCloseable {
         // mismatches
         for (VisionModule module : vmm.getModules()) {
             PVCameraInfo matchedCameraInfo = module.getCameraConfiguration().matchedCameraInfo;
-            // We use unique paths to determine if the module has a camera in the port. If no unique path
-            // is found that matches the module, it's removed from the mismatched set as a disconnected
-            // camera cannot be mismatched.
+            // We use unique paths to determine if the module has a camera in the port. If no unique
+            // path is found that matches the module, it's removed from the mismatched set since a
+            // disconnected camera cannot be mismatched.
             if (!cameraInfos.stream()
                     .map(PVCameraInfo::uniquePath)
                     .toList()
@@ -443,7 +457,11 @@ public class VisionSourceManager implements AutoCloseable {
             boolean valid = false;
             if (deviceBlacklist.contains(device.name())) {
                 logger.trace(
-                        "Skipping blacklisted device: \"" + device.name() + "\" at \"" + device.path() + "\"");
+                        "Skipping blacklisted device: \""
+                                + device.name()
+                                + "\" at \""
+                                + device.path()
+                                + "\"");
             } else if (device instanceof PVCameraInfo.PVUsbCameraInfo usbDevice) {
                 if (usbDevice.otherPaths.length == 0
                         && platform.osType == OSType.LINUX
@@ -453,7 +471,8 @@ public class VisionSourceManager implements AutoCloseable {
                                     + device.name()
                                     + "\" at \""
                                     + device.path());
-                } else if (Arrays.stream(usbDevice.otherPaths).anyMatch(it -> it.contains("csi-video"))
+                } else if (Arrays.stream(usbDevice.otherPaths)
+                                .anyMatch(it -> it.contains("csi-video"))
                         || usbDevice.name().equals("unicam")) {
                     logger.trace(
                             "Skipping CSI device from CSCore: \""
@@ -470,7 +489,11 @@ public class VisionSourceManager implements AutoCloseable {
             if (valid) {
                 filteredDevices.add(device);
                 logger.trace(
-                        "Adding local video device - \"" + device.name() + "\" at \"" + device.path() + "\"");
+                        "Adding local video device - \""
+                                + device.name()
+                                + "\" at \""
+                                + device.path()
+                                + "\"");
             }
         }
         return filteredDevices;
@@ -481,13 +504,14 @@ public class VisionSourceManager implements AutoCloseable {
      * CameraConfiguration}'s matchedCameraInfo. We depend on the underlying {@link VisionSource} to
      * be robust to disconnected sources at boot
      *
-     * <p>Verify that nickname is unique within the set of deserialized camera configurations, adding
-     * random characters if this isn't the case
+     * <p>Verify that nickname is unique within the set of deserialized camera configurations,
+     * adding random characters if this isn't the case
      */
     protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
         logger.debug("Creating VisionSource for " + configuration.toShortString());
 
-        // First, make sure that nickname is globally unique since we use the nickname in NetworkTables.
+        // First, make sure that nickname is globally unique since we use the nickname in
+        // NetworkTables.
         // "Just one more source of truth bro it'll real this time I promise"
         var currentNicknames = new ArrayList<String>();
         this.disabledCameraConfigs.values().stream()

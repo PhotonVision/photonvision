@@ -72,7 +72,8 @@ public class NTDriverStation {
                 (table, key, event) -> {
                     if (event.is(Kind.VALUE_ALL) && event.valueData.value.isInteger()) {
                         // Logger totally isnt thread safe but whatevs
-                        var word = NTDriverStation.getControlWord(event.valueData.value.getInteger());
+                        var word =
+                                NTDriverStation.getControlWord(event.valueData.value.getInteger());
 
                         printTransition(this.lastControlWord, word);
                         printMatchData();
@@ -89,7 +90,8 @@ public class NTDriverStation {
     }
 
     private void printTransition(NtControlWord old, NtControlWord newWord) {
-        logger.info("ROBOT TRANSITIONED MODES! From " + old.toString() + " to " + newWord.toString());
+        logger.info(
+                "ROBOT TRANSITIONED MODES! From " + old.toString() + " to " + newWord.toString());
     }
 
     private void printMatchData() {

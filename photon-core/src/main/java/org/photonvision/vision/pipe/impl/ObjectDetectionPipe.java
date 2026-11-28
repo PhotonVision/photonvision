@@ -29,7 +29,9 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class ObjectDetectionPipe
         extends CVPipe<
-                CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams> {
+                CVMat,
+                List<NeuralNetworkPipeResult>,
+                ObjectDetectionPipe.ObjectDetectionPipeParams> {
     private ObjectDetector detector;
 
     public ObjectDetectionPipe() {

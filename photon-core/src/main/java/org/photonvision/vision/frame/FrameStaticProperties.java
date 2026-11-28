@@ -36,7 +36,8 @@ public class FrameStaticProperties {
     public final double verticalFocalLength;
     public CameraCalibrationCoefficients cameraCalibration;
 
-    // CameraCalibrationCoefficients hold native memory, so cache them here to avoid extra allocations
+    // CameraCalibrationCoefficients hold native memory, so cache them here to avoid extra
+    // allocations
     private final FrameStaticProperties[] cachedRotationStaticProperties =
             new FrameStaticProperties[4];
 
@@ -110,14 +111,18 @@ public class FrameStaticProperties {
         if (cachedRotationStaticProperties[rotation.ordinal()] == null) {
             cachedRotationStaticProperties[rotation.ordinal()] =
                     new FrameStaticProperties(
-                            newWidth, newHeight, fov, cameraCalibration.rotateCoefficients(rotation));
+                            newWidth,
+                            newHeight,
+                            fov,
+                            cameraCalibration.rotateCoefficients(rotation));
         }
 
         return cachedRotationStaticProperties[rotation.ordinal()];
     }
 
     /**
-     * Calculates the horizontal and vertical FOV components from a given diagonal FOV and image size.
+     * Calculates the horizontal and vertical FOV components from a given diagonal FOV and image
+     * size.
      *
      * @param diagonalFoV Diagonal FOV in degrees
      * @param imageWidth Image width in pixels
@@ -131,7 +136,8 @@ public class FrameStaticProperties {
 
         double horizontalView =
                 Math.atan(Math.tan(diagonalFoV / 2) * (imageWidth / diagonalAspect)) * 2;
-        double verticalView = Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
+        double verticalView =
+                Math.atan(Math.tan(diagonalFoV / 2) * (imageHeight / diagonalAspect)) * 2;
 
         return new DoubleCouple(Math.toDegrees(horizontalView), Math.toDegrees(verticalView));
     }

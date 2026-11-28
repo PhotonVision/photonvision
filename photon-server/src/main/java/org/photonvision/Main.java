@@ -77,7 +77,8 @@ public class Main implements Callable<Integer> {
 
     @Option(
             names = {"-t", "--test-mode"},
-            description = "Run in test mode with 2019 and 2020 WPI field images in place of cameras")
+            description =
+                    "Run in test mode with 2019 and 2020 WPI field images in place of cameras")
     private boolean testMode;
 
     @Option(
@@ -87,7 +88,8 @@ public class Main implements Callable<Integer> {
 
     @Option(
             names = {"-c", "--clear-config"},
-            description = "Clears PhotonVision pipeline and networking settings. Preserves log files")
+            description =
+                    "Clears PhotonVision pipeline and networking settings. Preserves log files")
     private boolean clearConfig;
 
     @Option(
@@ -112,7 +114,9 @@ public class Main implements Callable<Integer> {
                             PVCameraInfo.fromFileInfo(
                                     TestUtils.getResourcesFolderPath(true)
                                             .resolve("testimages")
-                                            .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path)
+                                            .resolve(
+                                                    TestUtils.WPI2026Images.kBlueOutpostFuelSpread
+                                                            .path)
                                             .toString(),
                                     "WPI2026"));
 
@@ -134,7 +138,8 @@ public class Main implements Callable<Integer> {
 
             JsonMatOfDouble testCameraMatrix =
                     new JsonMatOfDouble(3, 3, new double[] {fx, 0, cx, 0, fy, cy, 0, 0, 1});
-            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {0, 0, 0, 0, 0});
+            JsonMatOfDouble testDistortion =
+                    new JsonMatOfDouble(1, 5, new double[] {0, 0, 0, 0, 0});
 
             camConf2026.calibrations.add(
                     new CameraCalibrationCoefficients(
@@ -202,7 +207,9 @@ public class Main implements Callable<Integer> {
                         + PhotonVersion.versionString
                         + " on platform "
                         + Platform.getPlatformName()
-                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+                        + (Platform.isRaspberryPi()
+                                ? (" (Pi " + PiVersion.getPiVersion() + ")")
+                                : ""));
 
         if (OsImageData.IMAGE_METADATA.isPresent()) {
             logger.info("PhotonVision image data: " + OsImageData.IMAGE_METADATA.get());
@@ -320,7 +327,10 @@ public class Main implements Callable<Integer> {
             logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
-                            ConfigProvider.getInstance().getConfig().getCameraConfigurations().values());
+                            ConfigProvider.getInstance()
+                                    .getConfig()
+                                    .getCameraConfigurations()
+                                    .values());
         } else {
             addTestModeSources();
         }

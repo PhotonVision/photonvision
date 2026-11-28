@@ -36,7 +36,8 @@ public class PipelineManagerTest {
 
     @Test
     public void testUniqueName() {
-        PipelineManager manager = new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
+        PipelineManager manager =
+                new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
         manager.addPipeline(PipelineType.Reflective, "Another");
 
         // We now have ["New Pipeline", "Another"]
@@ -59,7 +60,8 @@ public class PipelineManagerTest {
 
         var nicks = manager.getPipelineNicknames();
         var expected =
-                new ArrayList<>(List.of("New Pipeline", "Another", "New Pipeline (1)", "Another (1)"));
+                new ArrayList<>(
+                        List.of("New Pipeline", "Another", "New Pipeline (1)", "Another (1)"));
         for (int i = 2; i < 15; i++) {
             expected.add("Another (" + i + ")");
         }
@@ -71,7 +73,8 @@ public class PipelineManagerTest {
         // hack since we try to publish to datachangeservice
         ConfigProvider.getInstance().load();
 
-        PipelineManager manager = new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
+        PipelineManager manager =
+                new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
         // add a reflective pipeline
         manager.addPipeline(PipelineType.Reflective, "Another");
         manager.setIndex(0);

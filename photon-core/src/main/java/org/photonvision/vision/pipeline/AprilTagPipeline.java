@@ -125,7 +125,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 // TODO global state ew
                 var field = ConfigProvider.getInstance().getConfig().getFieldLayout();
                 multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, field, tagModel));
+                        new MultiTargetPNPPipeParams(
+                                frameStaticProperties.cameraCalibration, field, tagModel));
             }
         }
     }
@@ -156,8 +157,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             usedDetections.add(detection);
 
             // Populate target list for multitag
-            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
-            // not be necessary.)
+            // TODO: Address circular dependencies. Multitag only requires corners and IDs, this
+            // should not be necessary.
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
@@ -185,10 +186,14 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
             for (AprilTagDetection detection : usedDetections) {
                 AprilTagPoseEstimate tagPoseEstimate = null;
-                // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
+                // Do single-tag estimation when "always enabled" or if a tag was not used for
+                // multitag
                 if (settings.doSingleTargetAlways
                         || !(multiTagResult.isPresent()
-                                && multiTagResult.get().fiducialIDsUsed.contains((short) detection.getId()))) {
+                                && multiTagResult
+                                        .get()
+                                        .fiducialIDsUsed
+                                        .contains((short) detection.getId()))) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
@@ -201,15 +206,18 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     if (tagPose.isPresent()) {
                         var camToTag =
                                 new Transform3d(
-                                        new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
+                                        new Pose3d().plus(multiTagResult.get().estimatedPose.best),
+                                        tagPose.get());
                         // match expected AprilTag coordinate system
                         camToTag =
-                                CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
+                                CoordinateSystem.convert(
+                                        camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
                         // (AprilTag expects Z axis going into tag)
                         camToTag =
                                 new Transform3d(
                                         camToTag.getTranslation(),
-                                        new Rotation3d(0, Math.PI, 0).rotateBy(camToTag.getRotation()));
+                                        new Rotation3d(0, Math.PI, 0)
+                                                .rotateBy(camToTag.getRotation()));
                         tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
                     }
                 }
@@ -229,9 +237,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
 
                 target.setBestCameraToTarget3d(
-                        new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
+                        new Transform3d(
+                                correctedBestPose.getTranslation(),
+                                correctedBestPose.getRotation()));
                 target.setAltCameraToTarget3d(
-                        new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
+                        new Transform3d(
+                                correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
 
                 targetList.add(target);
             }
@@ -239,7 +250,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         if (targetList.size() > Packet.MAX_ARRAY_LEN) {
             logger.error(
-                    "We have " + targetList.size() + " targets! Arbitrarily dropping some on the floor");
+                    "We have "
+                            + targetList.size()
+                            + " targets! Arbitrarily dropping some on the floor");
             targetList = targetList.subList(0, Packet.MAX_ARRAY_LEN);
         }
 

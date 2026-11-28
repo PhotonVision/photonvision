@@ -192,7 +192,8 @@ public class PhotonTrackedTarget
      * Return a list of the n corners in image space (origin top left, x right, y down), in no
      * particular order, detected for this target.
      *
-     * <p>For fiducials, the order is known and is always counter-clock wise around the tag, like so:
+     * <p>For fiducials, the order is known and is always counter-clock wise around the tag, like
+     * so:
      *
      * <pre>​
      * ⟶ +X  3 ----- 2
@@ -208,8 +209,8 @@ public class PhotonTrackedTarget
     }
 
     /**
-     * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
-     * space (X forward, Y left, Z up) with the lowest reprojection error
+     * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial
+     * tag space (X forward, Y left, Z up) with the lowest reprojection error
      *
      * @return The transform with the lowest reprojection error (the best)
      */
@@ -218,8 +219,8 @@ public class PhotonTrackedTarget
     }
 
     /**
-     * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
-     * space (X forward, Y left, Z up) with the highest reprojection error
+     * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial
+     * tag space (X forward, Y left, Z up) with the highest reprojection error
      *
      * @return The transform with the highest reprojection error (the alternate)
      */
@@ -243,11 +244,13 @@ public class PhotonTrackedTarget
         result = prime * result + fiducialId;
         result = prime * result + objDetectId;
         result = prime * result + Float.floatToIntBits(objDetectConf);
-        result = prime * result + ((bestCameraToTarget == null) ? 0 : bestCameraToTarget.hashCode());
+        result =
+                prime * result + ((bestCameraToTarget == null) ? 0 : bestCameraToTarget.hashCode());
         result = prime * result + ((altCameraToTarget == null) ? 0 : altCameraToTarget.hashCode());
         temp = Double.doubleToLongBits(poseAmbiguity);
         result = prime * result + (int) (temp ^ (temp >>> 32));
-        result = prime * result + ((minAreaRectCorners == null) ? 0 : minAreaRectCorners.hashCode());
+        result =
+                prime * result + ((minAreaRectCorners == null) ? 0 : minAreaRectCorners.hashCode());
         result = prime * result + ((detectedCorners == null) ? 0 : detectedCorners.hashCode());
         return result;
     }

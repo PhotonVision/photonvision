@@ -81,13 +81,37 @@ public class StaticFrames {
                 LOST_MAT, new Rect(30, 100, 60, 20), ColorHelper.colorToScalar(Color.WHITE), -1);
 
         Imgproc.putText(
-                LOST_MAT, "Camera", new Point(28, 40), 0, 1.2, ColorHelper.colorToScalar(Color.white), 6);
+                LOST_MAT,
+                "Camera",
+                new Point(28, 40),
+                0,
+                1.2,
+                ColorHelper.colorToScalar(Color.white),
+                6);
         Imgproc.putText(
-                LOST_MAT, "Lost", new Point(28, 90), 0, 1.2, ColorHelper.colorToScalar(Color.white), 6);
+                LOST_MAT,
+                "Lost",
+                new Point(28, 90),
+                0,
+                1.2,
+                ColorHelper.colorToScalar(Color.white),
+                6);
         Imgproc.putText(
-                LOST_MAT, "Camera", new Point(28, 40), 0, 1.2, ColorHelper.colorToScalar(Color.RED), 2);
+                LOST_MAT,
+                "Camera",
+                new Point(28, 40),
+                0,
+                1.2,
+                ColorHelper.colorToScalar(Color.RED),
+                2);
         Imgproc.putText(
-                LOST_MAT, "Lost", new Point(28, 90), 0, 1.2, ColorHelper.colorToScalar(Color.RED), 2);
+                LOST_MAT,
+                "Lost",
+                new Point(28, 90),
+                0,
+                1.2,
+                ColorHelper.colorToScalar(Color.RED),
+                2);
     }
 
     public StaticFrames() {}
