@@ -206,7 +206,9 @@ public class MathUtils {
     public static Pose3d convertArucotoOpenCV(Transform3d pose) {
         var ocvRotation =
                 APRILTAG_BASE_ROTATION.rotateBy(
-                        new Rotation3d(VecBuilder.fill(0, 0, 1), UnitConversions.degreesToRadians(180))
+                        new Rotation3d(
+                                        VecBuilder.fill(0, 0, 1),
+                                        UnitConversions.degreesToRadians(180))
                                 .rotateBy(pose.getRotation()));
         return new Pose3d(pose.getTranslation(), ocvRotation);
     }

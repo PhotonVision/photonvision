@@ -138,7 +138,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         this.cameraNickname = newCameraNickname;
         this.subTable = rootTable.getSubTable(this.cameraNickname);
         this.subTable.getEntry(ntEntryName).setInteger(savedImagesCount);
-        this.saveFrameEntry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
+        this.saveFrameEntry =
+                subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
     }
 
     public void overrideTakeSnapshot() {

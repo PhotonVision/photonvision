@@ -38,7 +38,8 @@ public class ReflectivePipelineTest {
                 var frameProvider =
                         new FileFrameProvider(
                                 TestUtils.getWPIImagePath(
-                                        TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                                        TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes,
+                                        false),
                                 TestUtils.WPI2019Image.FOV); ) {
             pipeline.getSettings().hsvHue.set(60, 100);
             pipeline.getSettings().hsvSaturation.set(100, 255);
@@ -80,7 +81,8 @@ public class ReflectivePipelineTest {
         try (var pipeline = new ReflectivePipeline();
                 var frameProvider =
                         new FileFrameProvider(
-                                TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false),
+                                TestUtils.getWPIImagePath(
+                                        TestUtils.WPI2020Image.kBlueGoal_108in_Center, false),
                                 TestUtils.WPI2020Image.FOV); ) {
             pipeline.getSettings().hsvHue.set(60, 100);
             pipeline.getSettings().hsvSaturation.set(200, 255);
@@ -92,7 +94,8 @@ public class ReflectivePipelineTest {
                 TestUtils.printTestResults(pipelineResult);
 
                 TestUtils.showImage(
-                        pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output");
+                        pipelineResult.inputAndOutputFrame.processedImage.getMat(),
+                        "Pipeline output");
             }
         }
     }
@@ -112,7 +115,8 @@ public class ReflectivePipelineTest {
 
         try (var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(
+                                TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV); ) {
             TestUtils.continuouslyRunPipeline(frameProvider, settings);
         }

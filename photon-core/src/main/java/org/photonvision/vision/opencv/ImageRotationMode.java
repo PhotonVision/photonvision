@@ -32,7 +32,8 @@ import org.wpilib.math.util.UnitConversions;
 public enum ImageRotationMode {
     DEG_0(-1, new Rotation2d()),
     // rotating an image matrix clockwise is a ccw rotation about camera +Z, lmao
-    DEG_90_CCW(Core.ROTATE_90_COUNTERCLOCKWISE, new Rotation2d(UnitConversions.degreesToRadians(90))),
+    DEG_90_CCW(
+            Core.ROTATE_90_COUNTERCLOCKWISE, new Rotation2d(UnitConversions.degreesToRadians(90))),
     DEG_180_CCW(Core.ROTATE_180, new Rotation2d(UnitConversions.degreesToRadians(180))),
     DEG_270_CCW(Core.ROTATE_90_CLOCKWISE, new Rotation2d(UnitConversions.degreesToRadians(-90)));
 

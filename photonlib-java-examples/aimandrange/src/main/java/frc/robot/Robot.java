@@ -122,9 +122,13 @@ public class Robot extends TimedRobot {
             // Override the driver's turn and fwd/rev command with an automatic one
             // That turns toward the tag, and gets the range right.
             turn =
-                    (VISION_DES_ANGLE_deg - targetYaw) * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
+                    (VISION_DES_ANGLE_deg - targetYaw)
+                            * VISION_TURN_kP
+                            * Constants.Swerve.kMaxAngularSpeed;
             forward =
-                    (VISION_DES_RANGE_m - targetRange) * VISION_STRAFE_kP * Constants.Swerve.kMaxLinearSpeed;
+                    (VISION_DES_RANGE_m - targetRange)
+                            * VISION_STRAFE_kP
+                            * Constants.Swerve.kMaxLinearSpeed;
         }
 
         // Command drivetrain motors based on target speeds

@@ -37,8 +37,7 @@ import org.photonvision.vision.camera.PVCameraInfo;
 import org.wpilib.vision.camera.UsbCameraInfo;
 
 public class VisionSourceManagerTest {
-    // Test harness that overrides getConnectedCameras, but uses USB cameras for
-    // everything else
+    // Test harness that overrides getConnectedCameras, but uses USB cameras for everything else
     // when we start testing libcamera stuff we'll need to mock more stuff out
     private static class TestVsm extends VisionSourceManager {
         public List<PVCameraInfo> testCameras = new ArrayList<>();
@@ -128,7 +127,8 @@ public class VisionSourceManagerTest {
     public void testFileVisionSource() throws InterruptedException, IOException {
         var fileCamera1 =
                 PVCameraInfo.fromFileInfo(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
+                        TestUtils.getApriltagImagePath(
+                                        TestUtils.ApriltagTestImages.kTag1_640_480, false)
                                 .toAbsolutePath()
                                 .toString(),
                         "kTag1_640_480");
@@ -204,7 +204,10 @@ public class VisionSourceManagerTest {
                                     0,
                                     "/dev/video0",
                                     "Lifecam HD-3000",
-                                    new String[] {"/dev/v4l/by-path/usbv2/foobar1", "/dev/v4l/by-path/usb/foobar1"},
+                                    new String[] {
+                                        "/dev/v4l/by-path/usbv2/foobar1",
+                                        "/dev/v4l/by-path/usb/foobar1"
+                                    },
                                     5940,
                                     5940));
 
@@ -214,7 +217,10 @@ public class VisionSourceManagerTest {
                                     1,
                                     "/dev/video1",
                                     "Lifecam HD-3000",
-                                    new String[] {"/dev/v4l/by-path/usb/foobar1", "/dev/v4l/by-path/usbv2/foobar1"},
+                                    new String[] {
+                                        "/dev/v4l/by-path/usb/foobar1",
+                                        "/dev/v4l/by-path/usbv2/foobar1"
+                                    },
                                     5940,
                                     5940));
             CameraConfiguration camOtherPathsConf = new CameraConfiguration(camOtherPaths);
@@ -237,7 +243,8 @@ public class VisionSourceManagerTest {
     public void testDuplicate() throws InterruptedException, IOException {
         var fileCamera1 =
                 PVCameraInfo.fromFileInfo(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
+                        TestUtils.getApriltagImagePath(
+                                        TestUtils.ApriltagTestImages.kTag1_640_480, false)
                                 .toAbsolutePath()
                                 .toString(),
                         "kTag1_640_480");
@@ -257,7 +264,8 @@ public class VisionSourceManagerTest {
 
         var fileCamera3 =
                 PVCameraInfo.fromFileInfo(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
+                        TestUtils.getApriltagImagePath(
+                                        TestUtils.ApriltagTestImages.kTag1_640_480, false)
                                 .toAbsolutePath()
                                 .toString(),
                         "kTag1_640_480");
@@ -284,7 +292,12 @@ public class VisionSourceManagerTest {
             PVCameraInfo savedInfo =
                     PVCameraInfo.fromUsbCameraInfo(
                             new UsbCameraInfo(
-                                    0, "/dev/video0", "CamA", new String[] {"/dev/v4l/by-path/1"}, 111, 222));
+                                    0,
+                                    "/dev/video0",
+                                    "CamA",
+                                    new String[] {"/dev/v4l/by-path/1"},
+                                    111,
+                                    222));
             CameraConfiguration savedConf = new CameraConfiguration(savedInfo);
             savedConf.deactivated = false;
             savedConf.nickname = "SavedCam";
@@ -292,7 +305,8 @@ public class VisionSourceManagerTest {
             // Register the saved config so VSM creates a VisionModule
             vsm.registerLoadedConfigs(List.of(savedConf));
 
-            // Now simulate a connected camera at same uniquePath but with a different name (mismatch)
+            // Now simulate a connected camera at same uniquePath but with a different name
+            // (mismatch)
             List<PVCameraInfo> currentInfo =
                     List.of(
                             PVCameraInfo.fromUsbCameraInfo(

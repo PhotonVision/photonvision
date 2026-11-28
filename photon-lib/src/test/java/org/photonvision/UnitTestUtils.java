@@ -53,7 +53,10 @@ public class UnitTestUtils {
         assertTrue(camera.heartbeatSubscriber.getTopic().getHandle() != 0);
 
         System.out.println(
-                "Waiting for seq=" + seq + " on " + camera.heartbeatSubscriber.getTopic().getName());
+                "Waiting for seq="
+                        + seq
+                        + " on "
+                        + camera.heartbeatSubscriber.getTopic().getName());
         // wait up to 1 second for a new result
         for (int i = 0; i < 100; i++) {
             var res = camera.getLatestResult();

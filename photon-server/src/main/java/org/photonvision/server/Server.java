@@ -62,7 +62,8 @@ public class Server {
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
-                            javalinConfig.registerPlugin(new CorsPlugin(cors -> cors.addRule(CorsRule::anyHost)));
+                            javalinConfig.registerPlugin(
+                                    new CorsPlugin(cors -> cors.addRule(CorsRule::anyHost)));
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -76,7 +77,9 @@ public class Server {
                                                         .add("bytes & type")
                                                         .add(ctx.contentType())
                                                         .add("with return code")
-                                                        .add(Integer.toString(ctx.res().getStatus()))
+                                                        .add(
+                                                                Integer.toString(
+                                                                        ctx.res().getStatus()))
                                                         .add("for host")
                                                         .add(ctx.req().getRemoteHost())
                                                         .add("in")
@@ -87,15 +90,27 @@ public class Server {
                                     });
                             javalinConfig.requestLogger.ws(
                                     ws -> {
-                                        ws.onMessage(ctx -> logger.debug("Got WebSockets message: " + ctx.message()));
+                                        ws.onMessage(
+                                                ctx ->
+                                                        logger.debug(
+                                                                "Got WebSockets message: "
+                                                                        + ctx.message()));
                                         ws.onBinaryMessage(
                                                 ctx ->
                                                         logger.trace(
                                                                 () -> {
-                                                                    var remote = (InetSocketAddress) ctx.session.getRemoteAddress();
+                                                                    var remote =
+                                                                            (InetSocketAddress)
+                                                                                    ctx.session
+                                                                                            .getRemoteAddress();
                                                                     var host =
-                                                                            remote.getAddress().toString() + ":" + remote.getPort();
-                                                                    return "Got WebSockets binary message from host: " + host;
+                                                                            remote.getAddress()
+                                                                                            .toString()
+                                                                                    + ":"
+                                                                                    + remote
+                                                                                            .getPort();
+                                                                    return "Got WebSockets binary message from host: "
+                                                                            + host;
                                                                 }));
                                     });
                             javalinConfig.jsonMapper(new JavalinJsonb());
@@ -138,8 +153,10 @@ public class Server {
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
         app.post("/api/utils/nukeConfigDirectory", RequestHandler::onNukeConfigDirectory);
         app.post("/api/utils/nukeOneCamera", RequestHandler::onNukeOneCamera);
-        app.post("/api/utils/activateMatchedCamera", RequestHandler::onActivateMatchedCameraRequest);
-        app.post("/api/utils/assignUnmatchedCamera", RequestHandler::onAssignUnmatchedCameraRequest);
+        app.post(
+                "/api/utils/activateMatchedCamera", RequestHandler::onActivateMatchedCameraRequest);
+        app.post(
+                "/api/utils/assignUnmatchedCamera", RequestHandler::onAssignUnmatchedCameraRequest);
         app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration
@@ -150,15 +167,21 @@ public class Server {
         app.post("/api/calibration/remove", RequestHandler::onCalibrationRemoveRequest);
 
         // Object detection
-        app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
         app.post(
-                "/api/objectdetection/bulkimport", RequestHandler::onBulkImportObjectDetectionModelRequest);
-        app.get("/api/objectdetection/export", RequestHandler::onExportObjectDetectionModelsRequest);
+                "/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
+        app.post(
+                "/api/objectdetection/bulkimport",
+                RequestHandler::onBulkImportObjectDetectionModelRequest);
+        app.get(
+                "/api/objectdetection/export",
+                RequestHandler::onExportObjectDetectionModelsRequest);
         app.get(
                 "/api/objectdetection/exportIndividual",
                 RequestHandler::onExportIndividualObjectDetectionModelRequest);
-        app.post("/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
-        app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
+        app.post(
+                "/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
+        app.post(
+                "/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
         app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
 
         /* Testing API Events */
@@ -174,7 +197,8 @@ public class Server {
 
     /**
      * Seems like if we change the static IP of this device, Javalin refuses to tell us when new
-     * Websocket clients connect. As a hack, we can restart the server every time we change static IPs
+     * Websocket clients connect. As a hack, we can restart the server every time we change static
+     * IPs
      */
     public static void restart() {
         logger.info("Web server going down for restart");

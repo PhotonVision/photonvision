@@ -30,7 +30,9 @@ public class UINetConfig extends NetworkConfig {
     }
 
     public UINetConfig(
-            NetworkConfig config, List<NMDeviceInfo> networkInterfaceNames, boolean networkingDisabled) {
+            NetworkConfig config,
+            List<NMDeviceInfo> networkInterfaceNames,
+            boolean networkingDisabled) {
         super(config);
         this.networkInterfaceNames = networkInterfaceNames;
         this.networkingDisabled = networkingDisabled;

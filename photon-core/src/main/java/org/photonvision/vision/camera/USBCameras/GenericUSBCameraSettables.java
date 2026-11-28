@@ -37,8 +37,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     // auto exposure mode so we can restore it
     protected double lastExposureRaw = -1;
 
-    // Some cameras need logic where we re-apply brightness after
-    // changing exposure
+    // Some cameras need logic where we re-apply brightness after changing exposure
     protected int lastBrightness = -1;
 
     protected VideoProperty exposureAbsProp = null;
@@ -85,7 +84,10 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // first.
         var expProp =
                 findProperty(
-                        "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
+                        "raw_exposure_absolute",
+                        "raw_exposure_time_absolute",
+                        "exposure",
+                        "raw_Exposure");
 
         if (expProp.isEmpty()) {
             logger.warn("Could not find exposure property");
@@ -108,7 +110,9 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public void setAllCamDefaults() {
         // Common settings for all cameras to attempt to get their image
         // as close as possible to what we want for image processing
-        softSet("image_stabilization", 0); // No image stabilization, as this will throw off odometry
+        softSet(
+                "image_stabilization",
+                0); // No image stabilization, as this will throw off odometry
         softSet("power_line_frequency", 2); // Assume 60Hz USA
         softSet("scene_mode", 0); // no presets
         softSet("exposure_metering_mode", 0);
@@ -171,9 +175,9 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                         || configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782Controls)
                         || configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311Controls))
                 && !cameraAutoExposure) {
-            // OV9281, OV9782, and OV2311 on Linux seems to sometimes ignore our exposure requests on
-            // first boot if we're in manual mode. Poking the camera into and out of auto exposure seems
-            // to fix it.
+            // OV9281, OV9782, and OV2311 on Linux seems to sometimes ignore our exposure requests
+            // on first boot if we're in manual mode. Poking the camera into and out of auto
+            // exposure seems to fix it.
             try {
                 setAutoExposureImpl(false);
                 Thread.sleep(2000);
@@ -267,8 +271,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
     @Override
     public VideoMode getCurrentVideoMode() {
-        return camera
-                .getVideoMode(); // This returns the current video mode even if the camera is disconnected
+        // This returns the current video mode even if the camera is disconnected
+        return camera.getVideoMode();
     }
 
     @Override
@@ -294,7 +298,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                     continue;
                 }
 
-                if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100) && videoMode.fps > 100) {
+                if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100)
+                        && videoMode.fps > 100) {
                     continue;
                 }
 
@@ -324,7 +329,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // If after all that we still have no video modes, not much we can do besides
         // throw up our hands
         if (videoModes.isEmpty()) {
-            logger.info("Camera " + camera.getPath() + " has no video modes supported by PhotonVision");
+            logger.info(
+                    "Camera " + camera.getPath() + " has no video modes supported by PhotonVision");
         }
     }
 
@@ -404,8 +410,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
         logger.info("Caching cscore properties");
 
-        // Now that our device is actually connected, we can enumerate properties/video
-        // modes
+        // Now that our device is actually connected, we can enumerate properties/video modes
         setUpExposureProperties();
         setUpWhiteBalanceProperties();
         cacheVideoModes();

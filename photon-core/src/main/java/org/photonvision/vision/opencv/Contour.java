@@ -187,7 +187,9 @@ public class Contour implements Releasable {
 
     // TODO: refactor to do "infinite" contours ???????
     public static Contour groupContoursByIntersection(
-            Contour firstContour, Contour secondContour, ContourIntersectionDirection intersection) {
+            Contour firstContour,
+            Contour secondContour,
+            ContourIntersectionDirection intersection) {
         if (areIntersecting(firstContour, secondContour, intersection)) {
             return combineContours(firstContour, secondContour);
         } else {

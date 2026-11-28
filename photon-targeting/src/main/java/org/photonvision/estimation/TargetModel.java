@@ -29,8 +29,8 @@ import org.wpilib.math.util.UnitConversions;
 /** Describes the 3d model of a target. */
 public class TargetModel {
     /**
-     * Translations of this target's vertices relative to its pose. Rectangular and spherical targets
-     * will have four vertices. See their respective constructors for more info.
+     * Translations of this target's vertices relative to its pose. Rectangular and spherical
+     * targets will have four vertices. See their respective constructors for more info.
      */
     public final List<Translation3d> vertices;
 
@@ -48,7 +48,8 @@ public class TargetModel {
      * The model of AprilTags in the 36h11 family used by <i>FIRST</i> in FRC 2024 and later years.
      */
     public static final TargetModel kAprilTag36h11 =
-            new TargetModel(UnitConversions.inchesToMeters(6.5), UnitConversions.inchesToMeters(6.5));
+            new TargetModel(
+                    UnitConversions.inchesToMeters(6.5), UnitConversions.inchesToMeters(6.5));
 
     /**
      * Creates a rectangular, planar target model given the width and height. The model has four
@@ -90,19 +91,27 @@ public class TargetModel {
     public TargetModel(double lengthMeters, double widthMeters, double heightMeters) {
         this(
                 List.of(
-                        new Translation3d(lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0),
-                        new Translation3d(lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
-                        new Translation3d(lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
-                        new Translation3d(lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
-                        new Translation3d(-lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
-                        new Translation3d(-lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
-                        new Translation3d(-lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
-                        new Translation3d(-lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0)));
+                        new Translation3d(
+                                lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0),
+                        new Translation3d(
+                                lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
+                        new Translation3d(
+                                lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(
+                                lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(
+                                -lengthMeters / 2.0, -widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(
+                                -lengthMeters / 2.0, widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(
+                                -lengthMeters / 2.0, widthMeters / 2.0, -heightMeters / 2.0),
+                        new Translation3d(
+                                -lengthMeters / 2.0, -widthMeters / 2.0, -heightMeters / 2.0)));
     }
 
     /**
-     * Creates a spherical target model which has similar dimensions regardless of its rotation. This
-     * model has four vertices:
+     * Creates a spherical target model which has similar dimensions regardless of its rotation.
+     * This model has four vertices:
      *
      * <ul>
      *   <li>Point 0: [0, -radius, 0]
@@ -111,10 +120,10 @@ public class TargetModel {
      *   <li>Point 3: [0, 0, radius]
      * </ul>
      *
-     * <i>Q: Why these vertices?</i> A: This target should be oriented to the camera every frame, much
-     * like a sprite/decal, and these vertices represent the ellipse vertices (maxima). These vertices
-     * are used for drawing the image of this sphere, but do not match the corners that will be
-     * published by photonvision.
+     * <i>Q: Why these vertices?</i> A: This target should be oriented to the camera every frame,
+     * much like a sprite/decal, and these vertices represent the ellipse vertices (maxima). These
+     * vertices are used for drawing the image of this sphere, but do not match the corners that
+     * will be published by photonvision.
      */
     public TargetModel(double diameterMeters) {
         double radius = diameterMeters / 2.0;
@@ -130,8 +139,8 @@ public class TargetModel {
 
     /**
      * Creates a target model from arbitrary 3d vertices. Automatically determines if the given
-     * vertices are planar(x == 0). More than 2 vertices must be given. If this is a planar model, the
-     * vertices should define a non-intersecting contour.
+     * vertices are planar(x == 0). More than 2 vertices must be given. If this is a planar model,
+     * the vertices should define a non-intersecting contour.
      *
      * @param vertices Translations representing the vertices of this target model relative to its
      *     pose.
@@ -161,14 +170,15 @@ public class TargetModel {
      * @return The list of vertices offset from the target pose.
      */
     public List<Translation3d> getFieldVertices(Pose3d targetPose) {
-        var basisChange = new RotTrlTransform3d(targetPose.getRotation(), targetPose.getTranslation());
+        var basisChange =
+                new RotTrlTransform3d(targetPose.getRotation(), targetPose.getTranslation());
         return vertices.stream().map(basisChange::apply).collect(Collectors.toList());
     }
 
     /**
-     * Returns a Pose3d with the given target translation oriented (with its relative x-axis aligned)
-     * to the camera translation. This is used for spherical targets which should not have their
-     * projection change regardless of their own rotation.
+     * Returns a Pose3d with the given target translation oriented (with its relative x-axis
+     * aligned) to the camera translation. This is used for spherical targets which should not have
+     * their projection change regardless of their own rotation.
      *
      * @param tgtTrl This target's translation
      * @param cameraTrl Camera's translation
@@ -179,7 +189,8 @@ public class TargetModel {
         var orientToCam =
                 new Rotation3d(
                         0,
-                        new Rotation2d(Math.hypot(relCam.getX(), relCam.getY()), -relCam.getZ()).getRadians(),
+                        new Rotation2d(Math.hypot(relCam.getX(), relCam.getY()), -relCam.getZ())
+                                .getRadians(),
                         new Rotation2d(relCam.getX(), relCam.getY()).getRadians());
         return new Pose3d(tgtTrl, orientToCam);
     }

@@ -138,15 +138,15 @@ public final class CombinedRuntimeLoader {
     }
 
     /**
-     * Architecture-specific information containing file hashes for a specific CPU architecture (e.g.,
-     * x86-64, arm64).
+     * Architecture-specific information containing file hashes for a specific CPU architecture
+     * (e.g., x86-64, arm64).
      */
     @Json
     public record ArchInfo(Map<String, String> fileHashes) {}
 
     /**
-     * Platform-specific information containing architectures for a specific OS platform (e.g., linux,
-     * windows).
+     * Platform-specific information containing architectures for a specific OS platform (e.g.,
+     * linux, windows).
      */
     @Json
     public record PlatformInfo(Map<String, ArchInfo> architectures) {}
@@ -253,7 +253,8 @@ public final class CombinedRuntimeLoader {
         try {
             MessageDigest fileHash = MessageDigest.getInstance("MD5");
             try (var dis =
-                    new DigestInputStream(new BufferedInputStream(new FileInputStream(f)), fileHash)) {
+                    new DigestInputStream(
+                            new BufferedInputStream(new FileInputStream(f)), fileHash)) {
                 dis.readAllBytes();
             }
             var ret = HexFormat.of().formatHex(fileHash.digest());

@@ -33,7 +33,8 @@ import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.util.Pair;
 
 public class Draw2dTargetsPipe
-        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
+        extends MutatingPipe<
+                Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
     MatOfPoint boundingRect = new MatOfPoint();
     MatOfPoint contourMat = new MatOfPoint();
     private static final Logger logger = new Logger(Draw2dTargetsPipe.class, LogGroup.General);
@@ -238,14 +239,16 @@ public class Draw2dTargetsPipe
         public final FrameDivisor divisor;
 
         public boolean shouldShowRotatedBox(CVShape shape) {
-            return showRotatedBox && (shape == null || shape.shape.equals(ContourShape.Quadrilateral));
+            return showRotatedBox
+                    && (shape == null || shape.shape.equals(ContourShape.Quadrilateral));
         }
 
         public boolean shouldShowCircle(CVShape shape) {
             return shape != null && shape.shape.equals(ContourShape.Circle);
         }
 
-        public Draw2dTargetsParams(boolean shouldDraw, int outputMaximumTargets, FrameDivisor divisor) {
+        public Draw2dTargetsParams(
+                boolean shouldDraw, int outputMaximumTargets, FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
             this.outputMaximumTargets = outputMaximumTargets;
             this.divisor = divisor;

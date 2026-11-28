@@ -64,7 +64,10 @@ public class PhotonPipelineResult
             List<PhotonTrackedTarget> targets) {
         this(
                 new PhotonPipelineMetadata(
-                        captureTimestampNanos, publishTimestampNanos, sequenceID, timeSinceLastPong),
+                        captureTimestampNanos,
+                        publishTimestampNanos,
+                        sequenceID,
+                        timeSinceLastPong),
                 targets,
                 Optional.empty());
     }
@@ -157,8 +160,8 @@ public class PhotonPipelineResult
     }
 
     /**
-     * Return the latest multi-target result. Be sure to check {@code getMultiTagResult().isPresent()}
-     * before using the pose estimate!
+     * Return the latest multi-target result. Be sure to check {@code
+     * getMultiTagResult().isPresent()} before using the pose estimate!
      *
      * @return The multi-target result. Empty if there's no multi-target result/Multi-Target
      *     Estimation is disabled in the UI.
@@ -169,8 +172,8 @@ public class PhotonPipelineResult
 
     /**
      * Returns the estimated time the frame was taken, in the Time Sync Server's time base
-     * (wpi::nt::Now). This is calculated using the estimated offset between Time Sync Server time and
-     * local time. The robot shall run a server, so the offset shall be 0.
+     * (wpi::nt::Now). This is calculated using the estimated offset between Time Sync Server time
+     * and local time. The robot shall run a server, so the offset shall be 0.
      *
      * @return The timestamp in seconds
      */

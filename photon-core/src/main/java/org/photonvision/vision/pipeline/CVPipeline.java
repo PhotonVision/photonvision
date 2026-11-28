@@ -85,8 +85,9 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     }
 
     /**
-     * Release any native memory associated with this pipeline. Called by pipelinemanager at pipeline
-     * switch. This should always be implemented to prevent accidental leaks from pipe changes.
+     * Release any native memory associated with this pipeline. Called by pipelinemanager at
+     * pipeline switch. This should always be implemented to prevent accidental leaks from pipe
+     * changes.
      */
     @Override
     public void release() {

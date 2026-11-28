@@ -69,7 +69,8 @@ public class Robot extends TimedRobot {
         // You probably don't want this on a real robot, just delete it.
         if (controller.getBButtonPressed()) {
             var disturbance =
-                    new Transform2d(new Translation2d(1.0, 1.0), new Rotation2d(0.17 * 2 * Math.PI));
+                    new Transform2d(
+                            new Translation2d(1.0, 1.0), new Rotation2d(0.17 * 2 * Math.PI));
             drivetrain.resetPose(drivetrain.getPose().plus(disturbance), false);
         }
 
@@ -99,7 +100,8 @@ public class Robot extends TimedRobot {
 
         // Calculate whether the gamepiece launcher runs based on our global pose estimate.
         var curPose = drivetrain.getPose();
-        var shouldRun = (curPose.getY() > 2.0 && curPose.getX() < 4.0); // Close enough to blue speaker
+        var shouldRun =
+                (curPose.getY() > 2.0 && curPose.getX() < 4.0); // Close enough to blue speaker
         gpLauncher.setRunning(shouldRun);
     }
 

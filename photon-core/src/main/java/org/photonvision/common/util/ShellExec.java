@@ -41,8 +41,9 @@ public class ShellExec {
     }
 
     /**
-     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
-     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
+     * Execute a bash command. We can handle complex bash commands including multiple executions (;
+     * | and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi
+     * '$(whoami)"
      *
      * @param command Bash command to execute
      * @return process exit code
@@ -52,8 +53,9 @@ public class ShellExec {
     }
 
     /**
-     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
-     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
+     * Execute a bash command. We can handle complex bash commands including multiple executions (;
+     * | and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi
+     * '$(whoami)"
      *
      * @param command Bash command to execute
      * @param wait true if the command should wait for the proccess to complete
@@ -64,9 +66,9 @@ public class ShellExec {
     }
 
     /**
-     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
-     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
-     * This runs the commands with the default logging.
+     * Execute a bash command. We can handle complex bash commands including multiple executions (;
+     * | and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi
+     * '$(whoami)" This runs the commands with the default logging.
      *
      * @param command Bash command to execute
      * @param wait true if the command should wait for the proccess to complete

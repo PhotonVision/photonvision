@@ -35,7 +35,8 @@ public abstract class VisionSourceSettables {
     protected VisionSourceSettables(CameraConfiguration configuration) {
         this.configuration = configuration;
         this.logger =
-                new Logger(VisionSourceSettables.class, configuration.nickname, LogGroup.VisionModule);
+                new Logger(
+                        VisionSourceSettables.class, configuration.nickname, LogGroup.VisionModule);
     }
 
     protected FrameStaticProperties frameStaticProperties = null;
@@ -49,7 +50,8 @@ public abstract class VisionSourceSettables {
     protected boolean cameraPropertiesCached = false;
 
     /**
-     * Runs exactly once the first time that the underlying device goes from disconnected to connected
+     * Runs exactly once the first time that the underlying device goes from disconnected to
+     * connected
      */
     public void onCameraConnected() {
         cameraPropertiesCached = true;

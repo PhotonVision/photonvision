@@ -118,9 +118,9 @@ public class PhotonCamera implements AutoCloseable {
 
     /**
      * Sets whether or not coprocessor version checks will occur. Setting this to true will silence
-     * all console warnings about coproccessor connection, so be careful when enabling this and ensure
-     * all your coprocessors are communicating to the robot properly and everything has matching
-     * versions.
+     * all console warnings about coproccessor connection, so be careful when enabling this and
+     * ensure all your coprocessors are communicating to the robot properly and everything has
+     * matching versions.
      *
      * @param enabled Whether or not to enable coprocessor version checks
      */
@@ -181,7 +181,8 @@ public class PhotonCamera implements AutoCloseable {
 
         // Existing is enough to make this multisubscriber do its thing
         topicNameSubscriber =
-                new MultiSubscriber(instance, new String[] {"/photonvision/"}, PubSubOption.TOPICS_ONLY);
+                new MultiSubscriber(
+                        instance, new String[] {"/photonvision/"}, PubSubOption.TOPICS_ONLY);
 
         InstanceCount++;
         UsageReporting.reportUsage("PhotonVision/PhotonCamera", Integer.toString(InstanceCount));
@@ -195,11 +196,11 @@ public class PhotonCamera implements AutoCloseable {
 
     /** This is something we only need to check for java because of the way java packages opencv. */
     static void verifyDependencies() {
-        // spotless:off
         // WPILIB names their opencv version in the format YEAR-OPENCVVERSION-PATCH
         // so we split on '-' and take the middle part to get the version number
         if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion.split("-")[1])) {
-            String bfw = """
+            String bfw =
+                    """
 
 
 
@@ -210,15 +211,9 @@ public class PhotonCamera implements AutoCloseable {
                     >>> You are running an incompatible version  \s
                     >>> of PhotonVision !                        \s
                     >>>                                          \s
-                    >>> PhotonLib """
-                    + PhotonVersion.versionString
-                    + " is built for OpenCV "
-                    + PhotonVersion.opencvTargetVersion
-                    + "\n"
-                    + ">>> but you are using OpenCV "
-                    + Core.VERSION
-                    + """
-                    \n>>>                                          \s
+                    >>> PhotonLib %s is built for OpenCV %s
+                    >>> but you are using OpenCV %s
+                    >>>                                          \s
                     >>> This is neither tested nor supported.    \s
                     >>> You MUST update WPILib, PhotonLib, or both.
                     >>> Check `./gradlew dependencies` and ensure\s
@@ -236,8 +231,11 @@ public class PhotonCamera implements AutoCloseable {
                     >>>                                          \s
                     >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
                     >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    """;
-            // spotless:on
+                    """
+                            .formatted(
+                                    PhotonVersion.versionString,
+                                    PhotonVersion.opencvTargetVersion,
+                                    Core.VERSION);
 
             DriverStationErrors.reportWarning(bfw, false);
             DriverStationErrors.reportError(bfw, false);
@@ -255,11 +253,12 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * The list of pipeline results sent by PhotonVision since the last call to getAllUnreadResults().
-     * Calling this function clears the internal FIFO queue, and multiple calls to
-     * getAllUnreadResults() will return different (potentially empty) result arrays. Be careful to
-     * call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20 changes, so
-     * make sure to call this frequently enough to avoid old results being discarded, too!
+     * The list of pipeline results sent by PhotonVision since the last call to
+     * getAllUnreadResults(). Calling this function clears the internal FIFO queue, and multiple
+     * calls to getAllUnreadResults() will return different (potentially empty) result arrays. Be
+     * careful to call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20
+     * changes, so make sure to call this frequently enough to avoid old results being discarded,
+     * too!
      *
      * @return The list of pipeline results
      */
@@ -267,8 +266,8 @@ public class PhotonCamera implements AutoCloseable {
         verifyVersion();
         updateDisconnectAlert();
 
-        // Grab the latest results. We don't care about the timestamps from NT - the metadata header has
-        // this, latency compensated by the Time Sync Client
+        // Grab the latest results. We don't care about the timestamps from NT - the metadata header
+        // has this, latency compensated by the Time Sync Client
         var changes = resultSubscriber.getAllChanges();
         List<PhotonPipelineResult> ret = new ArrayList<>(changes.size());
         for (var c : changes) {
@@ -294,8 +293,8 @@ public class PhotonCamera implements AutoCloseable {
         verifyVersion();
         updateDisconnectAlert();
 
-        // Grab the latest result. We don't care about the timestamp from NT - the metadata header has
-        // this, latency compensated by the Time Sync Client
+        // Grab the latest result. We don't care about the timestamp from NT - the metadata header
+        // has this, latency compensated by the Time Sync Client
         var ret = resultSubscriber.get();
 
         if (ret.timestamp == 0) return new PhotonPipelineResult();
@@ -393,9 +392,9 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * Request the camera to save a new image file from the input camera stream with overlays. Images
-     * take up space in the filesystem of the PhotonCamera. Calling it frequently will fill up disk
-     * space and eventually cause the system to stop working. Clear out images in
+     * Request the camera to save a new image file from the input camera stream with overlays.
+     * Images take up space in the filesystem of the PhotonCamera. Calling it frequently will fill
+     * up disk space and eventually cause the system to stop working. Clear out images in
      * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
      */
     public void takeInputSnapshot() {
@@ -499,8 +498,8 @@ public class PhotonCamera implements AutoCloseable {
      * Returns the camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms
      * are set to 0
      *
-     * @return The distortion coefficients in a 8x1 matrix, if they are published by the camera. Empty
-     *     otherwise.
+     * @return The distortion coefficients in a 8x1 matrix, if they are published by the camera.
+     *     Empty otherwise.
      */
     public Optional<Matrix<N8, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
@@ -515,8 +514,8 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * Gets the NetworkTable representing this camera's subtable. You probably don't ever need to call
-     * this.
+     * Gets the NetworkTable representing this camera's subtable. You probably don't ever need to
+     * call this.
      */
     public final NetworkTable getCameraTable() {
         return cameraTable;
@@ -559,7 +558,8 @@ public class PhotonCamera implements AutoCloseable {
         // Check for connection status. Warn if disconnected.
         else if (!isConnected()) {
             DriverStationErrors.reportWarning(
-                    "PhotonVision coprocessor at path " + path + " is not sending new data.", false);
+                    "PhotonVision coprocessor at path " + path + " is not sending new data.",
+                    false);
         }
 
         String versionString = versionEntry.get("");
@@ -578,9 +578,8 @@ public class PhotonCamera implements AutoCloseable {
         } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch
             // But stay silent otherwise
-
-            // spotless:off
-            String bfw = """
+            String bfw =
+                    """
 
 
 
@@ -602,7 +601,6 @@ public class PhotonCamera implements AutoCloseable {
                     >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     """;
-            // spotless:on
 
             DriverStationErrors.reportWarning(bfw, false);
             String versionMismatchMessage =

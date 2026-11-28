@@ -47,7 +47,10 @@ public class DataSocketHandler {
     private final Logger logger = new Logger(DataSocketHandler.class, LogGroup.WebServer);
     private final List<WsContext> users = new CopyOnWriteArrayList<>();
     private final JacksonAdapter adapter =
-            JacksonAdapter.builder().jsonFactory(new MessagePackFactory()).serializeEmpty(true).build();
+            JacksonAdapter.builder()
+                    .jsonFactory(new MessagePackFactory())
+                    .serializeEmpty(true)
+                    .build();
     private final Jsonb msgpackJsonb = Jsonb.builder().adapter(adapter).build();
     private final DataChangeService dcService = DataChangeService.getInstance();
 
@@ -63,9 +66,8 @@ public class DataSocketHandler {
     }
 
     private DataSocketHandler() {
-        dcService.addSubscribers(
-                uiOutboundSubscriber,
-                new UIInboundSubscriber()); // Subscribe outgoing messages to the data change service
+        // Subscribe outgoing messages to the data change service
+        dcService.addSubscribers(uiOutboundSubscriber, new UIInboundSubscriber());
     }
 
     public void onConnect(WsConnectContext context) {
@@ -85,7 +87,8 @@ public class DataSocketHandler {
         // Remote can be null if server is being closed for restart
         if (remote != null) {
             var host = remote.getAddress().toString() + ":" + remote.getPort();
-            var reason = context.reason() != null ? context.reason() : "Connection closed by client";
+            var reason =
+                    context.reason() != null ? context.reason() : "Connection closed by client";
             logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         } else {
             logger.info("Closing websockets for user " + context.sessionId());
@@ -164,12 +167,16 @@ public class DataSocketHandler {
                         }
                         case SMT_CHANGEBRIGHTNESS ->
                                 HardwareManager.getInstance()
-                                        .setBrightnessPercent(Integer.parseInt(entryValue.toString()));
+                                        .setBrightnessPercent(
+                                                Integer.parseInt(entryValue.toString()));
                         case SMT_DUPLICATEPIPELINE -> {
                             var pipeIndex = ((Long) entryValue).intValue();
 
                             logger.info(
-                                    "Duplicating pipe@index" + pipeIndex + " for camera " + message.cameraUniqueName);
+                                    "Duplicating pipe@index"
+                                            + pipeIndex
+                                            + " for camera "
+                                            + message.cameraUniqueName);
 
                             dcService.publishEvent(
                                     new IncomingWebSocketEvent<>(
@@ -252,14 +259,17 @@ public class DataSocketHandler {
                                     }
                                     dcService.publishEvent(
                                             new IncomingWebSocketEvent(
-                                                    DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
+                                                    DataChangeDestination
+                                                            .DCD_ACTIVEPIPELINESETTINGS,
                                                     dataEntry.getKey(),
                                                     dataEntry.getValue(),
                                                     cameraIndex2,
                                                     context));
                                 }
                             } else {
-                                logger.warn("Unknown message for PSC: " + data.keySet().iterator().next());
+                                logger.warn(
+                                        "Unknown message for PSC: "
+                                                + data.keySet().iterator().next());
                             }
                         }
                         case SMT_CHANGEPIPELINETYPE ->
@@ -294,7 +304,8 @@ public class DataSocketHandler {
                 sendMessage(b, user);
             }
         } else {
-            var skipUserPort = ((InetSocketAddress) userToSkip.session.getRemoteAddress()).getPort();
+            var skipUserPort =
+                    ((InetSocketAddress) userToSkip.session.getRemoteAddress()).getPort();
             for (WsContext user : users) {
                 var userPort = ((InetSocketAddress) user.session.getRemoteAddress()).getPort();
                 if (userPort != skipUserPort) {

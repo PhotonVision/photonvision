@@ -73,7 +73,10 @@ public class HardwareManager implements AutoCloseable {
                         .getIntegerTopic("ledModeRequest")
                         .subscribe(-1);
         ledModeState =
-                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
+                NetworkTablesManager.getInstance()
+                        .kRootTable
+                        .getIntegerTopic("ledModeState")
+                        .publish();
         ledModeState.set(VisionLEDMode.kDefault.value);
 
         // Device factory is lazy to prevent creating one if it will go unused.
@@ -97,7 +100,8 @@ public class HardwareManager implements AutoCloseable {
 
         Optional<StatusLED> tempStatusLED = Optional.empty();
         try {
-            tempStatusLED = hardwareConfig.statusLEDConfig.map(it -> it.create(lazyDeviceFactory.get()));
+            tempStatusLED =
+                    hardwareConfig.statusLEDConfig.map(it -> it.create(lazyDeviceFactory.get()));
         } catch (DeviceAlreadyOpenedException | NoSuchDeviceException e) {
             logger.error("Status LED initialization failed, skipping", e);
         }
@@ -114,8 +118,12 @@ public class HardwareManager implements AutoCloseable {
                                             lazyDeviceFactory.get(),
                                             hardwareConfig.ledPins,
                                             hardwareConfig.ledsCanDim,
-                                            hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
-                                            hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                            hasBrightnessRange
+                                                    ? hardwareConfig.ledBrightnessRange.get(0)
+                                                    : 0,
+                                            hasBrightnessRange
+                                                    ? hardwareConfig.ledBrightnessRange.get(1)
+                                                    : 100,
                                             hardwareConfig.ledPWMFrequency,
                                             ledModeState::set));
         } catch (DeviceAlreadyOpenedException | NoSuchDeviceException e) {
@@ -145,12 +153,14 @@ public class HardwareManager implements AutoCloseable {
 
     public static HardwareManager getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("HardwareManager not initialized! Call initialize() first.");
+            throw new IllegalStateException(
+                    "HardwareManager not initialized! Call initialize() first.");
         }
         return instance;
     }
 
-    public static void initialize(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+    public static void initialize(
+            HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         if (instance != null) {
             logger.warn("HardwareManager already initialized, replacing!");
             instance.close();
@@ -177,13 +187,17 @@ public class HardwareManager implements AutoCloseable {
         // Populate pin info according to hardware config
         for (int pin : hardwareConfig.ledPins) {
             if (hardwareConfig.ledsCanDim) {
-                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.PWM_OUTPUT, DeviceMode.DIGITAL_OUTPUT));
+                pinInfo.addGpioPinInfo(
+                        pin, pin, List.of(DeviceMode.PWM_OUTPUT, DeviceMode.DIGITAL_OUTPUT));
             } else {
                 pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
             }
         }
         for (int pin :
-                hardwareConfig.statusLEDConfig.map(StatusLedConfig::pins).orElseGet(() -> new int[0])) {
+                hardwareConfig
+                        .statusLEDConfig
+                        .map(StatusLedConfig::pins)
+                        .orElseGet(() -> new int[0])) {
             pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
         }
 

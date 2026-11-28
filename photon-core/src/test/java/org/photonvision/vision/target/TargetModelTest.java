@@ -83,9 +83,12 @@ public class TargetModelTest {
     static void assertApproxEquals(List<Point3> expected, List<Point3> actual, double delta) {
         assertEquals(expected.size(), actual.size());
         for (int i = 0; i < actual.size(); i++) {
-            assertEquals(expected.get(i).x, actual.get(i).x, delta, "Bad x for point %d".formatted(i));
-            assertEquals(expected.get(i).y, actual.get(i).y, delta, "Bad y for point %d".formatted(i));
-            assertEquals(expected.get(i).z, actual.get(i).z, delta, "Bad z for point %d".formatted(i));
+            assertEquals(
+                    expected.get(i).x, actual.get(i).x, delta, "Bad x for point %d".formatted(i));
+            assertEquals(
+                    expected.get(i).y, actual.get(i).y, delta, "Bad y for point %d".formatted(i));
+            assertEquals(
+                    expected.get(i).z, actual.get(i).z, delta, "Bad z for point %d".formatted(i));
         }
     }
 }

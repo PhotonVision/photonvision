@@ -87,13 +87,14 @@ public class PacketSubscriber<T> implements AutoCloseable {
         subscriber.close();
     }
 
-    // TODO - i can see an argument for moving this logic all here instead of keeping in photoncamera
+    // TODO - i can see an argument for moving this logic all here instead of keeping in
+    // photoncamera
     public String getInterfaceUUID() {
         // ntcore hands us a JSON string with leading/trailing quotes - remove those
         var uuidStr = subscriber.getTopic().getProperty("message_uuid");
 
-        // "null" can be returned if the property does not exist. From system knowledge, uuid can never
-        // be the string literal "null".
+        // "null" can be returned if the property does not exist. From system knowledge, uuid can
+        // never be the string literal "null".
         if (uuidStr.equals("null")) {
             return "";
         }

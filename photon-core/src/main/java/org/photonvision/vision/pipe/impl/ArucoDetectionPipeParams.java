@@ -38,7 +38,8 @@ public class ArucoDetectionPipeParams {
     public double errorCorrectionRate = 0;
 
     /**
-     * If obtained corners should be iteratively refined. This should always be on for 3D estimation.
+     * If obtained corners should be iteratively refined. This should always be on for 3D
+     * estimation.
      */
     public boolean useCornerRefinement = true;
 

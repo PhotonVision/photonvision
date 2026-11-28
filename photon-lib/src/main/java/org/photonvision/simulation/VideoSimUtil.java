@@ -84,8 +84,8 @@ public class VideoSimUtil {
 
     /**
      * Gets the points representing the corners of this image. Because image pixels are accessed
-     * through a Mat, the point (0,0) actually represents the center of the top-left pixel and not the
-     * actual top-left corner.
+     * through a Mat, the point (0,0) actually represents the center of the top-left pixel and not
+     * the actual top-left corner.
      *
      * <p>Order of corners returned is: [BL, BR, TR, TL]
      *
@@ -104,9 +104,9 @@ public class VideoSimUtil {
     /**
      * Gets the 10x10 (grayscale) image of a specific 36h11 AprilTag.
      *
-     * <p>WARNING: This creates a {@link RawFrame} instance but does not close it, which would result
-     * in a resource leak if the {@link Mat} is garbage-collected. Unfortunately, closing the {@code
-     * RawFrame} inside this function would delete the underlying data that backs the {@code
+     * <p>WARNING: This creates a {@link RawFrame} instance but does not close it, which would
+     * result in a resource leak if the {@link Mat} is garbage-collected. Unfortunately, closing the
+     * {@code RawFrame} inside this function would delete the underlying data that backs the {@code
      * ByteBuffer} that is passed to the {@code Mat} constructor (see comments on <a
      * href="https://github.com/PhotonVision/photonvision/pull/2023">PR 2023</a> for details).
      * Luckily, this method is private and is (as of Aug 2025) only used to populate the {@link
@@ -117,7 +117,11 @@ public class VideoSimUtil {
     private static Mat get36h11TagImage(int id) {
         RawFrame frame = AprilTagImageGenerator.generate36h11AprilTagImage(id);
         return new Mat(
-                frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
+                frame.getHeight(),
+                frame.getWidth(),
+                CvType.CV_8UC1,
+                frame.getData(),
+                frame.getStride());
     }
 
     /**
@@ -156,8 +160,9 @@ public class VideoSimUtil {
      * @param dstPoints Points(4) in destination image where the tag marker(black square) corners
      *     should be warped onto.
      * @param antialiasing If antialiasing should be performed by automatically
-     *     supersampling/interpolating the warped image. This should be used if better stream quality
-     *     is desired or target detection is being done on the stream, but can hurt performance.
+     *     supersampling/interpolating the warped image. This should be used if better stream
+     *     quality is desired or target detection is being done on the stream, but can hurt
+     *     performance.
      * @param destination The destination image to place the warped tag image onto.
      */
     public static void warp36h11TagImage(
@@ -204,7 +209,12 @@ public class VideoSimUtil {
             scaleFactor = Math.max(Math.min(scaleFactor, 40), 1);
             scaleFactor *= supersampling;
             Imgproc.resize(
-                    tagImage, scaledTagImage, new Size(), scaleFactor, scaleFactor, Imgproc.INTER_NEAREST);
+                    tagImage,
+                    scaledTagImage,
+                    new Size(),
+                    scaleFactor,
+                    scaleFactor,
+                    Imgproc.INTER_NEAREST);
             tagPoints.fromArray(get36h11MarkerPts(scaleFactor));
         } else tagImage.assignTo(scaledTagImage);
 
@@ -236,13 +246,15 @@ public class VideoSimUtil {
         } else dstPointMat.assignTo(scaledDstPts);
 
         // update transform relative to expanded, scaled bounding rect
-        Core.subtract(scaledDstPts, new Scalar(boundingRect.tl().x, boundingRect.tl().y), scaledDstPts);
+        Core.subtract(
+                scaledDstPts, new Scalar(boundingRect.tl().x, boundingRect.tl().y), scaledDstPts);
         perspecTrf = Imgproc.getPerspectiveTransform(tagPoints, scaledDstPts);
 
         // warp (scaled) tag image onto (scaled) ROI image representing the portion of
         // the destination image encapsulated by boundingRect
         Mat tempROI = new Mat();
-        Imgproc.warpPerspective(scaledTagImage, tempROI, perspecTrf, boundingRect.size(), warpStrategy);
+        Imgproc.warpPerspective(
+                scaledTagImage, tempROI, perspecTrf, boundingRect.size(), warpStrategy);
         perspecTrf.release();
 
         // downscale ROI with interpolation if supersampling
@@ -254,17 +266,24 @@ public class VideoSimUtil {
             Imgproc.resize(tempROI, tempROI, boundingRect.size(), 0, 0, Imgproc.INTER_AREA);
         }
 
-        // we want to copy ONLY the transformed tag to the result image, not the entire bounding rect
-        // using a mask only copies the source pixels which have an associated non-zero value in the
-        // mask
+        // Copy ONLY the transformed tag to the result image, not the entire bounding rect. Using a
+        // mask only copies the source pixels which have an associated non-zero value in the mask.
         Mat tempMask = Mat.zeros(tempROI.size(), CvType.CV_8UC1);
         Core.subtract(
-                extremeCorners, new Scalar(boundingRect.tl().x, boundingRect.tl().y), extremeCorners);
+                extremeCorners,
+                new Scalar(boundingRect.tl().x, boundingRect.tl().y),
+                extremeCorners);
         Point tempCenter = new Point();
         tempCenter.x =
-                Arrays.stream(extremeCorners.toArray()).mapToDouble(p -> p.x).average().getAsDouble();
+                Arrays.stream(extremeCorners.toArray())
+                        .mapToDouble(p -> p.x)
+                        .average()
+                        .getAsDouble();
         tempCenter.y =
-                Arrays.stream(extremeCorners.toArray()).mapToDouble(p -> p.y).average().getAsDouble();
+                Arrays.stream(extremeCorners.toArray())
+                        .mapToDouble(p -> p.y)
+                        .average()
+                        .getAsDouble();
         // dilate tag corners
         Arrays.stream(extremeCorners.toArray())
                 .forEach(
@@ -439,7 +458,10 @@ public class VideoSimUtil {
                         new Translation3d(0, 0, topHt),
                         new Translation3d(0, fieldWidth, topHt),
                         new Translation3d(0, fieldWidth, sideHt)));
-        list.add(List.of(new Translation3d(0, 0, driveHt), new Translation3d(0, fieldWidth, driveHt)));
+        list.add(
+                List.of(
+                        new Translation3d(0, 0, driveHt),
+                        new Translation3d(0, fieldWidth, driveHt)));
 
         return list;
     }
@@ -449,8 +471,8 @@ public class VideoSimUtil {
      * List of Lists because the translations are not all connected.
      *
      * @param subdivisions How many "subdivisions" along the width/length of the floor. E.g. 3
-     *     subdivisions would mean 2 lines along the length and 2 lines along the width creating a 3x3
-     *     "grid".
+     *     subdivisions would mean 2 lines along the length and 2 lines along the width creating a
+     *     3x3 "grid".
      */
     private static List<List<Translation3d>> getFieldFloorLines(int subdivisions) {
         var list = new ArrayList<List<Translation3d>>();
@@ -520,7 +542,10 @@ public class VideoSimUtil {
                     new ArrayList<>(
                             Arrays.asList(
                                     OpenCVHelp.projectPoints(
-                                            prop.getIntrinsics(), prop.getDistCoeffs(), camRt, List.of(pta, ptb))));
+                                            prop.getIntrinsics(),
+                                            prop.getDistCoeffs(),
+                                            camRt,
+                                            List.of(pta, ptb))));
             var pxa = poly.get(0);
             var pxb = poly.get(1);
 
@@ -537,7 +562,10 @@ public class VideoSimUtil {
                         1,
                         Arrays.asList(
                                 OpenCVHelp.projectPoints(
-                                        prop.getIntrinsics(), prop.getDistCoeffs(), camRt, subPts)));
+                                        prop.getIntrinsics(),
+                                        prop.getDistCoeffs(),
+                                        camRt,
+                                        subPts)));
             }
 
             polyPointList.add(poly.toArray(Point[]::new));
@@ -554,8 +582,8 @@ public class VideoSimUtil {
      * @param prop The simulated camera's properties.
      * @param resolution Resolution as a fraction(0 - 1) of the video frame's diagonal length in
      *     pixels. Line segments will be subdivided if they exceed this resolution.
-     * @param wallThickness Thickness of the lines used for drawing the field walls in pixels. This is
-     *     scaled by {@link #getScaledThickness(double, Mat)}.
+     * @param wallThickness Thickness of the lines used for drawing the field walls in pixels. This
+     *     is scaled by {@link #getScaledThickness(double, Mat)}.
      * @param wallColor Color of the lines used for drawing the field walls.
      * @param floorSubdivisions A NxN "grid" is created from the floor where this parameter is N,
      *     which defines the floor lines.
@@ -575,7 +603,8 @@ public class VideoSimUtil {
             Scalar floorColor,
             Mat destination) {
         for (var trls : getFieldFloorLines(floorSubdivisions)) {
-            var polys = VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
+            var polys =
+                    VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
             for (var poly : polys) {
                 drawPoly(
                         poly,
@@ -586,7 +615,8 @@ public class VideoSimUtil {
             }
         }
         for (var trls : getFieldWallLines()) {
-            var polys = VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
+            var polys =
+                    VideoSimUtil.polyFrom3dLines(camRt, prop, trls, resolution, false, destination);
             for (var poly : polys) {
                 drawPoly(
                         poly,

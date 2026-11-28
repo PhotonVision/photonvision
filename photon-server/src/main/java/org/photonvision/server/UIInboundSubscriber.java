@@ -44,9 +44,11 @@ public class UIInboundSubscriber extends DataChangeSubscriber {
                     || incomingWSEvent.propertyName.equals("sendFullSettings")) {
                 // Send full settings
                 var settings =
-                        UIPhotonConfiguration.programStateToUi(ConfigProvider.getInstance().getConfig());
+                        UIPhotonConfiguration.programStateToUi(
+                                ConfigProvider.getInstance().getConfig());
                 var message =
-                        new OutgoingUIEvent<>("fullsettings", settings, incomingWSEvent.originContext);
+                        new OutgoingUIEvent<>(
+                                "fullsettings", settings, incomingWSEvent.originContext);
                 DataChangeService.getInstance().publishEvent(message);
                 Logger.sendConnectedBacklog();
                 NetworkTablesManager.getInstance().broadcastConnectedStatus();

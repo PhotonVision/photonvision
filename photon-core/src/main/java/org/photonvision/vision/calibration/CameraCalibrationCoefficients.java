@@ -40,10 +40,9 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     // Mirror of
     // https://github.com/dkogan/mrcal/blob/c311b0acdb29d3f6c1a5abeaf17dc6a7e2ab10d9/mrcal/cameramodel.py#L377
-    // We must pass the exact optimization state vector back to mrcal when computing uncertainty, but
-    // we re-estimate the camera to object pose using SolvePNP
-    // So we need to keep this + the observation camera to object around. This input shall not change
-    // with "calibration rotation"
+    // We must pass the exact optimization state vector back to mrcal when computing uncertainty,
+    // but we re-estimate the camera to object pose using SolvePNP, so we need to keep this + the
+    // observation camera to object around. This input shall not change with "calibration rotation"
     public static record OptimizationInputs(List<Pose3d> rt_cam_ref) {}
 
     /** The unrotated resolution of the calibration */
@@ -67,8 +66,8 @@ public class CameraCalibrationCoefficients implements Releasable {
     public final OptimizationInputs optimizationInputs;
 
     /**
-     * Contains all camera calibration data for a particular resolution of a camera. Designed for use
-     * with standard opencv camera calibration matrices. For details on the layout of camera
+     * Contains all camera calibration data for a particular resolution of a camera. Designed for
+     * use with standard opencv camera calibration matrices. For details on the layout of camera
      * intrinsics/distortion matrices, see:
      * https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html#ga3207604e4b1a1758aa66acb6ed5aa65d
      *
@@ -77,8 +76,8 @@ public class CameraCalibrationCoefficients implements Releasable {
      * @param cameraIntrinsics Camera intrinsics parameters matrix, in the standard opencv form.
      * @param distCoeffs Camera distortion coefficients array. Variable length depending on order of
      *     distortion model
-     * @param calobjectWarp Board deformation parameters, for calibrators that can estimate that. See:
-     *     https://mrcal.secretsauce.net/formulation.html#board-deformation
+     * @param calobjectWarp Board deformation parameters, for calibrators that can estimate that.
+     *     See: https://mrcal.secretsauce.net/formulation.html#board-deformation
      * @param observations List of snapshots used to construct this calibration
      * @param calobjectSize Dimensions of the object used to calibrate, in # of squares in
      *     width/height
@@ -128,7 +127,8 @@ public class CameraCalibrationCoefficients implements Releasable {
 
         Size rotatedImageSize = null;
 
-        // A bunch of horrifying opaque rotation black magic. See image-rotation.md for more details.
+        // A bunch of horrifying opaque rotation black magic. See image-rotation.md for more
+        // details.
         switch (rotation) {
             case DEG_0:
                 break;
@@ -148,8 +148,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // P2
                 rotatedDistCoeffs.put(0, 3, -p1);
 
-                // The rotated image size is the same as the unrotated image size, but the width and height
-                // are swapped
+                // The rotated image size is the same as the unrotated image size, but the width and
+                // height are swapped
                 rotatedImageSize = new Size(resolution.height, resolution.width);
                 break;
             case DEG_180_CCW:
@@ -182,8 +182,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // P2
                 rotatedDistCoeffs.put(0, 3, p1);
 
-                // The rotated image size is the same as the unrotated image size, but the width and height
-                // are swapped
+                // The rotated image size is the same as the unrotated image size, but the width and
+                // height are swapped
                 rotatedImageSize = new Size(resolution.height, resolution.width);
                 break;
         }
@@ -304,7 +304,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 observations.stream()
                         .map(
                                 observation -> {
-                                    if (observation.locationInImageSpace.size() != observation.cornersUsed.length) {
+                                    if (observation.locationInImageSpace.size()
+                                            != observation.cornersUsed.length) {
                                         throw new RuntimeException(
                                                 "Length mismatch! Got "
                                                         + observation.locationInImageSpace.size()
@@ -313,11 +314,15 @@ public class CameraCalibrationCoefficients implements Releasable {
                                                         + " used flags");
                                     }
 
-                                    var corners = observation.locationInImageSpace.toArray(new Point[0]);
+                                    var corners =
+                                            observation.locationInImageSpace.toArray(new Point[0]);
                                     var levels = new float[observation.cornersUsed.length];
 
-                                    for (int corner = 0; corner < observation.cornersUsed.length; corner++) {
-                                        levels[corner] = observation.cornersUsed[corner] ? 0.0f : -1.0f;
+                                    for (int corner = 0;
+                                            corner < observation.cornersUsed.length;
+                                            corner++) {
+                                        levels[corner] =
+                                                observation.cornersUsed[corner] ? 0.0f : -1.0f;
                                     }
 
                                     var ids = observation.cornerIds;

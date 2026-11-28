@@ -37,7 +37,8 @@ public class MockUsbCameraSource extends USBCameraSource {
         /** File used as frame provider */
         usbFrameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(
+                                TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV);
 
         this.settables = createSettables(config, null);

@@ -111,7 +111,8 @@ public class OutputStreamPipeline implements Releasable {
         if (settings instanceof Calibration3dPipelineSettings pipelineSettings) {
             drawCalibrationPipe.setParams(
                     new DrawCalibrationPipe.DrawCalibrationPipeParams(
-                            pipelineSettings.streamingFrameDivisor, pipelineSettings.drawAllSnapshots));
+                            pipelineSettings.streamingFrameDivisor,
+                            pipelineSettings.drawAllSnapshots));
         }
     }
 
@@ -145,15 +146,18 @@ public class OutputStreamPipeline implements Releasable {
             }
 
             // Draw 2D Crosshair on output
-            var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
+            var draw2dCrosshairResultOnInput =
+                    draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
             if (!(settings instanceof AprilTagPipelineSettings)
                     && !(settings instanceof ArucoPipelineSettings)
                     && !(settings instanceof Calibration3dPipelineSettings)) {
                 // If we're processing anything other than AprilTags or Aruco targets
-                var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
+                var draw2dCrosshairResultOnOutput =
+                        draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
+                sumPipeNanosElapsed +=
+                        pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
                 if (settings.solvePNPEnabled) {
                     // Draw 3D Targets on input and output if possible
@@ -167,7 +171,8 @@ public class OutputStreamPipeline implements Releasable {
                     // Only draw 2d targets
                     pipeProfileNanos[5] = 0;
 
-                    var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
+                    var draw2dTargetsOnOutput =
+                            draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
                     sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
 
                     pipeProfileNanos[7] = 0;
@@ -195,7 +200,8 @@ public class OutputStreamPipeline implements Releasable {
 
                 } else {
                     // Draw 2d apriltag markers
-                    var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(outMat, targetsToDraw));
+                    var draw2dTargetsOnInput =
+                            draw2dAprilTagsPipe.run(Pair.of(outMat, targetsToDraw));
                     sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
 
                     pipeProfileNanos[6] = 0;

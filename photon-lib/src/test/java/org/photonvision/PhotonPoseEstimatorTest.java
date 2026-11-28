@@ -83,7 +83,8 @@ class PhotonPoseEstimatorTest {
         tagList.add(new FieldTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
         double fieldLength = UnitConversions.feetToMeters(54.0);
         double fieldWidth = UnitConversions.feetToMeters(27.0);
-        aprilTags = new Field("test", "test", "test", null, fieldLength, fieldWidth, "frc", tagList);
+        aprilTags =
+                new Field("test", "test", "test", null, fieldLength, fieldWidth, "frc", tagList);
     }
 
     @AfterAll
@@ -108,8 +109,12 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
                                         0.7,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -129,8 +134,12 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(0, 0, 0)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(0, 0, 0)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(1, 5, 3)),
                                         0.3,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -150,8 +159,12 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
                                         0.4,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -196,8 +209,10 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(0, 0, 0), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -217,8 +232,10 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2, 2, 2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -238,8 +255,10 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(4, 4, 4), new Rotation3d()),
-                                        new Transform3d(new Translation3d(5, 5, 5), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(4, 4, 4), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(5, 5, 5), new Rotation3d()),
                                         0.4,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -286,8 +305,10 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(0, 0, 0), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -307,8 +328,10 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2, 2, 2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -328,8 +351,10 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -377,8 +402,10 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(0, 0, 0), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -398,8 +425,10 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2, 2, 2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -419,8 +448,10 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -457,8 +488,10 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(0, 0, 0), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -478,8 +511,10 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(2.1, 1.9, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2.1, 1.9, 2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -499,8 +534,10 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(2.4, 2.4, 2.2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(2, 1, 2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2.4, 2.4, 2.2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2, 1, 2), new Rotation3d()),
                                         0.4,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -531,7 +568,8 @@ class PhotonPoseEstimatorTest {
                 aprilTags.getTags().stream()
                         .map(
                                 (FieldTag x) ->
-                                        new VisionTargetSim(x.getPose(), TargetModel.kAprilTag36h11, x.getID()))
+                                        new VisionTargetSim(
+                                                x.getPose(), TargetModel.kAprilTag36h11, x.getID()))
                         .toList();
         try (PhotonCameraSim cameraOneSim =
                 new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG())) {
@@ -552,12 +590,15 @@ class PhotonPoseEstimatorTest {
             var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
             PhotonPipelineResult result =
                     cameraOneSim.process(
-                            1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
+                            1,
+                            realPose.transformBy(estimator.getRobotToCameraTransform()),
+                            simTargets);
             var bestTarget = result.getBestTarget();
             assertNotNull(bestTarget);
             assertEquals(0, bestTarget.fiducialId);
 
-            estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
+            estimator.addHeadingData(
+                    result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
             var estimatedPose = estimator.estimatePnpDistanceTrigSolvePose(result);
 
             var pose = estimatedPose.get().estimatedPose;
@@ -567,7 +608,8 @@ class PhotonPoseEstimatorTest {
             // PNP_DISTANCE_TRIG_SOLVE uses only the best target.
             assertEquals(1, estimatedPose.get().targetsUsed.size());
             assertEquals(
-                    bestTarget.getFiducialId(), estimatedPose.get().targetsUsed.get(0).getFiducialId());
+                    bestTarget.getFiducialId(),
+                    estimatedPose.get().targetsUsed.get(0).getFiducialId());
 
             /* Straight on */
             Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, Rotation3d.ZERO);
@@ -578,9 +620,12 @@ class PhotonPoseEstimatorTest {
             realPose = new Pose3d(4.81, 2.38, 0, new Rotation3d(0, 0, 2.818));
             result =
                     cameraOneSim.process(
-                            1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
+                            1,
+                            realPose.transformBy(estimator.getRobotToCameraTransform()),
+                            simTargets);
 
-            estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
+            estimator.addHeadingData(
+                    result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
             estimatedPose = estimator.estimatePnpDistanceTrigSolvePose(result);
 
             pose = estimatedPose.get().estimatedPose;
@@ -607,8 +652,10 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2, 2, 2), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(1, 1, 1), new Rotation3d()),
                                         0.7,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -628,8 +675,10 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
-                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(3, 3, 3), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -649,8 +698,10 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
-                                        new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(0, 0, 0), new Rotation3d()),
+                                        new Transform3d(
+                                                new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -781,7 +832,8 @@ class PhotonPoseEstimatorTest {
 
         assertFalse(
                 estimator
-                        .estimateClosestToReferencePose(cameraOne.result, new Pose3d(1, 1, 1, new Rotation3d()))
+                        .estimateClosestToReferencePose(
+                                cameraOne.result, new Pose3d(1, 1, 1, new Rotation3d()))
                         .isPresent());
     }
 
@@ -803,8 +855,12 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
+                                        new Transform3d(
+                                                new Translation3d(1, 2, 3),
+                                                new Rotation3d(1, 2, 3)),
                                         0.7,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -824,8 +880,12 @@ class PhotonPoseEstimatorTest {
                                         1,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(0, 0, 0)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(0, 0, 0)),
+                                        new Transform3d(
+                                                new Translation3d(4, 2, 3),
+                                                new Rotation3d(1, 5, 3)),
                                         0.3,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -909,14 +969,17 @@ class PhotonPoseEstimatorTest {
                 new PhotonPipelineResult(
                         new PhotonPipelineMetadata(10000, 2000, 1, 100),
                         List.of(
-                                new PhotonTrackedTarget(0, 0, 0, 0, 8, 0, 0, null, null, 0, corners8, corners8)),
+                                new PhotonTrackedTarget(
+                                        0, 0, 0, 0, 8, 0, 0, null, null, 0, corners8, corners8)),
                         Optional.of(
                                 new MultiTargetPNPResult(
                                         new PnpResult(
                                                 new Transform3d(
                                                         // From ground truth
                                                         new Translation3d(
-                                                                3.1665557336121353, 4.430673446050584, 0.48678786477534686),
+                                                                3.1665557336121353,
+                                                                4.430673446050584,
+                                                                0.48678786477534686),
                                                         new Rotation3d(
                                                                 new Quaternion(
                                                                         0.3132532247418243,
@@ -937,7 +1000,12 @@ class PhotonPoseEstimatorTest {
         estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.ZERO);
         Optional<EstimatedRobotPose> estimatedPose =
                 estimator.estimateConstrainedSolvepnpPose(
-                        result, cameraMat, distortion, multiTagEstimate.get().estimatedPose, true, 0);
+                        result,
+                        cameraMat,
+                        distortion,
+                        multiTagEstimate.get().estimatedPose,
+                        true,
+                        0);
         Pose3d pose = estimatedPose.get().estimatedPose;
         System.out.println(pose);
     }

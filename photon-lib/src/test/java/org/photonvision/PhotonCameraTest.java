@@ -87,7 +87,8 @@ class PhotonCameraTest {
         inst.stopClient();
         inst.stopServer();
         inst.startLocal();
-        TelemetryRegistry.registerBackend("", new NetworkTablesTelemetryBackend(inst, "/Telemetry"));
+        TelemetryRegistry.registerBackend(
+                "", new NetworkTablesTelemetryBackend(inst, "/Telemetry"));
     }
 
     @AfterEach
@@ -238,7 +239,8 @@ class PhotonCameraTest {
                 coprocNt = NetworkTableInstance.create();
                 configureInstanceDataLoggers(coprocNt, "COPROC 2");
 
-                coprocNt.addLogger(10, 255, (it) -> System.out.println("CLIENT: " + it.logMessage.message));
+                coprocNt.addLogger(
+                        10, 255, (it) -> System.out.println("CLIENT: " + it.logMessage.message));
 
                 fakePhotonCoprocCam = new PhotonCamera(coprocNt, "MY_CAMERA");
                 coprocSim = new PhotonCameraSim(fakePhotonCoprocCam);
@@ -252,7 +254,8 @@ class PhotonCameraTest {
                 robotNt.close();
                 robotNt = NetworkTableInstance.create();
                 configureInstanceDataLoggers(robotNt, "ROBOT 2");
-                robotNt.addLogger(10, 255, (it) -> System.out.println("ROBOT: " + it.logMessage.message));
+                robotNt.addLogger(
+                        10, 255, (it) -> System.out.println("ROBOT: " + it.logMessage.message));
                 robotCamera = new PhotonCamera(robotNt, "MY_CAMERA");
             }
 
@@ -283,7 +286,8 @@ class PhotonCameraTest {
             result1.metadata.sequenceID = seq;
             if (tspClient != null) {
                 // PingMetadata reports nanoseconds -- so does the metadata
-                result1.metadata.timeSinceLastPong = tspClient.getPingMetadata().timeSinceLastPong();
+                result1.metadata.timeSinceLastPong =
+                        tspClient.getPingMetadata().timeSinceLastPong();
             } else {
                 result1.metadata.timeSinceLastPong = Long.MAX_VALUE;
             }
@@ -337,7 +341,8 @@ class PhotonCameraTest {
 
             // The alert state will be set (hard-coded here)
             assertTrue(
-                    Arrays.stream(alertsText).anyMatch(it -> Objects.equals(it, disconnectedCameraString)));
+                    Arrays.stream(alertsText)
+                            .anyMatch(it -> Objects.equals(it, disconnectedCameraString)));
 
             Thread.sleep(20);
         }
@@ -368,11 +373,16 @@ class PhotonCameraTest {
                                 .toArray(String[]::new);
 
                 // THEN the camera isn't disconnected
-                assertTrue(Arrays.stream(alertsText).noneMatch(it -> it.equals(disconnectedCameraString)));
+                assertTrue(
+                        Arrays.stream(alertsText)
+                                .noneMatch(it -> it.equals(disconnectedCameraString)));
                 // AND the alert string looks like a timesync warning
                 assertTrue(
                         Arrays.stream(alertsText)
-                                        .filter(it -> it.contains("is not connected to the TimeSyncServer"))
+                                        .filter(
+                                                it ->
+                                                        it.contains(
+                                                                "is not connected to the TimeSyncServer"))
                                         .count()
                                 == 1);
 

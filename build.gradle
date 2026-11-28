@@ -69,9 +69,7 @@ spotless {
             exclude '**/build/**', '**/build-*/**', '**/src/generated/**', '**/src/generated-test/**', "**/bin/generated-sources/**", "photon-serde-tests/src/**"
         }
         toggleOffOn()
-        googleJavaFormat()
-        leadingSpacesToTabs(2)
-        leadingTabsToSpaces(4)
+        googleJavaFormat().aosp()
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()

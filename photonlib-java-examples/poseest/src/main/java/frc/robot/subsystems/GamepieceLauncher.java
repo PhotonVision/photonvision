@@ -50,7 +50,8 @@ public class GamepieceLauncher {
 
     public void periodic() {
         double maxRPM =
-                UnitConversions.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeed);
+                UnitConversions.radiansPerSecondToRotationsPerMinute(
+                        DCMotor.getFalcon500(1).freeSpeed);
         curMotorCmd = curDesSpd / maxRPM;
         curMotorCmd = Math.clamp(curMotorCmd, 0.0, 1.0);
         motor.set(curMotorCmd);
@@ -68,7 +69,8 @@ public class GamepieceLauncher {
         motorSim = DCMotor.getFalcon500(1);
         launcherSim =
                 new FlywheelSim(
-                        LinearSystemId.createFlywheelSystem(motorSim, flywheelMoiKgM2, flywheelGearRatio),
+                        LinearSystemId.createFlywheelSystem(
+                                motorSim, flywheelMoiKgM2, flywheelGearRatio),
                         motorSim);
     }
 

@@ -96,7 +96,8 @@ public class SolvePNPTest {
 
             try (var frameProvider =
                     new FileFrameProvider(
-                            TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark48in, false),
                             TestUtils.WPI2019Image.FOV,
                             TestUtils.get2019LifeCamCoeffs(false))) {
                 frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
@@ -115,7 +116,9 @@ public class SolvePNPTest {
                     // Draw on input
                     var outputPipe = new OutputStreamPipeline();
                     outputPipe.process(
-                            pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                            pipelineResult.inputAndOutputFrame,
+                            pipeline.getSettings(),
+                            pipelineResult.targets);
 
                     TestUtils.showImage(
                             pipelineResult.inputAndOutputFrame.processedImage.getMat(),
@@ -157,7 +160,8 @@ public class SolvePNPTest {
 
             try (var frameProvider =
                     new FileFrameProvider(
-                            TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
                             TestUtils.WPI2020Image.FOV,
                             TestUtils.get2020LifeCamCoeffs(false))) {
                 frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
@@ -176,7 +180,9 @@ public class SolvePNPTest {
                     // Draw on input
                     var outputPipe = new OutputStreamPipeline();
                     outputPipe.process(
-                            pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                            pipelineResult.inputAndOutputFrame,
+                            pipeline.getSettings(),
+                            pipelineResult.targets);
 
                     TestUtils.showImage(
                             pipelineResult.inputAndOutputFrame.processedImage.getMat(),
@@ -204,9 +210,12 @@ public class SolvePNPTest {
         var zAxis = new Translation3d(0, 0, 1);
         var expectedRot =
                 new Rotation3d(Math.toRadians(-20), Math.toRadians(-20), Math.toRadians(-120));
-        assertTrue(xAxis.rotateBy(expectedRot).getDistance(xAxis.rotateBy(pose.getRotation())) < 0.1);
-        assertTrue(yAxis.rotateBy(expectedRot).getDistance(yAxis.rotateBy(pose.getRotation())) < 0.1);
-        assertTrue(zAxis.rotateBy(expectedRot).getDistance(zAxis.rotateBy(pose.getRotation())) < 0.1);
+        assertTrue(
+                xAxis.rotateBy(expectedRot).getDistance(xAxis.rotateBy(pose.getRotation())) < 0.1);
+        assertTrue(
+                yAxis.rotateBy(expectedRot).getDistance(yAxis.rotateBy(pose.getRotation())) < 0.1);
+        assertTrue(
+                zAxis.rotateBy(expectedRot).getDistance(zAxis.rotateBy(pose.getRotation())) < 0.1);
     }
 
     // used to run VisualVM for profiling, which won't run on unit tests.
@@ -223,7 +232,8 @@ public class SolvePNPTest {
 
         try (var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(
+                                TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV)) {
             TestUtils.continuouslyRunPipeline(frameProvider, settings);
         }

@@ -68,7 +68,8 @@ public class Constants {
         public static final double kDriveGearRatio = 6.75; // 6.75:1 SDS MK4 L2 ratio
         public static final double kSteerGearRatio = 12.8; // 12.8:1
 
-        public static final double kDriveDistPerPulse = kWheelCircumference / 1024 / kDriveGearRatio;
+        public static final double kDriveDistPerPulse =
+                kWheelCircumference / 1024 / kDriveGearRatio;
         public static final double kSteerRadPerPulse = 2 * Math.PI / 1024;
 
         public enum ModuleConstants {

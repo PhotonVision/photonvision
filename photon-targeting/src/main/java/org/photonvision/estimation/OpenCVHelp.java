@@ -58,8 +58,10 @@ public final class OpenCVHelp {
     private static final Rotation3d EDN_TO_NWU;
 
     static {
-        NWU_TO_EDN = new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, -1, 0, 0, 0, -1, 1, 0, 0));
-        EDN_TO_NWU = new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, 0, 1, -1, 0, 0, 0, -1, 0));
+        NWU_TO_EDN =
+                new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, -1, 0, 0, 0, -1, 1, 0, 0));
+        EDN_TO_NWU =
+                new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, 0, 1, -1, 0, 0, 0, -1, 0));
     }
 
     private OpenCVHelp() {}
@@ -91,8 +93,8 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Creates a new {@link MatOfPoint3f} with these 3d translations. The OpenCV tvec is a vector with
-     * three elements representing {x, y, z} in the EDN coordinate system.
+     * Creates a new {@link MatOfPoint3f} with these 3d translations. The OpenCV tvec is a vector
+     * with three elements representing {x, y, z} in the EDN coordinate system.
      *
      * @param translations The translations in the NWU coordinate system to convert into a
      *     MatOfPoint3f
@@ -124,9 +126,9 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Creates a new {@link MatOfPoint3f} with this 3d rotation. The OpenCV rvec Mat is a vector with
-     * three elements representing the axis scaled by the angle in the EDN coordinate system. (angle =
-     * norm, and axis = rvec / norm)
+     * Creates a new {@link MatOfPoint3f} with this 3d rotation. The OpenCV rvec Mat is a vector
+     * with three elements representing the axis scaled by the angle in the EDN coordinate system.
+     * (angle = norm, and axis = rvec / norm)
      *
      * @param rotation The rotation to convert into a MatOfPoint3f
      * @return The OpenCV rvec
@@ -138,15 +140,15 @@ public final class OpenCVHelp {
 
     /**
      * Returns a 3d rotation from this {@link Mat}. The OpenCV rvec Mat is a vector with three
-     * elements representing the axis scaled by the angle in the EDN coordinate system. (angle = norm,
-     * and axis = rvec / norm)
+     * elements representing the axis scaled by the angle in the EDN coordinate system. (angle =
+     * norm, and axis = rvec / norm)
      *
      * @param rvecInput The rvec to create a Rotation3d from
      * @return The 3d rotation
      */
     public static Rotation3d rvecToRotation(Mat rvecInput) {
-        // Get the 'rodriguez' (axis-angle, where the norm is the angle about the normalized direction
-        // of the vector)
+        // Get the 'rodriguez' (axis-angle, where the norm is the angle about the normalized
+        // direction of the vector)
         float[] data = new float[3];
         var wrapped = new Mat(rvecInput.rows(), rvecInput.cols(), CvType.CV_32F);
         rvecInput.convertTo(wrapped, CvType.CV_32F);
@@ -231,8 +233,8 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Reorders the list, optionally indexing backwards and wrapping around to the last element after
-     * the first, and shifting all indices in the direction of indexing.
+     * Reorders the list, optionally indexing backwards and wrapping around to the last element
+     * after the first, and shifting all indices in the direction of indexing.
      *
      * <p>e.g.
      *
@@ -245,8 +247,8 @@ public final class OpenCVHelp {
      * @param <T> Element type
      * @param elements list elements
      * @param backwards If indexing should happen in reverse (0, size-1, size-2, ...)
-     * @param shiftStart How much the initial index should be shifted (instead of starting at index 0,
-     *     start at shiftStart, negated if backwards)
+     * @param shiftStart How much the initial index should be shifted (instead of starting at index
+     *     0, start at shiftStart, negated if backwards)
      * @return Reordered list
      */
     public static <T> List<T> reorderCircular(List<T> elements, boolean backwards, int shiftStart) {
@@ -386,7 +388,8 @@ public final class OpenCVHelp {
         var distCoeffsMat = new MatOfDouble(matrixToMat(distCoeffs.getStorage()));
         var imagePoints = new MatOfPoint2f();
         // project to 2d
-        Calib3d.projectPoints(objectPoints, rvec, tvec, cameraMatrixMat, distCoeffsMat, imagePoints);
+        Calib3d.projectPoints(
+                objectPoints, rvec, tvec, cameraMatrixMat, distCoeffsMat, imagePoints);
         var points = imagePoints.toArray();
 
         // release our Mats from native memory
@@ -463,7 +466,8 @@ public final class OpenCVHelp {
      * Gets the convex hull contour (the outline) of a list of points.
      *
      * @param points The input contour
-     * @return The subset of points defining the convex hull. Note that these use ints and not floats.
+     * @return The subset of points defining the convex hull. Note that these use ints and not
+     *     floats.
      */
     public static Point[] getConvexHull(Point[] points) {
         var pointMat = new MatOfPoint(points);
@@ -483,17 +487,17 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Finds the transformation(s) that map the camera's pose to the target's pose. The camera's pose
-     * relative to the target is determined by the supplied 3d points of the target's model and their
-     * associated 2d points imaged by the camera. The supplied model translations must be relative to
-     * the target's pose.
+     * Finds the transformation(s) that map the camera's pose to the target's pose. The camera's
+     * pose relative to the target is determined by the supplied 3d points of the target's model and
+     * their associated 2d points imaged by the camera. The supplied model translations must be
+     * relative to the target's pose.
      *
-     * <p>For planar targets, there may be an alternate solution which is plausible given the 2d image
-     * points. This has an associated "ambiguity" which describes the ratio of reprojection error
-     * between the "best" and "alternate" solution.
+     * <p>For planar targets, there may be an alternate solution which is plausible given the 2d
+     * image points. This has an associated "ambiguity" which describes the ratio of reprojection
+     * error between the "best" and "alternate" solution.
      *
-     * <p>This method is intended for use with individual AprilTags, and will not work unless 4 points
-     * are provided.
+     * <p>This method is intended for use with individual AprilTags, and will not work unless 4
+     * points are provided.
      *
      * @param cameraMatrix The camera intrinsics matrix in standard OpenCV form
      * @param distCoeffs The camera distortion matrix in standard OpenCV form
@@ -506,8 +510,8 @@ public final class OpenCVHelp {
      *       <li>Point 3: [0, -squareLength / 2, -squareLength / 2]
      *     </ul>
      *
-     * @param imagePoints The projection of these 3d object points into the 2d camera image. The order
-     *     should match the given object point translations.
+     * @param imagePoints The projection of these 3d object points into the 2d camera image. The
+     *     order should match the given object point translations.
      * @return The resulting transformation that maps the camera pose to the target pose and the
      *     ambiguity if an alternate solution is available.
      */
@@ -554,10 +558,14 @@ public final class OpenCVHelp {
 
                 reprojectionError.get(0, 0, errors);
                 // convert to wpilib coordinates
-                best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
+                best =
+                        new Transform3d(
+                                tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
 
                 if (tvecs.size() > 1) {
-                    alt = new Transform3d(tvecToTranslation(tvecs.get(1)), rvecToRotation(rvecs.get(1)));
+                    alt =
+                            new Transform3d(
+                                    tvecToTranslation(tvecs.get(1)), rvecToRotation(rvecs.get(1)));
                 }
 
                 // check if we got a NaN result
@@ -574,7 +582,8 @@ public final class OpenCVHelp {
             if (Double.isNaN(errors[0])) throw new Exception("SolvePNP_SQUARE NaN result");
 
             if (alt != null)
-                return Optional.of(new PnpResult(best, alt, errors[0] / errors[1], errors[0], errors[1]));
+                return Optional.of(
+                        new PnpResult(best, alt, errors[0] / errors[1], errors[0], errors[1]));
             else return Optional.empty();
         }
         // solvePnP failed
@@ -610,11 +619,11 @@ public final class OpenCVHelp {
      * @param cameraMatrix The camera intrinsics matrix in standard OpenCV form
      * @param distCoeffs The camera distortion matrix in standard OpenCV form
      * @param objectTrls The translations of the object corners, relative to the field.
-     * @param imagePoints The projection of these 3d object points into the 2d camera image. The order
-     *     should match the given object point translations.
+     * @param imagePoints The projection of these 3d object points into the 2d camera image. The
+     *     order should match the given object point translations.
      * @return The resulting transformation that maps the camera pose to the target pose. If the 3d
-     *     model points are supplied relative to the origin, this transformation brings the camera to
-     *     the origin.
+     *     model points are supplied relative to the origin, this transformation brings the camera
+     *     to the origin.
      */
     public static Optional<PnpResult> solvePNP_SQPNP(
             Matrix<N3, N3> cameraMatrix,
@@ -650,7 +659,8 @@ public final class OpenCVHelp {
             float[] error = new float[1];
             reprojectionError.get(0, 0, error);
             // convert to wpilib coordinates
-            var best = new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
+            var best =
+                    new Transform3d(tvecToTranslation(tvecs.get(0)), rvecToRotation(rvecs.get(0)));
 
             // check if solvePnP failed with NaN results
             if (Double.isNaN(error[0])) throw new Exception("SolvePNP_SQPNP NaN result");
