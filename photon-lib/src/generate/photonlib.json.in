@@ -32,6 +32,7 @@
       "isJar": false,
       "validPlatforms": [
         "windowsx86-64",
+        "windowsarm64",
         "linuxsystemcore",
         "linuxx86-64",
         "osxuniversal"
@@ -45,6 +46,49 @@
       "isJar": false,
       "validPlatforms": [
         "windowsx86-64",
+        "windowsarm64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.cscore",
+      "artifactId": "cscore-cpp",
+      "version": "wpilib",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "windowsarm64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.apriltag",
+      "artifactId": "apriltag-cpp",
+      "version": "wpilib",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "windowsarm64",
+        "linuxsystemcore",
+        "linuxx86-64",
+        "osxuniversal"
+      ]
+    },
+    {
+      "groupId": "org.wpilib.thirdparty.opencv",
+      "artifactId": "opencv-cpp",
+      "version": "${opencv_version}",
+      "skipInvalidPlatforms": true,
+      "isJar": false,
+      "validPlatforms": [
+        "windowsx86-64",
+        "windowsarm64",
         "linuxsystemcore",
         "linuxx86-64",
         "osxuniversal"
@@ -62,6 +106,7 @@
       "skipInvalidPlatforms": true,
       "binaryPlatforms": [
         "windowsx86-64",
+        "windowsarm64",
         "linuxsystemcore",
         "linuxx86-64",
         "osxuniversal"
@@ -77,6 +122,7 @@
       "skipInvalidPlatforms": true,
       "binaryPlatforms": [
         "windowsx86-64",
+        "windowsarm64",
         "linuxsystemcore",
         "linuxx86-64",
         "osxuniversal"
@@ -93,6 +139,26 @@
       "groupId": "org.photonvision",
       "artifactId": "photontargeting-java",
       "version": "${photon_version}"
+    },
+    {
+      "groupId": "org.wpilib.thirdparty.opencv",
+      "artifactId": "opencv-java",
+      "version": "${opencv_version}"
+    },
+    {
+      "groupId": "org.wpilib.cscore",
+      "artifactId": "cscore-java",
+      "version": "wpilib"
+    },
+    {
+      "groupId": "org.wpilib.cameraserver",
+      "artifactId": "cameraserver-java",
+      "version": "wpilib"
+    },
+    {
+      "groupId": "org.wpilib.apriltag",
+      "artifactId": "apriltag-java",
+      "version": "wpilib"
     }
   ]
 }
