@@ -607,97 +607,95 @@ const showGenerateBoardDialog = ref(false);
             />
           </div>
 
-        <div class="flex pb-5">
-          <div class="w-1/2 p-0 pr-2">
-            <pv-button
-              v-if="!isCalibrating"
-              size="sm"
-              variant="primary"
-              :icon="IconFlagOutline"
-              block
-              :disabled="!settingsValid || tooManyPoints || getUniqueVideoResolutionStrings().length === 0"
-              @click="showStartCalDialog = true"
-            >
-              <span class="calib-btn-label">Start Calibration</span>
-            </pv-button>
-            <pv-button
-              v-else
-              size="sm"
-              variant="primary"
-              :icon="IconCamera"
-              block
-              :disabled="!settingsValid || tooManyPoints"
-              @click="useCameraSettingsStore().takeCalibrationSnapshot()"
-            >
-              <span class="calib-btn-label">Take Snapshot</span>
-            </pv-button>
-          </div>
-          <div class="w-1/2 p-0 pl-2">
-            <pv-button
-              size="sm"
-              :variant="!isCalibrating || hasEnoughImages ? 'primary' : 'danger'"
-              :icon="!isCalibrating || hasEnoughImages ? IconFlagCheckered : IconFlagOffOutline"
-              block
-              :disabled="!isCalibrating || !settingsValid"
-              @click="endCalibration"
-            >
-              <span class="calib-btn-label">
-                {{ !isCalibrating || hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}
-              </span>
-            </pv-button>
-          </div>
-        </div>
+          <div v-if="isCalibrating" class="pt-5">
+            <div class="flex flex-wrap items-center justify-between gap-4 pb-5">
+              <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : 'onSurface'">
+                Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
+                {{ minCount }}
+              </pv-chip>
+              <pv-switch
+                v-model="bypassVal"
+                label="Bypass minimum"
+                tooltip="Bypass the recommended snapshot minimum for development or temporary testing. At least 10 images are still required."
+                :switch-cols="6"
+              />
+            </div>
 
-        <div v-if="isCalibrating" class="pt-5">
-          <div class="flex flex-wrap items-center justify-between gap-4 pb-5">
-            <pv-chip label :color="hasEnoughImages ? 'buttonPassive' : 'onSurface'">
-              Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-              {{ minCount }}
-            </pv-chip>
-            <pv-switch
-              v-model="bypassVal"
-              label="Bypass minimum"
-              tooltip="Bypass the recommended snapshot minimum for development or temporary testing. At least 10 images are still required."
-              :switch-cols="6"
+            <div v-if="isCalibrating" class="pb-5">
+              <pv-button
+                size="sm"
+                variant="passive"
+                :icon="IconEyeOutline"
+                block
+                :loading="generatingPending"
+                :disabled="useStateStore().calibrationData.imageCount === 0"
+                @click="viewPendingCalibration"
+              >
+                <span class="calib-btn-label">View Pending Calibration</span>
+              </pv-button>
+            </div>
+            <pv-alert
+              v-if="tooManyPoints"
+              class="mt-5"
+              color="error"
+              text="Too many corners. Finish calibration now!"
+              :icon="IconAlertCircleOutline"
             />
           </div>
+          <div class="flex pb-5">
+            <div class="w-1/2 p-0 pr-2">
+              <pv-button
+                v-if="!isCalibrating"
+                size="sm"
+                variant="primary"
+                :icon="IconFlagOutline"
+                block
+                :disabled="!settingsValid || tooManyPoints || getUniqueVideoResolutionStrings().length === 0"
+                @click="showStartCalDialog = true"
+              >
+                <span class="calib-btn-label">Start Calibration</span>
+              </pv-button>
+              <pv-button
+                v-else
+                size="sm"
+                variant="primary"
+                :icon="IconCamera"
+                block
+                :disabled="!settingsValid || tooManyPoints"
+                @click="useCameraSettingsStore().takeCalibrationSnapshot()"
+              >
+                <span class="calib-btn-label">Take Snapshot</span>
+              </pv-button>
+            </div>
+            <div class="w-1/2 p-0 pl-2">
+              <pv-button
+                size="sm"
+                :variant="!isCalibrating || hasEnoughImages ? 'primary' : 'danger'"
+                :icon="!isCalibrating || hasEnoughImages ? IconFlagCheckered : IconFlagOffOutline"
+                block
+                :disabled="!isCalibrating || !settingsValid"
+                @click="endCalibration"
+              >
+                <span class="calib-btn-label">
+                  {{ !isCalibrating || hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}
+                </span>
+              </pv-button>
+            </div>
+          </div>
 
-          <div v-if="isCalibrating" class="pb-5">
+          <div v-if="!isCalibrating">
             <pv-button
               size="sm"
               variant="passive"
-              :icon="IconEyeOutline"
+              :icon="IconDownload"
               block
-              :loading="generatingPending"
-              :disabled="useStateStore().calibrationData.imageCount === 0"
-              @click="viewPendingCalibration"
+              :disabled="!settingsValid"
+              @click="showGenerateBoardDialog = true"
             >
-              <span class="calib-btn-label">View Pending Calibration</span>
+              <span class="calib-btn-label">Generate Board</span>
             </pv-button>
           </div>
-
-          <pv-alert
-            v-if="tooManyPoints"
-            class="mt-5"
-            color="error"
-            text="Too many corners. Finish calibration now!"
-            :icon="IconAlertCircleOutline"
-          />
         </div>
-
-        <div v-if="!isCalibrating">
-          <pv-button
-            size="sm"
-            variant="passive"
-            :icon="IconDownload"
-            block
-:disabled="!settingsValid"
-            @click="showGenerateBoardDialog = true"
-          >
-            <span class="calib-btn-label">Generate Board</span>
-          </pv-button>
-        </div>
-      </div>
       </div>
     </pv-card>
 
@@ -790,9 +788,7 @@ const showGenerateBoardDialog = ref(false);
             <pv-button variant="passive" @click="showStartCalDialog = false"> Cancel </pv-button>
             <pv-button
               variant="primary"
-              :disabled="
-                !settingsValid || tooManyPoints || getUniqueVideoResolutionStrings().length === 0
-              "
+              :disabled="!settingsValid || tooManyPoints || getUniqueVideoResolutionStrings().length === 0"
               @click="startCalibration()"
             >
               Start Calibration
@@ -892,11 +888,7 @@ const showGenerateBoardDialog = ref(false);
           />
           <div class="flex justify-end gap-3 pt-2">
             <pv-button variant="passive" @click="showGenerateBoardDialog = false"> Cancel </pv-button>
-            <pv-button
-              variant="primary"
-:disabled="!settingsValid"
-              @click="downloadCalibBoard()"
-            >
+            <pv-button variant="primary" :disabled="!settingsValid" @click="downloadCalibBoard()">
               Generate Board
             </pv-button>
           </div>
